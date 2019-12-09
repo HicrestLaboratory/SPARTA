@@ -1,2 +1,2 @@
 # SPARTA
-**SP**arse **A**cceler**R**ation on **T**ensor **A**rchitecture
+**SP**arse **A**ccele**R**ation on **T**ensor **A**rchitecture
