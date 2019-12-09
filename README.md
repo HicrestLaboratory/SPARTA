@@ -1,2 +1,2 @@
 # SPARTA
-SPARse Tensor Acceleration
+SParse AccelerRation on Tensor Architecture
