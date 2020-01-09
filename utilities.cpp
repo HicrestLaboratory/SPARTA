@@ -3,7 +3,7 @@
 #include "protos.h"
 
 using namespace std;
-typedef map<int, set<int>> Graphmap;
+typedef map<int, set<int> > Graphmap;
 
 // Fills v with random values
 void randomvec (vector<double> &v, int n) {
@@ -65,7 +65,7 @@ void read_snap_format(Graphmap& gmap, string filename)
  * ==========
  * gmap   = the edgelist now into Graphmap format: map<int, set<int>>
  *----------------------------------------------------------------------------
- */	
+ */
 
 	gmap.clear();
 
@@ -74,18 +74,19 @@ void read_snap_format(Graphmap& gmap, string filename)
 	//TODO handle reading error
 	infile.open(filename);
 	string temp = "-1";
-	int last_node = -1, current_node = -1, child;
+	int current_node = -1, child;
 	set<int> emptyset;
 
-
+    // Ignore comments headers
+    while (infile.peek() == '%') infile.ignore(2048, '\n');
+    
 	//TODO: check import success
 	//read the source node (row) of a new line
 	while (getline(infile, temp, ' ')) {
 		current_node = stoi(temp);
 
-		if (current_node != last_node) { //new source node encountered
+		if (gmap.count(current_node)==0) { //new source node encountered
 			gmap[current_node] = emptyset;
-			last_node = current_node;
 		}
 
 		//get target node (column)
@@ -400,7 +401,8 @@ void matprint(vbsptr vbmat){
 }
 
 
-//read an unweighted graph into a SparMat from a edgelist
+//read an unweighted graph into a SparMat from a edgelist file
+//edges must be ordered by source
 void read_snap_format(SparMat &spmt,
 	string infilename) {
 
@@ -452,11 +454,39 @@ void read_snap_format(SparMat &spmt,
 
 	//finalize last row
 	vec_nzcount.push_back(row_count);
-
-	fill_CSR(spmt, tot_count, vec_nzcount, vec_ja, vec_ma);
+    
+    fill_CSR(spmt, tot_count, vec_nzcount, vec_ja, vec_ma);
 }
 
+//read a Matrix Market sparse matrix from file into a SparMat
+//extremely inefficient, first build a Mat and then converts to CSR
+void read_mtx_format(SparMat &spmt, string infilename){
+    ifstream file(infilename);
+    int num_row, num_col, num_lines;
+    
+    // Ignore comments headers
+    while (file.peek() == '%') file.ignore(2048, '\n');
 
+    // Read number of rows and columns
+    file >> num_row >> num_col >> num_lines;
+    
+    Mat mat;
+    mat.row_size = num_row;
+    vector<double> temp_mat(num_row*num_row, 0.0);
+    
+    // fill the matrix with data
+    for (int l = 0; l < num_lines; l++)
+    {
+        double data;
+        int row, col;
+        file >> row >> col >> data;
+        temp_mat[(row -1) + (col -1) * num_row] = data;
+    }
+    
+    mat.vec = temp_mat;
+    convert_to_CSR(mat,spmt);
+    
+}
 
 
 
@@ -529,6 +559,26 @@ void features_to_CSV(vbsptr vbmat, ofstream& CSV_out, int verbose = 0){
 		<< mean(Bsparsity) << "," << stdv(Bsparsity) << ","
 		<< (double)SparseTotal / BlockTotal << endl;
 	
+}
+
+//reorder a CSR matrix spmt and generate a Block Sparse Matrix
+int make_sparse_blocks(SparMat &spmt, VBSparMat &vbmat,double eps){
+    int nBlock;
+    int *nB = NULL, *perm = NULL;
+    double *t_hash = NULL, *t_angle = NULL;
+    
+    if (init_blocks(&spmt, &nBlock, &nB, &perm, eps, t_hash, t_angle) != 0) {
+        cout << "ERROR: COULD NOT CREATE PERMUTATION. Try with another epsilon" << endl;
+        return -1;
+    }
+    
+    permute(spmt, perm);
+
+    int ierr = csrvbsrC(1, nBlock, nB, &spmt, &vbmat);
+    if (ierr != 0){
+        cout << "error occurred while creating block matrix" << endl;
+        return -1;
+    }
 }
 
 template <class myType>

@@ -20,7 +20,7 @@
 
 using namespace std;
 
-typedef map<int, set<int>> Graphmap;
+typedef map<int, set<int> > Graphmap;
 
 
 struct Mat {
@@ -60,9 +60,13 @@ void matprint(vbsptr vbmat);
 
 void read_snap_format(SparMat & spmt, string infilename);
 
+void read_mtx_format(SparMat & spmt, string infilename);
+
 void extract_features(const vbsptr vbmat, int & Msize, int & Bnum, vector<int>& BLsize, vector<int>& BHsize, vector<int>& Bsparsity);
 
 void features_to_CSV(vbsptr vbmat, ofstream & CSV_out, int verbose);
+
+int make_sparse_blocks(SparMat &spmt, VBSparMat &vbmat,double eps);
 
 
 //-----------------------------------------------------------------------ARRAY AND VECTOR UTILITIES----------------------------------------------
@@ -86,7 +90,7 @@ double stdv(const vector<myType>& v) {
 	if (v.size() < 2) { return 0; }
 
 	double u = mean(v);
-	auto lambda = [u](double a, myType b) {
+    auto lambda = [u](double a, myType b) {
 		return a + pow(((double)b - u), 2);
 	};
 
