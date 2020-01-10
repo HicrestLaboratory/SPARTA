@@ -9,4 +9,3 @@ It also generates a variableSparseBlock (VBSparMat) matrix that stores these blo
 
 Test.cpp shows an example of how reading, reorder and conversion work for a .mtx matrix.
 It also generate some analysis of the new block structure. 
-Run make to generate a test executable.
