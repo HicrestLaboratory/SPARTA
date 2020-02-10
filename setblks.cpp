@@ -248,7 +248,6 @@ int csrvbsrC( int job, int nBlk, int *nB, csptr csmat, vbsptr vbmat )
         for( j = 0; j < nnz; j++ ) {
             szofBlock = sizeof(double)*nB[b_row]*nB[vbmat->ja[b_row][j]];
             vbmat->ba[b_row][j] = (BData)malloc( szofBlock);
-            memset( vbmat->ba[b_row][j], 0, szofBlock );
         }
         
         for( j = i; j < i+nB[b_row]; j++ ) {

@@ -4,14 +4,14 @@
 #include "globheads.h"
 #include "protos.h"
 #include "utilities.h"
-
+#include "mkl.h"
 
 int main() {
 
 	SparMat spmat;
 
 	double eps = 0.5; // 0 < eps < 1
-    //this value sets how different two matrix in the same block can be.
+    //this value sets how different two rows in the same block can be.
     //eps = 1 means only rows with equal structure are merged into a block
     //eps = 0 means all rows are merged into a single block
     

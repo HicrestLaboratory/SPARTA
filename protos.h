@@ -55,92 +55,11 @@
 #define qsplit  qsplit_
 #endif
 
-#ifndef min
-#define min(a,b) (((a)>(b))?(b):(a))
-#endif
-#ifndef max
-#define max(a,b) (((a)>(b))?(a):(b))
-#endif
-
 #define MAX_LINE        256
 #define MAX_HBNAME      64
 #define MAX_MAT			100
 
-/* FORTRAN routines */
-extern void readmtc(int*,  int*,  int*,  char*,  double*,  int*,
-	     int*,  double*, int*,  char*,  int*,  int*,  int*,
-	     char*,  char*, char*,  int*) ;
-extern void csrcsc (int*, int*, int*, double*, int*, int*, double*,
-		    int*, int*) ; 
-extern void qsplit(double *a, int *ind, int *n, int *ncut);	
-extern void dgesvd(char*, char*, int*, int*, double*, int*, double*,
-		   double *, int*, double*, int*, double*, int*,
-		   int*); 
-extern void csrcoo ( int *, int *, int *, double *, int *, int *, int *,
-		double *, int *, int *, int *);    
 
-#if defined(_IBM)
-#define DDOT(n,x,incx,y,incy)        ddot((n), (x), (incx), (y), (incy)) 
-#define DCOPY(n,x,incx,y,incy)       dcopy((n), (x), (incx), (y), \
-					   (incy)) 
-#define DSCAL(n,alpha,x,incx)        dscal((n), (alpha), (x), (incx)) 
-#define DAXPY(n,alpha,x,incx,y,incy) daxpy((n), (alpha), (x), (incx), \
-					   (y), (incy)) 
-#define DNRM2(n,x,incx)              dnrm2((n), (x), (incx))
-
-#define IDMIN(n,sx,incx)             idmin((n), (sx), (incx))
-#define DGEMV(transa,m,n,alpha,a,lda,x,incx,beta,y,incy)		\
-  dgemv((transa), (m), (n),						\
-	(alpha), (a), (lda), (x), (incx),				\
-	(beta), (y), (incy))
-
-#define DGEMM(transa,transb,l,n,m,alpha,a,lda,b,ldb,beta,c,ldc)		\
-  dgemm((transa),(transb),						\
-	(l),(n),(m),(alpha),(a),					\
-	(lda),(b),(ldb),(beta),(c),(ldc))
-#define DGETRF(m, n, a, lda, ipvt, info)  \
-  dgetrf((m), (n), (a), (lda), (ipvt), (info))
-#define DGETRI(n, a, lda, ipvt, work, lwork, info)		\
-  dgetri((n), (a), (lda), (ipvt), (work), (lwork), (info))
-#else
-#define DDOT(n,x,incx,y,incy)        ddot(&(n),(x),&(incx),(y),&(incy))
-#define DCOPY(n,x,incx,y,incy)       dcopy(&(n),(x),&(incx),(y),&(incy))
-#define DSCAL(n,alpha,x,incx)        dscal(&(n),&(alpha),(x), &(incx))
-#define DAXPY(n,alpha,x,incx,y,incy) daxpy(&(n), &(alpha), (x), \
-					 &(incx), y, &(incy))
-#define DNRM2(n, x, incx)            dnrm2(&(n), (x), &(incx))
-#define IDMIN(n, sx, incx)           idmin((&(n), (sx), &(incx))
-#define DGEMV(transa, m, n, alpha, a, lda, x, incx, beta, y, incy)  \
-  dgemv((transa), &(m), &(n), &(alpha), (a), &(lda), (x), &(incx), \
-	 &(beta), (y), &(incy))
-#define DGEMM(transa,transb,l,n,m,alpha,a,lda,b,ldb,beta,c,ldc)	\
-  dgemm((transa), (transb), &(l), &(n), &(m), &(alpha), (a),	\
-	 &(lda), b, &(ldb), &(beta), (c), &(ldc)) 
-#define DGETRF(m, n, a, lda, ipvt, info)		\
-  dgetrf(&(m), &(n), (a), &(lda), (ipvt), (info))
-#define DGETRI(n, a, lda, ipvt, work, lwork, info)			\
-  dgetri(&(n), (a), &(lda), (ipvt), (work), &(lwork), (info))
-
-extern double ddot(int *n, double *x, int *incx, double *y, int
-		    *incy);  
-extern void   dcopy(int *n, double *x, int *incx, double *y, int
-		    *incy); 
-extern void   dscal(int *n, double *alpha, double *x, int *incx);
-extern void   daxpy(int *n, double *alpha, double *x, int *incx,
-		    double *y, int *incy);
-extern double dnrm2(int *n, double *x, int *incx);
-extern void   idmin(int *n, double *sx, int *incx);
-extern void   dgemv(char *transa, int *m, int *n, double *alpha,
-		    double *a, int *lda, double *x, int *incx, double
-		    *beta, double *y, int *incy);
-extern void   dgemm(char *transa, char *transb, int *l, int *m, int
-		    *n, double *alpha, double *a, int *lda, double
-		    *b, int *ldb, double *beta, double *c, int *ldc);       
-extern void   dgetrf(int *m, int *n, double *a, int *lda, int *ipvt,
-		     int *info); 
-extern void   dgetri(int *n, double *a, int *lda, int *ipvt, double
-		     *work, int *lwork, int *info);
-#endif 
 
 /* sets.c */
 extern int nnz_arms (arms PreSt,  FILE *ft);
