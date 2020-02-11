@@ -32,7 +32,7 @@ int main() {
     
     //read from mtx
     read_mtx_format(spmat, "testmat.mtx");
-     
+
     sparse_matrix_t A;
     convert_to_MKL(spmt, A){
 
