@@ -333,9 +333,9 @@ sparse_status_t convert_to_MKL(SparMat &spmt, sparse_matrix_t &A){
     
     rows_start[0] = 0;
     rows_end[0] = sptm.nzcount[0];
-    for (int i = 0; i<n;i++)
-        rows_start[i] = spmt.nzcount[i-1] + rows_start[i - 1]
-        rows_end[i] = spmt.nzcount[i] + rows_end[i - 1]
+    for (int i = 0; i<n;i++){
+        rows_start[i] = spmt.nzcount[i-1] + rows_start[i - 1];
+        rows_end[i] = spmt.nzcount[i] + rows_end[i - 1];
     }
 
     
