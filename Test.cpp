@@ -33,6 +33,9 @@ int main() {
     //read from mtx
     read_mtx_format(spmat, "testmat.mtx");
      
+    sparse_matrix_t A;
+    convert_to_MKL(spmt, A){
+
     //reorder the CSR matrix spmt and generate a Block Sparse Matrix
     VBSparMat vbmat;
     make_sparse_blocks(spmat, vbmat,eps);
@@ -48,3 +51,6 @@ int main() {
 	features_to_CSV(&vbmat, CSV_out, verbose);//write mat analysis on csv
 	CSV_out.close();
 }
+
+
+mkl_sparse_s_mm (const sparse_operation_t operation, const float alpha, const sparse_matrix_t A, const struct matrix_descr descr, const sparse_layout_t layout, const float *x, const MKL_INT columns, const MKL_INT ldx, const float beta, float *y, const MKL_INT ldy);
