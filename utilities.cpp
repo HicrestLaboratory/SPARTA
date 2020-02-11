@@ -323,16 +323,18 @@ void convert_to_CSR(const Graphmap &gmap, SparMat &spmt) {
 	fill_CSR(spmt, n, vec_nzcount, vec_ja, vec_ma);
 }
 
-sparse_status_t convert_to_MKL(SparMat &spmt, sparse_matrix_t &A){
+void convert_to_MKL(SparMat &spmt, sparse_matrix_t* A){
     
     sparse_index_base_t indexing = SPARSE_INDEX_BASE_ZERO;
     
     int n = spmt.n;
+    MKL_INT cols = n;
+    MKL_INT rows = n;
     MKL_INT rows_start[n];
     MKL_INT rows_end[n];
     
     rows_start[0] = 0;
-    rows_end[0] = sptm.nzcount[0];
+    rows_end[0] = spmt.nzcount[0];
     for (int i = 0; i<n;i++){
         rows_start[i] = spmt.nzcount[i-1] + rows_start[i - 1];
         rows_end[i] = spmt.nzcount[i] + rows_end[i - 1];
@@ -360,7 +362,7 @@ sparse_status_t convert_to_MKL(SparMat &spmt, sparse_matrix_t &A){
     }
     
     
-    return mkl_sparse_s_create_csr (A, indexing, rows, cols, rows_start,  rows_end, col_indx, values);
+    mkl_sparse_s_create_csr (A, indexing, rows, cols, rows_start,  rows_end, col_indx, values);
 }
 
 void permute(SparMat &spmt, int* perm){
