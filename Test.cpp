@@ -34,7 +34,7 @@ int main() {
     read_mtx_format(spmat, "testmat.mtx");
 
     sparse_matrix_t A;
-    convert_to_MKL(spmt, A){
+    convert_to_MKL(spmat, A){
 
     //reorder the CSR matrix spmt and generate a Block Sparse Matrix
     VBSparMat vbmat;
