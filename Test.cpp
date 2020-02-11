@@ -51,6 +51,3 @@ int main() {
 	features_to_CSV(&vbmat, CSV_out, verbose);//write mat analysis on csv
 	CSV_out.close();
 }
-
-
-mkl_sparse_s_mm (const sparse_operation_t operation, const float alpha, const sparse_matrix_t A, const struct matrix_descr descr, const sparse_layout_t layout, const float *x, const MKL_INT columns, const MKL_INT ldx, const float beta, float *y, const MKL_INT ldy);
