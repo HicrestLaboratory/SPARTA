@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <ctime>
+#include <string>
+
 #include "globheads.h"
 #include "protos.h"
 #include "utilities.h"
 #include "mkl.h"
+
 
 int main() {
 
@@ -31,14 +35,16 @@ int main() {
     */
     
     //read from mtx
-    read_mtx_format(spmat, "testmat.mtx");
+    	read_mtx_format(spmat, "testmat.mtx");
 
-    sparse_matrix_t *A;
-    convert_to_MKL(spmat, A);
+
+    //create a MKL sparse matrix from spmat
+    	sparse_matrix_t mkl_spmat;
+    	convert_to_MKL(spmat, mkl_spmat);
 
     //reorder the CSR matrix spmt and generate a Block Sparse Matrix
-    VBSparMat vbmat;
-    make_sparse_blocks(spmat, vbmat,eps);
+    	VBSparMat vbmat;
+    	make_sparse_blocks(spmat, vbmat,eps);
     
     
 	ofstream CSV_out;
@@ -46,8 +52,50 @@ int main() {
 
 	string CSV_header = "MatrixSize,OriginalSparsity,Divisions,NonzeroBlocks,AvgBlockHeight,AvgBHError,AvgBlockLength,AvgBLError,NonzeroAreaFraction,AverageBlockPopulation,ABPError,NewSparsity";
 	CSV_out << CSV_header << endl;
-    
-    bool verbose = true; //print mat analysis
+
+
+	bool verbose = true; //print mat analysis
 	features_to_CSV(&vbmat, CSV_out, verbose);//write mat analysis on csv
 	CSV_out.close();
+
+
+//MULTIPLICATION PHASE
+
+//creating the dense matrix X
+	int X_rows = spmat.n;
+	int X_cols = spmat.n;
+
+	int k, seed = 4321;
+  	srand(seed);
+	float X[X_rows*X_cols];
+  	for (k=0; k<X_rows*X_cols; k++) {
+    		float x = rand()%100;
+    		X[k] = x/100;
+  	}
+//----------------------------
+//creating the output matrix Y
+	float Y[spmat.n * X_rows];
+
+
+//csr-dense mkl multiplication
+	clock_t start_t = clock();
+
+	matrix_descr descr_spmat;
+	descr_spmat.type = SPARSE_MATRIX_TYPE_GENERAL;
+	
+	mkl_sparse_s_mm (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, mkl_spmat, descr_spmat, SPARSE_LAYOUT_ROW_MAJOR, X, X_rows, spmat.n , 0.0, Y, spmat.n);
+	double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
+        cout<<"CSR-Dense multiplication. Time taken: " << total_t<<endl;
+//vbr-dense mkl multiplication
+	start_t = clock();
+        
+	total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
+        cout<<"VBR-Dense multiplication. Time taken: " << total_t<<endl;
+
+//vbr-dense explicit multiplication
+
+	
+
+
+
 }

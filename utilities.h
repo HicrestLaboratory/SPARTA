@@ -59,7 +59,7 @@ void matprint(const Mat & mat);
 
 void matprint(vbsptr vbmat);
 
-void convert_to_MKL(SparMat &spmt, sparse_matrix_t *A);
+void convert_to_MKL(SparMat &spmt, sparse_matrix_t &A);
 
 void read_snap_format(SparMat & spmt, string infilename);
 
