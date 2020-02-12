@@ -85,20 +85,20 @@ int main() {
     float* mat;
     mat_n = convert_to_CSR(spmat,mat);
     
-    start_t = clock();
+    clock_t start_t = clock();
     cblas_sgemm (CblasRowMajor, CblasNoTrans, CblasNoTrans, mat_n, mat_n, mat_n, 1.0, mat, mat_n, X, mat_n, 0, Y_gemm, const mat_n);
-    total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
+    double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
         cout<<"BSR-Dense multiplication. Time taken: " << total_t<<endl;
 
     
 //csr-dense mkl multiplication
-	clock_t start_t = clock();
+	start_t = clock();
 
 	matrix_descr descr_spmat;
 	descr_spmat.type = SPARSE_MATRIX_TYPE_GENERAL;
     	
 	mkl_sparse_s_mm (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, mkl_spmat, descr_spmat, SPARSE_LAYOUT_ROW_MAJOR, X, X_rows, spmat.n , 0.0, Y_csr, spmat.n);
-	double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
+    total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
         cout<<"CSR-Dense multiplication. Time taken: " << total_t<<endl;
 
 
