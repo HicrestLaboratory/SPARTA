@@ -42,6 +42,15 @@ int main() {
     	sparse_matrix_t mkl_spmat;
     	convert_to_MKL(spmat, mkl_spmat);
 
+    //create a dense array matrix from spmat
+	Mat mat;
+	int mat_n = spmat.n;
+	float* mat_arr;
+	mat_arr = new float[mat_n*mat_n];
+	convert_from_CSR(spmat, mat);
+	std::copy((mat.vec).begin(), (mat.vec).end(), mat_arr);
+
+
     //reorder the CSR matrix spmt and generate a Block Sparse Matrix
     	VBSparMat vbmat;
     	make_sparse_blocks(spmat, vbmat,eps);
@@ -82,12 +91,6 @@ int main() {
 
 
 //dense-dense mkl gemm multiplication
-    Mat mat;
-    int mat_n = spmat.n;
-    float* mat_arr;
-    mat_arr = new float[mat_n*mat_n];
-    convert_from_CSR(spmat, mat);
-    std::copy((mat.vec).begin(), (mat.vec).end(), mat_arr);
     
     clock_t start_t = clock();
     cblas_sgemm (CblasRowMajor, CblasNoTrans, CblasNoTrans, mat_n, mat_n, mat_n, 1.0, mat_arr, mat_n, X, mat_n, 0, Y_gemm,  mat_n);
@@ -104,7 +107,6 @@ int main() {
 	mkl_sparse_s_mm (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, mkl_spmat, descr_spmat, SPARSE_LAYOUT_ROW_MAJOR, X, X_rows, spmat.n , 0.0, Y_csr, spmat.n);
     total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
         cout<<"CSR-Dense multiplication. Time taken: " << total_t<<endl;
-
 
 //vbr-dense explicit multiplication
 
