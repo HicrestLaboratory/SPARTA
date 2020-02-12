@@ -83,10 +83,10 @@ int main() {
 
 //dense-dense mkl gemm multiplication
     float* mat;
-    int mat_n = convert_to_CSR(spmat, mat);
+    int mat_n = convert_from_CSR(spmat, mat);
     
     clock_t start_t = clock();
-    cblas_sgemm (CblasRowMajor, CblasNoTrans, CblasNoTrans, mat_n, mat_n, mat_n, 1.0, mat, mat_n, X, mat_n, 0, Y_gemm, const mat_n);
+    cblas_sgemm (CblasRowMajor, CblasNoTrans, CblasNoTrans, mat_n, mat_n, mat_n, 1.0, mat, mat_n, X, mat_n, 0, Y_gemm,  mat_n);
     double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
         cout<<"BSR-Dense multiplication. Time taken: " << total_t<<endl;
 
