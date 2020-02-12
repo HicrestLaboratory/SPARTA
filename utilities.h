@@ -45,8 +45,6 @@ void write_snap_format(Graphmap & gmap, string filename);
 
 void convert_from_CSR(SparMat & spmt, Mat & mat);
 
-int convert_from_CSR(SparMat &spmt, float* &mat);
-
 void fill_CSR(SparMat & spmt, int n, const vector<int>& vec_nzcount, const vector<int>& vec_ja, const vector<double>& vec_ma);
 
 void convert_to_CSR(const Mat & mat, SparMat & spmt);

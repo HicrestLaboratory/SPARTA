@@ -215,29 +215,6 @@ void write_snap_format(Graphmap& gmap, string filename) {
 END OF GRAPH UTILITIES
 */
 
-//converts a (square) SparMat into a matrix arranged as an array of values; returns the number of rows and colums
-int convert_from_CSR(SparMat &spmt, float* &mat){
-    int n = spmt.n;
-    int idx;
-    float val;
-    
-    //allocate memory for the matrix values. initialize to zero.
-    mat = new float[spmt.n]();
-    
-    //loop through rows
-    for (int row = 0; row < n; row++){
-        
-        //loop through non-zeros in that row
-        for (int i = 0; i< spmt.nzcount[row];i++){
-            idx = row*n + spmt.ja[row][i];//position of nz value
-            val = spmt.ma[row][i]; //nz value
-            mat[idx] = val; //put it in the proper position
-        }
-    }
-    return n;
-}
-
-
 //Convert a sparse matrix into a Mat one
 void convert_from_CSR(SparMat &spmt, Mat &mat){
     int n = spmt.n;
