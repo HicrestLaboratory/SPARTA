@@ -84,6 +84,7 @@ int main() {
 //dense-dense mkl gemm multiplication
     float* mat;
     int mat_n = convert_from_CSR(spmat, mat);
+    matprint(mat,mat_n);
     
     clock_t start_t = clock();
     cblas_sgemm (CblasRowMajor, CblasNoTrans, CblasNoTrans, mat_n, mat_n, mat_n, 1.0, mat, mat_n, X, mat_n, 0, Y_gemm,  mat_n);

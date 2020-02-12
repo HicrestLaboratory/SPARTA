@@ -59,6 +59,8 @@ void matprint(const SparMat & spmt);
 
 void matprint(const Mat & mat);
 
+void matprint(const float *mat, const int n);
+
 void matprint(vbsptr vbmat);
 
 void convert_to_MKL(SparMat &spmt, sparse_matrix_t &A);

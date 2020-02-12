@@ -438,6 +438,19 @@ void matprint(const Mat &mat){
 
 }
 
+void matprint(const float* mat, const int n){
+    cout << "PRINTING THE MATRIX" << endl;
+    for (int i = 0; i < n*n; i++){
+        if (i%n == 0){
+            cout << endl;
+        }
+        cout << mat[i] << " ";
+    }
+    cout <<endl<< "finished printing the matrix"<<endl;
+
+}
+
+
 void matprint(vbsptr vbmat){
     int N = vbmat->n, *bsz = vbmat->bsz;
     int nBsj,sz,dim,col;
