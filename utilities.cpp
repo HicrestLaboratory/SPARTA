@@ -216,7 +216,7 @@ END OF GRAPH UTILITIES
 */
 
 //converts a (square) SparMat into a matrix arranged as an array of values; returns the number of rows and colums
-int convert_from_CSR(SparMat &spmt, float* mat){
+int convert_from_CSR(SparMat &spmt, float* &mat){
     int n = spmt.n;
     int idx;
     float val;
