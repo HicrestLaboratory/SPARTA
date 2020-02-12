@@ -388,55 +388,6 @@ void convert_to_MKL(SparMat &spmt, sparse_matrix_t &A){
     mkl_sparse_s_create_csr (&A, indexing, rows, cols, rows_start,  rows_end, col_indx, values);
 }
 
-void convert_to_MKL(VBSparMat &vbmat, sparse_matrix_t &A){
-    
-    sparse_index_base_t indexing = SPARSE_INDEX_BASE_ZERO;
-    sparse_layout_t block_layout = SPARSE_LAYOUT_COLUMN_MAJOR;
-    
-    
-    int N = vbmat->n, *bsz = vbmat->bsz;
-    
-    MKL_INT bcols = n;
-    MKL_INT brows = n;
-    MKL_INT* rows_start= new MKL_INT[n];
-    MKL_INT* rows_end = new MKL_INT[n];
-    
-    rows_start[0] = 0;
-    rows_end[0] = spmt.nzcount[0];
-    for (int i = 0; i<n;i++){
-        rows_start[i] = spmt.nzcount[i-1] + rows_start[i - 1];
-        rows_end[i] = spmt.nzcount[i] + rows_end[i - 1];
-    }
-
-    
-    int nzs = rows_end[n-1];
-    float* values = new float[nzs];
-    MKL_INT* col_indx = new MKL_INT[nzs];
-    
-    int j = 0;
-    for (int row = 0; row < n; row++){
-        for (int i = 0; i <spmt.nzcount[row]; i++){
-            col_indx[j] = spmt.ja[row][i];
-            j++;
-        }
-    }
-    
-    j = 0;
-    for (int row = 0; row < n; row++){
-        for (int i = 0; i <spmt.nzcount[row]; i++){
-            values[j] = spmt.ma[row][i];
-            j++;
-        }
-    }
-    
-    
-    mkl_sparse_s_create_csr (&A, indexing, rows, cols, rows_start,  rows_end, col_indx, values);
-    mkl_sparse_s_create_bsr (&A, indexing, block_layout, brows, bcols, const MKL_INT block_size, MKL_INT *rows_start, MKL_INT *rows_end, MKL_INT *col_indx, float *values);
-
-}
-
-
-
 void permute(SparMat &spmt, int* perm){
     //permutes a matrix in CSR form
     int n = spmt.n;
