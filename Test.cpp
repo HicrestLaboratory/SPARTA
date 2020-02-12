@@ -82,7 +82,7 @@ int main() {
 
 
 //dense-dense mkl gemm multiplication
-    float mat[spmat.n];
+    float* mat;
     int mat_n = convert_to_CSR(spmat, mat);
     
     clock_t start_t = clock();
