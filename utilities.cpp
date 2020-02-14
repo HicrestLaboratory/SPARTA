@@ -342,7 +342,7 @@ void convert_to_MKL(SparMat &spmt, sparse_matrix_t &A){
 
     
     int nzs = rows_end[n-1];
-    float* values = new float[nzs];
+    double* values = new double[nzs];
     MKL_INT* col_indx = new MKL_INT[nzs];
     
     int j = 0;
@@ -356,13 +356,13 @@ void convert_to_MKL(SparMat &spmt, sparse_matrix_t &A){
     j = 0;
     for (int row = 0; row < n; row++){
         for (int i = 0; i <spmt.nzcount[row]; i++){
-            values[j] = spmt.ma[row][i];
+            values[j] = (double) spmt.ma[row][i];
             j++;
         }
     }
     
     
-    mkl_sparse_s_create_csr (&A, indexing, rows, cols, rows_start,  rows_end, col_indx, values);
+    mkl_sparse_d_create_csr (&A, indexing, rows, cols, rows_start,  rows_end, col_indx, values);
 }
 
 void permute(SparMat &spmt, int* perm){
@@ -393,6 +393,7 @@ void matprint(const SparMat &spmt){
     
     cout << endl << "printing ma" << endl;
     for (int row = 0; row < n; row++){
+	cout << setprecision(5);
         for (int i = 0; i <spmt.nzcount[row]; i++){
             cout << spmt.ma[row][i] << " ";
         }
@@ -408,6 +409,7 @@ void matprint(const Mat &mat){
     for (int i = 0; i < N*N; i++){
         if (i%N == 0){
             cout << endl;
+	    cout << setprecision(5);
         }
         cout << mat.vec[i] << " ";
     }
@@ -415,11 +417,12 @@ void matprint(const Mat &mat){
 
 }
 
-void matprint(const float* mat, const int n){
+void matprint(const double* mat, const int rows,const int cols){
     cout << "PRINTING THE MATRIX" << endl;
-    for (int i = 0; i < n*n; i++){
-        if (i%n == 0){
+    for (int i = 0; i < rows*cols; i++){
+        if (i%cols == 0){
             cout << endl;
+	    cout << setprecision(5);
         }
         cout << mat[i] << " ";
     }
@@ -428,30 +431,32 @@ void matprint(const float* mat, const int n){
 }
 
 
-void matprint(vbsptr vbmat){
-    int N = vbmat->n, *bsz = vbmat->bsz;
-    int nBsj,sz,dim,col;
+void matprint(const VBSparMat &vbmat){
+    int N = vbmat.n, *bsz = vbmat.bsz;
+    int Lsz,Hsz,col;
     cout << "PRINTING a VB MATRIX" << endl;
-    cout<<"N ="<< N <<endl;
+    cout<<"DIVIDED IN ="<< N <<endl;
+    
     for(int i = 0; i < N; i++ ) {
-        cout<<"bsz["<<i+1<<"] = "<<bsz[i+1]<<endl;
-        dim = bsz[i+1] - bsz[i];
-        cout<<"nzcount["<<i<<"] = "<<vbmat->nzcount[i]<<endl;
-        for(int j = 0; j<vbmat->nzcount[i]; j++){
-            col = vbmat->ja[i][j];
+    	cout<<"bsz["<<i+1<<"] = "<<bsz[i+1]<<endl;
+        Hsz = bsz[i+1] - bsz[i];
+        cout<<"nzcount["<<i<<"] = "<<vbmat.nzcount[i]<<endl;
+        
+	for(int j = 0; j<vbmat.nzcount[i]; j++){
+            col = vbmat.ja[i][j];
             cout<<"ja["<<i<<"]["<<j<<"] = "<<col<<endl;
-            nBsj = bsz[col];
-            sz = bsz[col+1] - bsz[col];
-            cout<<"BLOCK size="<<dim<<"x"<<sz<<endl;
-            for(int k = 0; k < sz*dim; k++){
-                if (k%dim != 0) cout<<" ";
-                else cout<<endl;
-                cout<<vbmat->ba[i][j][k];
+            Lsz = bsz[col+1] - bsz[col];
+            cout<<"BLOCK size="<<Hsz<<"x"<<Lsz<<endl;
+            
+	    for(int k_row = 0; k_row < Hsz; k_row++){
+		for( int k_col = 0; k_col < Lsz; k_col++){
+                	cout<<setprecision(5)<<vbmat.ba[i][j][Hsz*k_col + k_row]<<" ";
+		}
+		cout <<endl;
 
             }
             cout<<endl;
         }
-
     }
 }
 
@@ -557,18 +562,18 @@ void extract_features(const vbsptr vbmat, int& Msize, int &Bnum, vector<int>& BL
     double tempSparse;
     Msize = bsz[N];
     Bnum = 0;
-    //loop vertically through blocks
+    //loop vertically through block rows
     for(int i = 0; i < N; i++ ) {
         Hsz = bsz[i+1] - bsz[i];
         Bnum += vbmat->nzcount[i];
-        //loop horizontaly through blocks
+        //loop horizontaly through block columns
         for(int j = 0; j<vbmat->nzcount[i]; j++){
             col = vbmat->ja[i][j];
             Lsz = bsz[col+1] - bsz[col];
             BLsize.push_back(Lsz);
             BHsize.push_back(Hsz);
 			tempSparse = 0;
-            //loop through elements in the block
+            //loop (column-wise) through elements in the block
             for(int k = 0; k < Lsz*Hsz; k++){
                 if (vbmat->ba[i][j][k] != 0.){
                     tempSparse += 1;
@@ -628,6 +633,11 @@ int make_sparse_blocks(SparMat &spmt, VBSparMat &vbmat,double eps){
     }
     
     permute(spmt, perm);
+    cout << " PERMUTING CSR-Matrix. PRINTING PERMUTATION " << endl;
+    copy(perm, 
+	  perm + spmt.n, 
+           std::ostream_iterator<int>(std::cout,",")
+	); 
 
     int ierr = csrvbsrC(1, nBlock, nB, &spmt, &vbmat);
     if (ierr != 0){
@@ -636,10 +646,67 @@ int make_sparse_blocks(SparMat &spmt, VBSparMat &vbmat,double eps){
     }
 }
 
+
+//print array
 template <class myType>
 void arrprint(myType *arr, int len){
     for(int i = 0; i < len; i++){
         cout<<arr[i]<<" ";
     }
     cout<<endl;
+}
+
+//multiply a n-by-n block matrix VBMat by a (column major) n-by-k matrix X. 
+//store result in (already initialized) (column major) n-by-k matrix Y;
+void block_mat_multiply(const VBSparMat &VBMat, double *X, int X_cols, double *Y){
+    int N = VBMat.n, *bsz = VBMat.bsz;
+    int Lsz,Hsz,col;
+    int mat_n = bsz[N];
+   
+    //loop vertically through block rows
+    for(int i = 0; i < N; i++ ) {
+        Hsz = bsz[i+1] - bsz[i];
+
+        //loop horizontaly through block columns
+        for(int j = 0; j<VBMat.nzcount[i]; j++){
+        	col = VBMat.ja[i][j];
+            	Lsz = bsz[col+1] - bsz[col];
+	    	//multiply the block by the matrix
+			//define the sub-matrices
+			const double* block = (VBMat.ba)[i][j]; //access block i,j in column major order.
+			double* blockY = Y + bsz[i];	 //i indicates the vertical block of Y that is going to be updated
+			const double* blockX = X + bsz[col];	 //col indicates the vertical block of X that is going to be multiplied with the (i,j)block of VBMat
+	            	cblas_dgemm (CblasColMajor, CblasNoTrans, CblasNoTrans, Hsz, X_cols, Lsz, 1.0, block, Hsz, blockX, mat_n, 1.0, blockY, mat_n);
+//			cout << " printing Y after iteration" <<i << "-" <<j <<endl;
+//			matprint(Y,mat_n,X_cols);
+        }
+    }
+}
+
+void convert_to_col_major(double *X, double *Y, const int rows, const int cols){
+	for (int i=0;i<rows;i++){
+		for (int j=0; j<cols; j++){
+			Y[rows*j + i] = X[cols*i + j];
+		}
+	}
+
+}
+
+void convert_to_row_major(double *X, double *Y, const int rows, const int cols){
+        for (int j=0;j<cols;j++){
+                for (int i=0; i<rows; i++){
+                        Y[cols*i + j] = X[rows*j + i];
+                }
+        }
+
+}
+
+bool are_equal(const double *X,const double* Y,const int n, const double eps){
+	for (int i = 0; i < n; i++){
+		if(abs(X[i] - Y[i]) > eps) {
+//			cout<<"pos "<< i<< " : " << X[i]<< " !=  " << Y[i] <<endl;
+			return false;
+		}
+	}
+	return true;
 }

@@ -10,32 +10,36 @@
 #include "mkl.h"
 
 
-int main() {
-
+int main(int argc, char *argv[]) {
+	
+	double eps;
 	SparMat spmat;
-
-	double eps = 0.5; // 0 < eps < 1
+	if (argc > 1) {
+		eps = stod(argv[1]);
+	} 
+	else {
+		eps = 0.5; // 0 < eps < 1
+	}
     //this value sets how different two rows in the same block can be.
     //eps = 1 means only rows with equal structure are merged into a block
     //eps = 0 means all rows are merged into a single block
     
     
-    /*
     //create a random CSR matrix
-    Mat mat;
-    const int row_dimension = 500;
-    float sparsity = 0.7;
-	random_sparse_mat(mat, row_dimension, sparsity); //generate random Mat
-	convert_to_CSR(mat, spmat);
-    */
+    	Mat rand_mat;
+    	const int row_dimension = 20;
+   	float sparsity = 0.7;
+	random_sparse_mat(rand_mat, row_dimension, sparsity); //generate random Mat
+	convert_to_CSR(rand_mat, spmat);
+
     
-    /*
+//	cout << "READING GRAPH" << endl;    
     //Read a CSR matrix from a .txt edgelist (snap format)
-	read_snap_format(spmat, "testgraph.txt");
-    */
+//	read_snap_format(spmat, "testgraph.txt");
+    
     
     //read from mtx
-    	read_mtx_format(spmat, "testmat.mtx");
+//	read_mtx_format(spmat, "testmat.mtx");
 
 
     //create a MKL sparse matrix from spmat
@@ -45,17 +49,23 @@ int main() {
     //create a dense array matrix from spmat
 	Mat mat;
 	int mat_n = spmat.n;
-	float* mat_arr;
-	mat_arr = new float[mat_n*mat_n];
+	double* mat_arr;
+	mat_arr = new double[mat_n*mat_n];
 	convert_from_CSR(spmat, mat);
 	std::copy((mat.vec).begin(), (mat.vec).end(), mat_arr);
 
+	cout << fixed;
 
     //reorder the CSR matrix spmt and generate a Block Sparse Matrix
     	VBSparMat vbmat;
     	make_sparse_blocks(spmat, vbmat,eps);
-    
-    
+	
+	
+	cout << "PRINTING SPARSE MATRIX IN DENSE FORM" <<endl;
+	matprint(mat_arr,mat_n,mat_n);    
+	cout << "PRINTING SPARSE MATRIX IN BLOCK FORM" <<endl;    
+	matprint(vbmat);
+
 	ofstream CSV_out;
 	CSV_out.open("output.txt");
 
@@ -72,20 +82,23 @@ int main() {
 
 //creating the dense matrix X
 	int X_rows = spmat.n;
-	int X_cols = spmat.n;
+	int X_cols = 5; //TODO make general for rectangular matrices	
 
 	int k, seed = 4321;
   	srand(seed);
-	float X[X_rows*X_cols];
+	double X[X_rows*X_cols];
   	for (k=0; k<X_rows*X_cols; k++) {
-    		float x = rand()%100;
+    		double x =  rand()%100;
     		X[k] = x/100;
   	}
+
+
+
 //----------------------------
 //creating the output matrix Y
-	float Y_gemm[spmat.n * X_rows];
-    float Y_csr[spmat.n * X_rows];
-    float Y_block[spmat.n * X_rows];
+	double Y_gemm[spmat.n * X_cols];
+    	double Y_csr[spmat.n * X_cols];
+    	double Y_block[spmat.n * X_cols] = {};
 
 
 
@@ -93,25 +106,61 @@ int main() {
 //dense-dense mkl gemm multiplication
     
     clock_t start_t = clock();
-    cblas_sgemm (CblasRowMajor, CblasNoTrans, CblasNoTrans, mat_n, mat_n, mat_n, 1.0, mat_arr, mat_n, X, mat_n, 0, Y_gemm,  mat_n);
+    cblas_dgemm (CblasRowMajor, CblasNoTrans, CblasNoTrans, mat_n, X_cols, mat_n, 1.0, mat_arr, mat_n, X, X_cols, 0, Y_gemm, X_cols);
     double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
         cout<<"Dense-Dense multiplication. Time taken: " << total_t<<endl;
 
     
 //csr-dense mkl multiplication
-	start_t = clock();
 
 	matrix_descr descr_spmat;
 	descr_spmat.type = SPARSE_MATRIX_TYPE_GENERAL;
-    	
-	mkl_sparse_s_mm (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, mkl_spmat, descr_spmat, SPARSE_LAYOUT_ROW_MAJOR, X, X_rows, spmat.n , 0.0, Y_csr, spmat.n);
-    total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
+   	
+
+	start_t = clock();
+	mkl_sparse_d_mm (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, mkl_spmat, descr_spmat, SPARSE_LAYOUT_ROW_MAJOR, X, X_cols, X_cols , 0.0, Y_csr, X_cols);
+    	total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
         cout<<"CSR-Dense multiplication. Time taken: " << total_t<<endl;
 
 //vbr-dense explicit multiplication
 
+
+//column major version of X
+	double X_c[X_rows*X_cols];
+	double X_test[X_cols*X_rows];
+	convert_to_col_major(X, X_c, X_rows, X_cols);
+	convert_to_row_major(X_c,X_test,X_rows,X_cols);
+
+//	matprint(X,X_rows,X_cols);
+//	matprint(X_test,X_rows,X_cols);
+	cout << "test row/col conversions: " << are_equal(X,X_test, spmat.n*X_cols) << endl;
+
+//------------------------------
+
+	
+	double Y_block_c[X_rows*X_cols] = {};
+
+        start_t = clock();
+
+	block_mat_multiply(vbmat, X_c, X_cols, Y_block_c);	
+	
+	total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
+	
+	convert_to_row_major(Y_block_c,Y_block, spmat.n,X_cols);
+	if(!are_equal(Y_block,Y_gemm, spmat.n*X_cols, 0.0005)) cout << "Output check FAILED" << endl;
 	
 
+	cout << "CSR RESULT" << endl;
+        matprint(&Y_csr[0],spmat.n, X_cols);
+
+	cout << "GEMM RESULT" << endl;
+	matprint(&Y_gemm[0],spmat.n, X_cols);
+	
+	cout << "BLOCK RESULT" << endl;
+	matprint(&Y_block[0],spmat.n, X_cols);
+
+
+	cout <<"BlockSparse-Dense multiplication. Time taken: " << total_t<<endl;
 
 
 }

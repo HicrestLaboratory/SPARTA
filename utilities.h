@@ -14,6 +14,8 @@
 #include <fstream>
 #include <map>
 #include <set>
+#include <iomanip> 
+
 
 #include "globheads.h"
 #include "protos.h"
@@ -57,9 +59,9 @@ void matprint(const SparMat & spmt);
 
 void matprint(const Mat & mat);
 
-void matprint(const float *mat, const int n);
+void matprint(const double* mat, const int n,const int m);
 
-void matprint(vbsptr vbmat);
+void matprint(const VBSparMat &vbmat);
 
 void convert_to_MKL(SparMat &spmt, sparse_matrix_t &A);
 
@@ -73,6 +75,13 @@ void features_to_CSV(vbsptr vbmat, ofstream & CSV_out, int verbose);
 
 int make_sparse_blocks(SparMat &spmt, VBSparMat &vbmat,double eps);
 
+void convert_to_col_major(double *X, double *Y, const int n, const int m);
+
+void convert_to_row_major(double *X, double *Y, const int n, const int m);
+
+bool are_equal(const double *X,const double* Y,const int m, const double eps = 0.0);
+
+void block_mat_multiply(const VBSparMat &VBMat, double *X, const int k, double *Y);
 
 //-----------------------------------------------------------------------ARRAY AND VECTOR UTILITIES----------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------
