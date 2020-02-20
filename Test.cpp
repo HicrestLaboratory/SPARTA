@@ -24,12 +24,20 @@ int main(int argc, char *argv[]) {
     //eps = 1 means only rows with equal structure are merged into a block
     //eps = 0 means all rows are merged into a single block
     
+	int rnd_dimension;
+        if (argc > 2) {
+                rnd_dimension = stod(argv[2]);
+        }
+        else {
+                rnd_dimension = 10;
+        }
+
     
     //create a random CSR matrix
     	Mat rand_mat;
-    	const int row_dimension = 20;
+
    	float sparsity = 0.7;
-	random_sparse_mat(rand_mat, row_dimension, sparsity); //generate random Mat
+	random_sparse_mat(rand_mat, rnd_dimension, sparsity); //generate random Mat
 	convert_to_CSR(rand_mat, spmat);
 
     
@@ -42,11 +50,12 @@ int main(int argc, char *argv[]) {
 //	read_mtx_format(spmat, "testmat.mtx");
 
 
-    //create a MKL sparse matrix from spmat
-    	sparse_matrix_t mkl_spmat;
-    	convert_to_MKL(spmat, mkl_spmat);
+ //reorder the CSR matrix spamt and generate a Block Sparse Matrix
+        VBSparMat vbmat;
+        make_sparse_blocks(spmat, vbmat,eps);
 
-    //create a dense array matrix from spmat
+
+//create a dense array matrix from spmat (for GEMM with MKL)
 	Mat mat;
 	int mat_n = spmat.n;
 	double* mat_arr;
@@ -56,10 +65,13 @@ int main(int argc, char *argv[]) {
 
 	cout << fixed;
 
-    //reorder the CSR matrix spmt and generate a Block Sparse Matrix
-    	VBSparMat vbmat;
-    	make_sparse_blocks(spmat, vbmat,eps);
+
+//create a MKL sparse matrix from spmat
+        sparse_matrix_t mkl_spmat;
+        convert_to_MKL(spmat, mkl_spmat);
+
 	
+
 	
 	cout << "PRINTING SPARSE MATRIX IN DENSE FORM" <<endl;
 	matprint(mat_arr,mat_n,mat_n);    
@@ -76,13 +88,13 @@ int main(int argc, char *argv[]) {
 	bool verbose = true; //print mat analysis
 	features_to_CSV(&vbmat, CSV_out, verbose);//write mat analysis on csv
 	CSV_out.close();
-
+	
 
 //MULTIPLICATION PHASE
 
 //creating the dense matrix X
 	int X_rows = spmat.n;
-	int X_cols = 5; //TODO make general for rectangular matrices	
+	int X_cols = 1;	
 
 	int k, seed = 4321;
   	srand(seed);
@@ -136,7 +148,7 @@ int main(int argc, char *argv[]) {
 	cout << "test row/col conversions: " << are_equal(X,X_test, spmat.n*X_cols) << endl;
 
 //------------------------------
-
+	
 	
 	double Y_block_c[X_rows*X_cols] = {};
 
@@ -147,7 +159,7 @@ int main(int argc, char *argv[]) {
 	total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
 	
 	convert_to_row_major(Y_block_c,Y_block, spmat.n,X_cols);
-	if(!are_equal(Y_block,Y_gemm, spmat.n*X_cols, 0.0005)) cout << "Output check FAILED" << endl;
+	if(!are_equal(Y_block,Y_gemm, spmat.n*X_cols, 0.005)) cout << "Output check FAILED" << endl;
 	
 
 	cout << "CSR RESULT" << endl;

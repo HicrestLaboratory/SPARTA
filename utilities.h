@@ -114,36 +114,37 @@ double stdv(const vector<myType>& v) {
 //-----------------------------------------------------------------//
 
 
-//permutes an array of n pointers (original) according to a permutation (perm);
+//permutes an array of n elements (original) according to a permutation (perm);
 template <class myType>
-void permute(myType* original, int* perm, int n) {
+int permute(myType* arr, int* perm, int n) {
 	int i = 0;
 	myType temp;
 	int cur_row, next_row;
 
 	//Do the permutations cycle by cycle, until all elements have been permuted.
-	while (i < n && perm[i] >= 0) {//LI: all elements up to i appeared in a cycle
-		temp = original[i];
-		cur_row = i;
-		next_row = perm[cur_row];
+	while (i < n) {//LI: all elements up to i appeared in a cycle
+		temp = arr[i];
+		int start_i = i;
+		next_row = i;
 
 		//one cycle of permutations
-		while (perm[cur_row] >= 0) {//check if we are back to the start of the cycle
-			next_row = perm[cur_row];
-			perm[cur_row] = (perm[cur_row] + 1)*(-1);//flag perm element as executed
-			original[cur_row] = original[next_row];
+		while (perm[next_row] >= 0) {//check if we are back to the start of the cycle
 			cur_row = next_row;
+			next_row = perm[cur_row];
+			arr[cur_row] = arr[next_row];
+			perm[cur_row] = (perm[cur_row] + 1)*(-1);//flag perm element as executed 
 		}
 		//end cycle and procede to next element
-		original[cur_row] = temp;
-		i++;
+		if (next_row != start_i) return 1; //PERM IS NOT A PROPER PERMUTATION
+		arr[cur_row] = temp;
+		while (perm[i] < 0) i++;
 	}
 
 	//reconstruct perm (remove flags)
 	for (i = 0; i < n; i++) {
 		perm[i] = -perm[i] - 1;
 	}
-
+	return 0;
 
 }
 

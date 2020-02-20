@@ -368,13 +368,11 @@ void convert_to_MKL(SparMat &spmt, sparse_matrix_t &A){
 void permute(SparMat &spmt, int* perm){
     //permutes a matrix in CSR form
     int n = spmt.n;
-    permute(spmt.nzcount,perm,n);
-    permute(spmt.ja,perm,n);
-    permute(spmt.ma,perm,n);
+    if (permute(spmt.nzcount,perm,n) or permute(spmt.ja,perm,n) or permute(spmt.ma,perm,n)) cout << "ATTENTION: COULD NOT PERFORM PERMUTATION" << endl;
 }
 
 void matprint(const SparMat &spmt){
-    cout << "PRINTING THE CSR MATRIX" << endl;
+    cout << "\n  ********************************** \n PRINTING THE CSR MATRIX" << endl;
     int n = spmt.n;
     int sparse_count = spmt.nzcount[n-1];
     
@@ -631,8 +629,9 @@ int make_sparse_blocks(SparMat &spmt, VBSparMat &vbmat,double eps){
         cout << "ERROR: COULD NOT CREATE PERMUTATION. Try with another epsilon" << endl;
         return -1;
     }
-    
-    permute(spmt, perm);
+ 
+//    permute(spmt, perm);
+   
     cout << " PERMUTING CSR-Matrix. PRINTING PERMUTATION " << endl;
     copy(perm, 
 	  perm + spmt.n, 
@@ -644,6 +643,7 @@ int make_sparse_blocks(SparMat &spmt, VBSparMat &vbmat,double eps){
         cout << "error occurred while creating block matrix" << endl;
         return -1;
     }
+
 }
 
 
@@ -677,8 +677,10 @@ void block_mat_multiply(const VBSparMat &VBMat, double *X, int X_cols, double *Y
 			double* blockY = Y + bsz[i];	 //i indicates the vertical block of Y that is going to be updated
 			const double* blockX = X + bsz[col];	 //col indicates the vertical block of X that is going to be multiplied with the (i,j)block of VBMat
 	            	cblas_dgemm (CblasColMajor, CblasNoTrans, CblasNoTrans, Hsz, X_cols, Lsz, 1.0, block, Hsz, blockX, mat_n, 1.0, blockY, mat_n);
-//			cout << " printing Y after iteration" <<i << "-" <<j <<endl;
-//			matprint(Y,mat_n,X_cols);
+			cout << "printing BLOCK" << endl;
+			matprint(block, Lsz, Hsz);
+			cout << " printing Y after iteration" <<i << "-" <<j <<" , col = " << col << " BLOCK DIM = "<< Hsz << " x " << Lsz << endl;
+			matprint(Y,mat_n,X_cols);
         }
     }
 }
