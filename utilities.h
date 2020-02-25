@@ -83,6 +83,8 @@ bool are_equal(const double *X,const double* Y,const int m, const double eps = 0
 
 void block_mat_multiply(const VBSparMat &VBMat, double *X, const int k, double *Y);
 
+void block_mat_batch_multiply(const VBSparMat &VBMat, double *X, int X_cols, double *Y);
+
 //-----------------------------------------------------------------------ARRAY AND VECTOR UTILITIES----------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------
 

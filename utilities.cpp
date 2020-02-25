@@ -677,13 +677,100 @@ void block_mat_multiply(const VBSparMat &VBMat, double *X, int X_cols, double *Y
 			double* blockY = Y + bsz[i];	 //i indicates the vertical block of Y that is going to be updated
 			const double* blockX = X + bsz[col];	 //col indicates the vertical block of X that is going to be multiplied with the (i,j)block of VBMat
 	            	cblas_dgemm (CblasColMajor, CblasNoTrans, CblasNoTrans, Hsz, X_cols, Lsz, 1.0, block, Hsz, blockX, mat_n, 1.0, blockY, mat_n);
-			cout << "printing BLOCK" << endl;
-			matprint(block, Lsz, Hsz);
-			cout << " printing Y after iteration" <<i << "-" <<j <<" , col = " << col << " BLOCK DIM = "<< Hsz << " x " << Lsz << endl;
-			matprint(Y,mat_n,X_cols);
+
+//			cout << "printing BLOCK" << endl;
+//			matprint(block, Lsz, Hsz);
+//			cout << " printing Y after iteration" <<i << "-" <<j <<" , col = " << col << " BLOCK DIM = "<< Hsz << " x " << Lsz << endl;
+//			matprint(Y,mat_n,X_cols);
         }
     }
 }
+
+//multiply a n-by-n block matrix VBMat by a (column major) n-by-k matrix X. 
+//store result in (already initialized) (column major) n-by-k matrix Y;
+void block_mat_batch_multiply(const VBSparMat &VBMat, double *X, int X_cols, double *Y){
+    int N = VBMat.n, *bsz = VBMat.bsz;
+    int Lsz,Hsz,col;
+    int mat_n = bsz[N];
+
+
+    int h_scan = 0; //horizontal scan counter
+    int batch_count  = -1; //counter for gemm in a single batch
+	
+    MKL_INT 	ms[N];
+    MKL_INT	ns[N];
+    MKL_INT	ks[N];
+    MKL_INT	lda_array[N];
+    MKL_INT 	ldb_array[N];
+    MKL_INT	ldc_array[N];
+
+    CBLAS_TRANSPOSE    transA[N];
+    CBLAS_TRANSPOSE    transB[N];
+
+    double    alpha[N];
+    double    beta[N];
+
+    double *a_array[N];
+    double *b_array[N];
+    double *c_array[N];
+
+    MKL_INT    size_per_grp[N];
+    
+
+	while (h_scan < N  & batch_count != 0){ //exit when there are no more block_columns to process
+    		
+		//loop vertically through block rows
+		batch_count = 0;
+		for(int i = 0; i < N; i++ ) {
+			Hsz = bsz[i+1] - bsz[i];
+
+			//loop horizontaly through block columns
+			if (h_scan < VBMat.nzcount[i]){
+
+				batch_count++;
+				
+				col = VBMat.ja[i][h_scan];
+				Lsz = bsz[col+1] - bsz[col];
+				//multiply the block by the matrix
+				//define the sub-matrices
+				double* block = (VBMat.ba)[i][h_scan]; //access block i,j in column major order.
+				double* blockY = Y + bsz[i];     //i indicates the vertical block of Y that is going to be updated
+				double* blockX = X + bsz[col];     //col indicates the vertical block of X that is going to be multiplied with the (i,j)block of VBMat
+				
+				ms[batch_count] = Hsz;
+				ns[batch_count] = X_cols;
+				ks[batch_count] = Lsz;
+				
+				lda_array[batch_count] = Hsz;
+				ldb_array[batch_count] = mat_n;
+				ldc_array[batch_count] = mat_n;
+
+		    		transA[batch_count] = CblasNoTrans;
+		    		transB[batch_count] = CblasNoTrans;
+
+		    		alpha[batch_count] = 1.;
+		    		beta[batch_count] = 1.;
+
+		    		a_array[batch_count] = block;
+		    		b_array[batch_count] = blockX;
+				c_array[batch_count] = blockY;
+
+		    		size_per_grp[batch_count] = 1;
+				
+			}
+		
+	    	}
+		if(batch_count > 0){
+			cout<<"batch_count"<<batch_count<<endl;
+			cblas_dgemm_batch (CblasColMajor, transA, transB, ms, ns, ks, alpha, (const double **) a_array, lda_array, (const double**) b_array, ldb_array, beta, c_array, ldc_array, batch_count, size_per_grp);
+			h_scan++;
+		}
+	}
+ 
+}
+
+
+
 
 void convert_to_col_major(double *X, double *Y, const int rows, const int cols){
 	for (int i=0;i<rows;i++){

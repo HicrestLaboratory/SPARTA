@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
 	double Y_gemm[spmat.n * X_cols];
     	double Y_csr[spmat.n * X_cols];
     	double Y_block[spmat.n * X_cols] = {};
-
+	double Y_batch[spmat.n * X_cols] = {};
 
 
 
@@ -134,8 +134,6 @@ int main(int argc, char *argv[]) {
     	total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
         cout<<"CSR-Dense multiplication. Time taken: " << total_t<<endl;
 
-//vbr-dense explicit multiplication
-
 
 //column major version of X
 	double X_c[X_rows*X_cols];
@@ -149,7 +147,8 @@ int main(int argc, char *argv[]) {
 
 //------------------------------
 	
-	
+
+//vbr-dense mkl multiplication	
 	double Y_block_c[X_rows*X_cols] = {};
 
         start_t = clock();
@@ -159,9 +158,27 @@ int main(int argc, char *argv[]) {
 	total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
 	
 	convert_to_row_major(Y_block_c,Y_block, spmat.n,X_cols);
-	if(!are_equal(Y_block,Y_gemm, spmat.n*X_cols, 0.005)) cout << "Output check FAILED" << endl;
+	if(!are_equal(Y_block,Y_gemm, spmat.n*X_cols, 0.005)) cout << "VBR_DENSE Output check FAILED" << endl;
 	
+	cout <<"BlockSparse-Dense multiplication. Time taken: " << total_t<<endl;
 
+//vbr-dense BATCH mkl multiplication
+
+	double Y_batch_c[X_rows*X_cols] = {};
+
+        start_t = clock();
+
+        block_mat_batch_multiply(vbmat, X_c, X_cols, Y_block_c);
+
+        total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
+
+        convert_to_row_major(Y_batch_c,Y_batch, spmat.n,X_cols);
+        if(!are_equal(Y_block,Y_gemm, spmat.n*X_cols, 0.005)) cout << "VBR_BATCH Output check FAILED" << endl;
+
+	cout <<"BlockSparse-Dense BATCH multiplication. Time taken: " << total_t<<endl;
+
+//FINAL RESULTS
+/*
 	cout << "CSR RESULT" << endl;
         matprint(&Y_csr[0],spmat.n, X_cols);
 
@@ -170,9 +187,9 @@ int main(int argc, char *argv[]) {
 	
 	cout << "BLOCK RESULT" << endl;
 	matprint(&Y_block[0],spmat.n, X_cols);
+*/
 
 
-	cout <<"BlockSparse-Dense multiplication. Time taken: " << total_t<<endl;
 
 
 }
