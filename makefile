@@ -1,6 +1,6 @@
 CXX=g++
 #CXXFLAGS= -g -Wall -Wextra -pedantic-errors -Wall -MMD -std=c++11
-CXXFLAGS=  -fopenmp  -Wl,--no-as-needed -m64 -std=c++11
+CXXFLAGS=  -fopenmp -fpermissive -Wl,--no-as-needed -m64 -std=c++11
 INCLUDE = ${MKLROOT}/include
 LIBRARY = ${MKLROOT}/lib/intel64
 LDOPTION = -lmkl_rt -lpthread -lm -ldl

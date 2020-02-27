@@ -75,6 +75,8 @@ void features_to_CSV(vbsptr vbmat, ofstream & CSV_out, int verbose);
 
 int make_sparse_blocks(SparMat &spmt, VBSparMat &vbmat,double eps);
 
+int random_sparse_blocks_mat(Mat &mat, int N, int n_block, float block_k, float k);
+
 void convert_to_col_major(double *X, double *Y, const int n, const int m);
 
 void convert_to_row_major(double *X, double *Y, const int n, const int m);

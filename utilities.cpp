@@ -647,6 +647,56 @@ int make_sparse_blocks(SparMat &spmt, VBSparMat &vbmat,double eps){
 }
 
 
+int random_sparse_blocks_mat(Mat &mat, int N, int n_block, float block_k, float k){
+
+
+	//initialize Mat	
+	mat.row_size = N;
+    	mat.vec = vector<double>(N*N,0.);
+    	int row_count = 0;
+	
+	//find number of nonzero entries in matrix and blocks
+	int nzcount = (int) k*N;
+	int k_inside_blocks = k/block_k;
+	if (k_inside_blocks >1) {
+	block_k = 1./k;
+	k_inside_blocks = 1.;
+	cout << "WARNING: block sparsity must be greater than 1/k. Changing block_k to "<< block_k <<endl;
+	}	
+	
+	//fix nonzero blocks
+	int nzblocks = (int) n_block * n_block * block_k; //nonzero block number
+	vector<int> blocks = vector<int> ( n_block, 0); //one element per block, 0 if empty, 1 otherwise
+	std::fill (blocks.begin(),blocks.begin()+nzblocks,1); 
+	std::random_shuffle(blocks.begin(),blocks.end());
+
+	int block_dim = (int) N/n_block;
+	int nz_in_block = (int) block_dim * block_dim * k_inside_blocks; //nonzeros in a block
+	vector<double> block_vals;
+	
+	//put nonzerovalues in the Mat
+	for(int ib = 0; ib < n_block; ib++){//iterate through block rows
+		for (int jb = 0; jb < n_block; jb++){ //iterate through block columns
+			if(blocks[ib*jb] != 0){
+				//if block is nonempty, put random values in it;
+				block_vals = vector<double>(block_dim * block_dim, 0);
+        			randomvec(block_vals,(int) nz_in_block);
+				std::random_shuffle(block_vals.begin(),block_vals.end());
+				//put the element in the vector representing the block in the right positions in the Mat
+				for (int i = 0; i < block_dim; i++){
+					for (int j = 0; j <block_dim; j++){
+						int row = ib*block_dim + i;
+						int col = jb*block_dim + j;
+						mat.vec[row*N + col] = block_vals[i*block_dim + j];
+					}
+				}
+			}
+		}
+	}
+
+
+}
+
 //print array
 template <class myType>
 void arrprint(myType *arr, int len){
@@ -656,6 +706,7 @@ void arrprint(myType *arr, int len){
     cout<<endl;
 }
 
+//TODO fix bug that alters some rows from the right result
 //multiply a n-by-n block matrix VBMat by a (column major) n-by-k matrix X. 
 //store result in (already initialized) (column major) n-by-k matrix Y;
 void block_mat_multiply(const VBSparMat &VBMat, double *X, int X_cols, double *Y){
@@ -686,7 +737,8 @@ void block_mat_multiply(const VBSparMat &VBMat, double *X, int X_cols, double *Y
     }
 }
 
-//multiply a n-by-n block matrix VBMat by a (column major) n-by-k matrix X. 
+//TODO fix mkl error in "Parameter 2"
+//BATCH multiply a n-by-n block matrix VBMat by a (column major) n-by-k matrix X. 
 //store result in (already initialized) (column major) n-by-k matrix Y;
 void block_mat_batch_multiply(const VBSparMat &VBMat, double *X, int X_cols, double *Y){
     int N = VBMat.n, *bsz = VBMat.bsz;

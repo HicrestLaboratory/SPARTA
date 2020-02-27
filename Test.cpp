@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
 	
 
 //MULTIPLICATION PHASE
-
+	cout << "\n \n **************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl; 
 //creating the dense matrix X
 	int X_rows = spmat.n;
 	int X_cols = 1;	
@@ -137,13 +137,16 @@ int main(int argc, char *argv[]) {
 
 //column major version of X
 	double X_c[X_rows*X_cols];
-	double X_test[X_cols*X_rows];
+
+//	double X_test[X_cols*X_rows];
+
 	convert_to_col_major(X, X_c, X_rows, X_cols);
-	convert_to_row_major(X_c,X_test,X_rows,X_cols);
+
+//	convert_to_row_major(X_c,X_test,X_rows,X_cols);
 
 //	matprint(X,X_rows,X_cols);
 //	matprint(X_test,X_rows,X_cols);
-	cout << "test row/col conversions: " << are_equal(X,X_test, spmat.n*X_cols) << endl;
+//	cout << "test row/col conversions: " << are_equal(X,X_test, spmat.n*X_cols) << endl;
 
 //------------------------------
 	
@@ -163,7 +166,6 @@ int main(int argc, char *argv[]) {
 	cout <<"BlockSparse-Dense multiplication. Time taken: " << total_t<<endl;
 
 //vbr-dense BATCH mkl multiplication
-
 	double Y_batch_c[X_rows*X_cols] = {};
 
         start_t = clock();
@@ -187,9 +189,9 @@ int main(int argc, char *argv[]) {
 	
 	cout << "BLOCK RESULT" << endl;
 	matprint(&Y_block[0],spmat.n, X_cols);
+
+	cout << "BLOCK BATCH RESULT" << endl;
+        matprint(&Y_batch[0],spmat.n, X_cols);
 */
-
-
-
 
 }
