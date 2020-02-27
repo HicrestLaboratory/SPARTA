@@ -657,7 +657,7 @@ int random_sparse_blocks_mat(Mat &mat, int N, int n_block, float block_k, float 
 	
 	//find number of nonzero entries in matrix and blocks
 	int nzcount = (int) k*N;
-	int k_inside_blocks = k/block_k;
+	float k_inside_blocks = k/block_k;
 	if (k_inside_blocks >1) {
 	block_k = 1./k;
 	k_inside_blocks = 1.;
@@ -666,7 +666,7 @@ int random_sparse_blocks_mat(Mat &mat, int N, int n_block, float block_k, float 
 	
 	//fix nonzero blocks
 	int nzblocks = (int) n_block * n_block * block_k; //nonzero block number
-	vector<int> blocks = vector<int> ( n_block, 0); //one element per block, 0 if empty, 1 otherwise
+	vector<int> blocks = vector<int> ( n_block*n_block, 0); //one element per block, 0 if empty, 1 otherwise
 	std::fill (blocks.begin(),blocks.begin()+nzblocks,1); 
 	std::random_shuffle(blocks.begin(),blocks.end());
 
@@ -674,6 +674,7 @@ int random_sparse_blocks_mat(Mat &mat, int N, int n_block, float block_k, float 
 	int nz_in_block = (int) block_dim * block_dim * k_inside_blocks; //nonzeros in a block
 	vector<double> block_vals;
 	
+	cout <<"????????"<< endl;	
 	//put nonzerovalues in the Mat
 	for(int ib = 0; ib < n_block; ib++){//iterate through block rows
 		for (int jb = 0; jb < n_block; jb++){ //iterate through block columns

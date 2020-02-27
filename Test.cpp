@@ -194,4 +194,11 @@ int main(int argc, char *argv[]) {
         matprint(&Y_batch[0],spmat.n, X_cols);
 */
 
+Mat rnd_bmat;
+random_sparse_blocks_mat(rnd_bmat, 16, 4, 0.5, 0.5);
+
+cout << "CREATED A RND BLOCK MAT" << endl;
+matprint(rnd_bmat);
+
+
 }
