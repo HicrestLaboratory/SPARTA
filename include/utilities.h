@@ -73,7 +73,7 @@ void extract_features(const vbsptr vbmat, int & Msize, int & Bnum, vector<int>& 
 
 void features_to_CSV(vbsptr vbmat, ofstream & CSV_out, int verbose);
 
-int make_sparse_blocks(SparMat &spmt, VBSparMat &vbmat,double eps);
+int make_sparse_blocks(SparMat &spmt, VBSparMat &vbmat, double eps);
 
 int random_sparse_blocks_mat(Mat &mat, int N, int n_block, float block_k, float k);
 

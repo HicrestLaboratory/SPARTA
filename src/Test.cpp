@@ -13,47 +13,79 @@
 int main(int argc, char *argv[]) {
 	
 	double eps;
-	SparMat spmat;
 	if (argc > 1) {
 		eps = stod(argv[1]);
 	} 
 	else {
-		eps = 0.5; // 0 < eps < 1
+		eps = 0.8; // 0 < eps < 1
 	}
     //this value sets how different two rows in the same block can be.
     //eps = 1 means only rows with equal structure are merged into a block
     //eps = 0 means all rows are merged into a single block
     
-	int rnd_dimension;
-        if (argc > 2) {
-                rnd_dimension = stod(argv[2]);
-        }
-        else {
-                rnd_dimension = 10;
-        }
 
-    
-    //create a random CSR matrix
+//INPUT SHOULD BE ALWAYS CONVERTED TO CSR BEFORE FURTHER MANIPULATION
+
+	SparMat spmat; //this will hold the CSR matrix
+
+//______________________________________
+//INPUT EXAMPLE 1: RANDOM CSR  
+    //create a random sparse matrix
     	Mat rand_mat;
 
-   	float sparsity = 0.7;
-	random_sparse_mat(rand_mat, rnd_dimension, sparsity); //generate random Mat
+   	float k = 0.6; //fraction of non-zero entries
+	int n = 20;
+
+	random_sparse_mat(rand_mat, n, k); //generate random Mat
 	convert_to_CSR(rand_mat, spmat);
 
-    
+//______________________________________    
+//INPUT EXAMPLE 2: read graph in edgelist format into CSR
+
 //	cout << "READING GRAPH" << endl;    
-    //Read a CSR matrix from a .txt edgelist (snap format)
-//	read_snap_format(spmat, "testgraph.txt");
+//	read_snap_format(spmat, "testgraph.txt");         //Read a CSR matrix from a .txt edgelist (snap format)
+
     
-    
-    //read from mtx
+
+//______________________________________
+//INPUT EXAMPLE 3: read from MTX format    
+    	//read from mtx
 //	read_mtx_format(spmat, "testmat.mtx");
 
 
- //reorder the CSR matrix spamt and generate a Block Sparse Matrix
-        VBSparMat vbmat;
-        make_sparse_blocks(spmat, vbmat,eps);
+//______________________________________
+//INPUT EXAMPLE 4: create a random matrix with block structure
+/* 
 
+	int n = 18; //side lenght of the matrix
+	int n_block = 3; //number of blocks 
+	float k_block = 0.6; //percentage of non-zero blocks
+	float k = 0.5; //percentage of non-zero entries in the whole matrix
+
+
+	Mat rnd_bmat;
+	random_sparse_blocks_mat(rnd_bmat, n, n_block, k_block, k);
+
+	cout << "CREATED A RND BLOCK MAT" << endl;
+
+	convert_to_CSR(spmat,rnd_block_spmat);
+
+	//optional: scramble the matrix?
+
+*/
+//___________________________________________
+//*******************************************
+//		END OF INPUT
+//spmat must hold a SparMat matrix at this point
+//******************************************
+
+//reorder the CSR matrix spmat and generate a Block Sparse Matrix
+
+
+        VBSparMat vbmat;
+        make_sparse_blocks(spmat, vbmat,eps);	
+
+	cout<<"CSR permuted. VBSparMat created"<<endl;
 
 //create a dense array matrix from spmat (for GEMM with MKL)
 	Mat mat;
@@ -73,11 +105,16 @@ int main(int argc, char *argv[]) {
 	
 
 	
-	cout << "PRINTING SPARSE MATRIX IN DENSE FORM" <<endl;
-	matprint(mat_arr,mat_n,mat_n);    
-	cout << "PRINTING SPARSE MATRIX IN BLOCK FORM" <<endl;    
-	matprint(vbmat);
+//	cout << "PRINTING SPARSE MATRIX IN DENSE FORM" <<endl;
+//	matprint(mat_arr,mat_n,mat_n);    
+//	cout << "PRINTING SPARSE MATRIX IN BLOCK FORM" <<endl;    
+//	matprint(vbmat);
 
+
+
+//*******************************************
+//        REPORT ON BLOCK STRUCTURE
+//*******************************************
 	ofstream CSV_out;
 	CSV_out.open("output.txt");
 
@@ -85,25 +122,35 @@ int main(int argc, char *argv[]) {
 	CSV_out << CSV_header << endl;
 
 
-	bool verbose = true; //print mat analysis
+	bool verbose = true; //print mat analysis on screen?
 	features_to_CSV(&vbmat, CSV_out, verbose);//write mat analysis on csv
 	CSV_out.close();
 	
 
-//MULTIPLICATION PHASE
+//*******************************************
+//         MULTIPLICATION PHASE
+//___________________________________________
+//various ways of multiplying the sparse matrix
+//with a dense one, with benchmarks
+//******************************************
+
+
+//TODO put all matrices in column-major format
 	cout << "\n \n **************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl; 
 //creating the dense matrix X
 	int X_rows = spmat.n;
 	int X_cols = 1;	
 
-	int k, seed = 4321;
+	int seed = 123;
   	srand(seed);
 	double X[X_rows*X_cols];
-  	for (k=0; k<X_rows*X_cols; k++) {
+  	for (int k=0; k<X_rows*X_cols; k++) {
     		double x =  rand()%100;
     		X[k] = x/100;
   	}
 
+        double X_c[X_rows*X_cols]; //column major version of X
+        convert_to_col_major(X, X_c, X_rows, X_cols);
 
 
 //----------------------------
@@ -112,8 +159,6 @@ int main(int argc, char *argv[]) {
     	double Y_csr[spmat.n * X_cols];
     	double Y_block[spmat.n * X_cols] = {};
 	double Y_batch[spmat.n * X_cols] = {};
-
-
 
 //dense-dense mkl gemm multiplication
     
@@ -133,21 +178,6 @@ int main(int argc, char *argv[]) {
 	mkl_sparse_d_mm (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, mkl_spmat, descr_spmat, SPARSE_LAYOUT_ROW_MAJOR, X, X_cols, X_cols , 0.0, Y_csr, X_cols);
     	total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
         cout<<"CSR-Dense multiplication. Time taken: " << total_t<<endl;
-
-
-//column major version of X
-	double X_c[X_rows*X_cols];
-
-//	double X_test[X_cols*X_rows];
-
-	convert_to_col_major(X, X_c, X_rows, X_cols);
-
-//	convert_to_row_major(X_c,X_test,X_rows,X_cols);
-
-//	matprint(X,X_rows,X_cols);
-//	matprint(X_test,X_rows,X_cols);
-//	cout << "test row/col conversions: " << are_equal(X,X_test, spmat.n*X_cols) << endl;
-
 //------------------------------
 	
 
@@ -194,11 +224,6 @@ int main(int argc, char *argv[]) {
         matprint(&Y_batch[0],spmat.n, X_cols);
 */
 
-Mat rnd_bmat;
-random_sparse_blocks_mat(rnd_bmat, 16, 4, 0.5, 0.5);
-
-cout << "CREATED A RND BLOCK MAT" << endl;
-matprint(rnd_bmat);
 
 
 }

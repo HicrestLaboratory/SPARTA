@@ -9,8 +9,7 @@ typedef map<int, set<int> > Graphmap;
 void randomvec (vector<double> &v, int n) {
   /* fills v with random values */
   double x;
-  int k, seed = 4321;
-  srand(seed);
+  int k;
   for (k=0; k<n; k++) {
     x = rand()%100;
     v[k] = x/100;
@@ -620,25 +619,24 @@ void features_to_CSV(vbsptr vbmat, ofstream& CSV_out, int verbose = 0){
 }
 
 //reorder a CSR matrix spmt and generate a Block Sparse Matrix
-int make_sparse_blocks(SparMat &spmt, VBSparMat &vbmat,double eps){
+//TODO return permutation perm for further use
+int make_sparse_blocks(SparMat &spmat, VBSparMat &vbmat, double eps){
     int nBlock;
     int *nB = NULL, *perm = NULL;
     double *t_hash = NULL, *t_angle = NULL;
     
-    if (init_blocks(&spmt, &nBlock, &nB, &perm, eps, t_hash, t_angle) != 0) {
+    if (init_blocks(&spmat, &nBlock, &nB, &perm, eps, t_hash, t_angle) != 0) {
         cout << "ERROR: COULD NOT CREATE PERMUTATION. Try with another epsilon" << endl;
         return -1;
     }
- 
-//    permute(spmt, perm);
-   
-    cout << " PERMUTING CSR-Matrix. PRINTING PERMUTATION " << endl;
-    copy(perm, 
-	  perm + spmt.n, 
-           std::ostream_iterator<int>(std::cout,",")
-	); 
 
-    int ierr = csrvbsrC(1, nBlock, nB, &spmt, &vbmat);
+
+    
+    permute(spmat,perm);    
+   
+
+
+    int ierr = csrvbsrC(1, nBlock, nB, &spmat, &vbmat); //convert SparMat spmat into VBSparMat vbmat, using block structure found by init_block
     if (ierr != 0){
         cout << "error occurred while creating block matrix" << endl;
         return -1;
@@ -659,9 +657,9 @@ int random_sparse_blocks_mat(Mat &mat, int N, int n_block, float block_k, float 
 	int nzcount = (int) k*N;
 	float k_inside_blocks = k/block_k;
 	if (k_inside_blocks >1) {
-	block_k = 1./k;
-	k_inside_blocks = 1.;
-	cout << "WARNING: block sparsity must be greater than 1/k. Changing block_k to "<< block_k <<endl;
+		block_k = 1./k;
+		k_inside_blocks = 1.;
+		cout << "WARNING: block sparsity must be greater than 1/k. Changing block_k to "<< block_k <<endl;
 	}	
 	
 	//fix nonzero blocks
@@ -669,16 +667,20 @@ int random_sparse_blocks_mat(Mat &mat, int N, int n_block, float block_k, float 
 	vector<int> blocks = vector<int> ( n_block*n_block, 0); //one element per block, 0 if empty, 1 otherwise
 	std::fill (blocks.begin(),blocks.begin()+nzblocks,1); 
 	std::random_shuffle(blocks.begin(),blocks.end());
-
+	
 	int block_dim = (int) N/n_block;
+	if (block_dim == 0) {
+		block_dim = 1;
+		n_block = N;
+		cout << "WARNING: block number must be lower or equal to N. Changing n_block to N"<< n_block <<endl;
+	}
 	int nz_in_block = (int) block_dim * block_dim * k_inside_blocks; //nonzeros in a block
 	vector<double> block_vals;
-	
-	cout <<"????????"<< endl;	
+		
 	//put nonzerovalues in the Mat
 	for(int ib = 0; ib < n_block; ib++){//iterate through block rows
 		for (int jb = 0; jb < n_block; jb++){ //iterate through block columns
-			if(blocks[ib*jb] != 0){
+			if(blocks[ib*n_block + jb] != 0){
 				//if block is nonempty, put random values in it;
 				block_vals = vector<double>(block_dim * block_dim, 0);
         			randomvec(block_vals,(int) nz_in_block);
@@ -814,7 +816,6 @@ void block_mat_batch_multiply(const VBSparMat &VBMat, double *X, int X_cols, dou
 		
 	    	}
 		if(batch_count > 0){
-			cout<<"batch_count"<<batch_count<<endl;
 			cblas_dgemm_batch (CblasColMajor, transA, transB, ms, ns, ks, alpha, (const double **) a_array, lda_array, (const double**) b_array, ldb_array, beta, c_array, ldc_array, batch_count, size_per_grp);
 			h_scan++;
 		}
