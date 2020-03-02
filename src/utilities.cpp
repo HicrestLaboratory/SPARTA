@@ -792,25 +792,25 @@ void block_mat_batch_multiply(const VBSparMat &VBMat, double *X, int X_cols, dou
 				double* blockY = Y + bsz[i];     //i indicates the vertical block of Y that is going to be updated
 				double* blockX = X + bsz[col];     //col indicates the vertical block of X that is going to be multiplied with the (i,j)block of VBMat
 				
-				ms[batch_count] = Hsz;
-				ns[batch_count] = X_cols;
-				ks[batch_count] = Lsz;
+				ms[batch_count-1] = Hsz;
+				ns[batch_count-1] = X_cols;
+				ks[batch_count-1] = Lsz;
 				
-				lda_array[batch_count] = Hsz;
-				ldb_array[batch_count] = mat_n;
-				ldc_array[batch_count] = mat_n;
+				lda_array[batch_count-1] = Hsz;
+				ldb_array[batch_count-1] = mat_n;
+				ldc_array[batch_count-1] = mat_n;
 
-		    		transA[batch_count] = CblasNoTrans;
-		    		transB[batch_count] = CblasNoTrans;
+		    		transA[batch_count-1] = CblasNoTrans;
+		    		transB[batch_count-1] = CblasNoTrans;
 
-		    		alpha[batch_count] = 1.;
-		    		beta[batch_count] = 1.;
+		    		alpha[batch_count-1] = 1.;
+		    		beta[batch_count-1] = 1.;
 
-		    		a_array[batch_count] = block;
-		    		b_array[batch_count] = blockX;
-				c_array[batch_count] = blockY;
+		    		a_array[batch_count-1] = block;
+		    		b_array[batch_count-1] = blockX;
+				c_array[batch_count-1] = blockY;
 
-		    		size_per_grp[batch_count] = 1;
+		    		size_per_grp[batch_count-1] = 1;
 				
 			}
 		

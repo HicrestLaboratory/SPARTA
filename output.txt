@@ -1,2 +1,2 @@
 MatrixSize,OriginalSparsity,Divisions,NonzeroBlocks,AvgBlockHeight,AvgBHError,AvgBlockLength,AvgBLError,NonzeroAreaFraction,AverageBlockPopulation,ABPError,NewSparsity
-20,0.6,18,206,1.16019,0.36768,1.13107,0.338297,0.675,1.16505,0.432736,0.888889
+20,0.6025,18,206,1.16019,0.36768,1.13107,0.338297,0.675,1.1699,0.436468,0.892593
