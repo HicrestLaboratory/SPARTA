@@ -581,6 +581,7 @@ void extract_features(const vbsptr vbmat, int& Msize, int &Bnum, vector<int>& BL
     }
 }
 
+//TODO transform into string
 void features_to_CSV(vbsptr vbmat, ofstream& CSV_out, int verbose = 0){
     int Msize,Bnum;
     int BlockTotal = 0;
