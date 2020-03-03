@@ -19,7 +19,7 @@ running `make` will create a test executable (from Test.cpp) in the programs/ fo
 * `-k`: input matrix sparsity (has only effect for example 1 and 4)
 * `-n`: input matrix dimension (has only effect for example 1 and 4)
 * `-o`: number of column of output matrix
-* `-e`: epsilon used for marix reordering (must be in [0,1]. Larger epsilon will make larger blocks);  
+* `-e`: epsilon used for marix reordering (must be in [0,1]. Smaller epsilon will make larger blocks);  
 
 
 Source files are stored in the src folder:
