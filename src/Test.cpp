@@ -3,6 +3,8 @@
 #include <iostream>
 #include <ctime>
 #include <string>
+#include <unistd.h>
+
 
 #include "globheads.h"
 #include "protos.h"
@@ -11,68 +13,133 @@
 
 
 int main(int argc, char *argv[]) {
-	
-	double eps;
-	if (argc > 1) {
-		eps = stod(argv[1]);
-	} 
-	else {
-		eps = 0.8; // 0 < eps < 1
-	}
+
+    opterr = 0;
+    int input_type = 1;
+    
+    int n = 20; //rows in the square input matrix;
+    
+    int out_columns = 5; //number of columns in the output matrix;
+    
+    float sparsity = 0.5; //sparsity of the input matrix;
+    
+    string input_source = NULL;
+    
+    float eps = 0.8;
     //this value sets how different two rows in the same block can be.
     //eps = 1 means only rows with equal structure are merged into a block
     //eps = 0 means all rows are merged into a single block
+    
+    while ((c = getopt (argc, argv, "i:s:k:o:n:e:")) != -1)
+      switch (c)
+        {
+        case 'i':// select input example
+            input_type = stoi(optarg);
+            //  1: Random CSR
+            //  2: SNAP Edgelist
+            //  3: MTX Format
+            //  4: Random Variable Block matrix
+            if(input_type < 1 or input_type > 4){
+                input_type = 0;
+                cout<<"WARNING: invalid input reference. Using 1 (Random CSR)"
+            }
+            break;
+        
+        case 's': //select source file
+            //has only effect for example 2 and 3;
+            input_source = optarg;
+            break;
+        
+        case 'k': //input matrix sparsity
+            //has only effect for example 1 and 4
+            sparsity = Float.parseFloat(optarg);
+                if(sparsity < 0 or sparsity > 1):{
+                    fprintf (stderr, "Option -k tried to set sparsity outside of [0,1]");
+                    return 1;
+                }
+          break;
+                
+        case 'n': //input matrix dimension
+             //has only effect for example 1 and 4
+            n = stoi(optarg);
+        
+        case 'o': //number of column of output matrix
+            out_columns = stoi(optarg);
+        
+        case 'e': //epsilon used for matrix reordering;
+            eps = Float.parseFloat(optarg);
+            if(eps < 0. or eps > 1.):{
+                fprintf (stderr, "Option -e tried to set epsilon outside of [0,1]");
+                return 1;
+            }
+                
+        case '?':
+            fprintf (stderr, "Option -%c does not exists, or requires an argument.\n", optopt);
+            return 1;
+        default:
+          abort ();
+        }
+	}
     
 
 //INPUT SHOULD BE ALWAYS CONVERTED TO CSR BEFORE FURTHER MANIPULATION
 
 	SparMat spmat; //this will hold the CSR matrix
 
+
+//INPUT EXAMPLE 1: RANDOM CSR
+//create a random sparse matrix
+    if (input_type == 1){
+        Mat rand_mat;
+        random_sparse_mat(rand_mat, n, sparsity); //generate random Mat
+        convert_to_CSR(rand_mat, spmat);
+        cout << "CREATED A RANDOM CSR" << endl;
+
+    }
 //______________________________________
-//INPUT EXAMPLE 1: RANDOM CSR  
-    //create a random sparse matrix
-    	Mat rand_mat;
 
-   	float k = 0.6; //fraction of non-zero entries
-	int n = 20;
-
-	random_sparse_mat(rand_mat, n, k); //generate random Mat
-	convert_to_CSR(rand_mat, spmat);
-
-//______________________________________    
 //INPUT EXAMPLE 2: read graph in edgelist format into CSR
+    if (input_type == 2){
+        if (input_source == NULL) input_source = "testgraph.txt";
+        
+        read_snap_format(spmat, input_source);         //Read a CSR matrix from a .txt edgelist (snap format)
+        
+        cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
 
-//	cout << "READING GRAPH" << endl;    
-//	read_snap_format(spmat, "testgraph.txt");         //Read a CSR matrix from a .txt edgelist (snap format)
 
-    
+    }
+ //______________________________________
+        
+        
+//INPUT EXAMPLE 3: read from MTX format
+    if (input_type == 3){
+        //read from mtx
+        if (input_source == NULL) input_source = "testmat.mtx";
+        read_mtx_format(spmat, input_source);
+        
+        cout << "IMPORTED A CSR FROM MTX FILE" << endl;
 
-//______________________________________
-//INPUT EXAMPLE 3: read from MTX format    
-    	//read from mtx
-//	read_mtx_format(spmat, "testmat.mtx");
+        }
 
 
 //______________________________________
 //INPUT EXAMPLE 4: create a random matrix with block structure
-/* 
+    if (input_type == 4){
 
-	int n = 18; //side lenght of the matrix
-	int n_block = 3; //number of blocks 
-	float k_block = 0.6; //percentage of non-zero blocks
-	float k = 0.5; //percentage of non-zero entries in the whole matrix
-
+	int n_block = 3; //number of blocks
+	float k_block = sparsity^(0.5); //percentage of non-zero blocks
 
 	Mat rnd_bmat;
 	random_sparse_blocks_mat(rnd_bmat, n, n_block, k_block, k);
+        
+	convert_to_CSR(rnd_bmat, spmat);
+        
+    cout << "CREATED A RANDOM BLOCK MATRIX" << endl;
 
-	cout << "CREATED A RND BLOCK MAT" << endl;
-
-	convert_to_CSR(spmat,rnd_block_spmat);
 
 	//optional: scramble the matrix?
-
-*/
+    }
+        
 //___________________________________________
 //*******************************************
 //		END OF INPUT
@@ -139,7 +206,7 @@ int main(int argc, char *argv[]) {
 	cout << "\n \n **************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl; 
 //creating the dense matrix X
 	int X_rows = spmat.n;
-	int X_cols = 1;	
+	int X_cols = out_columns;
 
 	int seed = 123;
   	srand(seed);
