@@ -13,6 +13,7 @@
 #include "mkl.h"
 
 
+//TODO use float, not double matrices;
 int main(int argc, char *argv[]) {
 
     opterr = 0;
@@ -104,6 +105,7 @@ int main(int argc, char *argv[]) {
     }
 //______________________________________
 
+//TODO add import error notification
 //INPUT EXAMPLE 2: read graph in edgelist format into CSR
     if (input_type == 2){
         if (input_source.empty()) input_source = "testgraph.txt";
