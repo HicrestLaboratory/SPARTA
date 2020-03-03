@@ -10,6 +10,16 @@ The code requires Intel MKL to run.  Remember to configure the link command thro
 
 running `make` will create a test executable (from Test.cpp) in the programs/ folder. You can run it with different command line arguments to test different features.  
 
+* `-i` : select type of input
+* *  `1`: Random CSR
+* *  `2`: SNAP Edgelist
+* *  `3`: MTX Format
+* *  `4`: Random Variable Block matrix
+* `-s`: provide custom source file (has only effect for example 2 and 3)
+* `-k`: input matrix sparsity (has only effect for example 1 and 4)
+* `-n`: input matrix dimension (has only effect for example 1 and 4)
+* `-o`: number of column of output matrix
+* `-e`: epsilon used for marix reordering (must be in [0,1]. Larger epsilon will make larger blocks);  
 
 
 Source files are stored in the src folder:
