@@ -4,6 +4,7 @@
 #include <ctime>
 #include <string>
 #include <unistd.h>
+#include <math.h>
 
 
 #include "globheads.h"
@@ -23,13 +24,16 @@ int main(int argc, char *argv[]) {
     
     float sparsity = 0.5; //sparsity of the input matrix;
     
-    string input_source = NULL;
+    string input_source;
     
     float eps = 0.8;
     //this value sets how different two rows in the same block can be.
     //eps = 1 means only rows with equal structure are merged into a block
     //eps = 0 means all rows are merged into a single block
-    
+   
+
+    opterr = 0;
+    char c;
     while ((c = getopt (argc, argv, "i:s:k:o:n:e:")) != -1)
       switch (c)
         {
@@ -41,7 +45,7 @@ int main(int argc, char *argv[]) {
             //  4: Random Variable Block matrix
             if(input_type < 1 or input_type > 4){
                 input_type = 0;
-                cout<<"WARNING: invalid input reference. Using 1 (Random CSR)"
+                cout<<"WARNING: invalid input reference. Using 1 (Random CSR)"<<endl;
             }
             break;
         
@@ -52,8 +56,8 @@ int main(int argc, char *argv[]) {
         
         case 'k': //input matrix sparsity
             //has only effect for example 1 and 4
-            sparsity = Float.parseFloat(optarg);
-                if(sparsity < 0 or sparsity > 1):{
+            sparsity = stof(optarg);
+                if(sparsity < 0 or sparsity > 1){
                     fprintf (stderr, "Option -k tried to set sparsity outside of [0,1]");
                     return 1;
                 }
@@ -62,23 +66,25 @@ int main(int argc, char *argv[]) {
         case 'n': //input matrix dimension
              //has only effect for example 1 and 4
             n = stoi(optarg);
+	    break;
         
         case 'o': //number of column of output matrix
             out_columns = stoi(optarg);
-        
+            break;
+
         case 'e': //epsilon used for matrix reordering;
-            eps = Float.parseFloat(optarg);
-            if(eps < 0. or eps > 1.):{
+            eps = stof(optarg);
+            if(eps < 0. or eps > 1.){
                 fprintf (stderr, "Option -e tried to set epsilon outside of [0,1]");
                 return 1;
             }
+	    break;
                 
         case '?':
             fprintf (stderr, "Option -%c does not exists, or requires an argument.\n", optopt);
             return 1;
         default:
           abort ();
-        }
 	}
     
 
@@ -100,7 +106,7 @@ int main(int argc, char *argv[]) {
 
 //INPUT EXAMPLE 2: read graph in edgelist format into CSR
     if (input_type == 2){
-        if (input_source == NULL) input_source = "testgraph.txt";
+        if (input_source.empty()) input_source = "testgraph.txt";
         
         read_snap_format(spmat, input_source);         //Read a CSR matrix from a .txt edgelist (snap format)
         
@@ -114,7 +120,7 @@ int main(int argc, char *argv[]) {
 //INPUT EXAMPLE 3: read from MTX format
     if (input_type == 3){
         //read from mtx
-        if (input_source == NULL) input_source = "testmat.mtx";
+        if (input_source.empty()) input_source = "testmat.mtx";
         read_mtx_format(spmat, input_source);
         
         cout << "IMPORTED A CSR FROM MTX FILE" << endl;
@@ -127,10 +133,10 @@ int main(int argc, char *argv[]) {
     if (input_type == 4){
 
 	int n_block = 3; //number of blocks
-	float k_block = sparsity^(0.5); //percentage of non-zero blocks
+	float k_block = sqrt(sparsity); //percentage of non-zero blocks,must always be greater than sparsity
 
 	Mat rnd_bmat;
-	random_sparse_blocks_mat(rnd_bmat, n, n_block, k_block, k);
+	random_sparse_blocks_mat(rnd_bmat, n, n_block, k_block, sparsity);
         
 	convert_to_CSR(rnd_bmat, spmat);
         
@@ -264,7 +270,6 @@ int main(int argc, char *argv[]) {
 
 //BATCH MULTIPLUCATION NOT WORKING
     
-/*
 //vbr-dense BATCH mkl multiplication
 	double Y_batch_c[X_rows*X_cols] = {};
 
@@ -277,7 +282,6 @@ int main(int argc, char *argv[]) {
         convert_to_row_major(Y_batch_c,Y_batch, spmat.n,X_cols);
 
 	cout <<"BlockSparse-Dense BATCH multiplication. Time taken: " << total_t<<endl;
-*/
  
  
  
