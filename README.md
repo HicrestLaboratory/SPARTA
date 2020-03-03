@@ -10,9 +10,9 @@ The code requires Intel MKL to run.
 
 
 source files are stored in the src folder:
-	-Test.cpp shows an example of how reading, conversion, rows reorder and sparse-dense multiplication work for several input matrix format.
-	-setblks.cpp contains tools to handle interactions (conversion, reorder) between SparMat and VBSparMat objects.
-	-utilities.cpp contains other tools (mainly interaction with SparMat objects). 
+* Test.cpp shows an example of how reading, conversion, rows reorder and sparse-dense multiplication work for several input matrix format.
+* setblks.cpp contains tools to handle interactions (conversion, reorder) between SparMat and VBSparMat objects.
+* utilities.cpp contains other tools (mainly interaction with SparMat objects). 
 
 To try the tool, use 'make test'
 
