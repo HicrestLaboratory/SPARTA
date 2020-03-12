@@ -11,6 +11,7 @@
 #include "protos.h"
 #include "utilities.h"
 #include "mkl.h"
+#include "mkl_utilities.h"
 
 
 //TODO use float, not double matrices;
@@ -157,35 +158,10 @@ int main(int argc, char *argv[]) {
 //reorder the CSR matrix spmat and generate a Block Sparse Matrix
 
 
-        VBSparMat vbmat;
-        make_sparse_blocks(spmat, vbmat,eps);	
+    VBSparMat vbmat;
+    make_sparse_blocks(spmat, vbmat,eps);
 
 	cout<<"CSR permuted. VBSparMat created"<<endl;
-
-//create a dense array matrix from spmat (for GEMM with MKL)
-	Mat mat;
-	int mat_n = spmat.n;
-	float* mat_arr;
-	mat_arr = new float[mat_n*mat_n];
-	convert_from_CSR(spmat, mat);
-	std::copy((mat.vec).begin(), (mat.vec).end(), mat_arr);
-
-	cout << fixed;
-
-
-//create a MKL sparse matrix from spmat
-        sparse_matrix_t mkl_spmat;
-        convert_to_MKL(spmat, mkl_spmat);
-
-	
-
-	
-//	cout << "PRINTING SPARSE MATRIX IN DENSE FORM" <<endl;
-//	matprint(mat_arr,mat_n,mat_n);    
-//	cout << "PRINTING SPARSE MATRIX IN BLOCK FORM" <<endl;    
-//	matprint(vbmat);
-
-
 
 //*******************************************
 //        REPORT ON BLOCK STRUCTURE
@@ -208,6 +184,28 @@ int main(int argc, char *argv[]) {
 //various ways of multiplying the sparse matrix
 //with a dense one, with benchmarks
 //******************************************
+    
+//create a dense array matrix from spmat (for GEMM with MKL)
+    Mat mat;
+    int mat_n = spmat.n;
+    DataT* mat_arr;
+    mat_arr = new DataT[mat_n*mat_n];
+    convert_from_CSR(spmat, mat);
+    std::copy((mat.vec).begin(), (mat.vec).end(), mat_arr);
+
+    cout << fixed; //output format
+
+
+//create a MKL sparse matrix from spmat (for sparse-dense multiplication with MKL)
+    sparse_matrix_t mkl_spmat;
+    convert_to_MKL(spmat, mkl_spmat);
+    
+//    cout << "PRINTING SPARSE MATRIX IN DENSE FORM" <<endl;
+//    matprint(mat_arr,mat_n,mat_n);
+//    cout << "PRINTING SPARSE MATRIX IN BLOCK FORM" <<endl;
+//    matprint(vbmat);
+
+    
 
 
 //TODO put all matrices in column-major format
@@ -218,27 +216,27 @@ int main(int argc, char *argv[]) {
 
 	int seed = 123;
   	srand(seed);
-	float X[X_rows*X_cols];
+	DataT X[X_rows*X_cols];
   	for (int k=0; k<X_rows*X_cols; k++) {
     		float x =  rand()%100;
     		X[k] = x/100;
   	}
 
-        float X_c[X_rows*X_cols]; //column major version of X
-        convert_to_col_major(X, X_c, X_rows, X_cols);
+    DataT X_c[X_rows*X_cols]; //column major version of X
+    convert_to_col_major(X, X_c, X_rows, X_cols);
 
 
 //----------------------------
 //creating the output matrix Y
-	float Y_gemm[spmat.n * X_cols];
-    	float Y_csr[spmat.n * X_cols];
-    	float Y_block[spmat.n * X_cols] = {};
-	float Y_batch[spmat.n * X_cols] = {};
+	DataT Y_gemm[spmat.n * X_cols];
+    DataT Y_csr[spmat.n * X_cols];
+    DataT Y_block[spmat.n * X_cols] = {};
+	DataT Y_batch[spmat.n * X_cols] = {};
 
 //dense-dense mkl gemm multiplication
     
     clock_t start_t = clock();
-    cblas_dgemm (CblasRowMajor, CblasNoTrans, CblasNoTrans, mat_n, X_cols, mat_n, 1.0, mat_arr, mat_n, X, X_cols, 0, Y_gemm, X_cols);
+    mkl_gemm_custom (CblasRowMajor, CblasNoTrans, CblasNoTrans, mat_n, X_cols, mat_n, 1.0, mat_arr, mat_n, X, X_cols, 0, Y_gemm, X_cols);
     double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
         cout<<"Dense-Dense multiplication. Time taken: " << total_t<<endl;
 
@@ -250,7 +248,7 @@ int main(int argc, char *argv[]) {
    	
 
 	start_t = clock();
-	mkl_sparse_d_mm (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, mkl_spmat, descr_spmat, SPARSE_LAYOUT_ROW_MAJOR, X, X_cols, X_cols , 0.0, Y_csr, X_cols);
+	mkl_spmm_custom (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, mkl_spmat, descr_spmat, SPARSE_LAYOUT_ROW_MAJOR, X, X_cols, X_cols , 0.0, Y_csr, X_cols);
     	total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
         cout<<"CSR-Dense multiplication. Time taken: " << total_t<<endl;
 //------------------------------
@@ -261,7 +259,7 @@ int main(int argc, char *argv[]) {
 
         start_t = clock();
 
-	block_mat_multiply(vbmat, X_c, X_cols, Y_block_c);	
+	mkl_blockmat_multiply(vbmat, X_c, X_cols, Y_block_c);
 	
 	total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
 	
@@ -273,11 +271,11 @@ int main(int argc, char *argv[]) {
 //BATCH MULTIPLUCATION NOT WORKING
     
 //vbr-dense BATCH mkl multiplication
-	float Y_batch_c[X_rows*X_cols] = {};
+	DataT Y_batch_c[X_rows*X_cols] = {};
 
         start_t = clock();
 
-        block_mat_batch_multiply(vbmat, X_c, X_cols, Y_block_c);
+        mkl_blockmat_batch_multiply(vbmat, X_c, X_cols, Y_block_c);
 
         total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
 
