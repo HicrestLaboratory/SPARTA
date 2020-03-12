@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
 //create a random sparse matrix
     if (input_type == 1){
         Mat rand_mat;
-        random_sparse_mat(rand_mat, n, sparsity); //generate random Mat
+        random_sparse_mat(rand_mat, n, (float) sparsity); //generate random Mat
         convert_to_CSR(rand_mat, spmat);
         cout << "CREATED A RANDOM CSR" << endl;
 

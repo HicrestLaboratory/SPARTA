@@ -2,6 +2,8 @@
 #include "globheads.h"
 #include "protos.h"
 #include "mkl.h"
+#include <stdio.h>
+#include <iostream>
 
 using namespace std;
 
@@ -47,7 +49,7 @@ void mkl_spmm_custom(const sparse_operation_t operation,
                      float *y, const MKL_INT ldy){
     
     mkl_sparse_s_mm (operation,
-                     alpha, sparse_matrix_t A,
+                     alpha, A,
                      descr,
                      layout,
                      x, columns, ldx,
@@ -67,7 +69,7 @@ void mkl_spmm_custom(const sparse_operation_t operation,
                  double *y, const MKL_INT ldy){
 
     mkl_sparse_d_mm (operation,
-                 alpha, sparse_matrix_t A,
+                 alpha, A,
                  descr,
                  layout,
                  x, columns, ldx,
@@ -177,7 +179,7 @@ void convert_to_MKL(SparMat &spmt, sparse_matrix_t &A){
     }
     
     mkl_create_csr_custom (&A, indexing, rows, cols, rows_start,  rows_end, col_indx, values);
-   }
+
 }
 
 
@@ -203,8 +205,8 @@ void mkl_blockmat_batch_multiply(const VBSparMat &VBMat, DataT *X, int X_cols, D
     CBLAS_TRANSPOSE    transA[N];
     CBLAS_TRANSPOSE    transB[N];
 
-    DataT*    alpha[N];
-    DataT*    beta[N];
+    DataT    alpha[N];
+    DataT    beta[N];
 
     DataT *a_array[N];
     DataT *b_array[N];
@@ -256,6 +258,7 @@ void mkl_blockmat_batch_multiply(const VBSparMat &VBMat, DataT *X, int X_cols, D
             }
         
         }
+	h_scan++;
         if(batch_count > 0) {
             mkl_batch_custom (CblasColMajor, transA, transB,
                               ms, ns, ks, alpha,
@@ -295,6 +298,5 @@ void mkl_blockmat_multiply(const VBSparMat &VBMat, DataT *X, int X_cols, DataT *
             mkl_gemm_custom(CblasColMajor, CblasNoTrans, CblasNoTrans, Hsz, X_cols, Lsz, alpha, block, Hsz, blockX, mat_n, beta, blockY, mat_n);
             }
         }
-    }
 }
 

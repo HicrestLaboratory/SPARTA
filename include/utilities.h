@@ -31,7 +31,7 @@ struct Mat {
 	vector<DataT> vec;
 };
 
-void random_sparse_mat(Mat & mat, int N, double sparsity);
+void random_sparse_mat(Mat & mat, int N, float sparsity);
 
 void graph_print(Graphmap & gmap);
 
