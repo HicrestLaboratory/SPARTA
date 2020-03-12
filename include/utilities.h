@@ -28,7 +28,7 @@ typedef map<int, set<int> > Graphmap;
 
 struct Mat {
 	int row_size;
-	vector<double> vec;
+	vector<DataT> vec;
 };
 
 void random_sparse_mat(Mat & mat, int N, double sparsity);
@@ -47,7 +47,7 @@ void write_snap_format(Graphmap & gmap, string filename);
 
 void convert_from_CSR(SparMat & spmt, Mat & mat);
 
-void fill_CSR(SparMat & spmt, int n, const vector<int>& vec_nzcount, const vector<int>& vec_ja, const vector<double>& vec_ma);
+void fill_CSR(SparMat & spmt, int n, const vector<int>& vec_nzcount, const vector<int>& vec_ja, const vector<DataT>& vec_ma);
 
 void convert_to_CSR(const Mat & mat, SparMat & spmt);
 
@@ -59,7 +59,7 @@ void matprint(const SparMat & spmt);
 
 void matprint(const Mat & mat);
 
-void matprint(const double* mat, const int n,const int m);
+void matprint(const DataT* mat, const int n,const int m);
 
 void matprint(const VBSparMat &vbmat);
 
@@ -77,20 +77,20 @@ int make_sparse_blocks(SparMat &spmt, VBSparMat &vbmat, double eps);
 
 int random_sparse_blocks_mat(Mat &mat, int N, int n_block, float block_k, float k);
 
-void convert_to_col_major(double *X, double *Y, const int n, const int m);
+void convert_to_col_major(DataT *X, DataT *Y, const int n, const int m);
 
-void convert_to_row_major(double *X, double *Y, const int n, const int m);
+void convert_to_row_major(DataT *X, DataT *Y, const int n, const int m);
 
-bool are_equal(const double *X,const double* Y,const int m, const double eps = 0.0);
+bool are_equal(const DataT *X,const DataT* Y,const int m, const double eps = 0.0);
 
-void block_mat_multiply(const VBSparMat &VBMat, double *X, const int k, double *Y);
+void block_mat_multiply(const VBSparMat &VBMat, DataT *X, const int k, DataT *Y);
 
-void block_mat_batch_multiply(const VBSparMat &VBMat, double *X, int X_cols, double *Y);
+void block_mat_batch_multiply(const VBSparMat &VBMat, DataT *X, int X_cols, DataT *Y);
 
 //-----------------------------------------------------------------------ARRAY AND VECTOR UTILITIES----------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-void randomvec(vector<double>& v, int n);
+void randomvec(vector<DataT>& v, int n);
 
 
 //mean of a vector

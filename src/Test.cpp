@@ -165,8 +165,8 @@ int main(int argc, char *argv[]) {
 //create a dense array matrix from spmat (for GEMM with MKL)
 	Mat mat;
 	int mat_n = spmat.n;
-	double* mat_arr;
-	mat_arr = new double[mat_n*mat_n];
+	float* mat_arr;
+	mat_arr = new float[mat_n*mat_n];
 	convert_from_CSR(spmat, mat);
 	std::copy((mat.vec).begin(), (mat.vec).end(), mat_arr);
 
@@ -218,22 +218,22 @@ int main(int argc, char *argv[]) {
 
 	int seed = 123;
   	srand(seed);
-	double X[X_rows*X_cols];
+	float X[X_rows*X_cols];
   	for (int k=0; k<X_rows*X_cols; k++) {
-    		double x =  rand()%100;
+    		float x =  rand()%100;
     		X[k] = x/100;
   	}
 
-        double X_c[X_rows*X_cols]; //column major version of X
+        float X_c[X_rows*X_cols]; //column major version of X
         convert_to_col_major(X, X_c, X_rows, X_cols);
 
 
 //----------------------------
 //creating the output matrix Y
-	double Y_gemm[spmat.n * X_cols];
-    	double Y_csr[spmat.n * X_cols];
-    	double Y_block[spmat.n * X_cols] = {};
-	double Y_batch[spmat.n * X_cols] = {};
+	float Y_gemm[spmat.n * X_cols];
+    	float Y_csr[spmat.n * X_cols];
+    	float Y_block[spmat.n * X_cols] = {};
+	float Y_batch[spmat.n * X_cols] = {};
 
 //dense-dense mkl gemm multiplication
     
@@ -257,7 +257,7 @@ int main(int argc, char *argv[]) {
 	
 
 //vbr-dense mkl multiplication	
-	double Y_block_c[X_rows*X_cols] = {};
+	float Y_block_c[X_rows*X_cols] = {};
 
         start_t = clock();
 
@@ -273,7 +273,7 @@ int main(int argc, char *argv[]) {
 //BATCH MULTIPLUCATION NOT WORKING
     
 //vbr-dense BATCH mkl multiplication
-	double Y_batch_c[X_rows*X_cols] = {};
+	float Y_batch_c[X_rows*X_cols] = {};
 
         start_t = clock();
 

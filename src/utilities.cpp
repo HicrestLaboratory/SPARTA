@@ -6,9 +6,9 @@ using namespace std;
 typedef map<int, set<int> > Graphmap;
 
 // Fills v with random values
-void randomvec (vector<double> &v, int n) {
+void randomvec (vector<DataT> &v, int n) {
   /* fills v with random values */
-  double x;
+  DataT x;
   int k;
   for (k=0; k<n; k++) {
     x = rand()%100;
@@ -19,9 +19,9 @@ void randomvec (vector<double> &v, int n) {
 
 
 //Create a random sparse matrix
-void random_sparse_mat(Mat &mat, int N, double sparsity){
+void random_sparse_mat(Mat &mat, int N, float sparsity){
     mat.row_size = N;
-    mat.vec = vector<double>(N*N,0.);
+    mat.vec = vector<DataT>(N*N,0.);
     randomvec(mat.vec,(int) N*N*sparsity);
     std::random_shuffle(mat.vec.begin(),mat.vec.end());
 }
@@ -185,7 +185,7 @@ void MakeProper(Graphmap& gmap) {
 	}
 }
 
-//TODO
+//TODO (not urgent)
 //Conversion to edgelist and from CSR;
 //weighted graphs
 //options for unweighted graphs (e.g. only structure when calculating permutations)
@@ -219,8 +219,8 @@ void convert_from_CSR(SparMat &spmt, Mat &mat){
     int n = spmt.n;
     mat.row_size = n;
     int idx;
-    double val;
-    mat.vec = vector<double>(n*n,0.);//initialize Mat's vec to 0
+    DataT val;
+    mat.vec = vector<DataT>(n*n,0.);//initialize Mat's vec to 0
     
     //loop through rows
     for (int row = 0; row < n; row++){
@@ -236,13 +236,13 @@ void convert_from_CSR(SparMat &spmt, Mat &mat){
 }
 
 //fill a CSR from three vectors
-void fill_CSR(SparMat &spmt, int n, const vector<int> &vec_nzcount, const vector<int> &vec_ja,  const vector<double> &vec_ma){
+void fill_CSR(SparMat &spmt, int n, const vector<int> &vec_nzcount, const vector<int> &vec_ja,  const vector<DataT> &vec_ma){
     
     //declare the arrays to be put in the SparMat
     spmt.n = n;
     spmt.nzcount = new int[n];
     spmt.ja = new int*[n];
-    spmt.ma = new double*[n];
+    spmt.ma = new DataT*[n];
     
     //populate the SparMat arrays using the vectors;
     std::copy(vec_nzcount.begin(),vec_nzcount.end(),spmt.nzcount);
@@ -253,7 +253,7 @@ void fill_CSR(SparMat &spmt, int n, const vector<int> &vec_nzcount, const vector
     for (int row = 0; row < n; row++){
         //allocate ja,ma for that row
         spmt.ja[row] = new int[spmt.nzcount[row]];
-        spmt.ma[row] = new double[spmt.nzcount[row]];
+        spmt.ma[row] = new DataT[spmt.nzcount[row]];
         
         //copy from vectors
         std::copy(vec_ma.begin() + nzs,vec_ma.begin() + nzs + spmt.nzcount[row],spmt.ma[row]);
@@ -266,14 +266,14 @@ void fill_CSR(SparMat &spmt, int n, const vector<int> &vec_nzcount, const vector
 //Convert a Mat into a sparse matrix;
 void convert_to_CSR(const Mat &mat, SparMat &spmt){
     vector<int> vec_ja, vec_nzcount;
-    vector<double> vec_ma;
+    vector<DataT> vec_ma;
     int n = mat.row_size;
     setupCS(&spmt,n,1);//allocate memory
     
     //build the appropriate vectors from Mat;
     int i = 0;
     int row_count = 0;
-    float temp;
+    DataT temp;
     
     //loop through all elements in the Mat
     while ( i < pow(n,2) ){
@@ -300,7 +300,7 @@ void convert_to_CSR(const Mat &mat, SparMat &spmt){
 void convert_to_CSR(const Graphmap &gmap, SparMat &spmt) {
 
 	vector<int> vec_ja, vec_nzcount;
-	vector<double> vec_ma;
+	vector<DataT> vec_ma;
 	int n = gmap.size();
 	setupCS(&spmt, n, 1);//allocate memory
 
@@ -312,7 +312,7 @@ void convert_to_CSR(const Graphmap &gmap, SparMat &spmt) {
 		
 		vec_ja.insert(vec_ja.end(), tempset.begin(), tempset.end()); //columns of nonzero elements = names of node children
 
-		vector<double> tempvec(tempset.size(),1.); 
+		vector<DataT> tempvec(tempset.size(),1.); 
 		vec_ma.insert(vec_ma.end(), tempvec.begin(), tempvec.end()); //entries = 1s. Graphmap are unweighted for now.
 		
 		vec_nzcount.push_back(tempset.size());//nonzero per row = number of node children
@@ -341,7 +341,7 @@ void convert_to_MKL(SparMat &spmt, sparse_matrix_t &A){
 
     
     int nzs = rows_end[n-1];
-    double* values = new double[nzs];
+    DataT* values = new DataT[nzs];
     MKL_INT* col_indx = new MKL_INT[nzs];
     
     int j = 0;
@@ -355,13 +355,17 @@ void convert_to_MKL(SparMat &spmt, sparse_matrix_t &A){
     j = 0;
     for (int row = 0; row < n; row++){
         for (int i = 0; i <spmt.nzcount[row]; i++){
-            values[j] = (double) spmt.ma[row][i];
+            values[j] = spmt.ma[row][i];
             j++;
         }
     }
     
-    
-    mkl_sparse_d_create_csr (&A, indexing, rows, cols, rows_start,  rows_end, col_indx, values);
+   if (is_same<DataT, float>::value) {
+	mkl_sparse_s_create_csr (&A, indexing, rows, cols, rows_start,  rows_end, col_indx, values);
+   }
+   else if(is_same<DataT, double>::value){
+	mkl_sparse_d_create_csr (&A, indexing, rows, cols, rows_start,  rows_end, col_indx, values);
+   }
 }
 
 void permute(SparMat &spmt, int* perm){
@@ -414,7 +418,7 @@ void matprint(const Mat &mat){
 
 }
 
-void matprint(const double* mat, const int rows,const int cols){
+void matprint(const DataT* mat, const int rows,const int cols){
     cout << "PRINTING THE MATRIX" << endl;
     for (int i = 0; i < rows*cols; i++){
         if (i%cols == 0){
@@ -472,7 +476,7 @@ void read_snap_format(SparMat &spmt,
 	int sparse_count = 0;
 	int tot_count = 0;
 	vector<int> vec_ja, vec_nzcount;
-	vector<double> vec_ma;
+	vector<DataT> vec_ma;
 	int last_node = -1;
 
 	//read the source node (row) of a new line
@@ -529,12 +533,12 @@ void read_mtx_format(SparMat &spmt, string infilename){
     
     Mat mat;
     mat.row_size = num_row;
-    vector<double> temp_mat(num_row*num_row, 0.0);
+    vector<DataT> temp_mat(num_row*num_row, 0.0);
     
     // fill the matrix with data
     for (int l = 0; l < num_lines; l++)
     {
-        double data;
+        DataT data;
         int row, col;
         file >> row >> col >> data;
         temp_mat[(row -1) + (col -1) * num_row] = data;
@@ -581,7 +585,7 @@ void extract_features(const vbsptr vbmat, int& Msize, int &Bnum, vector<int>& BL
     }
 }
 
-//TODO transform into string
+//TODO output to string, not CSV
 void features_to_CSV(vbsptr vbmat, ofstream& CSV_out, int verbose = 0){
     int Msize,Bnum;
     int BlockTotal = 0;
@@ -651,7 +655,7 @@ int random_sparse_blocks_mat(Mat &mat, int N, int n_block, float block_k, float 
 
 	//initialize Mat	
 	mat.row_size = N;
-    	mat.vec = vector<double>(N*N,0.);
+    	mat.vec = vector<DataT>(N*N,0.);
     	int row_count = 0;
 	
 	//find number of nonzero entries in matrix and blocks
@@ -676,14 +680,14 @@ int random_sparse_blocks_mat(Mat &mat, int N, int n_block, float block_k, float 
 		cout << "WARNING: block number must be lower or equal to N. Changing n_block to N"<< n_block <<endl;
 	}
 	int nz_in_block = (int) block_dim * block_dim * k_inside_blocks; //nonzeros in a block
-	vector<double> block_vals;
+	vector<DataT> block_vals;
 		
 	//put nonzerovalues in the Mat
 	for(int ib = 0; ib < n_block; ib++){//iterate through block rows
 		for (int jb = 0; jb < n_block; jb++){ //iterate through block columns
 			if(blocks[ib*n_block + jb] != 0){
 				//if block is nonempty, put random values in it;
-				block_vals = vector<double>(block_dim * block_dim, 0);
+				block_vals = vector<DataT>(block_dim * block_dim, 0);
         			randomvec(block_vals,(int) nz_in_block);
 				std::random_shuffle(block_vals.begin(),block_vals.end());
 				//put the element in the vector representing the block in the right positions in the Mat
@@ -713,7 +717,7 @@ void arrprint(myType *arr, int len){
 //TODO fix bug that alters some rows from the right result
 //multiply a n-by-n block matrix VBMat by a (column major) n-by-k matrix X. 
 //store result in (already initialized) (column major) n-by-k matrix Y;
-void block_mat_multiply(const VBSparMat &VBMat, double *X, int X_cols, double *Y){
+void block_mat_multiply(const VBSparMat &VBMat, DataT *X, int X_cols, DataT *Y){
     int N = VBMat.n, *bsz = VBMat.bsz;
     int Lsz,Hsz,col;
     int mat_n = bsz[N];
@@ -728,10 +732,17 @@ void block_mat_multiply(const VBSparMat &VBMat, double *X, int X_cols, double *Y
             	Lsz = bsz[col+1] - bsz[col];
 	    	//multiply the block by the matrix
 			//define the sub-matrices
-			const double* block = (VBMat.ba)[i][j]; //access block i,j in column major order.
-			double* blockY = Y + bsz[i];	 //i indicates the vertical block of Y that is going to be updated
-			const double* blockX = X + bsz[col];	 //col indicates the vertical block of X that is going to be multiplied with the (i,j)block of VBMat
-	            	cblas_dgemm (CblasColMajor, CblasNoTrans, CblasNoTrans, Hsz, X_cols, Lsz, 1.0, block, Hsz, blockX, mat_n, 1.0, blockY, mat_n);
+			const DataT* block = (VBMat.ba)[i][j]; //access block i,j in column major order.
+			DataT* blockY = Y + bsz[i];	 //i indicates the vertical block of Y that is going to be updated
+			const DataT* blockX = X + bsz[col];	 //col indicates the vertical block of X that is going to be multiplied with the (i,j)block of VBMat
+			if (is_same<DataT, float>::value) {
+	                        cblas_sgemm (CblasColMajor, CblasNoTrans, CblasNoTrans, Hsz, X_cols, Lsz, 1.0, block, Hsz, blockX, mat_n, 1.0, blockY, mat_n);
+		  	 }
+			else if(is_same<DataT, double>::value){
+	                        cblas_dgemm (CblasColMajor, CblasNoTrans, CblasNoTrans, Hsz, X_cols, Lsz, 1.0, block, Hsz, blockX, mat_n, 1.0, blockY, mat_n);
+		   	 }
+
+
 
 //			cout << "printing BLOCK" << endl;
 //			matprint(block, Lsz, Hsz);
@@ -741,10 +752,39 @@ void block_mat_multiply(const VBSparMat &VBMat, double *X, int X_cols, double *Y
     }
 }
 
+//polymorphism for the mkl_batch_call;
+void mkl_batch_custom(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE* transa_array, const CBLAS_TRANSPOSE* transb_array, 
+			const MKL_INT* m_array, const MKL_INT* n_array, const MKL_INT* k_array, 
+			const float* alpha_array, 
+			const float **a_array, const MKL_INT* lda_array, 
+			const float **b_array, const MKL_INT* ldb_array, 
+			const float* beta_array, 
+			float **c_array, const MKL_INT* ldc_array, 
+			const MKL_INT group_count, const MKL_INT* group_size)
+	
+	cblas_sgemm_batch (Layout, transa_array, transb_array, m_array,  n_array, k_array, alpha_array, a_array, lda_array, b_array, ldb_array,  beta_array, c_array, ldc_array, group_count, group_size);
+
+	}
+
+void mkl_batch_custom(const CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE* transa_array, const CBLAS_TRANSPOSE* transb_array, 
+			const MKL_INT* m_array, const MKL_INT* n_array, const MKL_INT* k_array, 
+			const double* alpha_array, 
+			const double **a_array, const MKL_INT* lda_array, 
+			const double **b_array, const MKL_INT* ldb_array, 
+			const double* beta_array, 
+			double **c_array, const MKL_INT* ldc_array, 
+			const MKL_INT group_count, const MKL_INT* group_size);
+
+
+        cblas_dgemm_batch (Layout, transa_array, transb_array, m_array,  n_array, k_array, alpha_array, a_array, lda_array, b_array, ldb_array,  beta_array, c_array, ldc_array, group_count, group_size);
+
+	}
+
+
 //TODO fix mkl error in "Parameter 2"
 //BATCH multiply a n-by-n block matrix VBMat by a (column major) n-by-k matrix X. 
 //store result in (already initialized) (column major) n-by-k matrix Y;
-void block_mat_batch_multiply(const VBSparMat &VBMat, double *X, int X_cols, double *Y){
+void block_mat_batch_multiply(const VBSparMat &VBMat, DataT *X, int X_cols, DataT *Y){
     int N = VBMat.n, *bsz = VBMat.bsz;
     int Lsz,Hsz,col;
     int mat_n = bsz[N];
@@ -766,9 +806,9 @@ void block_mat_batch_multiply(const VBSparMat &VBMat, double *X, int X_cols, dou
     double    alpha[N];
     double    beta[N];
 
-    double *a_array[N];
-    double *b_array[N];
-    double *c_array[N];
+    DataT *a_array[N];
+    DataT *b_array[N];
+    DataT *c_array[N];
 
     MKL_INT    size_per_grp[N];
     
@@ -789,9 +829,9 @@ void block_mat_batch_multiply(const VBSparMat &VBMat, double *X, int X_cols, dou
 				Lsz = bsz[col+1] - bsz[col];
 				//multiply the block by the matrix
 				//define the sub-matrices
-				double* block = (VBMat.ba)[i][h_scan]; //access block i,j in column major order.
-				double* blockY = Y + bsz[i];     //i indicates the vertical block of Y that is going to be updated
-				double* blockX = X + bsz[col];     //col indicates the vertical block of X that is going to be multiplied with the (i,j)block of VBMat
+				DataT* block = (VBMat.ba)[i][h_scan]; //access block i,j in column major order.
+				DataT* blockY = Y + bsz[i];     //i indicates the vertical block of Y that is going to be updated
+				DataT* blockX = X + bsz[col];     //col indicates the vertical block of X that is going to be multiplied with the (i,j)block of VBMat
 				
 				ms[batch_count-1] = Hsz;
 				ns[batch_count-1] = X_cols;
@@ -817,7 +857,15 @@ void block_mat_batch_multiply(const VBSparMat &VBMat, double *X, int X_cols, dou
 		
 	    	}
 		if(batch_count > 0){
-			cblas_dgemm_batch (CblasColMajor, transA, transB, ms, ns, ks, alpha, (const double **) a_array, lda_array, (const double**) b_array, ldb_array, beta, c_array, ldc_array, batch_count, size_per_grp);
+			if (is_same<DataT, float>::value) {
+	                        cblas_sgemm_batch (CblasColMajor, transA, transB, ms, ns, ks, alpha, (const DataT **) a_array, lda_array, (const DataT**) b_array, ldb_array, beta, c_array, ldc_array, batch_count, size_per_grp);
+
+                         }
+                        else if(is_same<DataT, double>::value){
+        	                cblas_dgemm_batch (CblasColMajor, transA, transB, ms, ns, ks, alpha, (const DataT **) a_array, lda_array, (const DataT**) b_array, ldb_array, beta, c_array, ldc_array, batch_count, size_per_grp);
+
+                         }
+
 			h_scan++;
 		}
 	}
@@ -825,9 +873,7 @@ void block_mat_batch_multiply(const VBSparMat &VBMat, double *X, int X_cols, dou
 }
 
 
-
-
-void convert_to_col_major(double *X, double *Y, const int rows, const int cols){
+void convert_to_col_major(DataT *X, DataT *Y, const int rows, const int cols){
 	for (int i=0;i<rows;i++){
 		for (int j=0; j<cols; j++){
 			Y[rows*j + i] = X[cols*i + j];
@@ -836,7 +882,7 @@ void convert_to_col_major(double *X, double *Y, const int rows, const int cols){
 
 }
 
-void convert_to_row_major(double *X, double *Y, const int rows, const int cols){
+void convert_to_row_major(DataT *X, DataT *Y, const int rows, const int cols){
         for (int j=0;j<cols;j++){
                 for (int i=0; i<rows; i++){
                         Y[cols*i + j] = X[rows*j + i];
@@ -845,7 +891,7 @@ void convert_to_row_major(double *X, double *Y, const int rows, const int cols){
 
 }
 
-bool are_equal(const double *X,const double* Y,const int n, const double eps){
+bool are_equal(const DataT *X,const DataT* Y,const int n, const double eps){
 	for (int i = 0; i < n; i++){
 		if(abs(X[i] - Y[i]) > eps) {
 //			cout<<"pos "<< i<< " : " << X[i]<< " !=  " << Y[i] <<endl;

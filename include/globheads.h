@@ -9,6 +9,9 @@
 /* the dimension of ith Block */
 #define B_DIM(bs,i)      (bs[i+1]-bs[i])
 
+typedef float DataT;
+typedef DataT *BData;
+
 typedef struct SpaFmt {
 /*--------------------------------------------- 
 | C-style CSR format - used internally
@@ -17,12 +20,11 @@ typedef struct SpaFmt {
   int n;
   int *nzcount;  /* length of each row */
   int **ja;      /* pointer-to-pointer to store column indices  */
-  double **ma;   /* pointer-to-pointer to store nonzero entries */
+  DataT **ma;   /* pointer-to-pointer to store nonzero entries */
     
   
 } SparMat, *csptr;
 
-typedef double *BData;
 
 typedef struct VBSpaFmt {
     int n;        /* the block row dimension of the matrix      */
@@ -92,9 +94,9 @@ typedef struct PerMat4 {
   struct SpaFmt *F;
   int *rperm;       /* row permutation         */ 
   int *perm;        /* col. permutation        */ 
-  double *D1 ;      /* diagonal scaling row    */  
-  double *D2 ;      /* diagonal scaling columns*/  
-  double *wk;       /* work array              */
+  DataT *D1 ;      /* diagonal scaling row    */  
+  DataT *D2 ;      /* diagonal scaling columns*/  
+  DataT *wk;       /* work array              */
 /* pointer to next and previous struct         */
   p4ptr prev; 
   p4ptr next;
@@ -135,9 +137,9 @@ typedef struct ILUTfac {
    int *rperm;   /* row single-sinded permutation */
    int *perm;    /* column perm .                */
    int *perm2;   /* column permutation coming from pivoting in ILU */ 
-   double *D1;
-   double *D2;
-   double *wk;
+   DataT *D1;
+   DataT *D2;
+   DataT *wk;
 } IluSpar;
 
 typedef struct arms_st *arms;

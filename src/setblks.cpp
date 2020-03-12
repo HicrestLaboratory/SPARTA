@@ -58,7 +58,7 @@ int setupCS(csptr amat, int len, int job)
 
 
    if( job == 1 )
-       amat->ma = (double **) malloc( len*sizeof(double *));
+       amat->ma = (DataT **) malloc( len*sizeof(DataT *));
    else
        amat->ma = NULL;
 
@@ -246,7 +246,7 @@ int csrvbsrC( int job, int nBlk, int *nB, csptr csmat, vbsptr vbmat )
            original matrix */
         vbmat->ba[b_row] = (BData *)malloc( sizeof(BData)*nnz);
         for( j = 0; j < nnz; j++ ) {
-            szofBlock = sizeof(double)*nB[b_row]*nB[vbmat->ja[b_row][j]];
+            szofBlock = sizeof(DataT)*nB[b_row]*nB[vbmat->ja[b_row][j]];
             vbmat->ba[b_row][j] = (BData)malloc( szofBlock);
         }
         
