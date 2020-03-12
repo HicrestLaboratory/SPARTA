@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
   	srand(seed);
 	DataT X[X_rows*X_cols];
   	for (int k=0; k<X_rows*X_cols; k++) {
-    		float x =  rand()%100;
+    		DataT x =  rand()%100;
     		X[k] = x/100;
   	}
 
@@ -229,8 +229,8 @@ int main(int argc, char *argv[]) {
 //----------------------------
 //creating the output matrix Y
 	DataT Y_gemm[spmat.n * X_cols];
-    DataT Y_csr[spmat.n * X_cols];
-    DataT Y_block[spmat.n * X_cols] = {};
+	DataT Y_csr[spmat.n * X_cols];
+    	DataT Y_block[spmat.n * X_cols] = {};
 	DataT Y_batch[spmat.n * X_cols] = {};
 
 //dense-dense mkl gemm multiplication
@@ -255,7 +255,7 @@ int main(int argc, char *argv[]) {
 	
 
 //vbr-dense mkl multiplication	
-	float Y_block_c[X_rows*X_cols] = {};
+	DataT Y_block_c[X_rows*X_cols] = {};
 
         start_t = clock();
 
