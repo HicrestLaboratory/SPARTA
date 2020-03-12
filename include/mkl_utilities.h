@@ -1,3 +1,5 @@
+#include "globheads.h"
+#include "protos.h"
 #include "mkl.h"
 
 void mkl_batch_custom(const CBLAS_LAYOUT Layout,
