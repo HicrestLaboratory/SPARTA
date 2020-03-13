@@ -9,7 +9,7 @@
 /* the dimension of ith Block */
 #define B_DIM(bs,i)      (bs[i+1]-bs[i])
 
-typedef double DataT;
+typedef float DataT;
 typedef DataT *BData;
 
 typedef struct SpaFmt {
