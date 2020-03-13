@@ -10,6 +10,8 @@
 #include <helper_functions.h>
 #include <helper_cuda.h>
 
+#include<stdio.h>
+
 //Matrix-Matrix multiplication with cublas. A,B,C are in column-major order.
 int cublas_gemm_custom(float *A, unsigned int uiWA, unsigned int uiHA, unsigned int lda,
                    float *B, unsigned int uiWB, unsigned int ldb,
@@ -39,9 +41,9 @@ int cublas_gemm_custom(float *A, unsigned int uiWA, unsigned int uiHA, unsigned 
     
     //copy matrices to device
     checkCudaErrors(cublasSetMatrix(
-                                    uiHA,uiWA, sizeof(float), A, lda, d_A, int ldb));
+                                    uiHA,uiWA, sizeof(float), A, lda, d_A, lda));
     checkCudaErrors(cublasSetMatrix(
-                                    uiHB,uiWB, sizeof(float), B, ldb, d_B, int ldb));
+                                    uiHB,uiWB, sizeof(float), B, ldb, d_B, ldb));
 
     // setup execution parameters
     dim3 threads(block_size, block_size);
@@ -73,15 +75,8 @@ int cublas_gemm_custom(float *A, unsigned int uiWA, unsigned int uiHA, unsigned 
     checkCudaErrors(cudaFree(d_A));
     checkCudaErrors(cudaFree(d_B));
     checkCudaErrors(cudaFree(d_C));
-
-    if (resCUBLAS == true)
-    {
-        return EXIT_SUCCESS;    // return value = 1
-    }
-    else
-    {
-        return EXIT_FAILURE;     // return value = 0
-    }
+	
+    return 0;
 }
 
 
@@ -92,12 +87,12 @@ void randomInit(float *data, int size)
 }
 
 int main(int argc, char **argv){
-    int AW = 10;
-    int AH = 5;
+    int AW = 32;
+    int AH = 32;
     int sizeA = AW*AH;
     float A[sizeA];
     
-    int BW = 8;
+    int BW = 32;
     int BH = AW;
     int sizeB = BW*BH;
     float B[sizeB];
@@ -109,8 +104,15 @@ int main(int argc, char **argv){
     
     randomInit(A,sizeA);
     randomInit(B,sizeB);
-    
-    return cublas_gemm_custom(A, AW, AH, AH,
+
+    cublas_gemm_custom(A, AW, AH, AH,
                        B, BW, BH,
                        C, CH);
+
+    for(int i = 0; i<sizeC;i++){
+	std::cout<< C[i]<< " ";
+	}
+	std::cout << std::endl;
+
+
 }
