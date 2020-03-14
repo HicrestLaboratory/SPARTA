@@ -2,9 +2,11 @@
 **SP**arse **A**ccele**R**ation on **T**ensor **A**rchitecture
 
 The project aims at investigating new data structures and compression algorithms for exploting new architecture capabilities specifically designed for Deep Learning applications for **sparse and irregular computation**.
-The repository contains code for compressing sparse matrices into dense block data-structure. This allow to manipulate (e.g. multiplicate) these matrices by esploiting on AI-specific architecture (e.g., Nvidia tensor core). 
 
-Sparse matrices are efficiently stored in SparMat objects, which follow the Compressed Sparse Row (CSR) format. 
+The repository contains code for compressing sparse matrices into dense block data-structure. 
+
+
+Input sparse matrices are stored in Compressed Sparse Row (CSR) format. 
 Variable Block Compressed Sparse Row is used to store block-sparse matrices. 
 
 Currently, the code requires Intel MKL library.  Remember to configure the link command through
