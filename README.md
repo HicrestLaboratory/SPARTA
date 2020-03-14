@@ -3,7 +3,8 @@
 
 The repository contains code for compressing sparse matrices into dense block data-structure. This allow to manipulate (e.g. multiplicate) these matrices by esploiting on AI-specific architecture (e.g., Nvidia tensor core). 
 
-Sparse matrices are efficiently stored in SparMat objects, which follow the Compressed Sparse Row (CSR) format. block-sparse matrices are strored in VBSparMat object which implement Variable Block Compressed Sparse Row. 
+Sparse matrices are efficiently stored in SparMat objects, which follow the Compressed Sparse Row (CSR) format. 
+Variable Block Compressed Sparse Row is used to store block-sparse matrices. 
 
 Currently, the code requires Intel MKL library.  Remember to configure the link command through
 [Intel MKL Link Line Advisor](https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor/)
