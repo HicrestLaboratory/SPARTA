@@ -21,7 +21,7 @@ MKL_LDFLAGS  = -lmkl_rt -lpthread -lm -ldl
 CUDA_TARGET = cuda_test
 CUDA_PATH ?= /usr/local/cuda-10.0
 #CUDA_LDFLAGS = --dynamic-linker=/lib/ld-linux-armhf.so.3
-#CUDA_LDFLAGS += $(addprefix -Xlinker ,$(LDFLAGS))
+#CUDA_LDFLAGS += $(addprefix -Xlinker ,$(CUDA_LDFLAGS))
 #CUDA_LDFLAGS += --sysroot=$(TARGET_FS)
 #CUDA_LDFLAGS += -rpath-link=$(TARGET_FS)/lib -L $(TARGET_FS)/lib
 #CUDA_LDFLAGS += -rpath-link=$(TARGET_FS)/usr/lib -L $(TARGET_FS)/usr/lib
@@ -29,7 +29,8 @@ CUDA_PATH ?= /usr/local/cuda-10.0
 #CUDA_LDFLAGS += --unresolved-symbols=ignore-in-shared-libs
 
 
-CUDA_CXXFLAGS =
+CUDA_CXXFLAGS = 
+CUDA_CXXFLAGS += -std=c++11
 CUDA_CXXFLAGS += -m64 
 CUDA_CXXFLAGS += -g -G 
 #CUDA_CXXFLAGS += -isystem=$(TARGET_FS)/usr/include
@@ -44,7 +45,7 @@ NVCC          := $(CUDA_PATH)/bin/nvcc -ccbin $(CXX)
 CUDA_INCLUDE  = -I include/cuda_inc
 CUDA_INCLUDE += $(INCLUDE) 
 
-CUDA_LIBRARY = -lcublas
+CUDA_LDFLAGS = -lcublas
 #----------------------------------------------
 
 OBJ_DIR = ./obj

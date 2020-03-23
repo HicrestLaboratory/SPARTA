@@ -12,9 +12,13 @@
 
 #include<stdio.h>
 
+
+#include "cuda_utilities.h"
 #include "globheads.h"
 #include "protos.h"
+
 #include <iostream>
+
 
 using namespace std;
 
@@ -52,15 +56,14 @@ void cublas_blockmat_multiply(const VBSparMat &VBMat, float *X, int X_cols, floa
         block_rows = bsz[i+1] - bsz[i];
 
 
-	//allocate device memory for block_Y
+	//allocate device memory for block d_Y
 	//-----------------------------------------------
 	unsigned int size_dY = block_rows * Y_cols;
 	unsigned int mem_size_dY = sizeof(float) * size_dY;
 
-	checkCudaErrors(cudaMalloc((void **) &d_Y, mem_size_B));
+	float *d_Y;
+	checkCudaErrors(cudaMalloc((void **) &d_Y, mem_size_dY));
 
-	checkCudaErrors(cublasSetMatrix(
-                                    Y_rows, Y_cols, sizeof(float), Y, Y_rows, d_Y, block_rows));
         //-----------------------------------------------
 
 
@@ -72,18 +75,19 @@ void cublas_blockmat_multiply(const VBSparMat &VBMat, float *X, int X_cols, floa
 		 //define the sub-matrices
 		const float* block = (VBMat.ba)[i][j];  //access block i,j in column major order.
 		const float* blockX = X + bsz[col];     //col indicates the vertical block of X that is going to be multiplied with the (i,j)block of VBMat
-		float* blockY = Y + bsz[i];             //i indicates the vertical block of Y that is going to be updated		
         
 		cublas_gemm_custom(block, block_cols, block_rows, block_rows,
                    blockX, X_cols, X_rows,
-                   d_Y, block_rows)
+                   d_Y, block_rows);
 	}
 	//retrieve matrix from device and free memory
 	/*--------------------------------------*/
+
+	float* blockY = Y + bsz[i];             //i indicates the vertical block of Y that is going to be updated               
 	checkCudaErrors(cublasGetMatrix(
-                                    block_rows, Y_cols, sizeof(float), d_Y, block_rows, Y, Y_rows));
+                                    block_rows, Y_cols, sizeof(float), d_Y, block_rows, blockY, Y_rows));
    
-	checkCudaErrors(cudaFree(d_B));
+	checkCudaErrors(cudaFree(d_Y));
 	/*-------------------------------------*/
 
     }
@@ -94,8 +98,8 @@ void cublas_blockmat_multiply(const VBSparMat &VBMat, float *X, int X_cols, floa
 //Matrix-Matrix multiplication with cublas. A,B,C are in column-major order.
 //Matrix A and B are in host
 //Matrix d_C is in device to allow for accumulation of results
-int cublas_gemm_custom(float *A, unsigned int A_cols, unsigned int A_rows, unsigned int lda,
-                   float *B, unsigned int B_cols, unsigned int ldb,
+int cublas_gemm_custom(const float *A, unsigned int A_cols, unsigned int A_rows, unsigned int lda,
+                   const float *B, unsigned int B_cols, unsigned int ldb,
                    float *d_C, unsigned int ldc)
 {
     int block_size = 16;
@@ -161,27 +165,3 @@ void randomInit(float *data, int size)
         data[i] = rand() / (float)RAND_MAX;
 }
 
-
-
-int main(int argc, char **argv){
-    int AW = 8;
-    int AH = 13;
-    int sizeA = AW*AH;
-    float A[sizeA];
-
-    
-    int BW = 25;
-    int BH = AW;
-    int sizeB = BW*BH;
-    float B[sizeB];
-    
-    int CH = AH;
-    int CW = BW;
-    int sizeC = CW*CH;
-    float C[sizeC] = {0};
-    
-    randomInit(A,sizeA);
-    randomInit(B,sizeB);
-	
-
-}
