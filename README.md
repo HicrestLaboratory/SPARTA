@@ -9,8 +9,9 @@ The repository contains code for compressing sparse matrices into dense block da
 Input sparse matrices are stored in Compressed Sparse Row (CSR) format. 
 Variable Block Compressed Sparse Row is used to store block-sparse matrices. 
 
-Currently, the code requires Intel MKL library.  Remember to configure the link command through
-[Intel MKL Link Line Advisor](https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor/)
+Running the code requires either Intel MKL library or the CUDA Toolkit.
+MKL Library: https://software.intel.com/en-us/mkl
+CUDA: https://developer.nvidia.com/cuda-downloads
 
 The files have the following structure
 
@@ -25,8 +26,7 @@ each folder contains
 * cuda: files needed by the cuda version
 * mkl: files needed by the mkl version
 
-
-running `make cuda_test` or `make mkl_test` will create a test executable of the cuda version or the mkl version respectively. The executable will be placed in the relevant folder of programs/. You can run it with different command line arguments to test different features.  
+running `make cuda_test` or `make mkl_test` will create a test executable of the cuda version or the mkl version respectively. The executable will be placed in programs/cuda or programs/mkl. You can run it with different command line arguments to test different features.  
 
 * `-i` : select type of input
 * *  `1`: Random CSR
