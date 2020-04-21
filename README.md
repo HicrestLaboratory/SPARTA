@@ -12,7 +12,21 @@ Variable Block Compressed Sparse Row is used to store block-sparse matrices.
 Currently, the code requires Intel MKL library.  Remember to configure the link command through
 [Intel MKL Link Line Advisor](https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor/)
 
-running `make` will create a test executable (from Test.cpp) in the programs/ folder. You can run it with different command line arguments to test different features.  
+The files have the following structure
+
+SPARTA
+* include
+* obj
+* programs 
+* src   
+
+each folder contains 
+* general: files needed by all versions
+* cuda: files needed by the cuda version
+* mkl: files needed by the mkl version
+
+
+running `make cuda_test` or `make mkl_test` will create a test executable of the cuda version or the mkl version respectively. The executable will be placed in the relevant folder of programs/. You can run it with different command line arguments to test different features.  
 
 * `-i` : select type of input
 * *  `1`: Random CSR
@@ -25,11 +39,6 @@ running `make` will create a test executable (from Test.cpp) in the programs/ fo
 * `-o`: number of column of output matrix
 * `-e`: epsilon used for marix reordering (must be in [0,1]. Smaller epsilon will make larger blocks);  
 
-
-Source files are stored in the src folder:
-* Test.cpp shows an example of how reading, conversion, rows reorder and sparse-dense multiplication work for several input matrix format.
-* setblks.cpp contains tools to handle interactions (conversion, reorder) between SparMat and VBSparMat objects.
-* utilities.cpp contains other tools (mainly interaction with SparMat objects). 
 
 ## RoadMAP
 * Supporting Nvidia Tensor Core
