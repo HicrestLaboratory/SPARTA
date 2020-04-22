@@ -111,19 +111,21 @@ build:
 	@mkdir -p $(GEN_APP_DIR)
 	@mkdir -p $(GEN_OBJ_DIR)
 
-mkl_build: build
+mkl_build: build $(MKL_APP_DIR)/$(MKL_TARGET)
 	@mkdir -p $(MKL_APP_DIR)
 	@mkdir -p $(MKL_OBJ_DIR)
 
-cuda_build: build
+cuda_build: build $(CUDA_APP_DIR)/$(CUDA_TARGET)
 	@mkdir -p $(CUDA_APP_DIR)
 	@mkdir -p $(CUDA_OBJ_DIR)
 
 general: build $(GEN_OBJECTS)
 
-mkl_test: mkl_build $(MKL_APP_DIR)/$(MKL_TARGET)
+mkl_test: $(MKL_APP_DIR)/$(MKL_TARGET)
+	./$(MKL_APP_DIR)/$(MKL_TARGET)
 
-cuda_test: cuda_build $(CUDA_APP_DIR)/$(CUDA_TARGET)
+cuda_test: $(CUDA_APP_DIR)/$(CUDA_TARGET)
+	./$(CUDA_APP_DIR)/$(CUDA_TARGET)
 
 clean:
 	-@rm -rvf $(OBJ_DIR)/*

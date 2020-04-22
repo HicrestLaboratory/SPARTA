@@ -22,22 +22,6 @@
 
 using namespace std;
 
-void matprint(float *mat, int rows, int cols,bool transpose = true)
-{
-
-        for(int i = 0; i<rows;i++){
-		for (int j = 0; j < cols; j++){
-			if (transpose){
-                		std::cout<< mat[j*rows + i]<< " ";
-			}
-			else{
-				std::cout<< mat[i*cols + j]<< " ";
-			}
-		}
-		std::cout << std::endl;			
-        }
-
-}
 
 void cublas_blockmat_multiply(const VBSparMat &VBMat, float *X, int X_cols, float *Y){
     int N = VBMat.n, *bsz = VBMat.bsz;
@@ -48,8 +32,8 @@ void cublas_blockmat_multiply(const VBSparMat &VBMat, float *X, int X_cols, floa
     int Y_rows = mat_n;
     int Y_cols = X_cols;
 
-    float alpha = 1.0f;
-    float beta = 1.0f;
+    const float alpha = 1.0f;
+    const float beta = 1.0f;
    
     //loop vertically through block rows
     for(int i = 0; i < N; i++ ) {
@@ -78,8 +62,9 @@ void cublas_blockmat_multiply(const VBSparMat &VBMat, float *X, int X_cols, floa
         
 		cublas_gemm_custom(block, block_cols, block_rows, block_rows,
                    blockX, X_cols, X_rows,
-                   d_Y, block_rows);
+                   d_Y, block_rows,alpha, beta);
 	}
+
 	//retrieve matrix from device and free memory
 	/*--------------------------------------*/
 
@@ -99,8 +84,10 @@ void cublas_blockmat_multiply(const VBSparMat &VBMat, float *X, int X_cols, floa
 //Matrix A and B are in host
 //Matrix d_C is in device to allow for accumulation of results
 int cublas_gemm_custom(const float *A, unsigned int A_cols, unsigned int A_rows, unsigned int lda,
-                   const float *B, unsigned int B_cols, unsigned int ldb,
-                   float *d_C, unsigned int ldc)
+	const float *B, unsigned int B_cols, unsigned int ldb,
+	float *d_C, unsigned int ldc,
+	const float alpha,
+	const float beta)
 {
     int block_size = 16;
     cublasStatus_t stat;
@@ -132,8 +119,6 @@ int cublas_gemm_custom(const float *A, unsigned int A_cols, unsigned int A_rows,
     dim3 grid(C_cols / threads.x, C_rows / threads.y);
 
     // CUBLAS version 2.0
-    const float alpha = 1.0f;
-    const float beta  = 1.0f;
     cublasHandle_t handle;
 
     checkCudaErrors(cublasCreate(&handle));

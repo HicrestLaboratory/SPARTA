@@ -372,16 +372,20 @@ void matprint(const Mat &mat){
 
 }
 
-void matprint(const DataT* mat, const int rows,const int cols){
-    cout << "PRINTING THE MATRIX" << endl;
-    for (int i = 0; i < rows*cols; i++){
-        if (i%cols == 0){
-            cout << endl;
-	    cout << setprecision(5);
+void matprint(const DataT *mat, const int rows, const int cols, const bool transpose)
+{
+
+        for(int i = 0; i<rows;i++){
+                for (int j = 0; j < cols; j++){
+                        if (transpose){
+                                std::cout<< mat[j*rows + i]<< " ";
+                        }
+                        else{
+                                std::cout<< mat[i*cols + j]<< " ";
+                        }
+                }
+                std::cout << std::endl;
         }
-        cout << mat[i] << " ";
-    }
-    cout <<endl<< "finished printing the matrix"<<endl;
 
 }
 

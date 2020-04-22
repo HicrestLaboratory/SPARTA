@@ -200,18 +200,23 @@ int main(int argc, char *argv[]) {
 //with a dense one, with benchmarks
 //******************************************
     
-//create a dense array matrix from spmat (for GEMM with MKL)
-    Mat mat;
-    int mat_n = spmat.n;
-    DataT* mat_arr;
-    mat_arr = new DataT[mat_n*mat_n];
-    convert_from_CSR(spmat, mat);
-    std::copy((mat.vec).begin(), (mat.vec).end(), mat_arr);
-
-    cout << fixed; //output format
+//create a dense array matrix from spmat (for CUBLAS GEMM)
+    	Mat mat;
+    	int mat_n = spmat.n;
+    	DataT* mat_arr;
+	mat_arr = new DataT[mat_n*mat_n];
+    	convert_from_CSR(spmat, mat);
+    	std::copy((mat.vec).begin(), (mat.vec).end(), mat_arr);
 
 
-//TODO put all matrices in column-major format
+	DataT* mat_arr_c = new DataT[mat_n*mat_n];
+	convert_to_col_major(mat_arr, mat_arr_c, mat_n, mat_n);
+
+
+    	cout << fixed; //output format
+
+
+//TODO put all matrices in column-major format from the start
 	cout << "\n \n **************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl; 
 //creating the dense matrix X
 	int X_rows = spmat.n;
@@ -225,94 +230,71 @@ int main(int argc, char *argv[]) {
     		X[k] = x/100;
   	}
 
-    DataT X_c[X_rows*X_cols]; //column major version of X
-    convert_to_col_major(X, X_c, X_rows, X_cols);
+   	DataT X_c[X_rows*X_cols]; //column major version of X
+    	convert_to_col_major(X, X_c, X_rows, X_cols);
 
 
 //----------------------------
 //creating the output matrix Y
-	DataT Y_gemm[spmat.n * X_cols];
-	DataT Y_csr[spmat.n * X_cols];
-    	DataT Y_block[spmat.n * X_cols] = {};
-	DataT Y_batch[spmat.n * X_cols] = {};
+	int Y_rows = spmat.n;
+	int Y_cols = X_cols;
 
-//dense-dense cuda gemm multiplication
+
+//result matrices, to be filled in column-major format
+
+    	DataT Y_gemm[Y_rows * Y_cols];
+	//DataT Y_csr[Y_rows * Y_cols];
+    	DataT Y_block[Y_rows * Y_cols] = {};
+	//DataT Y_batch[Y_rows * Y_cols] = {};
+
+//dense-dense cublas gemm multiplication
     
-    clock_t start_t = clock();
+    	clock_t start_t = clock();
 
-    unsigned int size_Y = spmat.n * X_cols;
-    unsigned int mem_size_Y = size_Y * sizeof(float);
-    float *d_Y;
-    checkCudaErrors(cudaMalloc((void **) &d_Y, mem_size_Y)); 
+    	unsigned int size_Y = Y_rows * Y_cols;
+    	unsigned int mem_size_Y = size_Y * sizeof(float);
+  	DataT *d_Y;
+   	checkCudaErrors(cudaMalloc((void **) &d_Y, mem_size_Y)); 
 
-    cublas_gemm_custom (mat_arr, mat_n, mat_n, mat_n, X, X_cols, X_rows, d_Y, mat_n);
+    	cublas_gemm_custom (mat_arr_c, mat_n, mat_n, mat_n, X, X_cols, X_rows, d_Y, mat_n);
 
-    checkCudaErrors(cublasGetMatrix(mat_n, X_cols, sizeof(float), d_Y, mat_n, Y_gemm, mat_n));
+    	checkCudaErrors(cublasGetMatrix(Y_rows, Y_cols, sizeof(float), d_Y, mat_n, Y_gemm, mat_n));
 
-    checkCudaErrors(cudaFree(d_Y));
+    	checkCudaErrors(cudaFree(d_Y));
  
-    double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
-        cout<<"Dense-Dense multiplication. Time taken: " << total_t<<endl;
+    	double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
+    	cout<<"Dense-Dense multiplication. Time taken: " << total_t<<endl;
 
-/*    
-//csr-dense mkl multiplication
 
-    matrix_descr descr_spmat;
-    descr_spmat.type = SPARSE_MATRIX_TYPE_GENERAL;
-        	
-    start_t = clock();
-    
-    mkl_spmm_custom (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, mkl_spmat, descr_spmat, SPARSE_LAYOUT_ROW_MAJOR, X, X_cols, X_cols , 0.0, Y_csr, X_cols);
-    
-    total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
-    cout<<"CSR-Dense multiplication. Time taken: " << total_t<<endl;
-//------------------------------
-*/	
-
-//vbr-dense mkl multiplication	
+//vbr-dense cublas multiplication	
 	DataT Y_block_c[X_rows*X_cols] = {};
 
         start_t = clock();
 
-	cublas_blockmat_multiply(vbmat, X_c, X_cols, Y_block_c);
+	cublas_blockmat_multiply(vbmat, X_c, X_cols, Y_block);
 	
 	total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
-	
-	convert_to_row_major(Y_block_c,Y_block, spmat.n,X_cols);
 	
 	cout <<"BlockSparse-Dense multiplication. Time taken: " << total_t<<endl;
 
 
+//TODO CSR-dense cusparse multiplication
 
-/*
-//vbr-dense BATCH mkl multiplication
-	DataT Y_batch_c[X_rows*X_cols] = {};
-
-        start_t = clock();
-
-        mkl_blockmat_batch_multiply(vbmat, X_c, X_cols, Y_block_c);
-
-        total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
-
-        convert_to_row_major(Y_batch_c,Y_batch, spmat.n,X_cols);
-
-	cout <<"BlockSparse-Dense BATCH multiplication. Time taken: " << total_t<<endl;
- */
  
  
 //PRINT RESULTING MATRICES
 
-	cout << "CSR RESULT" << endl;
-        matprint(&Y_csr[0],spmat.n, X_cols);
+//	cout << "CSR RESULT" << endl;
+//        matprint(&Y_csr[0],spmat.n, X_cols);
 
 	cout << "GEMM RESULT" << endl;
-	matprint(&Y_gemm[0],spmat.n, X_cols);
+	matprint(&Y_gemm[0],Y_rows, Y_cols);
 	
 	cout << "BLOCK RESULT" << endl;
-	matprint(&Y_block[0],spmat.n, X_cols);
+	matprint(&Y_block[0],Y_rows, Y_cols);
 
-	cout << "BLOCK BATCH RESULT" << endl;
-        matprint(&Y_batch[0],spmat.n, X_cols);
+//	cout << "BLOCK BATCH RESULT" << endl;
+//        matprint(&Y_batch[0],spmat.n, X_cols);
 
 
 

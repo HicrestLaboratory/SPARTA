@@ -59,7 +59,7 @@ void matprint(const SparMat & spmt);
 
 void matprint(const Mat & mat);
 
-void matprint(const DataT* mat, const int n,const int m);
+void matprint(const DataT* mat, const int n,const int m, bool transpose = true);
 
 void matprint(const VBSparMat &vbmat);
 
