@@ -32,6 +32,9 @@ struct Mat {
 
 void random_sparse_mat(Mat & mat, int N, float sparsity);
 
+
+//EDGELISTS MANIPULATION
+
 void graph_print(Graphmap & gmap);
 
 void read_snap_format(Graphmap & gmap, string filename);
@@ -44,15 +47,21 @@ void MakeProper(Graphmap & gmap);
 
 void write_snap_format(Graphmap & gmap, string filename);
 
+
+//CSR UTILITIES
+
 void convert_from_CSR(SparMat & spmt, Mat & mat);
 
 void fill_CSR(SparMat & spmt, int n, const vector<int>& vec_nzcount, const vector<int>& vec_ja, const vector<DataT>& vec_ma);
 
 void convert_to_CSR(const Mat & mat, SparMat & spmt);
 
-void convert_to_CSR(const Graphmap & gmap, SparMat & spmt);
+void convert_to_CSR(const Graphmap& gmap, SparMat& spmt);
 
-void permute(SparMat & spmt, int * perm);
+void permute(SparMat& spmt, int* perm);
+
+
+//matrix printing
 
 void matprint(const SparMat & spmt);
 
@@ -62,17 +71,27 @@ void matprint(const DataT* mat, const int n,const int m, bool transpose = true);
 
 void matprint(const VBSparMat &vbmat);
 
+
+//Variable Block Utilities
+void extract_features(const vbsptr vbmat, int& Msize, int& Bnum, vector<int>& BLsize, vector<int>& BHsize, vector<int>& Bsparsity);
+
+void features_to_CSV(vbsptr vbmat, ofstream& CSV_out, int verbose);
+
+int random_sparse_blocks_mat(Mat& mat, int N, int n_block, float block_k, float k);
+
+int make_sparse_blocks(SparMat& spmt, VBSparMat& vbmat, double eps);
+
+void block_mat_multiply(const VBSparMat& VBMat, DataT* X, const int k, DataT* Y);
+
+
+
 void read_snap_format(SparMat & spmt, string infilename);
 
 void read_mtx_format(SparMat & spmt, string infilename);
 
-void extract_features(const vbsptr vbmat, int & Msize, int & Bnum, vector<int>& BLsize, vector<int>& BHsize, vector<int>& Bsparsity);
 
-void features_to_CSV(vbsptr vbmat, ofstream & CSV_out, int verbose);
 
-int make_sparse_blocks(SparMat &spmt, VBSparMat &vbmat, double eps);
 
-int random_sparse_blocks_mat(Mat &mat, int N, int n_block, float block_k, float k);
 
 void convert_to_col_major(DataT *X, DataT *Y, const int n, const int m);
 
@@ -80,14 +99,12 @@ void convert_to_row_major(DataT *X, DataT *Y, const int n, const int m);
 
 bool are_equal(const DataT *X,const DataT* Y,const int m, const double eps = 0.0);
 
-void block_mat_multiply(const VBSparMat &VBMat, DataT *X, const int k, DataT *Y);
+void randomvec(vector<DataT>& v, int n);
 
-void block_mat_batch_multiply(const VBSparMat &VBMat, DataT *X, int X_cols, DataT *Y);
 
-//-----------------------------------------------------------------------ARRAY AND VECTOR UTILITIES----------------------------------------------
+//-----------------------------------------------------------------------ARRAY AND VECTOR TEMPLATES----------------------------------------------
 //-------------------------------------------------------------------------------------------------------------------------------------
 
-void randomvec(vector<DataT>& v, int n);
 
 
 //mean of a vector
