@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     
     string input_source;
     
-    float eps = 0.8;
+    float eps = 0.5;
     //this value sets how different two rows in the same block can be.
     //eps = 1 means only rows with equal structure are merged into a block
     //eps = 0 means all rows are merged into a single block
@@ -177,6 +177,9 @@ int main(int argc, char *argv[]) {
     VBSparMat vbmat;
     make_sparse_blocks(spmat, vbmat,eps);
 
+
+
+    matprint(spmat);
     cout<<"CSR permuted. VBSparMat created"<<endl;
 
 //*******************************************
@@ -266,6 +269,9 @@ int main(int argc, char *argv[]) {
     	cout<<"Dense-Dense multiplication. Time taken: " << total_t<<endl;
 
 
+	matprint(mat_arr_c,mat_n,mat_n);
+
+	matprint(vbmat);
 //vbr-dense cublas multiplication	
 	DataT Y_block_c[X_rows*X_cols] = {};
 

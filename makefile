@@ -100,9 +100,6 @@ $(CUDA_APP_DIR)/$(CUDA_TARGET) : $(CUDA_OBJECTS)
 	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LDFLAGS) -o $(CUDA_APP_DIR)/$(CUDA_TARGET) $(CUDA_OBJECTS)
 
 
-
-
-
 .PHONY: all build clean general mkl_build cuda_build
 
 build: 

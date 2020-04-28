@@ -401,7 +401,7 @@ int init_blocks( csptr csmat, int *pnBlock, int **pnB, int **pperm,
  * csmat   = matrix stored in SpaFmt format after permutation
  * pnBlock = dimension of the block matrix
  * pnB     = dimension of each block
- *
+ * pperm   = row permutation
  *----------------------------------------------------------------------------
  * Combination of hash method and angle method:
  *----------------------------------------------------------------------------

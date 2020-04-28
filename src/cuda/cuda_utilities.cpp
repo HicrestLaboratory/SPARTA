@@ -16,6 +16,7 @@
 #include "cuda_utilities.h"
 #include "globheads.h"
 #include "protos.h"
+#include "utilities.h"
 
 #include <iostream>
 
@@ -27,7 +28,6 @@ void cublas_blockmat_multiply(const VBSparMat &VBMat, float *X, int X_cols, floa
     int N = VBMat.n, *bsz = VBMat.bsz;
     int block_cols,block_rows,col;
     int mat_n = bsz[N];
-    
     int X_rows = mat_n;
     int Y_rows = mat_n;
     int Y_cols = X_cols;
@@ -59,10 +59,14 @@ void cublas_blockmat_multiply(const VBSparMat &VBMat, float *X, int X_cols, floa
 		 //define the sub-matrices
 		const float* block = (VBMat.ba)[i][j];  //access block i,j in column major order.
 		const float* blockX = X + bsz[col];     //col indicates the vertical block of X that is going to be multiplied with the (i,j)block of VBMat
-        
+		
+		cout << "block: i=" << i << ", j=" << j << ", col = "<< col << ", block cols = " << block_cols << ", block_rows= " << block_rows << endl;   
+		matprint(block,block_cols,block_rows);
+
 		cublas_gemm_custom(block, block_cols, block_rows, block_rows,
                    blockX, X_cols, X_rows,
-                   d_Y, block_rows,alpha, beta);
+                   d_Y, block_rows,
+		   alpha, beta);
 	}
 
 	//retrieve matrix from device and free memory
