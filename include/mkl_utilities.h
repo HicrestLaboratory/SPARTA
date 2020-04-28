@@ -2,6 +2,8 @@
 #include "protos.h"
 #include "mkl.h"
 
+void convert_to_MKL(SparMat& spmt, sparse_matrix_t& A);
+
 void mkl_batch_custom(const CBLAS_LAYOUT Layout,
                       const CBLAS_TRANSPOSE* transa_array, const CBLAS_TRANSPOSE* transb_array,
                       const MKL_INT* m_array, const MKL_INT* n_array, const MKL_INT* k_array,

@@ -19,7 +19,6 @@
 
 #include "globheads.h"
 #include "protos.h"
-#include "mkl.h"
 
 using namespace std;
 
@@ -62,8 +61,6 @@ void matprint(const Mat & mat);
 void matprint(const DataT* mat, const int n,const int m, bool transpose = true);
 
 void matprint(const VBSparMat &vbmat);
-
-void convert_to_MKL(SparMat &spmt, sparse_matrix_t &A);
 
 void read_snap_format(SparMat & spmt, string infilename);
 
