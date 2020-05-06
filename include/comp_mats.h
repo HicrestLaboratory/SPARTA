@@ -1,5 +1,4 @@
-#ifndef __COMPRESSED_MATRICES__
-#define __COMPRESSED_MATRICES__
+#pragma once
 
 typedef struct CSR {
     /*--------------------------------------------------------------
