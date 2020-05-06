@@ -7,7 +7,6 @@ typedef std::map<int, set<int> > Graphmap;
 //GRAPH UTILITIES
 //TODO RMAT reader/generator (maybe in Python)
 
-
 void read_snap_format(Graphmap & gmap, string filename)
 	{
 		/*		Read from edgelist to a graphmap
