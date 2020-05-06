@@ -678,6 +678,7 @@ int hash(int* arr, int a_len, int block_size, int mode)
     while (nzs < a_len)
     {
         j = arr[nzs] % block_size;
+        nsz++;
         if (j == tmp_idx) and (mode == 0) //if mode is 0, only one j per block is considered in the hash sum;
         {
             continue;
@@ -692,6 +693,45 @@ int hash(int* arr, int a_len, int block_size, int mode)
 
 int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size, int mode)
 {
+    //check if two arrays of indices have the same pattern
+    int i = 0;
+    int j = 0;
+    int b_idx0 = 0;
+    int b_idx1 = 0;
+
+    while (i < len0) and (j < len1)
+    {
+        b_idx0 = arr0[i] % block_size;
+        b_idx1 = arr1[j] % block_size;
+        if (b_idx0 != b_idx1)
+        {
+            return 0;
+        }
+
+        i++;
+        j++; 
+
+        if (mode == 0) //if mode=0, skip all entries in a block after the first one;
+        {
+            while (j < len0) and (b_idx0 == arr0[i] % block_size)
+            {
+                i++;
+            }
+            while (j < len0) and (b_idx1 == arr1[j] % block_size)
+            {
+                j++
+            }
+        }
+
+    }
+    if (i < len0) or (j < len1)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
 
 }
 

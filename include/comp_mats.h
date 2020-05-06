@@ -49,8 +49,8 @@ typedef struct VBS {
     int cols;	            /* the block column dimension of the matrix   	        */
     int* nzcount;	        /* number of nonzero blocks in each block-row (-column) */
     int* jab;              /* block-columns (-rows) indices of nonzero blocks      */
-    int* row_part;              /*number of rows in row partition elements*/
-    int* col_part;              /*number of columns in column partition elements*/
+    int* row_part;              /*cumulative number of row up to row partition element i*/
+    int* col_part;              /*cumulative number of row up to row partition element i*/
 
     BData* mab;             /* array containing all entries, block by block	        */
     int entries_fmt;         /* storage format inside blocks:
