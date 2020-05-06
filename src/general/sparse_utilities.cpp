@@ -1,0 +1,699 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+#include "comp_mats.h"
+#include "sparse_utilities.h"
+
+// Matrix utilities
+
+int IDX(int row, int col, int lead_dim, int fmt)
+{
+    if (fmt == 0)
+    {
+        return row * lead_dim + col;
+    }
+    else
+    {
+        return col * lead_dim + row;
+    }
+}
+
+int is_empty(DataT* mat, int rows, int cols, int lead_dim, int fmt) {
+
+    for (i = 0; i < rows; i++)
+    {
+        for (j = 0; j < cols; j++)
+        {
+            if (mat[IDX(i, j, lead_dim, fmt)] != 0.) return 0;
+        }
+    }
+    return 1;
+}
+
+int mat_cpy(DataT* in_mat, int in_rows, int in_cols, int in_lead_dim, int in_fmt, DataT* out_mat, int out_lead_dim, int out_fmt)
+{
+    int in_idx,out_idx;
+
+    //TODO add error check
+
+    for (int i = 0; i < in_rows; i++)
+    {
+        for (int j = 0; j < in_cols; j++)
+        {
+            in_idx  =   IDX(i, j, in_lead_dim, in_fmt);
+            out_idx =   IDX(i, j, out_lead_dim, out_fmt);
+
+            //TODO add out of bounds check
+            out_mat[out_idx] = in_mat[in_idx];
+        }
+    }
+
+    return 0;
+}
+
+int random_mat(DataT* mat, int rows, int cols, float sparsity)
+{
+    //create a random matrix with given sparsity and unitary entries;
+
+    int nzs = (int)sparsity * rows * cols;
+    vector<DataT> entries = vector<DataT>(rows * cols, 0);
+    std::fill(entries.begin(), entries.begin() + nzs, 1);
+    std::random_shuffle(entries.begin(), entries.end());
+    std::copy(entries.begin(), entries.end(), mat);
+
+}
+
+int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_size, float block_sparsity, float block_entries_sparsity) {
+
+    if (rows % block_size != 0) || (cols % block_size != 0)
+    {
+        std::cout << 'ERROR: matrix dimension must be a multiple of block size' << endl;
+        return 1;
+    }
+
+    int n_blocks = rows * cols / (block_size * block_size);     //total number of blocks
+    int nzblocks = (int)block_sparsity * n_blocks;              //total number of nonzero blocks
+
+    vector<int> blocks = vector<int>(n_blocks, 0);              //will store 0 unless a block is nonzero;
+    std::fill(blocks.begin(), blocks.begin() + nzblocks, 1);    //make nzblocks blocks nonzero;
+    std::random_shuffle(blocks.begin(), blocks.end());          //put the nonzero blocks in random positions
+
+    int mat_lead_dim = (fmt == 0) ? cols : rows;
+
+    //put nonzerovalues in the Mat
+    for (int ib = 0; ib < n_block; ib++) {//iterate through block rows
+        for (int jb = 0; jb < n_block; jb++) { //iterate through block columns
+            if (blocks[ib * n_block + jb] != 0) {
+                //if block is nonempty, put random values in it;
+
+                DataT* tmp_block[block_size*block_size] = { 0 }; //temporary block
+                random_mat(tmp_block, block_size, block_size, block_entries_sparsity); //make a random block with given sparsity
+
+                int block_idx = IDX(ib * block_size, jb * block_size, mat_lead_dim, fmt); //find starting position of the block in mat
+                mat_cpy(tmp_block, block_size, block_size, block_size, 0, mat + block_idx, mat_lead_dim, fmt); //copy entries from tmp_block to mat
+            }
+        }
+    }
+
+
+}
+
+int matprint(DataT* mat, int rows, int cols, int lead_dim, int fmt)
+{
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            int idx = IDX(i, j, lead_dim, fmt);
+            std::cout << mat[idx] << " ";
+        }
+
+        std::cout << std::endl;
+    }
+}
+
+
+//VBSfx utilities
+
+int cleanVBS(VBSfx& vbmat)
+{
+    delete[] vbmat.nzcount;
+    delete[] vbmat.jab;
+    delete[] vbmat.mab;
+
+    return 0;
+}
+
+int convert_to_VBSfx(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBSfx& vbmat, int block_size, int vbmat_block_fmt, int vbmat_entries_fmt)
+{
+
+    //(For now only works with exact multiples.TODO add padding instead of removing elements)
+    if !(mat_rows % block_size != 0) || (mat_cols % block_size != 0)
+    {
+        std::cout << 'ERROR: matrix dimension must be a multiple of block size' << endl;
+        return 1;
+    }
+    vbmat.rows = mat_rows/ block_size; //number of block-rows, round down.
+    vbmat.cols = mat_cols/ block_size; //number of block-cols, round down.
+
+    vbmat.blocks_fmt = vbmat_blocks_fmt;
+    vbmat.entries_fmt = vbmat_entries_fmt;
+
+    int vbmat_main_dim;
+    int vbmat_compressed_dim;
+    int i; //counter for main dimension
+    int j; //counter for compressed dimension
+
+    int* b_row_ptr; //pointer to current block_row
+    int* b_col_ptr; //pointer to current block_column
+
+
+    if (vbmat.blocks_fmt == 0)
+    {
+        //if Compressed Sparse Row
+        vbmat_main_dim = vbmat.rows;
+        vbmat_compressed_dim = vbmat.cols;
+
+        // assign row and column pointers respectively
+        // to counters for main and compressed dimension
+        b_row_ptr = &i;
+        b_col_ptr = &j;
+
+    }
+    else
+    {
+        //if Compressed Sparse Columns
+        vbmat_main_dim = vbmat.cols;
+        vbmat_compressed_dim = vbmat.rows;
+
+        // assign column and row pointers respectively
+        // to counters for main and compressed dimension
+        b_row_ptr = &j;
+        b_col_ptr = &i;
+    }
+
+    vbmat.nzcount = new int[vbmat_main_dim]; //initialize nzcount, which stores number of nonzero blocks for each block-row (-column)
+
+
+    int matpos;
+    std::vector<int> jab;
+    vector<DataT> mab;
+
+    //FIND BLOCK STRUCTURE--------------------------------------------------------------
+    for (i = 0; i < vbmat_main_dim; i++ )        //loops trough main block dimension
+    {
+        for (j = 0; j < vbmat_compressed_dim; j++)     //loops through compressed block dimension
+        {
+
+            matpos = IDX((*b_row_ptr) * block_size, (*b_col_ptr) * block_size, mat_leading_dim, mat_fmt);    //find starting index of block in matrix
+            if (!is_empty(matpos, block_size, block_size, mat_leading_dim, mat_fmt))        //check if block is non-empty
+            {
+                vbmat.nzcount[i] += 1;  //one more nonzero block on the compressed dimension
+                jab.push_back(j);       //store index of nonzero block
+            }
+        }
+    }
+    //----------------------------------------------------------------------------------
+
+    vbmat.jab = new int[jab.size()];
+
+    int total_nonzero_entries = jab.size() * block_size * block_size;
+    vmat.mab = new DataT[total_nonzero_entries];
+
+
+    int mat_idx = 0; //keeps reading position for mat
+    int vbmat_idx = 0; //keeps writing position for vbmat 
+    int ja_count = 0; //keeps total nonzero blocks count;
+    
+    int mat_leading_dim = mat_fmt == 0 ? cmat.cols : cmat.rows;
+
+    //COPY VALUES from mat to vbmat ------------------------------------------------------
+    for (i = 0; i < vbmat_main_dim; i++)
+    {
+        for (int nzs = 0; nzs < nzcount[i]; nzs++)
+        {
+            j = jab[ja_count];
+            mat_idx = IDX((*b_row_ptr) * block_size, (*b_col_ptr) * block_size, mat_leading_dim, mat_fmt); //find starting index of block in matrix
+            
+            mat_cpy(mat + mat_idx, block_size, block_size, mat_leading_dim, mat_fmt, vmat.mab + vbmat_idx, block_size, vbmat_entries_fmt); //write block from mat to vbmat.mab
+            vbmat_idx += block_size * block_size;
+            ja_count++;
+        }
+    }
+    //------------------------------------------------------------------------------------
+
+    return 0;
+}
+
+int convert_to_mat(const VBSfx& vbmat, DataT* out_mat, int out_mat_fmt)
+{
+    //input:
+    //  vmat: a VBS matrix with fixed block dimension
+    //  out_mat: an array of the proper dimension, filled with 0s; 
+
+    int out_mat_rows = vbmat.rows * vbmat.block_dim;
+    int out_mat_cols = vbmat.cols * vbmat.cols_dim;
+
+    int vbmat_main_dim;
+    int vbmat_compressed_dim;
+    int i; //counter for main dimension
+    int j; //counter for compressed dimension
+
+    int* b_row_ptr; //pointer to current block_row
+    int* b_col_ptr; //pointer to current block_column
+
+
+    if (vbmat.blocks_fmt == 0)
+    {
+        //if Compressed Sparse Row
+        vbmat_main_dim = vbmat.rows;
+        vbmat_compressed_dim = vbmat.cols;
+
+        // assign row and column pointers respectively
+        // to counters for main and compressed dimension
+        b_row_ptr = &i;
+        b_col_ptr = &j;
+
+    }
+    else
+    {
+        //if Compressed Sparse Columns
+        vbmat_main_dim = vbmat.cols;
+        vbmat_compressed_dim = vbmat.rows;
+
+        // assign column and row pointers respectively
+        // to counters for main and compressed dimension
+        b_row_ptr = &j;
+        b_col_ptr = &i;
+    }
+
+    int out_mat_idx = 0; //keeps read position for mat
+    int vbmat_idx = 0; //keeps write position for vbmat 
+    int ja_count = 0; //keeps total nonzero blocks count;
+
+    int mat_leading_dim = mat_fmt == 0 ? cmat.cols : cmat.rows;
+
+    for (i = 0; i < vbmat_main_dim; i++) //loop main dimension
+    {
+        for (int nzs = 0; nzs < nzcount[i]; nzs++) //loop on compressed dimension
+        {
+            j = jab[ja_count];
+            out_mat_idx = IDX((*b_row_ptr) * block_size, (*b_col_ptr) * block_size, mat_leading_dim, out_mat_fmt); //find starting index of block in matrix
+
+            mat_cpy(vmat.mab + vbmat_idx, block_size, block_size, block_size, vbmat_entries_fmt, out_mat + out_mat_idx, out_mat_fmt); //write block from mat to vbmat.mab
+            vbmat_idx += block_size * block_size;
+            ja_count++;
+        }
+    }
+
+    return 0;
+}
+
+int convert_to_VBSfx(const CSR& cmat, VBSfx& vbmat, int block_size, int vbmat_block_fmt, int vbmat_entries_fmt)
+{
+    //WARNING: this does the additional step of converting to and then from array. 
+    //TODO: if necessary, make conversion efficient;
+
+    int mat_rows = cmat.rows;
+    int mat_cols = cmat.cols;
+    int mat_size = mat_rows * mat_cols;
+    int mat_fmt = 0;
+    DataT mat[mat_size] = { 0 };
+    convert_to_mat(cmat, mat, mat_fmt);
+    convert_to_VBSfx(mat, mat_rows, mat_cols, mat_fmt, vbmat, block_size, vbmat_block_fmt, vbmat_entries_fmt);
+
+    return 0;
+}
+
+
+//CSR utilities
+
+int cleanCSR(CSR& cmat)
+{
+    /*----------------------------------------------------------------------
+    | Free up memory allocated for CSR structs.
+    |----------------------------------------------------------------------
+    | on entry:
+    |==========
+    |  cmat  =  a CSR struct.
+    |--------------------------------------------------------------------*/
+    /*   */
+    if (cmat == NULL) return 0;
+    if (cmat.rows + cmat.cols <= 1) return 0;
+
+
+    int main_dim;
+    main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
+
+    for (int i = 0; i < main_dim; i++) {
+        if (cmat.nzcount[i] > 0) {
+            if (cmat.ma) delete[] cmat.ma[i];
+            delete[] cmat.ja[i];
+        }
+    }
+    if (cmat.ma) delete[] cmat.ma;
+    delete[] cmat.ja;
+    delete[] cmat.nzcount;
+
+    return 0;
+}
+
+int convert_to_mat(const CSR& cmat, DataT* out_mat, int out_mat_fmt)
+{
+    //input:
+    //  vmat: a CSR matrix
+    //  out_mat: an array of the proper dimension, filled with 0s; 
+
+    int main_dim;
+    int compressed_dim;
+    int i; //counter for main dimension
+    int j; //counter for compressed dimension
+
+    int* row_ptr; //pointer to current block_row
+    int* col_ptr; //pointer to current block_column
+
+    if (cmat.fmt == 0)
+    {
+        //if Compressed Sparse Row
+        main_dim = cmat.rows;
+        compressed_dim = cmat.cols;
+
+        // assign row and column pointers respectively
+        // to counters for main and compressed dimension
+        row_ptr = &i;
+        col_ptr = &j;
+
+    }
+    else
+    {
+        //if Compressed Sparse Columns
+        main_dim = cmat.cols;
+        compressed_dim = cmat.rows;
+
+        // assign column and row pointers respectively
+        // to counters for main and compressed dimension
+        row_ptr = &j;
+        col_ptr = &i;
+    }
+
+    int out_lead_dim = out_mat_fmt == 0 ? cmat.cols : cmat.rows;
+    
+    //FILL THE OUTPUT MATRIX
+    for (i = 0; i < main_dim; i++)
+    {
+        for (int nzs = 0; nzs < cmat.nzcount[i]; nzs++) 
+        {
+            j = cmat.ja[i][nzs]; //find column (row) index of next nonzero element
+            DataT* elem = cmat.ma[i][nzs]; //value of that element;
+
+            mat_idx = IDX(*row_ptr, *col_ptr, out_lead_dim, out_mat_ftm);
+            out_mat[mat_idx] = elem;
+        }
+    }
+
+    return 0;
+
+}
+
+int convert_to_CSR(const DataT* in_mat, int mat_rows, int mat_cols, int mat_fmt, CSR& cmat, int csr_fmt)
+{
+
+    cmat.rows = mat_rows;
+    cmat.cols = mat_cols;
+    cmat.fmt = csr_fmt;
+
+    int csr_main_dim;
+    int csr_compressed_dim;
+    int i; //counter for main dimension
+    int j; //counter for compressed dimension
+
+    int* csr_row_ptr; //pointer to current block_row
+    int* csr_col_ptr; //pointer to current block_column
+
+
+    if (csr_fmt == 0)
+    {
+        //if Compressed Sparse Row
+        csr_main_dim = csr.rows;
+        csr_compressed_dim = csr.cols;
+
+        // assign row and column pointers respectively
+        // to counters for main and compressed dimension
+        csr_row_ptr = &i;
+        csr_col_ptr = &j;
+
+    }
+    else
+    {
+        //if Compressed Sparse Columns
+        csr_main_dim = csr.cols;
+        csr_compressed_dim = csr.rows;
+
+        // assign column and row pointers respectively
+        // to counters for main and compressed dimension
+        csr_row_ptr = &j;
+        csr_col_ptr = &i;
+    }
+
+    cmat.nzcount = new int[csr_main_dim];
+    cmat.ja = new int* [csr_main_dim];
+    cmat.ma = new DataT* [csr_main_dim];
+
+    int tmp_ja[csr_compressed_dim];
+    DataT tmp_ma[csr_compressed_dim];
+
+    int mat_lead_dim = mat_fmt == 0 ? cmat.cols : cmat.rows;
+
+    for (i = 0; i < csr_main_dim; i++) //loop through main dimension
+    {
+        int nzs = 0; //non-zero entries in this row (column) 
+        for (j = 0; j < csr_compressed_dim; j++) //scan compressed dimension for nonzero entries
+        {
+            mat_idx = IDX(*csr_row_ptr, *csr_col_ptr, mat_lead_dim, mat_fmt);
+            if (in_mat[mat_idx] != 0) //if the entry is nonzero add its idx to ja and its value to ma
+            {
+                tmp_ja[nzs] = j;
+                tmp_ma[nzs] = in_mat[mat_idx];
+                nsz++;
+            }
+        }
+
+        cmat.nzcount[i] = nzs; 
+        cmat.ja[i] = new int[nzs];
+        cmat.ma[i] = new int[nzs];
+
+        std::copy(tmp_ja, tmp_ja + nzs, cmat.ja[i]); 
+        std::copy(tmp_ma, tmp_ma + nzs, cmat.ma[i]);
+
+    }
+
+    return 0;
+}
+
+int convert_to_CSR(const VBSfx& vbmat, CSR& cmat, int csr_fmt)
+{
+    //TODO: if necessary, make conversion efficient;
+
+    int mat_rows = vbmat.rows * vbmat.block_size;
+    int mat_cols = vbmat.cols * vbmat.block_size;
+    int mat_size = mat_rows * mat_cols;
+    int mat_fmt = 0;
+
+    DataT mat[mat_size] = { 0 };
+    convert_to_mat(vbmat, mat, mat_fmt);
+    convert_to_CSR(mat, mat_rows, mat_cols, mat_fmt, cmat, csr_fmt);
+
+    return 0;
+}
+
+int transpose(const CSR& in_cmat, CSR& out_cmat, int fmt_change)
+{
+    
+    cleanCSR(out_cmat);
+    int main_dim = in_cmat.fmt == 0 ? in_cmat.rows : in_cmat.cols; //main dimension of in_mat; secondary of out_mat; 
+    int second_dim = in_cmat.fmt == 0 ? in_cmat.cols : in_cmat.cols; //secondary dimension of in_mat; main for out_mat;
+
+    if (fmt_change)
+    {
+        out_cmat.fmat = in_cmat.fmat ? 0 : 1; //just change format instead of transposing
+        out_cmat.rows = in_cmat.rows;
+        out_cmat.cols = in_cmat.cols;
+    }
+    else
+    {
+        out_cmat.fmat = in_cmat.fmat;
+        out_cmat.rows = in_cmat.cols;
+        out_cmat.cols = in_cmat.rows;
+    }
+
+
+    out_cmat.nzcount = new int[second_dim];
+    out_cmat.ja = new int* [second_dim];
+    out_cmat.ma = new DataT *[second_dim];
+
+    
+    //find number of nonzero elements in each secondary row (which will be main row for the transpose); 
+    for (int i = 0; i < main_dim; i++)
+    {
+        for (int nzs = 0; nzs < in_cmat.nzcount[i]; nzs++)
+        {
+            j = cmat.ja[i][nzs]; //find column (row) index of next nonzero element
+            out_cmat.nzcount[j] ++;
+        }
+    }
+
+    int counter[second_dim] = { 0 };
+   
+    //initialize arrays in out_cmat
+    for (int j = 0; j < second_dim; j++)
+    {
+        out_cmat.ja[j] = new int[out_cmat.nzcount[j]];
+        out_cmat.ma[j] = new DataT[out_cmat.nzcount[j]];
+    }
+
+    int c = 0;
+    for (int i = 0; i < main_dim; i++)
+    {
+        for (int nzs = 0; nzs < in_cmat.nzcount[i]; nzs++)
+        {
+            j = cmat.ja[i][nzs]; //find in_cmat main_dim index of next nonzero element
+            DataT* elem = cmat.ma[i][nzs]; //value of that element;
+
+            c = counter[j]; //progressively fill out_cmat main_dim
+            out_cmat.ja[j][c] = i;
+            out_cmat.ma[j][c] = elem;
+        }
+    }
+
+}
+
+int permute(CSR& cmat, int* perm, int dim) {
+    //permutes rows (dim == 0), columns (dim == 1) or both (dim==2) of a matrix in CSR form;
+    //TO DO PERMUTE SECONDARY DIMENSION
+
+    int n = (cmat.fmt == 0) ? cmat.rows : cmat.cols;
+
+    bool permute_main = (cmat.fmt == 0) ? dim == 0 : dim == 1;
+    bool permute_second = !permute_main;
+    if (dim == 2)
+    {
+        permute_main = true;
+        permute_second = true;
+    }
+
+    if (permute_main)
+    {
+        permute(spmt.nzcount, perm, n);
+        permute(spmt.ja, perm, n);
+        permute(spmt.ma, perm, n)
+    }
+
+    if (permute_second)
+    {
+        std::cout << "WARNING: permutation of compressed dimension not implemented" << std::endl;
+    }
+}
+
+int hash_permute(CSR& cmat, int block_size, int* perm, int* group, int mode) 
+{
+    //finds a group structure and a permutation for the main dimension of a CSR mat
+
+    // IN:
+    //  cmat:        a matrix in CSR form
+    //  block_size:  the number of elements to consider together when determining sparsity structure
+    //              e.g if block_size = 8, every 8 element of secondary dimension will be considered nonzero if any of that is so
+    //  mode:        0: at most one element per block is considered
+    //              1: all elements in a block contribute to the hash
+    // OUT:
+    //  perm:        an array of length equal to cmat main dimension; stores a permutation of such dimension
+    //  group:       an array of length equal to cmat main dimension; for each main row, stores the row group it belongs to
+
+
+    int main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
+    int second_dim = cmat.fmt == 0 ? cmat.cols : cmat.rows;
+
+    if (block_size > second_dim)
+    {
+        std::cout << "ERROR. block_size must be smaller than matrix dimension" << std::endl;
+        return 1;
+    }
+
+
+
+
+    int hashes[main_dim]; //will store hash values. The hash of a row (col) is the sum of the indices (mod block_size) of its nonzero entries
+
+    for (int i = 0; i < main_dim; i++)
+    {
+        hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], int block_size, int mode);
+    }
+
+
+    for (int i = 0; i < main_dim; i++) {
+        perm[i] = i; //sorted indices
+    }
+    //sort indices in perm by hash value
+    sort(perm, perm + main_dim,
+        [&](const int& a, const int& b) {
+            return (hashes[a] < hashes[b]);
+        };
+
+
+    int tmp_group = 0;
+    group[0] = 0;
+
+    for (int idx = 1; idx < main_dim; idx++) //scan main dimension in perm order and assign rows with same pattern to same group;
+    {
+        int i_0 = perm[idx - 1]; //previous element in perm order
+        int i_1 = perm[idx]; //this element
+
+        if (hashes[i_0] == hashes[i_1]) //only elements with the same hash have may have the same pattern
+        {
+            ja_0 = cmat.ja[i_0]; //previous row
+            len_0 = cmat.nzcount[i_0]; //its length
+            
+            ja_1 = cmat.ja[i_1]; //this row
+            len_1 = cmat.nzcount[i_1]; //its length
+
+            if check_same_pattern(ja_0, len_0, ja_1, len_1, block_size, mode) //if new row has same pattern, put in the same group
+            {
+                group[idx] = tmp_group;
+            }
+            else                                                              // otherwise create new group
+            {
+
+                tmp_group += 1;
+                group[idx] = tmp_group;
+
+            }
+
+        }
+        else //when hash changes, create new group
+        {
+            tmp_group += 1;
+            group[idx] = tmp_group;
+        }
+    }
+
+}
+
+
+int hash(int* arr, int a_len, int block_size, int mode)
+{
+    //evaluate hash function for an array of indices
+    /* IN:
+            arr: the array of indices.
+            a_len: length fo the array;
+            block_size: elements in the same block give the same contribution to hash
+            mode:  0: at most one element per block contribute to hash
+                   1: all elements in a block contribute to hash
+        OUT: 
+            int hash. 
+            */
+       
+
+    int nzs = 0;
+    int tmp_idx = -1;
+    int hash = 0;
+    while (nzs < a_len)
+    {
+        j = arr[nzs] % block_size;
+        if (j == tmp_idx) and (mode == 0) //if mode is 0, only one j per block is considered in the hash sum;
+        {
+            continue;
+        }
+
+        hash += j;
+        tmp_idx = j;
+    }
+    return hash;
+}
+
+
+int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size, int mode)
+{
+
+}
+
+
+

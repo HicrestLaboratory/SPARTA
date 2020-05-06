@@ -57,11 +57,8 @@ void cublas_blockmat_multiply(const VBSparMat &VBMat, float *X, int X_cols, floa
 		block_cols = bsz[col+1] - bsz[col];
 		//multiply the block matrices
 		 //define the sub-matrices
-		const float* block = (VBMat.ba)[i][j];  //access block i,j in column major order.
-		const float* blockX = X + bsz[col];     //col indicates the vertical block of X that is going to be multiplied with the (i,j)block of VBMat
-		
-		cout << "block: i=" << i << ", j=" << j << ", col = "<< col << ", block cols = " << block_cols << ", block_rows= " << block_rows << endl;   
-		matprint(block,block_cols,block_rows);
+		const float* block = (VBMat.ba)[i][j];  //access block i,j (stored in column major order).
+		const float* blockX = X + bsz[col];     //access the block of X that is going to be multiplied with the (i,j)block of VBMat
 
 		cublas_gemm_custom(block, block_cols, block_rows, block_rows,
                    blockX, X_cols, X_rows,

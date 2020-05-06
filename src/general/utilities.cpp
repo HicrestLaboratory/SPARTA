@@ -592,12 +592,8 @@ int make_sparse_blocks(SparMat &spmat, VBSparMat &vbmat, double eps){
         cout << "ERROR: COULD NOT CREATE PERMUTATION. Try with another epsilon" << endl;
         return -1;
     }
-
-
     
     permute(spmat,perm);    
-   
-
 
     int ierr = csrvbsrC(1, nBlock, nB, &spmat, &vbmat); //convert SparMat spmat into VBSparMat vbmat, using block structure found by init_block
     if (ierr != 0){

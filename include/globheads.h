@@ -9,7 +9,7 @@
 /* the dimension of ith Block */
 #define B_DIM(bs,i)      (bs[i+1]-bs[i])
 
-typedef float DataT;
+typedef float DataT; //precision for matrix entries
 typedef DataT *BData;
 
 typedef struct SpaFmt {
@@ -35,17 +35,6 @@ typedef struct VBSpaFmt {
     BData **ba;   /* pointer-to-pointer to store nonzero blocks */
     BData *D;     /* to store inversion of diagonals            */
 } VBSparMat, *vbsptr;
-
-//Variable Block Sparse Matrix with different column and row partition
-typedef struct VBSU {
-	int rows;  	/* the block row dimension of the matrix    	*/
-	int cols;	/* the block column dimension of the matrix   	*/
-	int *bsz_rows; 	/* indices of rows partition		       	*/
-	int *bsz_cols;	/* indices of columns partition			*/     
-	int *nzcount;	/* length of each block row			*/
-	int **ja;	/* pointer-to-pointer to store block-column idx	*/
-	BData **ba;	/* pointer-to-pointer to store nonzero blocks	*/
-} VBSUmat, *vbsuptr;
 
 typedef struct __CompressType
 {
