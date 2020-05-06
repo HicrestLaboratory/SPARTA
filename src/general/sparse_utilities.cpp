@@ -547,7 +547,7 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int fmt_change)
 
 }
 
-int permute(CSR& cmat, int* perm, int dim) {
+/* int permute(CSR& cmat, int* perm, int dim) {
     //permutes rows (dim == 0), columns (dim == 1) or both (dim==2) of a matrix in CSR form;
     //TO DO PERMUTE SECONDARY DIMENSION
 
@@ -573,6 +573,8 @@ int permute(CSR& cmat, int* perm, int dim) {
         std::cout << "WARNING: permutation of compressed dimension not implemented" << std::endl;
     }
 }
+
+*/
 
 int hash_permute(CSR& cmat, int block_size, int* perm, int* group, int mode) 
 {
@@ -657,7 +659,6 @@ int hash_permute(CSR& cmat, int block_size, int* perm, int* group, int mode)
 
 }
 
-
 int hash(int* arr, int a_len, int block_size, int mode)
 {
     //evaluate hash function for an array of indices
@@ -736,4 +737,10 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size,
 }
 
 
-
+int main()
+{
+    int* arr = { 1,4,7,10 };
+    int* arr2 = { 1,2,5,8,11 };
+    int a = check_same_pattern(arr, 4, arr2, 5, 1, 0);
+    std::cout << a << endl;
+}
