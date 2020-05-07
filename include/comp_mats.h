@@ -80,7 +80,7 @@ struct VBSfx {
 
 ------------------------------------------------------------                        */
 
-    int block_side;         /*side lenght of blocks                                 */
+    int block_size;         /*side lenght of blocks                                 */
     int rows;  	            /* the block row dimension of the matrix    	        */
     int cols;	            /* the block column dimension of the matrix   	        */
     int* nzcount;	        /* number of nonzero blocks in each block-row (-column) */

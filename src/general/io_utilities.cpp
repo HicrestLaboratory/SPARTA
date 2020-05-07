@@ -5,11 +5,9 @@ typedef std::map<int, set<int> > Graphmap;
 
 
 //GRAPH UTILITIES
-{
 //TODO RMAT reader/generator (maybe in Python)
 
-
-	void read_snap_format(Graphmap & gmap, string filename)
+void read_snap_format(Graphmap & gmap, string filename)
 	{
 		/*		Read from edgelist to a graphmap
 		 *		TODO Error handling
@@ -53,8 +51,8 @@ typedef std::map<int, set<int> > Graphmap;
 		}
 	}
 
-	//check if a graphmap is well-numbered, complete and (optional) symmetric
-	int isProper(const Graphmap & gmap, bool mirroring) {
+//check if a graphmap is well-numbered, complete and (optional) symmetric
+int isProper(const Graphmap & gmap, bool mirroring) {
 		//returns:
 		//0 : everything ok
 		//1 : there is a jump in node numeration
@@ -91,8 +89,8 @@ typedef std::map<int, set<int> > Graphmap;
 	}
 
 
-	//Make a graph undirected
-	void MakeUndirected(Graphmap & gmap) {
+//Make a graph undirected
+void MakeUndirected(Graphmap & gmap) {
 
 		for (auto x : gmap)
 		{
@@ -103,9 +101,9 @@ typedef std::map<int, set<int> > Graphmap;
 		}
 	}
 
-	//rename graph nodes so that they are consecutive integers 
-	//Quite costly. Probably worth checking with isProper first
-	void MakeProper(Graphmap & gmap) {
+//rename graph nodes so that they are consecutive integers 
+//Quite costly. Probably worth checking with isProper first
+void MakeProper(Graphmap & gmap) {
 
 		map<int, int> new_name;
 		int count = -1;
@@ -152,7 +150,7 @@ typedef std::map<int, set<int> > Graphmap;
 	//Analysis of multiple graphs
 
 	//export as edgelist
-	void write_snap_format(Graphmap & gmap, string filename) {
+void write_snap_format(Graphmap & gmap, string filename) {
 		ofstream outfile;
 		outfile.open(filename);
 		int name;
@@ -167,11 +165,6 @@ typedef std::map<int, set<int> > Graphmap;
 		}
 		outfile.close();
 	}
-
-	/*-------------------------------------------------------------------------------------------------------------
-	END OF GRAPH UTILITIES
-	*/
-}
 
 void convert_to_mat(const Graphmap& gmap, DataT* mat, int mat_fmt) {
 
@@ -201,6 +194,9 @@ void convert_to_mat(const Graphmap& gmap, DataT* mat, int mat_fmt) {
 		vec_nzcount.push_back(tempset.size());//nonzero per row = number of node children
 	}
 
-	//use vectors to fill CSR
-	fill_CSR(spmt, n, vec_nzcount, vec_ja, vec_ma);
 }
+
+
+	/*-------------------------------------------------------------------------------------------------------------
+	END OF GRAPH UTILITIES
+	*/
