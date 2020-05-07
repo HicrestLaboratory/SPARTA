@@ -698,7 +698,7 @@ int hash(int* arr, int a_len, int block_size, int mode)
     while (nzs < a_len)
     {
         int j = arr[nzs] % block_size;
-        nsz++;
+        nzs++;
         if ((j == tmp_idx) and (mode == 0)) //if mode is 0, only one j per block is considered in the hash sum;
         {
             continue;
@@ -739,7 +739,7 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size,
             }
             while ((j < len0) and (b_idx1 == arr1[j] % block_size))
             {
-                j++
+                j++;
             }
         }
 
