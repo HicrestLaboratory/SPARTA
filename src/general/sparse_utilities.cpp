@@ -554,8 +554,8 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int fmt_change)
     {
         for (int nzs = 0; nzs < in_cmat.nzcount[i]; nzs++)
         {
-            int j = cmat.ja[i][nzs]; //find in_cmat main_dim index of next nonzero element
-            DataT* elem = in_cmat.ma[i][nzs]; //value of that element;
+            int j = in_cmat.ja[i][nzs]; //find in_cmat main_dim index of next nonzero element
+            DataT elem = in_cmat.ma[i][nzs]; //value of that element;
 
             c = counter[j]; //progressively fill out_cmat main_dim
             out_cmat.ja[j][c] = i;
@@ -638,7 +638,7 @@ int hash_permute(CSR& cmat, int block_size, int* perm, int* group, int mode)
         );
 
 
-    int* ja_0, ja_1;
+    int *ja_0, *ja_1;
     int len_0, len_1;
     int tmp_group = 0;
     group[0] = 0;
@@ -697,9 +697,9 @@ int hash(int* arr, int a_len, int block_size, int mode)
     int hash = 0;
     while (nzs < a_len)
     {
-        j = arr[nzs] % block_size;
+        int j = arr[nzs] % block_size;
         nsz++;
-        if (j == tmp_idx) and (mode == 0) //if mode is 0, only one j per block is considered in the hash sum;
+        if ((j == tmp_idx) and (mode == 0)) //if mode is 0, only one j per block is considered in the hash sum;
         {
             continue;
         }
@@ -719,7 +719,7 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size,
     int b_idx0 = 0;
     int b_idx1 = 0;
 
-    while (i < len0) and (j < len1)
+    while ((i < len0) and (j < len1))
     {
         b_idx0 = arr0[i] % block_size;
         b_idx1 = arr1[j] % block_size;
@@ -733,18 +733,18 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size,
 
         if (mode == 0) //if mode=0, skip all entries in a block after the first one;
         {
-            while (j < len0) and (b_idx0 == arr0[i] % block_size)
+            while ((j < len0) and (b_idx0 == arr0[i] % block_size))
             {
                 i++;
             }
-            while (j < len0) and (b_idx1 == arr1[j] % block_size)
+            while ((j < len0) and (b_idx1 == arr1[j] % block_size))
             {
                 j++
             }
         }
 
     }
-    if (i < len0) or (j < len1)
+    if ((i < len0) or (j < len1))
     {
         return 0;
     }
@@ -758,8 +758,8 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size,
 
 int main()
 {
-    int* arr = { 1,4,7,10 };
-    int* arr2 = { 1,2,5,8,11 };
+    int arr[4] = { 1,4,7,10 };
+    int arr2[5] = { 1,2,5,8,11 };
     int a = check_same_pattern(arr, 4, arr2, 5, 1, 0);
-    std::cout << a << endl;
+    std::cout << a << std::endl;
 }
