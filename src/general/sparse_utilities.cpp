@@ -1,6 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+
+#include <vector>
+#include <algorithm>    // std::random_shuffle
+
+
+
 #include "comp_mats.h"
 #include "sparse_utilities.h"
 
@@ -20,9 +26,9 @@ int IDX(int row, int col, int lead_dim, int fmt)
 
 int is_empty(DataT* mat, int rows, int cols, int lead_dim, int fmt) {
 
-    for (i = 0; i < rows; i++)
+    for (int i = 0; i < rows; i++)
     {
-        for (j = 0; j < cols; j++)
+        for (int j = 0; j < cols; j++)
         {
             if (mat[IDX(i, j, lead_dim, fmt)] != 0.) return 0;
         }
@@ -56,18 +62,19 @@ int random_mat(DataT* mat, int rows, int cols, float sparsity)
     //create a random matrix with given sparsity and unitary entries;
 
     int nzs = (int)sparsity * rows * cols;
-    vector<DataT> entries = vector<DataT>(rows * cols, 0);
+    std::vector<DataT> entries = std::vector<DataT>(rows * cols, 0);
     std::fill(entries.begin(), entries.begin() + nzs, 1);
     std::random_shuffle(entries.begin(), entries.end());
     std::copy(entries.begin(), entries.end(), mat);
 
 }
 
-int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_size, float block_sparsity, float block_entries_sparsity) {
+int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_size, float block_sparsity, float block_entries_sparsity) 
+{
 
-    if (rows % block_size != 0) || (cols % block_size != 0)
+    if ((rows % block_size != 0) or (cols % block_size != 0))
     {
-        std::cout << 'ERROR: matrix dimension must be a multiple of block size' << endl;
+        std::cout << "ERROR: matrix dimension must be a multiple of block size" << endl;
         return 1;
     }
 
@@ -81,12 +88,12 @@ int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_
     int mat_lead_dim = (fmt == 0) ? cols : rows;
 
     //put nonzerovalues in the Mat
-    for (int ib = 0; ib < n_block; ib++) {//iterate through block rows
-        for (int jb = 0; jb < n_block; jb++) { //iterate through block columns
+    for (int ib = 0; ib < n_blocks; ib++) {//iterate through block rows
+        for (int jb = 0; jb < n_blocks; jb++) { //iterate through block columns
             if (blocks[ib * n_block + jb] != 0) {
                 //if block is nonempty, put random values in it;
 
-                DataT* tmp_block[block_size*block_size] = { 0 }; //temporary block
+                DataT tmp_block[block_size*block_size] = { 0 }; //temporary block
                 random_mat(tmp_block, block_size, block_size, block_entries_sparsity); //make a random block with given sparsity
 
                 int block_idx = IDX(ib * block_size, jb * block_size, mat_lead_dim, fmt); //find starting position of the block in mat
@@ -124,13 +131,13 @@ int cleanVBS(VBSfx& vbmat)
     return 0;
 }
 
-int convert_to_VBSfx(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBSfx& vbmat, int block_size, int vbmat_block_fmt, int vbmat_entries_fmt)
+int convert_to_VBSfx(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBSfx& vbmat, int block_size, int vbmat_blocks_fmt, int vbmat_entries_fmt)
 {
 
     //(For now only works with exact multiples.TODO add padding instead of removing elements)
-    if !(mat_rows % block_size != 0) || (mat_cols % block_size != 0)
+    if ((mat_rows % block_size != 0) or (mat_cols % block_size != 0))
     {
-        std::cout << 'ERROR: matrix dimension must be a multiple of block size' << endl;
+        std::cout << "ERROR: matrix dimension must be a multiple of block size" << endl;
         return 1;
     }
     vbmat.rows = mat_rows/ block_size; //number of block-rows, round down.

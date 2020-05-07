@@ -1,6 +1,8 @@
 #pragma once
+typedef float DataT; //precision for matrix entries
 
-typedef struct CSR {
+
+struct CSR {
     /*--------------------------------------------------------------
     | Compressed sparse row (CSR) matrix format,
     | generally not square
@@ -22,7 +24,7 @@ typedef struct CSR {
 
 };
 
-typedef struct VBS {
+struct VBS {
 
     /*--------------------------------------------------------------
         Variable Block Sparse (VBS) matrix.
@@ -60,7 +62,7 @@ typedef struct VBS {
                                     1: column_major                                     */
 };
 
-typedef struct VBSfx {
+struct VBSfx {
 
     /*--------------------------------------------------------------
         Block Sparse (VBS) matrix with square blocks of fixed dimension.
