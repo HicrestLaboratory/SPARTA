@@ -733,11 +733,11 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size,
 
         if (mode == 0) //if mode=0, skip all entries in a block after the first one;
         {
-            while ((j < len0) and (b_idx0 == arr0[i] % block_size))
+            while ((i < len0) and (b_idx0 == arr0[i] % block_size))
             {
                 i++;
             }
-            while ((j < len0) and (b_idx1 == arr1[j] % block_size))
+            while ((j < len1) and (b_idx1 == arr1[j] % block_size))
             {
                 j++;
             }
@@ -760,6 +760,6 @@ int main()
 {
     int arr[4] = { 1,4,7,10 };
     int arr2[5] = { 1,2,5,8,11 };
-    //int a = check_same_pattern(arr, 4, arr2, 5, 1, 0);
-    //std::cout << a << std::endl;
+    int a = check_same_pattern(arr, 4, arr2, 5, 1, 0);
+    std::cout << a << std::endl;
 }
