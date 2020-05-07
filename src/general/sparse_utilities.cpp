@@ -697,7 +697,7 @@ int hash(int* arr, int a_len, int block_size, int mode)
     int hash = 0;
     while (nzs < a_len)
     {
-        int j = arr[nzs] % block_size;
+        int j = arr[nzs] / block_size;
         nzs++;
         if ((j == tmp_idx) and (mode == 0)) //if mode is 0, only one j per block is considered in the hash sum;
         {
@@ -721,8 +721,8 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size,
 
     while ((i < len0) and (j < len1))
     {
-        b_idx0 = arr0[i] % block_size;
-        b_idx1 = arr1[j] % block_size;
+        b_idx0 = arr0[i] / block_size;
+        b_idx1 = arr1[j] / block_size;
         if (b_idx0 != b_idx1)
         {
             return 0;
@@ -733,11 +733,11 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size,
 
         if (mode == 0) //if mode=0, skip all entries in a block after the first one;
         {
-            while ((i < len0) and (b_idx0 == arr0[i] % block_size))
+            while ((i < len0) and (b_idx0 == arr0[i] / block_size))
             {
                 i++;
             }
-            while ((j < len1) and (b_idx1 == arr1[j] % block_size))
+            while ((j < len1) and (b_idx1 == arr1[j] / block_size))
             {
                 j++;
             }
@@ -761,5 +761,5 @@ int main()
     int arr[4] = { 1,4,7,10 };
     int arr2[5] = { 1,2,5,8,11 };
     int a = check_same_pattern(arr, 4, arr2, 5, 1, 0);
-    std::cout << a << std::endl;
+    std::cout << a << " " << b << std::endl;
 }
