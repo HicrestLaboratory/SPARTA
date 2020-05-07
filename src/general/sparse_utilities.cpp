@@ -184,7 +184,7 @@ int convert_to_VBSfx(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBSfx&
     }
 
     vbmat.nzcount = new int[vbmat_main_dim]; //initialize nzcount, which stores number of nonzero blocks for each block-row (-column)
-    int mat_leading_dim = mat_fmt == 0 ? cmat.cols : cmat.rows;
+    int mat_leading_dim = mat_fmt == 0 ? mat_cols : mat_rows;
 
     int matpos;
     svi jab;
@@ -197,7 +197,7 @@ int convert_to_VBSfx(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBSfx&
         {
 
             matpos = IDX((*b_row_ptr) * block_size, (*b_col_ptr) * block_size, mat_leading_dim, mat_fmt);    //find starting index of block in matrix
-            if (!is_empty(matpos, block_size, block_size, mat_leading_dim, mat_fmt))        //check if block is non-empty
+            if (!is_empty(mat + matpos, block_size, block_size, mat_leading_dim, mat_fmt))        //check if block is non-empty
             {
                 vbmat.nzcount[i] += 1;  //one more nonzero block on the compressed dimension
                 jab.push_back(j);       //store index of nonzero block
@@ -224,7 +224,7 @@ int convert_to_VBSfx(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBSfx&
             j = jab[ja_count];
             mat_idx = IDX((*b_row_ptr) * block_size, (*b_col_ptr) * block_size, mat_leading_dim, mat_fmt); //find starting index of block in matrix
             
-            mat_cpy(mat + mat_idx, block_size, block_size, mat_leading_dim, mat_fmt, vmat.mab + vbmat_idx, block_size, vbmat_entries_fmt); //write block from mat to vbmat.mab
+            mat_cpy(mat + mat_idx, block_size, block_size, mat_leading_dim, mat_fmt, vbmat.mab + vbmat_idx, block_size, vbmat_entries_fmt); //write block from mat to vbmat.mab
             vbmat_idx += block_size * block_size;
             ja_count++;
         }
@@ -298,7 +298,7 @@ int convert_to_mat(const VBSfx& vbmat, DataT* out_mat, int out_mat_fmt)
             j = vbmat.jab[ja_count];
             out_mat_idx = IDX((*b_row_ptr) * block_size, (*b_col_ptr) * block_size, mat_leading_dim, out_mat_fmt); //find starting index of block in matrix
 
-            mat_cpy(vbmat.mab + vbmat_idx, block_size, block_size, block_size, vbmat.entries_fmt, out_mat + out_mat_idx, out_mat_fmt); //write block from mat to vbmat.mab
+            mat_cpy(vbmat.mab + vbmat_idx, block_size, block_size, block_size, vbmat.entries_fmt, out_mat + out_mat_idx, mat_leading_dim, out_mat_fmt); //write block from vbmat.mab to mat
             vbmat_idx += block_size * block_size;
             ja_count++;
         }
@@ -337,7 +337,6 @@ int cleanCSR(CSR& cmat)
     |  cmat  =  a CSR struct.
     |--------------------------------------------------------------------*/
     /*   */
-    if (!cmat) return 0;
     if (cmat.rows + cmat.cols <= 1) return 0;
 
 
@@ -468,12 +467,12 @@ int convert_to_CSR(const DataT* in_mat, int mat_rows, int mat_cols, int mat_fmt,
         int nzs = 0; //non-zero entries in this row (column) 
         for (j = 0; j < cmat_compressed_dim; j++) //scan compressed dimension for nonzero entries
         {
-            mat_idx = IDX(*cmat_row_ptr, *cmat_col_ptr, mat_lead_dim, mat_fmt);
+            int mat_idx = IDX(*cmat_row_ptr, *cmat_col_ptr, mat_lead_dim, mat_fmt);
             if (in_mat[mat_idx] != 0) //if the entry is nonzero add its idx to ja and its value to ma
             {
                 tmp_ja[nzs] = j;
                 tmp_ma[nzs] = in_mat[mat_idx];
-                nsz++;
+                nzs++;
             }
         }
 
@@ -555,8 +554,8 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int fmt_change)
     {
         for (int nzs = 0; nzs < in_cmat.nzcount[i]; nzs++)
         {
-            j = cmat.ja[i][nzs]; //find in_cmat main_dim index of next nonzero element
-            DataT* elem = cmat.ma[i][nzs]; //value of that element;
+            int j = cmat.ja[i][nzs]; //find in_cmat main_dim index of next nonzero element
+            DataT* elem = in_cmat.ma[i][nzs]; //value of that element;
 
             c = counter[j]; //progressively fill out_cmat main_dim
             out_cmat.ja[j][c] = i;
@@ -634,12 +633,13 @@ int hash_permute(CSR& cmat, int block_size, int* perm, int* group, int mode)
         perm[i] = i; //sorted indices
     }
     //sort indices in perm by hash value
-    sort(perm, perm + main_dim,
+    std::sort(perm, perm + main_dim,
         [&](const int& a, const int& b) {return (hashes[a] < hashes[b]);}
         );
 
 
-    int ja_0, len_0, ja_1, len_1;
+    int* ja_0, ja_1;
+    int len_0, len_1;
     int tmp_group = 0;
     group[0] = 0;
 
@@ -656,7 +656,7 @@ int hash_permute(CSR& cmat, int block_size, int* perm, int* group, int mode)
             ja_1 = cmat.ja[i_1]; //this row
             len_1 = cmat.nzcount[i_1]; //its length
 
-            if check_same_pattern(ja_0, len_0, ja_1, len_1, block_size, mode) //if new row has same pattern, put in the same group
+            if (check_same_pattern(ja_0, len_0, ja_1, len_1, block_size, mode)) //if new row has same pattern, put in the same group
             {
                 group[idx] = tmp_group;
             }
