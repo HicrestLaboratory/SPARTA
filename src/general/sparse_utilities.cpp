@@ -761,5 +761,5 @@ int main()
     int arr[4] = { 1,4,7,10 };
     int arr2[5] = { 1,2,5,8,11 };
     int a = check_same_pattern(arr, 4, arr2, 5, 1, 0);
-    std::cout << a << " " << b << std::endl;
+    std::cout << a << std::endl;
 }
