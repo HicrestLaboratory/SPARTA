@@ -812,9 +812,9 @@ int main()
     std::cout << "mat converted to CSR" << std::endl;
 
     DataT newmat[rows * cols] = { 0 };
-    int newmat_fmt = 0; 
+    int newmat_fmt = 1; 
     convert_to_mat(cmat, newmat, newmat_fmt);
-    matprint(newmat, rows, cols, cols, newmat_fmt);
+    matprint(newmat, rows, cols, rows, newmat_fmt);
     std::cout << "converted back and printed" << std::endl;
 
 
