@@ -614,7 +614,7 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
     int second_dim = (cmat.fmt == 0) ? cmat.cols : cmat.rows;
 
 
-    bool permute_main = (cmat.fmt == 0) ? dim == 0 : dim == 1;  //permute main dimension?
+    bool permute_main = (cmat.fmt == 0) ? (dim == 0) : (dim == 1);  //permute main dimension?
     bool permute_second = !permute_main;                        //permute secondary dimension?
 
     if (dim == 2)
@@ -628,26 +628,15 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
         permute_second = true;
     }
 
-    std::cout << "check1" << std::endl;
-
     if (permute_main)
     {
         int err_check = 0;
-        std::cout << "checkmain" << std::endl;
-
 
         err_check += permute(cmat.nzcount, perm, main_dim);
 
-        std::cout << "checknz" << std::endl;
-
         err_check += permute(cmat.ja, perm, main_dim);
 
-        std::cout << "checkja" << std::endl;
-
         err_check += permute(cmat.ma, perm, main_dim);
-
-        std::cout << "checkma" << std::endl;
-
 
         if (err_check != 0) return 1;
     }
@@ -850,11 +839,11 @@ int main()
     int perm1[cols] = { 1,2,3,0,4 };
     int perm2[rows] = { 1,2,0,9,8,7,3,4,6,5 };
     
-    permute_CSR(cmat, perm2, 1);
+    permute_CSR(cmat, perm2, 0);
     std::cout << "mat rows permuted" << std::endl;
     matprint(cmat);
     
-    permute_CSR(cmat, perm1, 0);
+    permute_CSR(cmat, perm1, 1);
     std::cout << "mat cols permuted" << std::endl;
     matprint(cmat);
 
