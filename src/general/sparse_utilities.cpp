@@ -811,10 +811,17 @@ int main()
     convert_to_CSR(mat, rows, cols, fmt, cmat, cmat_fmt);
     std::cout << "mat converted to CSR" << std::endl;
 
+
+    CSR tran_cmat;
+    transpose(cmat, trans_cmat, cmat_fmt);
+    std::cout << "CSR transposed" << std::endl;
+
+
     DataT newmat[rows * cols] = { 0 };
     int newmat_fmt = 1; 
-    convert_to_mat(cmat, newmat, newmat_fmt);
+    convert_to_mat(trans_cmat, newmat, newmat_fmt);
     matprint(newmat, rows, cols, rows, newmat_fmt);
+    
     std::cout << "converted back and printed" << std::endl;
 
 
