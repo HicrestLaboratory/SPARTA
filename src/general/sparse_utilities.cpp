@@ -816,6 +816,8 @@ int main()
     CSR cmat; 
     int cmat_fmt = 0;
     convert_to_CSR(mat, rows, cols, fmt, cmat, cmat_fmt);
+
+    matprint(cmat);
     std::cout << "mat converted to CSR" << std::endl;
 
 
