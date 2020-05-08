@@ -598,7 +598,7 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
 
 }
 
- int permute_CSR(CSR& cmat, int* perm, int dim) {
+int permute_CSR(CSR& cmat, int* perm, int dim) {
     //permutes rows (dim == 0), cols (dim == 1) or both (dim==2) of a matrix in CSR form;
 
     int main_dim = (cmat.fmt == 0) ? cmat.rows : cmat.cols;
