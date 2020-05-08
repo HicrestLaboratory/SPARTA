@@ -366,6 +366,7 @@ int cleanCSR(CSR& cmat)
     |  cmat  =  a CSR struct.
     |--------------------------------------------------------------------*/
     /*   */
+
     if (cmat.rows + cmat.cols <= 1) return 0;
 
 
@@ -544,8 +545,6 @@ int matprint(const CSR& cmat)
 
 int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
 {
-    
-    cleanCSR(out_cmat);
     int main_dim = in_cmat.fmt == 0 ? in_cmat.rows : in_cmat.cols; //main dimension of in_mat; secondary of out_mat; 
     int second_dim = in_cmat.fmt == 0 ? in_cmat.cols : in_cmat.cols; //secondary dimension of in_mat; main for out_mat;
 
@@ -566,15 +565,11 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
         out_cmat.cols = in_cmat.rows;
     }
 
-    std::cout << "check0" << std::endl;
-
 
     out_cmat.nzcount = new int[second_dim];
     out_cmat.ja = new int* [second_dim];
     out_cmat.ma = new DataT *[second_dim];
     
-
-    std::cout << "check0.5" << std::endl;
 
     //find number of nonzero elements in each secondary row (which will be main row for the transpose); 
     for (int i = 0; i < main_dim; i++)
@@ -586,8 +581,6 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
         }
     }
 
-    std::cout << "check1" << std::endl;
-
     int counter[second_dim] = { 0 };
    
     //initialize arrays in out_cmat
@@ -596,8 +589,6 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
         out_cmat.ja[j] = new int[out_cmat.nzcount[j]];
         out_cmat.ma[j] = new DataT[out_cmat.nzcount[j]];
     }
-
-    std::cout << "check2" << std::endl;
 
 
     int c = 0;
@@ -835,8 +826,7 @@ int main()
     std::cout << "printed mat" << std::endl;
 
     CSR tran_cmat;
-    std::wcout << "check??" << std::endl;
-    transpose(cmat, tran_cmat, cmat_fmt);
+    transpose(cmat, tran_cmat, cmat.fmt);
     std::cout << "CSR transposed" << std::endl;
 
     matprint(tran_cmat);
