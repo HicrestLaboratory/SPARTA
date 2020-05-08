@@ -621,7 +621,7 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
     {
         if (cmat.rows != cmat.cols)
         {
-            std::cout << "ERROR: matrix must be square to apply same permutation to row and column" << std:endl;
+            std::cout << "ERROR: matrix must be square to apply same permutation to row and column" << std::endl;
             return 1;
         }
         permute_main = true;
