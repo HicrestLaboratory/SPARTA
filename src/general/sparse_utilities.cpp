@@ -805,4 +805,13 @@ int main()
 
     matprint(mat, rows, cols, cols, fmt);
 
+    CSR cmat; 
+    int cmat_fmt = 0;
+    convert_to_CSR(mat, rows, cols, fmt, cmat, cmat_fmt);
+    
+    DataT newmat[rows * cols];
+    newmat_fmt = 1; 
+    convert_to_mat(cmat, newmat, 1);
+    matprint(newmat, rows, cols, cols, 1);
+
 }
