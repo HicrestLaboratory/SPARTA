@@ -654,6 +654,9 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
 
     if (permute_second)
     {
+
+        std::cout << "checksecond" << std::endl;
+
         int* ja;
         for (int i = 0; i < main_dim; i++)
         {
