@@ -804,15 +804,14 @@ int main()
     mat[28] = 3.;
 
     matprint(mat, rows, cols, cols, fmt);
-    std::cout << std::fixed; //output format
 
     CSR cmat; 
     int cmat_fmt = 0;
     convert_to_CSR(mat, rows, cols, fmt, cmat, cmat_fmt);
     
     DataT newmat[rows * cols];
-    int newmat_fmt = 1; 
-    convert_to_mat(cmat, newmat, 1);
-    matprint(newmat, rows, cols, cols, 1);
+    int newmat_fmt = 0; 
+    convert_to_mat(cmat, newmat, 0);
+    matprint(newmat, rows, cols, cols, 0);
 
 }
