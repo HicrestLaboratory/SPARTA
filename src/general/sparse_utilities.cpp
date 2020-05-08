@@ -557,6 +557,7 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
 
         //COPY CSR
         //RETURN
+        std::cout << "FORMAT CHANGE NOT IMPLEMENTED YET. USE SAME FORMAT" << std::endl;
     }
     else
     {
@@ -580,6 +581,8 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
         }
     }
 
+    std::cout << "check1" << std::endl;
+
     int counter[second_dim] = { 0 };
    
     //initialize arrays in out_cmat
@@ -588,6 +591,9 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
         out_cmat.ja[j] = new int[out_cmat.nzcount[j]];
         out_cmat.ma[j] = new DataT[out_cmat.nzcount[j]];
     }
+
+    std::cout << "check2" << std::endl;
+
 
     int c = 0;
     for (int i = 0; i < main_dim; i++)
