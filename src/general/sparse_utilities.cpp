@@ -835,6 +835,7 @@ int main()
     std::cout << "printed mat" << std::endl;
 
     CSR tran_cmat;
+    std::wcout << "check??" << std::endl;
     transpose(cmat, tran_cmat, cmat_fmt);
     std::cout << "CSR transposed" << std::endl;
 
