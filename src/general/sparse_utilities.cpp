@@ -813,14 +813,13 @@ int main()
 
 
     CSR tran_cmat;
-    transpose(cmat, trans_cmat, cmat_fmt);
+    transpose(cmat, tran_cmat, cmat_fmt);
     std::cout << "CSR transposed" << std::endl;
 
 
-    DataT newmat[rows * cols] = { 0 };
-    int newmat_fmt = 1; 
-    convert_to_mat(trans_cmat, newmat, newmat_fmt);
-    matprint(newmat, rows, cols, rows, newmat_fmt);
+    DataT newmat[rows * cols] = { 0 }; 
+    convert_to_mat(tran_cmat, newmat, 0);
+    matprint(newmat, tran_cmat.rows, tran_cmat.cols, tran_cmat.cols, 0);
     
     std::cout << "converted back and printed" << std::endl;
 
