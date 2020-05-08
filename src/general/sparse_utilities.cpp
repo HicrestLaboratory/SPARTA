@@ -820,6 +820,8 @@ int main()
     matprint(cmat);
     std::cout << "mat converted to CSR" << std::endl;
 
+    matprint(cmat);
+    std::cout << "printed mat" << std::endl;
 
     CSR tran_cmat;
     transpose(cmat, tran_cmat, cmat_fmt);
