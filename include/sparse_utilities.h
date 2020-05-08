@@ -38,7 +38,7 @@ int hash(int* arr, int a_len, int block_size, int mode);
 
 int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size, int mode);
 
-int permute(CSR& cmat, int* perm, int dim);
+int permute_CSR(CSR& cmat, int* perm, int dim);
 
 //permutes an array of n elements (original) according to a permutation (perm);
 template <class myType>

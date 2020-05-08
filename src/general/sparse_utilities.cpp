@@ -146,7 +146,7 @@ int sort_permutation(int* perm, int* arr, int n)
         perm[i] = i; //sorted indices
     }
     //sort indices in perm by hash value
-    std::sort(perm, perm + main_dim,
+    std::sort(perm, perm + n,
         [&](const int& a, const int& b) {return (arr[a] < arr[b]); }
     );
 }
@@ -598,7 +598,7 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
 
 }
 
- int permute(CSR& cmat, int* perm, int dim) {
+ int permute_CSR(CSR& cmat, int* perm, int dim) {
     //permutes rows (dim == 0), cols (dim == 1) or both (dim==2) of a matrix in CSR form;
 
     int main_dim = (cmat.fmt == 0) ? cmat.rows : cmat.cols;
@@ -798,10 +798,10 @@ int main()
     int rows = 10;
     int cols = 5;
     int fmt = 0;
-    int mat[rows * cols] = { 0 };
-    mat[1] = 1;
-    mat[15] = 2;
-    mat[28] = 3;
+    DataT mat[rows * cols] = { 0 };
+    mat[1] = 1.;
+    mat[15] = 2.;
+    mat[28] = 3.;
 
     matprint(mat, rows, cols, cols, fmt);
 
