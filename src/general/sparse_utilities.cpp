@@ -628,12 +628,24 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
         permute_second = true;
     }
 
+    std::cout << "check1" << std::endl;
+
     if (permute_main)
     {
         int err_check = 0;
         err_check += permute(cmat.nzcount, perm, main_dim);
+
+        std::cout << "checknz" << std::endl;
+
         err_check += permute(cmat.ja, perm, main_dim);
+
+        std::cout << "checkja" << std::endl;
+
         err_check += permute(cmat.ma, perm, main_dim);
+
+        std::cout << "checkma" << std::endl;
+
+
         if (err_check != 0) return 1;
     }
 
