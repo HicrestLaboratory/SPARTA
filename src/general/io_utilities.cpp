@@ -88,9 +88,8 @@ int isProper(const Graphmap & gmap, bool mirroring) {
 		return 0;
 	}
 
-
-//Make a graph undirected
 void MakeUndirected(Graphmap & gmap) {
+//Make a graph undirected
 
 		for (auto x : gmap)
 		{
@@ -101,10 +100,9 @@ void MakeUndirected(Graphmap & gmap) {
 		}
 	}
 
+void MakeProper(Graphmap & gmap) {
 //rename graph nodes so that they are consecutive integers 
 //Quite costly. Probably worth checking with isProper first
-void MakeProper(Graphmap & gmap) {
-
 		map<int, int> new_name;
 		int count = -1;
 		int name = -1;
@@ -141,15 +139,6 @@ void MakeProper(Graphmap & gmap) {
 		}
 	}
 
-	//TODO (not urgent)
-	//Conversion to edgelist and from CSR;
-	//weighted graphs
-	//options for unweighted graphs (e.g. only structure when calculating permutations)
-	//efficient implementation of undirected graphs (use symmetry where possible)
-
-	//Analysis of multiple graphs
-
-	//export as edgelist
 void write_snap_format(Graphmap & gmap, string filename) {
 		ofstream outfile;
 		outfile.open(filename);
@@ -196,7 +185,30 @@ void convert_to_mat(const Graphmap& gmap, DataT* mat, int mat_fmt) {
 
 }
 
+void read_mtx_format(SparMat& spmt, string infilename) {
+	ifstream file(infilename);
+	int num_row, num_col, num_lines;
 
-	/*-------------------------------------------------------------------------------------------------------------
-	END OF GRAPH UTILITIES
-	*/
+	// Ignore comments headers
+	while (file.peek() == '%') file.ignore(2048, '\n');
+
+	// Read number of rows and columns
+	file >> num_row >> num_col >> num_lines;
+
+	Mat mat;
+	mat.row_size = num_row;
+	vector<DataT> temp_mat(num_row * num_row, 0.0);
+
+	// fill the matrix with data
+	for (int l = 0; l < num_lines; l++)
+	{
+		DataT data;
+		int row, col;
+		file >> row >> col >> data;
+		temp_mat[(row - 1) + (col - 1) * num_row] = data;
+	}
+
+	mat.vec = temp_mat;
+	convert_to_CSR(mat, spmt);
+
+}

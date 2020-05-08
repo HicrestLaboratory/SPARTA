@@ -547,6 +547,9 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
         out_cmat.fmt = new_fmt; //just change format instead of transposing
         out_cmat.rows = in_cmat.rows;
         out_cmat.cols = in_cmat.cols;
+
+        //COPY CSR
+        //RETURN
     }
     else
     {
@@ -597,7 +600,6 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
 
  int permute(CSR& cmat, int* perm, int dim) {
     //permutes rows (dim == 0), cols (dim == 1) or both (dim==2) of a matrix in CSR form;
-    //TO DO PERMUTE SECONDARY DIMENSION
 
     int main_dim = (cmat.fmt == 0) ? cmat.rows : cmat.cols;
     int second_dim = (cmat.fmt == 0) ? cmat.cols : cmat.rows;
@@ -793,7 +795,14 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size,
 
 int main()
 {
-    int arr[2] = { 5,6};
-    int arr2[2] = { 1,10 };
-    int a = check_same_pattern()
+    int rows = 10;
+    int cols = 5;
+    int fmt = 0;
+    int mat[rows * cols] = { 0 };
+    mat[1] = 1;
+    mat[15] = 2;
+    mat[28] = 3;
+
+    matprint(mat, rows, cols, cols, fmt);
+
 }

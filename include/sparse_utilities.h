@@ -39,3 +39,38 @@ int hash(int* arr, int a_len, int block_size, int mode);
 int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size, int mode);
 
 int permute(CSR& cmat, int* perm, int dim);
+
+//permutes an array of n elements (original) according to a permutation (perm);
+template <class myType>
+int permute(myType* arr, int* perm, int n) {
+	int i = 0;
+	myType temp;
+	int cur_row, next_row;
+
+	//Do the permutations cycle by cycle, until all elements have been permuted.
+	while (i < n) {//LI: all elements up to i appeared in a cycle
+		temp = arr[i];
+		int start_i = i;
+		next_row = i;
+
+		//one cycle of permutations
+		while (perm[next_row] >= 0) {//check if we are back to the start of the cycle
+			cur_row = next_row;
+			next_row = perm[cur_row];
+			arr[cur_row] = arr[next_row];
+			perm[cur_row] = (perm[cur_row] + 1) * (-1);//flag perm element as executed 
+		}
+		//end cycle and procede to next element
+		if (next_row != start_i) return 1; //PERM IS NOT A PROPER PERMUTATION
+		arr[cur_row] = temp;
+		while (perm[i] < 0) i++;
+	}
+
+	//reconstruct perm (remove flags)
+	for (i = 0; i < n; i++) {
+		perm[i] = -perm[i] - 1;
+	}
+	return 0;
+
+}
+
