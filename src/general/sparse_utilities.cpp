@@ -566,11 +566,16 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
         out_cmat.cols = in_cmat.rows;
     }
 
+    std::cout << "check0" << std::endl;
+
 
     out_cmat.nzcount = new int[second_dim];
     out_cmat.ja = new int* [second_dim];
     out_cmat.ma = new DataT *[second_dim];
     
+
+    std::cout << "check0.5" << std::endl;
+
     //find number of nonzero elements in each secondary row (which will be main row for the transpose); 
     for (int i = 0; i < main_dim; i++)
     {
