@@ -804,7 +804,7 @@ int main()
     mat[28] = 3.;
 
     matprint(mat, rows, cols, cols, fmt);
-    cout << fixed; //output format
+    std::cout << std::fixed; //output format
 
     CSR cmat; 
     int cmat_fmt = 0;
