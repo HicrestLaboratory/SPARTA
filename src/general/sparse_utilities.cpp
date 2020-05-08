@@ -810,8 +810,8 @@ int main()
     convert_to_CSR(mat, rows, cols, fmt, cmat, cmat_fmt);
     
     DataT newmat[rows * cols] = { 0 };
-    int newmat_fmt = 0; 
-    convert_to_mat(cmat, newmat, 0);
-    matprint(newmat, rows, cols, cols, 0);
+    int newmat_fmt = 1; 
+    convert_to_mat(cmat, newmat, newmat_fmt);
+    matprint(newmat, rows, cols, cols, newmat_fmt);
 
 }
