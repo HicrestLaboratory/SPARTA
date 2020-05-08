@@ -533,6 +533,13 @@ int convert_to_CSR(const VBSfx& vbmat, CSR& cmat, int csr_fmt)
     return 0;
 }
 
+int matprint(const CSR& cmat)
+{
+    DataT tmp_mat[cmat.rows * cmat.cols] = { 0 };
+    convert_to_mat(cmat, tmp_mat, 0);
+    matprint(tmp_mat, cmat.rows, cmat.cols, cmat.cols, 0);
+}
+
 //TODO copyCSR
 
 int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
@@ -816,10 +823,7 @@ int main()
     transpose(cmat, tran_cmat, cmat_fmt);
     std::cout << "CSR transposed" << std::endl;
 
-
-    DataT newmat[rows * cols] = { 0 }; 
-    convert_to_mat(tran_cmat, newmat, 0);
-    matprint(newmat, tran_cmat.rows, tran_cmat.cols, tran_cmat.cols, 0);
+    matprint(tran_cmat);
     
     std::cout << "converted back and printed" << std::endl;
 
