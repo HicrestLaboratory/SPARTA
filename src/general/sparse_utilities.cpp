@@ -804,14 +804,18 @@ int main()
     mat[28] = 3.;
 
     matprint(mat, rows, cols, cols, fmt);
+    std::cout << "printed mat" << std::endl;
 
     CSR cmat; 
     int cmat_fmt = 0;
     convert_to_CSR(mat, rows, cols, fmt, cmat, cmat_fmt);
-    
+    std::cout << "mat converted to CSR" << std::endl;
+
     DataT newmat[rows * cols] = { 0 };
     int newmat_fmt = 1; 
     convert_to_mat(cmat, newmat, newmat_fmt);
     matprint(newmat, rows, cols, cols, newmat_fmt);
+    std::cout << "converted back and printed" << std::endl;
+
 
 }
