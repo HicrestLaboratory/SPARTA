@@ -831,11 +831,14 @@ int main()
 
     int perm1[cols] = { 1,2,3,0,4 };
     int perm2[rows] = { 1,2,0,9,8,7,3,4,6,5 };
+    permute_CSR(cmat, perm1, 0);
+    std::cout << "mat cols permuted" << std::endl;
+    matprint(cmat);
+
+
+
     permute_CSR(cmat, perm2, 1);
     std::cout << "mat rows permuted" << std::endl;
     matprint(cmat);
 
-    permute_CSR(cmat, perm1, 0);
-    std::cout << "mat cols permuted" << std::endl;
-    matprint(cmat);
 }
