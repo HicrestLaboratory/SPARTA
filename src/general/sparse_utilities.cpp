@@ -633,6 +633,9 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
     if (permute_main)
     {
         int err_check = 0;
+        std::cout << "checkmain" << std::endl;
+
+
         err_check += permute(cmat.nzcount, perm, main_dim);
 
         std::cout << "checknz" << std::endl;
