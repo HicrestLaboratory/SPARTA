@@ -619,15 +619,22 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
 
     if (dim == 2)
     {
+        if (cmat.rows != cmat.cols)
+        {
+            std::cout << "ERROR: matrix must be square to apply same permutation to row and column" << std:endl;
+            return 1;
+        }
         permute_main = true;
         permute_second = true;
     }
 
     if (permute_main)
     {
-        permute(cmat.nzcount, perm, main_dim);
-        permute(cmat.ja, perm, main_dim);
-        permute(cmat.ma, perm, main_dim);
+        int err_check = 0;
+        err_check += permute(cmat.nzcount, perm, main_dim);
+        err_check += permute(cmat.ja, perm, main_dim);
+        err_check += permute(cmat.ma, perm, main_dim);
+        if (err_check != 0) return 1;
     }
 
     if (permute_second)
@@ -822,16 +829,13 @@ int main()
     matprint(cmat);
     std::cout << "mat converted to CSR" << std::endl;
 
+    int perm1[cols] = { 1,2,3,0,4 };
+    int perm2[rows] = { 1,2,0,9,8,7,3,4,6,5 };
+    permute_CSR(cmat, perm2, 1);
+    std::cout << "mat rows permuted" << std::endl;
     matprint(cmat);
-    std::cout << "printed mat" << std::endl;
 
-    CSR tran_cmat;
-    transpose(cmat, tran_cmat, cmat.fmt);
-    std::cout << "CSR transposed" << std::endl;
-
-    matprint(tran_cmat);
-    
-    std::cout << "converted back and printed" << std::endl;
-
-
+    permute_CSR(cmat, perm1, 0);
+    std::cout << "mat cols permuted" << std::endl;
+    matprint(cmat);
 }
