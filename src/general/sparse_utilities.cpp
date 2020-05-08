@@ -18,6 +18,13 @@ typedef std::vector<DataT> svd;
 
 int IDX(int row, int col, int lead_dim, int fmt)
 {
+    //finds storing index of a matrix elements given
+    //row: row index
+    //col: columnn index
+    //lead_dimension: the leading storing dimension
+    //fmt:      0: row major
+    //          1: column major
+
     if (fmt == 0)
     {
         return row * lead_dim + col;
@@ -29,6 +36,7 @@ int IDX(int row, int col, int lead_dim, int fmt)
 }
 
 int is_empty(DataT* mat, int rows, int cols, int lead_dim, int fmt) {
+    //check if a matrix is empty
 
     for (int i = 0; i < rows; i++)
     {
@@ -42,6 +50,8 @@ int is_empty(DataT* mat, int rows, int cols, int lead_dim, int fmt) {
 
 int mat_cpy(DataT* in_mat, int in_rows, int in_cols, int in_lead_dim, int in_fmt, DataT* out_mat, int out_lead_dim, int out_fmt)
 {
+    //copy a matrix or submatrix in another matrix or submatrix of the same dimension. 
+
     int in_idx,out_idx;
 
     //TODO add error check
@@ -122,6 +132,25 @@ int matprint(DataT* mat, int rows, int cols, int lead_dim, int fmt)
         std::cout << std::endl;
     }
 }
+
+int sort_permutation(int* perm, int* arr, int n)
+/*IN: perm, array of length n
+      arr, array of length n
+      n
+
+  OUT: perm, the permutation that would sort arr
+*/
+{
+
+    for (int i = 0; i < n; i++) {
+        perm[i] = i; //sorted indices
+    }
+    //sort indices in perm by hash value
+    std::sort(perm, perm + main_dim,
+        [&](const int& a, const int& b) {return (arr[a] < arr[b]); }
+    );
+}
+
 
 
 //VBSfx utilities
@@ -504,16 +533,18 @@ int convert_to_CSR(const VBSfx& vbmat, CSR& cmat, int csr_fmt)
     return 0;
 }
 
-int transpose(const CSR& in_cmat, CSR& out_cmat, int fmt_change)
+//TODO copyCSR
+
+int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
 {
     
     cleanCSR(out_cmat);
     int main_dim = in_cmat.fmt == 0 ? in_cmat.rows : in_cmat.cols; //main dimension of in_mat; secondary of out_mat; 
     int second_dim = in_cmat.fmt == 0 ? in_cmat.cols : in_cmat.cols; //secondary dimension of in_mat; main for out_mat;
 
-    if (fmt_change)
+    if (new_fmt != in_cmat.fmt)
     {
-        out_cmat.fmt = in_cmat.fmt ? 0 : 1; //just change format instead of transposing
+        out_cmat.fmt = new_fmt; //just change format instead of transposing
         out_cmat.rows = in_cmat.rows;
         out_cmat.cols = in_cmat.cols;
     }
@@ -528,7 +559,6 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int fmt_change)
     out_cmat.nzcount = new int[second_dim];
     out_cmat.ja = new int* [second_dim];
     out_cmat.ma = new DataT *[second_dim];
-
     
     //find number of nonzero elements in each secondary row (which will be main row for the transpose); 
     for (int i = 0; i < main_dim; i++)
@@ -565,14 +595,17 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int fmt_change)
 
 }
 
-/* int permute(CSR& cmat, int* perm, int dim) {
-    //permutes rows (dim == 0), columns (dim == 1) or both (dim==2) of a matrix in CSR form;
+ int permute(CSR& cmat, int* perm, int dim) {
+    //permutes rows (dim == 0), cols (dim == 1) or both (dim==2) of a matrix in CSR form;
     //TO DO PERMUTE SECONDARY DIMENSION
 
-    int n = (cmat.fmt == 0) ? cmat.rows : cmat.cols;
+    int main_dim = (cmat.fmt == 0) ? cmat.rows : cmat.cols;
+    int second_dim = (cmat.fmt == 0) ? cmat.cols : cmat.rows;
 
-    bool permute_main = (cmat.fmt == 0) ? dim == 0 : dim == 1;
-    bool permute_second = !permute_main;
+
+    bool permute_main = (cmat.fmt == 0) ? dim == 0 : dim == 1;  //permute main dimension?
+    bool permute_second = !permute_main;                        //permute secondary dimension?
+
     if (dim == 2)
     {
         permute_main = true;
@@ -581,18 +614,31 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int fmt_change)
 
     if (permute_main)
     {
-        permute(spmt.nzcount, perm, n);
-        permute(spmt.ja, perm, n);
-        permute(spmt.ma, perm, n)
+        permute(cmat.nzcount, perm, main_dim);
+        permute(cmat.ja, perm, main_dim);
+        permute(cmat.ma, perm, main_dim);
     }
 
     if (permute_second)
     {
-        std::cout << "WARNING: permutation of compressed dimension not implemented" << std::endl;
+        int* ja;
+        for (int i = 0; i < main_dim; i++)
+        {
+            ja = cmat.ja[i];
+            int ja_len = cmat.nzcount[i];
+            int tmp_perm[ja_len];
+
+            //change column indices to new values
+            for (int j = 0; i < ja_len; j++)
+            {
+                ja[j] = perm[ja[j]];
+            }
+            sort_permutation(tmp_perm, ja, ja_len); //find correct reorder of column indices.
+            permute(cmat.ja[i], tmp_perm, ja_len);
+            permute(cmat.ma[i], tmp_perm, ja_len);
+        }
     }
 }
-
-*/
 
 int hash_permute(CSR& cmat, int block_size, int* perm, int* group, int mode) 
 {
@@ -618,25 +664,14 @@ int hash_permute(CSR& cmat, int block_size, int* perm, int* group, int mode)
         return 1;
     }
 
-
-
-
     int hashes[main_dim]; //will store hash values. The hash of a row (col) is the sum of the indices (mod block_size) of its nonzero entries
 
     for (int i = 0; i < main_dim; i++)
     {
-        hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], block_size, mode);
+        hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], block_size, mode); //calculate hash value for each row
     }
 
-
-    for (int i = 0; i < main_dim; i++) {
-        perm[i] = i; //sorted indices
-    }
-    //sort indices in perm by hash value
-    std::sort(perm, perm + main_dim,
-        [&](const int& a, const int& b) {return (hashes[a] < hashes[b]);}
-        );
-
+    sort_permutation(perm, hashes, main_dim);
 
     int *ja_0, *ja_1;
     int len_0, len_1;
@@ -758,8 +793,7 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size,
 
 int main()
 {
-    int arr[4] = { 1,4,7,10 };
-    int arr2[5] = { 1,2,5,8,11 };
-    int a = check_same_pattern(arr, 4, arr2, 5, 1, 0);
-    std::cout << a << std::endl;
+    int arr[2] = { 5,6};
+    int arr2[2] = { 1,10 };
+    int a = check_same_pattern()
 }

@@ -33,7 +33,7 @@ struct VBS {
 
         A VBS matrix has a main dimension and a compressed dimension.
         partition of rows and columns are stored respectively in row_part and col_part;
-        specifically, row_part[i] holds the number of rows in the partition element i; 
+        e.g., row_part[i] holds the row_index where partition element i starts;
 
         for each block row (or column) in the main dimension, we store:
             nzcount: the number of nonzero blocks
