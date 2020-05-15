@@ -902,7 +902,7 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
     }
 }
 
-int hash_permute(CSR& cmat, int block_size, int* perm, int* group, int mode) 
+int hash_permute(CSR& cmat, int main_partition, int blocks, int* perm, int* group, int mode) 
 {
     //finds a group structure and a permutation for the main dimension of a CSR mat
 
@@ -916,21 +916,14 @@ int hash_permute(CSR& cmat, int block_size, int* perm, int* group, int mode)
     //  perm:        an array of length equal to cmat main dimension; stores a permutation of such dimension
     //  group:       an array of length equal to cmat main dimension; for each main row, stores the row group it belongs to
 
-
     int main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
     int second_dim = cmat.fmt == 0 ? cmat.cols : cmat.rows;
-
-    if (block_size > second_dim)
-    {
-        std::cout << "ERROR. block_size must be smaller than matrix dimension" << std::endl;
-        return 1;
-    }
 
     int hashes[main_dim]; //will store hash values. The hash of a row (col) is the sum of the indices (mod block_size) of its nonzero entries
 
     for (int i = 0; i < main_dim; i++)
     {
-        hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], block_size, mode); //calculate hash value for each row
+        hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], main_partition, blocks, mode); //calculate hash value for each row
     }
 
     sort_permutation(perm, hashes, main_dim);
@@ -953,7 +946,7 @@ int hash_permute(CSR& cmat, int block_size, int* perm, int* group, int mode)
             ja_1 = cmat.ja[i_1]; //this row
             len_1 = cmat.nzcount[i_1]; //its length
 
-            if (check_same_pattern(ja_0, len_0, ja_1, len_1, block_size, mode)) //if new row has same pattern, put in the same group
+            if (check_same_pattern(ja_0, len_0, ja_1, len_1, main_partition, blocks, mode)) //if new row has same pattern, put in the same group
             {
                 group[idx] = tmp_group;
             }
@@ -1149,6 +1142,9 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int* block_part
 }
 
 //TODO check_has_pattern (int* arr, int len, int* pattern, int *block_partition, int_blocks, int mode);
+
+
+
 
 int main()
 {
