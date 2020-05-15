@@ -22,6 +22,16 @@ int convert_to_mat(const VBSfx& vbmat, DataT* out_mat, int out_mat_fmt);
 
 int convert_to_VBSfx(const CSR& cmat, VBSfx& vbmat, int block_size, int vbmat_block_fmt, int vbmat_entries_fmt);
 
+int cleanVBS(VBS& vbmat);
+
+int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int* colpart, int vbmat_blocks_fmt, int vbmat_entries_fmt);
+
+int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt);
+
+int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int* colpart, int vbmat_block_fmt, int vbmat_entries_fmt);
+
+int matprint(const VBS& vbmat);
+
 int cleanCSR(CSR& cmat);
 
 int convert_to_mat(const CSR& cmat, DataT* out_mat, int out_mat_fmt);
@@ -30,15 +40,23 @@ int convert_to_CSR(const DataT* in_mat, int mat_rows, int mat_cols, int mat_fmt,
 
 int convert_to_CSR(const VBSfx& vbmat, CSR& cmat, int csr_fmt);
 
-int transpose(const CSR& in_cmat, CSR& out_cmat, int fmt_change);
+int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt);
 
-int hash_permute(CSR& cmat, int block_size, int* perm, int* group, int mode);
+int transpose(const CSR& in_cmat, CSR& out_cmat, int fmt_change);
 
 int hash(int* arr, int a_len, int block_size, int mode);
 
+int hash(int* arr, int a_len, int* block_partition, int mode);
+
 int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size, int mode);
 
+int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int* block_partition, int mode);
+
+int pattern_scalar_product(int* arr0, int len0, int* pattern, int* block_partition, int mode);
+
 int permute_CSR(CSR& cmat, int* perm, int dim);
+
+int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int mode);
 
 //permutes an array of n elements (original) according to a permutation (perm);
 template <class myType>

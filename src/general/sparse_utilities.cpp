@@ -9,6 +9,7 @@
 
 #include "comp_mats.h"
 #include "sparse_utilities.h"
+#include "..\..\include\sparse_utilities.h"
 
 
 typedef std::vector<int> svi;
@@ -775,6 +776,7 @@ int matprint(const CSR& cmat)
     matprint(tmp_mat, cmat.rows, cmat.cols, cmat.cols, 0);
 }
 
+
 //TODO copyCSR
 
 int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
@@ -902,7 +904,7 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
     }
 }
 
-int hash_permute(CSR& cmat, int main_partition, int blocks, int* perm, int* group, int mode) 
+int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int mode)
 {
     //finds a group structure and a permutation for the main dimension of a CSR mat
 
@@ -923,15 +925,15 @@ int hash_permute(CSR& cmat, int main_partition, int blocks, int* perm, int* grou
 
     for (int i = 0; i < main_dim; i++)
     {
-        hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], main_partition, blocks, mode); //calculate hash value for each row
+        hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], comp_dim_partition, mode); //calculate hash value for each row
     }
 
-    sort_permutation(perm, hashes, main_dim);
+    sort_permutation(perm, hashes, main_dim); //find a permuration that sorts hashes
 
     int *ja_0, *ja_1;
     int len_0, len_1;
     int tmp_group = 0;
-    group[0] = 0;
+    group[perm[0]] = 0;
 
     for (int idx = 1; idx < main_dim; idx++) //scan main dimension in perm order and assign rows with same pattern to same group;
     {
@@ -946,7 +948,7 @@ int hash_permute(CSR& cmat, int main_partition, int blocks, int* perm, int* grou
             ja_1 = cmat.ja[i_1]; //this row
             len_1 = cmat.nzcount[i_1]; //its length
 
-            if (check_same_pattern(ja_0, len_0, ja_1, len_1, main_partition, blocks, mode)) //if new row has same pattern, put in the same group
+            if (check_same_pattern(ja_0, len_0, ja_1, len_1, comp_dim_partition, mode)) //if new row has same pattern, put in the same group
             {
                 group[idx] = tmp_group;
             }
@@ -954,7 +956,7 @@ int hash_permute(CSR& cmat, int main_partition, int blocks, int* perm, int* grou
             {
 
                 tmp_group += 1;
-                group[idx] = tmp_group;
+                group[i_1] = tmp_group;
 
             }
 
@@ -1000,14 +1002,13 @@ int hash(int* arr, int a_len, int block_size, int mode)
     return hash;
 }
 
-int hash(int* arr, int a_len, int* block_partition, int blocks, int mode)
+int hash(int* arr, int a_len, int* block_partition, int mode)
 {
     //evaluate hash function for an array of indices
     /* IN:
             arr: the array of indices.
             a_len: length fo the array;
             block_partition: start position of block i; elements in the same block give the same contribution to hash
-            blocks:  number of blocks;
             mode:  0: at most one element per block contribute to hash
                    1: all elements in a block contribute to hash
         OUT:
@@ -1087,10 +1088,10 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size,
 
 }
 
-int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int* block_partition, int blocks, int mode)
+int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int* block_partition, int mode)
 {
     //check if two arrays of indices have the same pattern
-    //PATTERN IS DIVIDED IN "blocks" BLOCKS OF VARIABLE DIMENSION, GIVEN BY block_partition; 
+    //PATTERN IS DIVIDED IN BLOCKS OF VARIABLE DIMENSION, GIVEN BY block_partition; 
 
     int i = 0;
     int j = 0;
@@ -1143,7 +1144,100 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int* block_part
 
 //TODO check_has_pattern (int* arr, int len, int* pattern, int *block_partition, int_blocks, int mode);
 
+float pattern_scalar_product(int* arr0, int len0, int* pattern, int* block_partition, int mode)
+{
+    int i = 0;
+    int in_block = 0;
 
+    int block_idx = 0; //block_idx for pattern
+
+    float scalar_product = 0;
+    int pattern_norm = 0;
+    int array_norm = 0;
+
+
+    while (i < len0)
+    {
+        while (arr0[i] >= block_partition[block_idx + 1]) //check if idx out of block; in that case, procede to that block.
+        {
+            pattern_norm += pattern[block_idx] * *2;
+            array_norm += in_block * *2;
+            scalar_product += pattern[block_idx] * in_block; //add the scalar product of the previous block;
+            in_block = 0;
+            block_idx++;
+        }
+
+        in_block++;
+
+        if ((mode == 0) and (in_block > 1))
+        {
+            in_block = 1;
+        }
+        i++;
+    }
+    scalar_product /= pattern_norm * array_norm;
+    return scalar_product;
+}
+
+int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int* in_perm, int* in_group, int* out_perm, *out_group,  int mode)
+{
+    /*
+    COMPUTES A GROUPING AND PERMUTATION FOR A CSR MATRIX (ALONG ITS MAIN DIMENSION) 
+    GIVEN A STARTING PERMUTATION AND A GROUPING; USES ANGLE METHOD;
+
+    IN: 
+        cmat: the CSR matrix
+        comp_dim_partition: the partition of the matrix along its compressed dimension. Element i is the start position of block i; last element is the length of the compressed dimension;
+        in_perm: a permutation of the main dimension (rows in the same group should be adjacent in this permutation); 
+        in_group: a grouping along the main dimension;
+        eps: rows with cosine greater than eps will be merged.
+        mode: 0: consider at most element per block when evaluating sparsity patterns
+              1: consider all the elements in a block when evaluating sparsity patterns
+
+    OUT: out_perm will store a new permutation of the CSR matrix
+         out_group will store a new grouping (coherent with in_group)
+    */
+
+    int main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
+    int second_dim = cmat.fmt == 0 ? cmat.cols : cmat.rows;
+
+    for (int i = 0; i < main_dim; i++)
+    {
+        out_group[i] = -1;
+    }
+
+    int idx_i, idx_j;
+    int this_group = -1;
+    int that_group = -1;
+    for (int i = 0; i < main_dim; i++)
+    {
+        idx_i = in_perm[i];         //identify the i-th row in the permutation
+        if (out_group[idx_i] == -1) //only consider still ungrouped rows;
+        {
+            this_group++; //create a new group
+            out_group[idx_i] == this_group;
+            int j = i + 1;
+            while (in_group[in_perm[j] == in_group[i]) //check for elements in the same group of i (they are consecutive in in_perm)
+            {
+                out_group[in_perm[j]] == this_group;
+                j++;
+            }
+
+            while(j < main_dim) //loop through not-analyzed rows to pair with the i-th row
+            {
+                idx_j = in_perm[j];
+                if (out_group[idx_j] == -1)         //only consider ungrouped rows;
+                {
+                    that_group = in_group[idx_j];
+                    if (pattern_scalar_product() >)
+                }
+                j++;
+            }
+        }
+    }
+
+
+}
 
 
 int main()
