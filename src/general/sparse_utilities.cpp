@@ -354,6 +354,224 @@ int convert_to_VBSfx(const CSR& cmat, VBSfx& vbmat, int block_size, int vbmat_bl
 }
 
 
+
+//VBS utilities
+
+int cleanVBS(VBS& vbmat)
+{
+    delete[] vbmat.nzcount;
+    delete[] vbmat.jab;
+    delete[] vbmat.mab;
+    delete[] vbmat.rowpart;
+    delete[] vbmat.colpart;
+
+    return 0;
+}
+
+int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int *colpart, int vbmat_blocks_fmt, int vbmat_entries_fmt)
+{
+
+    vbmat.rows = block_rows;
+    vbmat.cols = block_cols;
+
+    vbmat.blocks_fmt = vbmat_blocks_fmt;
+    vbmat.entries_fmt = vbmat_entries_fmt;
+
+    int vbmat_main_dim = vbmat.blocks_fmt == 0 ? vbmat.rows : vbmat.cols;
+    int vbmat_compressed_dim = (vbmat.blocks_fmt == 0) ? vbmat.cols : vbmat.rows;
+    int main_pos; //counter for main dimension
+    int second_pos; //counter for compressed dimension
+
+    vbmat.nzcount = new int[vbmat_main_dim]; //initialize nzcount, which stores number of nonzero blocks for each block-row (-column)
+    int mat_leading_dim = mat_fmt == 0 ? mat_cols : mat_rows;
+
+    int matpos;
+    svi jab;
+    svd mab;
+
+    int main_pos, main_block_dim, second_pos, second_block_dim;
+    int row, col, row_block_dim, col_block_dim;
+    int total_nonzero_entries = 0;
+
+
+    //FIND BLOCK STRUCTURE--------------------------------------------------------------
+    for (i = 0; i < vbmat_main_dim; i++)        //loops trough main block dimension
+    {
+        main_pos = b_main_ptr[i];
+        main_block_dim = b_main_ptr[i + 1] - main_pos;
+
+        for (j = 0; j < vbmat_compressed_dim; j++)     //loops through compressed block dimension
+        {
+
+            second_pos = b_second_ptr[j];
+            second_block_dim = b_second_ptr[j + 1] - second_pos;
+
+            if (vbmat.block_fmt == 0)
+            {
+                row = main_pos;
+                col = second_pos;
+                row_block_dim = main_block_dim;
+                col_block_dim = second_block_dim;
+            }
+            else
+            {
+                row = second_pos;
+                col = main_pos;
+                row_block_dim = second_block_dim;
+                col_block_dim = main_block_dim;
+            }
+
+            matpos = IDX(row, col, mat_leading_dim, mat_fmt);    //find starting index of block in matrix
+            if (!is_empty(mat + matpos, row_block_dim, col_block_dim, mat_leading_dim, mat_fmt))        //check if block is non-empty
+            {
+                vbmat.nzcount[i] += 1;  //one more nonzero block on the compressed dimension
+                tota_nonzero_entries += main_block_dim * second_block_dim;
+                jab.push_back(j);       //store index of nonzero block
+            }
+        }
+    }
+    //----------------------------------------------------------------------------------
+
+    vbmat.jab = new int[jab.size()];
+    vbmat.mab = new DataT[total_nonzero_entries];
+
+
+    int mat_idx = 0; //keeps reading position for mat
+    int vbmat_idx = 0; //keeps writing position for vbmat 
+    int jab_count = 0;
+
+    //COPY VALUES from mat to vbmat ------------------------------------------------------
+    for (i = 0; i < vbmat_main_dim; i++)
+    {
+        main_pos = b_main_ptr[i];
+        main_block_dim = b_main_ptr[i + 1] - main_pos;
+        for (int nzs = 0; nzs < vbmat.nzcount[i]; nzs++)
+        {
+            j = jab[jab_count];
+            second_pos = b_second_ptr[j];
+            second_block_dim = b_second_ptr[j + 1] - second_pos;
+
+            if (vbmat.block_fmt == 0)
+            {
+                row = main_pos;
+                col = second_pos;
+                row_block_dim = main_block_dim;
+                col_block_dim = second_block_dim;
+            }
+            else
+            {
+                row = second_pos;
+                col = main_pos;
+                row_block_dim = second_block_dim;
+                col_block_dim = main_block_dim;
+            }
+
+            mat_idx = IDX(row, col, mat_leading_dim, mat_fmt); //find starting index of block in matrix
+
+            block_leading_dim = (vbmat.entries_fmt == 0) ? second_block_dim : main_block_dim;
+            
+            mat_cpy(mat + mat_idx, row_block_dim, col_block_dim, mat_leading_dim, mat_fmt, vbmat.mab + vbmat_idx, block_leading_dim, vbmat_entries_fmt); //write block from mat to vbmat.mab
+            vbmat_idx += main_block_dim*second_block_dim;
+            jab_count++;
+        }
+    }
+    //------------------------------------------------------------------------------------
+
+    return 0;
+}
+
+int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
+{
+    //input:
+    //  vmat: a VBS matrix
+    //  out_mat: an array of the proper dimension, filled with 0s; 
+
+    //determine out_mat dimensions-------------------------
+    int out_mat_rows = vbmat.rowpart[vbmat.block_rows];
+    int out_mat_cols = vbmat.colpart[vbmat.block_cols];
+    int mat_leading_dim = out_mat_fmt == 0 ? out_mat_rows : out_mat_cols;
+    //-----------------------------------------------------
+
+    int vbmat_main_dim = vbmat.blocks_fmt == 0 ? vbmat.rows : vbmat.cols;
+    int vbmat_compressed_dim = (vbmat.blocks_fmt == 0) ? vbmat.cols : vbmat.rows;
+    int main_pos; //counter for main dimension
+    int second_pos; //counter for compressed dimension
+
+    int main_pos, main_block_dim, second_pos, second_block_dim;
+    int row, col, row_block_dim, col_block_dim;
+
+    int mat_idx = 0; //keeps writing position for mat
+    int vbmat_idx = 0; //keeps writing position for vbmat 
+    int ja_count = 0; //keeps total nonzero blocks count;
+
+    //COPY VALUES from mat to vbmat ------------------------------------------------------
+    for (i = 0; i < vbmat_main_dim; i++)
+    {
+        main_pos = b_main_ptr[i];
+        main_block_dim = b_main_ptr[i + 1] - main_pos;
+        for (int nzs = 0; nzs < vbmat.nzcount[i]; nzs++)
+        {
+            j = jab[nzs];
+            second_pos = b_second_ptr[j];
+            second_block_dim = b_second_ptr[j + 1] - second_pos;
+
+            if (vbmat.block_fmt == 0)
+            {
+                row = main_pos;
+                col = second_pos;
+                row_block_dim = main_block_dim;
+                col_block_dim = second_block_dim;
+            }
+            else
+            {
+                row = second_pos;
+                col = main_pos;
+                row_block_dim = second_block_dim;
+                col_block_dim = main_block_dim;
+            }
+
+            mat_idx = IDX(row, col, mat_leading_dim, mat_fmt); //find starting index of block in matrix
+
+            block_leading_dim = (vbmat.entries_fmt == 0) ? second_block_dim : main_block_dim;
+
+            mat_cpy(vbmat.mab + vbmat_idx, row_block_dim, col_block_dim, block_leading_dim, vbmat_entries_fmt, mat + mat_idx, mat_leading_dim, mat_fmt); //write block from vbmat.mab to mat
+            vbmat_idx += main_block_dim * second_block_dim; //update vbmat.mab reading index
+        }
+    }
+    //------------------------------------------------------------------------------------
+
+    return 0;
+
+}
+
+int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int* colpart, int vbmat_block_fmt, int vbmat_entries_fmt)
+{
+    //WARNING: this does the additional step of converting to and from uncompressed array. 
+    //TODO: if necessary, make conversion efficient;
+
+    int mat_rows = cmat.rows;
+    int mat_cols = cmat.cols;
+    int mat_size = mat_rows * mat_cols;
+    int mat_fmt = 0;
+    DataT mat[mat_size] = { 0 };
+    convert_to_mat(cmat, mat, mat_fmt);
+    convert_to_VBS(mat, mat_rows, mat_cols, mat_fmt, vbmat, block_rows, rowpart, block_cols, colpart, vbmat_block_fmt, vbmat_entries_fmt);
+
+    return 0;
+}
+
+int matprint(const VBS& vbmat)
+{
+    int mat_rows = vbmat.rowpart[vbmat.block_rows];
+    int mat_cols = vbmat.colpart[vbmat.block_cols];
+
+    DataT tmp_mat[mat_rows * mat_cols] = { 0 };
+    convert_to_mat(vbmat, tmp_mat, 0);
+    matprint(tmp_mat, mat_rows, mat_cols, cmat.cols, 0);
+}
+
+
+
 //CSR utilities
 
 int cleanCSR(CSR& cmat)
@@ -524,6 +742,22 @@ int convert_to_CSR(const VBSfx& vbmat, CSR& cmat, int csr_fmt)
 
     int mat_rows = vbmat.rows * vbmat.block_size;
     int mat_cols = vbmat.cols * vbmat.block_size;
+    int mat_size = mat_rows * mat_cols;
+    int mat_fmt = 0;
+
+    DataT mat[mat_size] = { 0 };
+    convert_to_mat(vbmat, mat, mat_fmt);
+    convert_to_CSR(mat, mat_rows, mat_cols, mat_fmt, cmat, csr_fmt);
+
+    return 0;
+}
+
+int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt)
+{
+    //TODO: if necessary, make conversion efficient;
+
+    int mat_rows = vbmat.rowpart[vbmat.block_rows];
+    int mat_cols = vbmat.colpart[vbmat.block_cols];
     int mat_size = mat_rows * mat_cols;
     int mat_fmt = 0;
 
@@ -751,7 +985,7 @@ int hash(int* arr, int a_len, int block_size, int mode)
             mode:  0: at most one element per block contribute to hash
                    1: all elements in a block contribute to hash
         OUT: 
-            int hash. 
+            int hash : the hash is the sum of the indices of nonzero blocks (indices are counted from 1, to avoid ignoring the 0 idx);
             */
        
 
@@ -767,16 +1001,58 @@ int hash(int* arr, int a_len, int block_size, int mode)
             continue;
         }
 
-        hash += j;
+        hash += j + 1;
         tmp_idx = j;
     }
     return hash;
 }
 
+int hash(int* arr, int a_len, int* block_partition, int blocks, int mode)
+{
+    //evaluate hash function for an array of indices
+    /* IN:
+            arr: the array of indices.
+            a_len: length fo the array;
+            block_partition: start position of block i; elements in the same block give the same contribution to hash
+            blocks:  number of blocks;
+            mode:  0: at most one element per block contribute to hash
+                   1: all elements in a block contribute to hash
+        OUT:
+            int hash : the hash is the sum of the indices of nonzero blocks (indices are counted from 1, to avoid ignoring the 0 idx);
+            */
+
+
+    int nzs = 0;
+    int hash = 0;
+    
+    int prev_idx = -1;
+    int block_idx = 0;
+    
+    while (nzs < a_len)
+    {
+        while (arr[nzs] >= block_partition[bloc_idx + 1])
+        {
+            block_idx++;
+        };
+
+        nzs++;
+        if ((block_idx == prev_idx) and (mode == 0)) //if mode is 0, only one element per block is considered in the hash sum;
+        {
+            continue;
+        }
+
+        hash += block_idx + 1;
+        prev_idx = block_idx;
+    }
+    return hash;
+}
 
 int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size, int mode)
 {
     //check if two arrays of indices have the same pattern
+    //PATTERN IS DEFINED BLOCKS OF FIXED DIMENSION block_size
+
+
     int i = 0;
     int j = 0;
     int b_idx0 = 0;
@@ -817,6 +1093,61 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size,
     }
 
 }
+
+int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int* block_partition, int blocks, int mode)
+{
+    //check if two arrays of indices have the same pattern
+    //PATTERN IS DIVIDED IN "blocks" BLOCKS OF VARIABLE DIMENSION, GIVEN BY block_partition; 
+
+    int i = 0;
+    int j = 0;
+
+    int block_idx_0 = 0; //block_idx for arr0
+    int block_idx_1 = 0; //block_idx for arr1
+
+
+    while ((i < len0) and (j < len1))
+    {
+        while (arr0[i] >= block_partition[block_idx_0 + 1])
+        {
+            block_idx_0++;
+        }
+        while (arr1[j] >= block_partition[block_idx_1 + 1])
+        {
+            block_idx_1++;
+        }
+        if (b_idx0 != b_idx1)
+        {
+            return 0;
+        }
+
+        i++;
+        j++;
+
+        if (mode == 0) //if mode=0, skip all entries in a block after the first one;
+        {
+            while ((i < len0) and (arr0[i] < block_partition[block_idx_0 + 1]))
+            {
+                i++;
+            }
+            while ((j < len1) and (arr1[j] < block_partition[block_idx_1 + 1]))
+            {
+                j++;
+            }
+        }
+
+    }
+    if ((i < len0) or (j < len1))
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+
+}
+
 
 
 int main()
