@@ -651,16 +651,19 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
         {
             ja = cmat.ja[i];
             int ja_len = cmat.nzcount[i];
-            int tmp_perm[ja_len];
+            int idx_perm[second_dim];
 
             //change column indices to new values
             for (int j = 0; i < ja_len; j++)
             {
                 ja[j] = perm[ja[j]];
+                //index permutation FIX
             }
+
+            int tmp_perm[ja_len];
             sort_permutation(tmp_perm, ja, ja_len); //find correct reorder of column indices.
-            permute(cmat.ja[i], tmp_perm, ja_len);
-            permute(cmat.ma[i], tmp_perm, ja_len);
+            permute(cmat.ja[i], tmp_perm, ja_len); //sort ja[i]
+            permute(cmat.ma[i], tmp_perm, ja_len); //permute ma[i] with the same permutation;
         }
     }
 }
