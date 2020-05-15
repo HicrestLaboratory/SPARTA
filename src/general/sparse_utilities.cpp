@@ -1148,7 +1148,7 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int* block_part
 
 }
 
-
+//TODO check_has_pattern (int* arr, int len, int* pattern, int *block_partition, int_blocks, int mode);
 
 int main()
 {
