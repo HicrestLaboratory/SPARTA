@@ -52,13 +52,17 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size,
 
 int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int* block_partition, int mode);
 
-int pattern_scalar_product(int* arr0, int len0, int* pattern, int* block_partition, int mode);
+float pattern_cosine(int* arr0, int len0, int* pattern, int* block_partition, int mode);
 
 int permute_CSR(CSR& cmat, int* perm, int dim);
 
 int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int mode);
 
 //permutes an array of n elements (original) according to a permutation (perm);
+//es 
+// array: A B C D E
+// perm: 
+
 template <class myType>
 int permute(myType* arr, int* perm, int n) {
 	int i = 0;
