@@ -947,7 +947,6 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
             for (int j = 0; j < ja_len; j++)
             {
                 ja[j] = idx_perm[ja[j]]; //assign the new names to indices
-                std::cout << "j: " << j << " idx:" << ja[j] << std::endl;
             }
 
             int tmp_perm[ja_len];
@@ -1379,6 +1378,23 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
 int main()
 {
+    int rows = 20;
+    int cols = 10;
+    int fmt = 0;
+
+    DataT mat[rows * cols] = { 0 };
+    int block_size = 5;
+    float block_sparsity = 0.3;
+    float block_entries_sparsity = 0.5;
+
+    random_sparse_blocks_mat(mat, rows, cols, fmt, block_size, block_sparsity, block_entries_sparsity);
+    matprint(mat, rows, cols, rows, fmt);
+
+
+/*
+
+    //    CMAT permuting tests
+
     int rows = 10;
     int cols = 5;
     int fmt = 0;
@@ -1407,7 +1423,7 @@ int main()
     permute_CSR(cmat, perm1, 1);
     std::cout << "mat cols permuted" << std::endl;
     matprint(cmat);
-
+*/
 
 
 }
