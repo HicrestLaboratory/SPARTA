@@ -113,7 +113,7 @@ int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_
     //put nonzerovalues in the Mat
     for (int i = 0; i < rows; i += block_size) {//iterate through block rows
         int ib = i / block_size;
-        for (int j = 0; j < ; j += += block_size) { //iterate through block columns
+        for (int j = 0; j < ; j += block_size) { //iterate through block columns
             int jb = j / block_size;
 
             if (blocks[ib * n_blocks + jb] != 0) {
