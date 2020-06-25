@@ -77,9 +77,13 @@ int random_mat(DataT* mat, int rows, int cols, float sparsity)
 
     int nzs = (int)sparsity * rows * cols;
     svd entries = svd(rows * cols, 0);
-    std::fill(entries.begin(), entries.begin() + nzs, 1);
+    std::fill(entries.begin(), entries.begin() + nzs, 1.);
     std::random_shuffle(entries.begin(), entries.end());
-    std::copy(entries.begin(), entries.end(), mat);
+
+    std::cout << "printing random mat" << std::endl;
+    for (auto i : entries)
+        std::cout << i << ' ';
+    std::cout << "printed random mat" << std::endl;
 
 }
 
