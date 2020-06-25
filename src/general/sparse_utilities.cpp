@@ -9,7 +9,6 @@
 
 #include "comp_mats.h"
 #include "sparse_utilities.h"
-#include "..\..\include\sparse_utilities.h"
 
 
 typedef std::vector<int> svi;
@@ -883,17 +882,15 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
     if (permute_second)
     {
 
-        std::cout << "checksecond" << std::endl;
-
         int* ja;
         for (int i = 0; i < main_dim; i++)
         {
             ja = cmat.ja[i];
             int ja_len = cmat.nzcount[i];
             int idx_perm[second_dim];
-            for (int j = 0; j < ja_len; j++) //this array stores the position of element i after the permutation (i.e. for permutation 3 1 0 2, it stores 2 1 3 0) 
+            for (int j = 0; j < ja_len; j++) 
             {
-                idx_perm[perm[j]] = j;
+                idx_perm[perm[j]] = j;   //this array stores the new names of column idxs ater the permutation (i.e. for permutation 3 1 0 2, it stores 2 1 3 0) 
             }
 
 
