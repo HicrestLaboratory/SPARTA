@@ -1396,8 +1396,8 @@ int main()
     int block_cols = cols / block_size;
     int row_part[5] = { 0,5,10,15,20 };
     int col_part[3] = { 0, 5, 10 };
-    int vbmat_block_fmt = 0;
-    int vbmat_block_fmt = 0;
+    int vbmat_blocks_fmt = 0;
+    int vbmat_entries_fmt = 0;
 
 
     VBS vbmat;
