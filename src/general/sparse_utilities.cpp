@@ -365,13 +365,13 @@ int cleanVBS(VBS& vbmat)
     delete[] vbmat.nzcount;
     delete[] vbmat.jab;
     delete[] vbmat.mab;
-    delete[] vbmat.rowpart;
-    delete[] vbmat.colpart;
+    delete[] vbmat.row_part;
+    delete[] vbmat.col_part;
 
     return 0;
 }
 
-int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int *colpart, int vbmat_blocks_fmt, int vbmat_entries_fmt)
+int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbmat, int block_rows, int* row_part, int block_cols, int *col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt)
 {
 
     vbmat.rows = block_rows;
@@ -380,11 +380,6 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     vbmat.blocks_fmt = vbmat_blocks_fmt;
     vbmat.entries_fmt = vbmat_entries_fmt;
 
-    int vbmat_main_dim = vbmat.blocks_fmt == 0 ? vbmat.rows : vbmat.cols;
-    int vbmat_compressed_dim = (vbmat.blocks_fmt == 0) ? vbmat.cols : vbmat.rows;
-    int main_pos; //counter for main dimension
-    int second_pos; //counter for compressed dimension
-
     vbmat.nzcount = new int[vbmat_main_dim]; //initialize nzcount, which stores number of nonzero blocks for each block-row (-column)
     int mat_leading_dim = mat_fmt == 0 ? mat_cols : mat_rows;
 
@@ -392,13 +387,38 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     svi jab;
     svd mab;
 
+    if (vbmat.blocks_fmt == 0)
+    {
+        //if Compressed Sparse Row
+        vbmat_main_dim = vbmat.rows;
+        vbmat_compressed_dim = vbmat.cols;
+
+        // assign row and column pointers respectively
+        // to counters for main and compressed dimension
+        int* b_main_ptr = row_part;
+        int* b_second_ptr = col_part;
+
+    }
+    else
+    {
+        //if Compressed Sparse Columns
+        vbmat_main_dim = vbmat.cols;
+        vbmat_compressed_dim = vbmat.rows;
+
+        // assign column and row pointers respectively
+        // to counters for main and compressed dimension
+        int* b_main_ptr = col_part;
+        int* b_second_ptr = row_part;
+    }
+
+
     int main_pos, main_block_dim, second_pos, second_block_dim;
     int row, col, row_block_dim, col_block_dim;
     int total_nonzero_entries = 0;
 
 
     //FIND BLOCK STRUCTURE--------------------------------------------------------------
-    for (i = 0; i < vbmat_main_dim; i++)        //loops trough main block dimension
+    for (int i = 0; i < vbmat_main_dim; i++)        //loops trough main block dimension
     {
         main_pos = b_main_ptr[i];
         main_block_dim = b_main_ptr[i + 1] - main_pos;
@@ -428,7 +448,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
             if (!is_empty(mat + matpos, row_block_dim, col_block_dim, mat_leading_dim, mat_fmt))        //check if block is non-empty
             {
                 vbmat.nzcount[i] += 1;  //one more nonzero block on the compressed dimension
-                tota_nonzero_entries += main_block_dim * second_block_dim;
+                total_nonzero_entries += main_block_dim * second_block_dim;
                 jab.push_back(j);       //store index of nonzero block
             }
         }
@@ -490,15 +510,11 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
     //  out_mat: an array of the proper dimension, filled with 0s; 
 
     //determine out_mat dimensions-------------------------
-    int out_mat_rows = vbmat.rowpart[vbmat.block_rows];
-    int out_mat_cols = vbmat.colpart[vbmat.block_cols];
+
+    int out_mat_rows = vbmat.row_part[vbmat.rows];
+    int out_mat_cols = vbmat.col_part[vbmat.cols];
     int mat_leading_dim = out_mat_fmt == 0 ? out_mat_rows : out_mat_cols;
     //-----------------------------------------------------
-
-    int vbmat_main_dim = vbmat.blocks_fmt == 0 ? vbmat.rows : vbmat.cols;
-    int vbmat_compressed_dim = (vbmat.blocks_fmt == 0) ? vbmat.cols : vbmat.rows;
-    int main_pos; //counter for main dimension
-    int second_pos; //counter for compressed dimension
 
     int main_pos, main_block_dim, second_pos, second_block_dim;
     int row, col, row_block_dim, col_block_dim;
@@ -507,14 +523,40 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
     int vbmat_idx = 0; //keeps writing position for vbmat 
     int ja_count = 0; //keeps total nonzero blocks count;
 
+    if (vbmat.blocks_fmt == 0)
+    {
+        //if Compressed Sparse Row
+        vbmat_main_dim = vbmat.rows;
+        vbmat_compressed_dim = vbmat.cols;
+
+        // assign row and column pointers respectively
+        // to counters for main and compressed dimension
+        int* b_main_ptr = row_part;
+        int* b_second_ptr = col_part;
+
+    }
+    else
+    {
+        //if Compressed Sparse Columns
+        vbmat_main_dim = vbmat.cols;
+        vbmat_compressed_dim = vbmat.rows;
+
+        // assign column and row pointers respectively
+        // to counters for main and compressed dimension
+        int* b_main_ptr = col_part;
+        int* b_second_ptr = row_part;
+    }
+
+    int* jab = vbmat.jab;
+
     //COPY VALUES from mat to vbmat ------------------------------------------------------
-    for (i = 0; i < vbmat_main_dim; i++)
+    for (int i = 0; i < vbmat_main_dim; i++)
     {
         main_pos = b_main_ptr[i];
         main_block_dim = b_main_ptr[i + 1] - main_pos;
         for (int nzs = 0; nzs < vbmat.nzcount[i]; nzs++)
         {
-            j = jab[nzs];
+            int j = jab[nzs];
             second_pos = b_second_ptr[j];
             second_block_dim = b_second_ptr[j + 1] - second_pos;
 
@@ -537,8 +579,8 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
             block_leading_dim = (vbmat.entries_fmt == 0) ? second_block_dim : main_block_dim;
 
-            mat_cpy(vbmat.mab + vbmat_idx, row_block_dim, col_block_dim, block_leading_dim, vbmat_entries_fmt, mat + mat_idx, mat_leading_dim, mat_fmt); //write block from vbmat.mab to mat
-            vbmat_idx += main_block_dim * second_block_dim; //update vbmat.mab reading index
+            mat_cpy(vbmat.mab + vbmat_idx, row_block_dim, col_block_dim, block_leading_dim, vbmat.entries_fmt, out_mat + mat_idx, mat_leading_dim, out_mat_fmt); //write block from vbmat.mab to mat
+            vbmat_idx += row_block_dim * col_block_dim; //update vbmat.mab reading index
         }
     }
     //------------------------------------------------------------------------------------
@@ -565,8 +607,8 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, in
 
 int matprint(const VBS& vbmat)
 {
-    int mat_rows = vbmat.rowpart[vbmat.block_rows];
-    int mat_cols = vbmat.colpart[vbmat.block_cols];
+    int mat_rows = vbmat.row_part[vbmat.rows];
+    int mat_cols = vbmat.col_part[vbmat.cols];
 
     DataT tmp_mat[mat_rows * mat_cols] = { 0 };
     convert_to_mat(vbmat, tmp_mat, 0);
@@ -759,8 +801,8 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt)
 {
     //TODO: if necessary, make conversion efficient;
 
-    int mat_rows = vbmat.rowpart[vbmat.block_rows];
-    int mat_cols = vbmat.colpart[vbmat.block_cols];
+    int mat_rows = vbmat.row_part[vbmat.rows];
+    int mat_cols = vbmat.col_part[vbmat.cols];
     int mat_size = mat_rows * mat_cols;
     int mat_fmt = 0;
 
@@ -945,7 +987,7 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
         if (group[i] == -1) //if row is still unassigned
         {
             tmp_grp++; //create new group
-            group[i] = tmp_grp; //assign row to group
+            group[i] = tmp_group; //assign row to group
             
             ja_0 = cmat.ja[i]; //the row in compressed sparse format
             len_0 = cmat.nzcount[i];//the row length
@@ -970,7 +1012,7 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
 
 int hash(int* arr, int a_len, int block_size, int mode)
 {
-    //evaluate hash function for an array of indices
+    //evaluate hash function for a equally partitioned array of indices
     /* IN:
             arr: the array of indices.
             a_len: length fo the array;
@@ -1002,7 +1044,7 @@ int hash(int* arr, int a_len, int block_size, int mode)
 
 int hash(int* arr, int a_len, int* block_partition, int mode)
 {
-    //evaluate hash function for an array of indices
+    //evaluate hash function for a arbitrarily partitioned array of indices
     /* IN:
             arr: the array of indices.
             a_len: length fo the array;
@@ -1022,7 +1064,7 @@ int hash(int* arr, int a_len, int* block_partition, int mode)
     
     while (nzs < a_len)
     {
-        while (arr[nzs] >= block_partition[bloc_idx + 1])
+        while (arr[nzs] >= block_partition[block_idx + 1])
         {
             block_idx++;
         };
@@ -1108,7 +1150,7 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int* block_part
         {
             block_idx_1++;
         }
-        if (b_idx0 != b_idx1)
+        if (block_idx_0 != block_idx_1)
         {
             return 0;
         }
@@ -1187,7 +1229,7 @@ int scalar_product(int* pat_0, int len_0, int* pat_1)
 {
     int scalar = 0;
 
-    for (int i = 0; i < len0; i++)
+    for (int i = 0; i < len_0; i++)
     {
         scalar += pat_0[i] * pat_1[i];
     }
@@ -1207,7 +1249,7 @@ int norm2(int* arr, int len)
 }
 
 
-int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_perm, int* in_group, *out_group,  int mode)
+int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_perm, int* in_group, int *out_group,  int mode)
 {
     /*
     COMPUTES A GROUPING AND PERMUTATION FOR A CSR MATRIX (ALONG ITS MAIN DIMENSION) 
@@ -1241,6 +1283,8 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
     int that_group;//the (in_)group the compared row is in
     int in_that_grp;
     int that_pattern[nB];
+
+    int i, j;
 
     for (int idx = 0; idx < main_dim; idx++) //Loop through (groups of) rows. Each one is confronted with all the unpaired ones to find those that will be merged.
     {
@@ -1288,13 +1332,13 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
                     get_pattern(arr1, len1, comp_dim_partition, that_pattern, mode); //get the row pattern (store into that_pattern)
                     int norm_1 = norm2(that_pattern, nB); //get norm of the pattern
 
-                    if (scalar_product(this_pattern, nB, that_pattern)^2 > esp * norm_0 * norm_1) //if cosine is > than epsilon, allow merge of groups
+                    if (scalar_product(this_pattern, nB, that_pattern)^2 > eps * norm_0 * norm_1) //if cosine is > than epsilon, allow merge of groups
                     {
                         merge = true;
                     }
                 }
 
-                in_that_group = 0; 
+                in_that_grp = 0; 
                 while ((jdx < main_dim) and (in_group[in_perm[jdx]] == that_group)) //iterate over elements in the same group of the analyzed row j (j included)
                 {
                     in_that_grp++;
