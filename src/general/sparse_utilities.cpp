@@ -507,21 +507,6 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     }
     //------------------------------------------------------------------------------------
 
-    std::cout << "nzcount:" << std::endl;
-    for (auto i : vbmat.nzcount)
-    {
-        std::cout << i << " ";
-    }
-    std::cout << endl;
-
-    std::cout << "jab:" << std::endl;
-    for (auto i : vbmat.jab)
-    {
-        std::cout << i << " ";
-    }
-    std::cout << endl;
-
-
     return 0;
 }
 
@@ -1415,18 +1400,26 @@ int main()
     int vbmat_entries_fmt = 0;
 
 
-    VBS vbmat;
+    DataT mat2[rows * cols] = { 0 };
+    mat_cpy(mat, rows, cols, cols, fmt, mat2, cols, 0);
+
     random_sparse_blocks_mat(mat, rows, cols, fmt, block_size, block_sparsity, block_entries_sparsity);
-    matprint(mat, rows, cols, cols, fmt);
     
+    std::wcout << "mat 1" << std::endl;
+    matprint(mat, rows, cols, cols, fmt);
+
+    std::wcout << "mat 2" << std::endl;
+    matprint(mat2, rows, cols, cols, fmt);
+
     std::cout << "converting to vbs" << std::endl;
 
+    /*
     convert_to_VBS(mat, rows, cols, fmt,
         vbmat,
         block_rows, row_part,
         block_cols, col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
-
+    */
 
     std::cout << "converted" << std::endl;
     matprint(vbmat);
