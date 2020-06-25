@@ -116,7 +116,7 @@ int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_
         for (int j = 0; j < cols; j += block_size) { //iterate through block columns
             int jb = j / block_size;
 
-            if (blocks[ib * n_blocks + jb] != 0) {
+            if (blocks[ib + jb] != 0) {
                 //if block is nonempty, put random values in it;
 
                 std::cout << "ib: " << ib << " jb: " << jb << std::endl;
