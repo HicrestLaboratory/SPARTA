@@ -940,9 +940,8 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
                 idx_perm[perm[j]] = j;   //this array stores the new names of column idxs ater the permutation (i.e. for permutation 3 1 0 2, it stores 2 1 3 0) 
             }
 
-
             //change column indices to new values (given by idx_perm)
-            for (int j = 0; i < ja_len; j++)
+            for (int j = 0; j < ja_len; j++)
             {
                 ja[j] = idx_perm[ja[j]]; //assign the new names to indices
             }
