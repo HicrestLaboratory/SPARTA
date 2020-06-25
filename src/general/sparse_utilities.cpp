@@ -1403,12 +1403,17 @@ int main()
     VBS vbmat;
     random_sparse_blocks_mat(mat, rows, cols, fmt, block_size, block_sparsity, block_entries_sparsity);
     matprint(mat, rows, cols, cols, fmt);
+    
+    std::cout << "converting to vbs" << std::endl;
+
     convert_to_VBS(mat, rows, cols, fmt,
         vbmat,
         block_rows, row_part,
         block_cols, col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
 
+
+    std::cout << "converted" << std::endl;
     matprint(vbmat);
 
 
