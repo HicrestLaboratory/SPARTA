@@ -82,6 +82,7 @@ int random_mat(DataT* mat, int rows, int cols, float sparsity)
     std::random_shuffle(entries.begin(), entries.end());
     std::copy(entries.begin(), entries.end(), mat);
 
+
 }
 
 int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_size, float block_sparsity, float block_entries_sparsity) 
@@ -94,7 +95,7 @@ int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_
     }
 
     int n_blocks = rows * cols / (block_size * block_size);     //total number of blocks
-    int nzblocks = (int)block_sparsity * n_blocks;              //total number of nonzero blocks
+    int nzblocks = (int)(block_sparsity * n_blocks);              //total number of nonzero blocks
 
     svi blocks = svi(n_blocks, 0);              //will store 0 unless a block is nonzero;
     std::fill(blocks.begin(), blocks.begin() + nzblocks, 1);    //make nzblocks blocks nonzero;
