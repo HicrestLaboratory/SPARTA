@@ -109,6 +109,7 @@ int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_
             if (blocks[ib * n_blocks + jb] != 0) {
                 //if block is nonempty, put random values in it;
 
+                std::cout << "ib: " << ib << " jb: " << jb << std::endl;
                 DataT tmp_block[block_size*block_size] = { 0 }; //temporary block
                 random_mat(tmp_block, block_size, block_size, block_entries_sparsity); //make a random block with given sparsity
 
