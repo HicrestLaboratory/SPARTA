@@ -102,7 +102,7 @@ int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_
     std::random_shuffle(blocks.begin(), blocks.end());          //put the nonzero blocks in random positions
     
     std::cout << "nzblocks:" << std::endl;
-    std::copy(blocks.begin(), blocks.end(), mat);
+    std::copy(blocks.begin(), blocks.end(), std::cout);
 
 
 
