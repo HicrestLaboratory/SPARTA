@@ -1394,21 +1394,21 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
 int main()
 {
-    int rows = 20;
-    int cols = 10;
+    int rows = 12;
+    int cols = 6;
     int fmt_1 = 1;
     int fmt_2 = 0;
     int fmt_3 = 0;
 
     DataT mat[rows * cols] = { 0 };
-    int block_size = 5;
+    int block_size = 3;
     float block_sparsity = 0.3;
     float block_entries_sparsity = 0.5;
 
     int block_rows = rows / block_size;
     int block_cols = cols / block_size;
-    int row_part[5] = { 0,5,10,15,20 };
-    int col_part[3] = { 0, 5, 10 };
+    int row_part[5] = { 0,3,6,9,12 };
+    int col_part[3] = { 0, 3, 6 };
     int vbmat_blocks_fmt = 0;
     int vbmat_entries_fmt = 0;
 
