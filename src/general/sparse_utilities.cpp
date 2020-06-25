@@ -591,7 +591,7 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
             mat_cpy(vbmat.mab + vbmat_idx, row_block_dim, col_block_dim, block_leading_dim, vbmat.entries_fmt, out_mat + mat_idx, mat_leading_dim, out_mat_fmt); //write block from vbmat.mab to mat
             matprint(vbmat.mab + vbmat_idx, row_block_dim, col_block_dim, block_leading_dim, vbmat.entries_fmt);
-            matprint(outmat + mat_idx, row_block_dim, col_block_dim, mat_leading_dim, out_mat_fmt);
+            matprint(out_mat + mat_idx, row_block_dim, col_block_dim, mat_leading_dim, out_mat_fmt);
             vbmat_idx += row_block_dim * col_block_dim; //update vbmat.mab reading index
         }
     }
