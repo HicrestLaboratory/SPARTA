@@ -507,6 +507,21 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     }
     //------------------------------------------------------------------------------------
 
+    std::cout << "nzcount:" << std::endl;
+    for (auto i : vbmat.nzcount)
+    {
+        std::cout << i << " ";
+    }
+    std::cout << endl;
+
+    std::cout << "jab:" << std::endl;
+    for (auto i : vbmat.jab)
+    {
+        std::cout << i << " ";
+    }
+    std::cout << endl;
+
+
     return 0;
 }
 
@@ -527,7 +542,7 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
     int row, col, row_block_dim, col_block_dim;
 
     int mat_idx = 0; //keeps writing position for mat
-    int vbmat_idx = 0; //keeps writing position for vbmat 
+    int vbmat_idx = 0; //keeps reading position for vbmat 
     int ja_count = 0; //keeps total nonzero blocks count;
 
     int vbmat_main_dim, vbmat_compressed_dim;
