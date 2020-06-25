@@ -101,10 +101,12 @@ int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_
     std::fill(blocks.begin(), blocks.begin() + nzblocks, 1);    //make nzblocks blocks nonzero;
     std::random_shuffle(blocks.begin(), blocks.end());          //put the nonzero blocks in random positions
     
-    std::cout << "nzblocks:" << std::endl;
-    std::copy(blocks.begin(), blocks.end(), std::cout);
-
-
+    std::cout << "nz blocks:" << std::endl;
+    for (auto i : blocks)
+    {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
 
     int mat_lead_dim = (fmt == 0) ? cols : rows;
 
