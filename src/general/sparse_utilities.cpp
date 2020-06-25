@@ -929,21 +929,23 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
     if (permute_second)
     {
 
+        for (int j = 0; j < ja_len; j++)
+        {
+            idx_perm[perm[j]] = j;   //this array stores the new names of column idxs ater the permutation (i.e. for permutation 3 1 0 2, it stores 2 1 3 0) 
+        }
+
         int* ja;
         for (int i = 0; i < main_dim; i++)
         {
             ja = cmat.ja[i];
             int ja_len = cmat.nzcount[i];
             int idx_perm[second_dim];
-            for (int j = 0; j < ja_len; j++) 
-            {
-                idx_perm[perm[j]] = j;   //this array stores the new names of column idxs ater the permutation (i.e. for permutation 3 1 0 2, it stores 2 1 3 0) 
-            }
 
             //change column indices to new values (given by idx_perm)
             for (int j = 0; j < ja_len; j++)
             {
                 ja[j] = idx_perm[ja[j]]; //assign the new names to indices
+                std::cout << "j: " << j << " idx:" << ja[j] << std::endl;
             }
 
             int tmp_perm[ja_len];
