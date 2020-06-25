@@ -604,7 +604,7 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
             }
 
             mat_idx = IDX(row, col, mat_leading_dim, out_mat_fmt); //find starting index of block in matrix
-
+            std::cout << "mat:idx: " << mat_idx << std::endl;
             int block_leading_dim = (vbmat.entries_fmt == 0) ? second_block_dim : main_block_dim;
 
             mat_cpy(vbmat.mab + vbmat_idx, row_block_dim, col_block_dim, block_leading_dim, vbmat.entries_fmt, out_mat + mat_idx, mat_leading_dim, out_mat_fmt); //write block from vbmat.mab to mat
