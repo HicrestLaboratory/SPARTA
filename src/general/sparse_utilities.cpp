@@ -100,13 +100,6 @@ int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_
     svi blocks = svi(n_blocks, 0);              //will store 0 unless a block is nonzero;
     std::fill(blocks.begin(), blocks.begin() + nzblocks, 1);    //make nzblocks blocks nonzero;
     std::random_shuffle(blocks.begin(), blocks.end());          //put the nonzero blocks in random positions
-    
-    std::cout << "nz blocks:" << std::endl;
-    for (auto i : blocks)
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
 
     int mat_lead_dim = (fmt == 0) ? cols : rows;
 
@@ -119,7 +112,6 @@ int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_
             if (blocks[ib * (cols / block_size ) + jb] != 0) {
                 //if block is nonempty, put random values in it;
 
-                std::cout << "ib: " << ib << " jb: " << jb << std::endl;
                 DataT tmp_block[block_size*block_size] = { 0 }; //temporary block
                 random_mat(tmp_block, block_size, block_size, block_entries_sparsity); //make a random block with given sparsity
 
@@ -1391,8 +1383,8 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
 int main()
 {
-    int rows = 40;
-    int cols = 20;
+    int rows = 20;
+    int cols = 10;
     int fmt = 0;
 
     DataT mat[rows * cols] = { 0 };
@@ -1400,8 +1392,26 @@ int main()
     float block_sparsity = 0.3;
     float block_entries_sparsity = 0.5;
 
+    int block_rows = rows / block_size;
+    int block_cols = cols / block_size;
+    int row_part[5] = { 0,5,10,15,20 };
+    int col_part[3] = { 0, 5, 10 };
+    int vbmat_block_fmt = 0;
+    int vbmat_block_fmt = 0;
+
+
+    VBS vbmat;
     random_sparse_blocks_mat(mat, rows, cols, fmt, block_size, block_sparsity, block_entries_sparsity);
     matprint(mat, rows, cols, cols, fmt);
+    convert_to_VBS(mat, rows, cols, fmt,
+        vbmat,
+        block_rows, row_part,
+        block_cols, col_part,
+        vbmat_blocks_fmt, vbmat_entries_fmt);
+
+    matprint(vbmat);
+
+
 
 
 /*
