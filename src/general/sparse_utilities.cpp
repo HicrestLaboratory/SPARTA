@@ -1396,13 +1396,13 @@ int main()
 {
     int rows = 12;
     int cols = 6;
-    int fmt_1 = 1;
-    int fmt_2 = 0;
-    int fmt_3 = 1;
+    int fmt_1 = 0;
+    int fmt_2 = 1;
+    int fmt_3 = 0;
 
-    int lead_1 = rows;
-    int lead_2 = cols;
-    int lead_3 = rows;
+    int lead_1 = cols;
+    int lead_2 = rows;
+    int lead_3 = cols;
 
 
     DataT mat[rows * cols] = { 0 };
