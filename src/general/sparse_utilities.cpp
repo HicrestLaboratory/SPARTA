@@ -116,7 +116,7 @@ int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_
         for (int j = 0; j < cols; j += block_size) { //iterate through block columns
             int jb = j / block_size;
 
-            if (blocks[ib + jb] != 0) {
+            if (blocks[ib * (cols / block_size ) + jb] != 0) {
                 //if block is nonempty, put random values in it;
 
                 std::cout << "ib: " << ib << " jb: " << jb << std::endl;
@@ -1391,8 +1391,8 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
 int main()
 {
-    int rows = 20;
-    int cols = 10;
+    int rows = 40;
+    int cols = 20;
     int fmt = 0;
 
     DataT mat[rows * cols] = { 0 };
