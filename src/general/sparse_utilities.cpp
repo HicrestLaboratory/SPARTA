@@ -578,6 +578,8 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
         main_block_dim = b_main_ptr[i + 1] - main_pos;
         
         std::cout << "main_pos:" << main_pos << std::endl;
+        std::cout << "main_block_dim:" << main_block_dim << std::endl;
+
         for (int nzs = 0; nzs < vbmat.nzcount[i]; nzs++) //iterate for all nonzero block in row i
         {
             int j = jab[nz_tot]; //column of current non-zero block
