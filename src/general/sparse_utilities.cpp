@@ -507,11 +507,6 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
             int block_leading_dim = (vbmat.entries_fmt == 0) ? second_block_dim : main_block_dim;
 
             mat_cpy(mat + mat_idx, row_block_dim, col_block_dim, mat_leading_dim, mat_fmt, vbmat.mab + vbmat_idx, block_leading_dim, vbmat_entries_fmt); //write block from mat to vbmat.mab
-            std::cout << "Matrix. i: " << i << " j: " << j << " row: " << row << " col: " << col << "row block dim: "<< row_block_dim << " col block dim: " << col_block_dim << " vbmat_idx: " << vbmat_idx << std::endl;
-            
-            matprint(vbmat.mab + vbmat_idx, row_block_dim, col_block_dim, block_leading_dim, vbmat.entries_fmt);
-            matprint(mat + mat_idx, row_block_dim, col_block_dim, mat_leading_dim, mat_fmt);
-
             
             vbmat_idx += main_block_dim * second_block_dim;
             jab_count++;
@@ -576,9 +571,6 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
     {
         main_pos = b_main_ptr[i];
         main_block_dim = b_main_ptr[i + 1] - main_pos;
-        
-        std::cout << "main_pos:" << main_pos << std::endl;
-        std::cout << "main_block_dim:" << main_block_dim << std::endl;
 
         for (int nzs = 0; nzs < vbmat.nzcount[i]; nzs++) //iterate for all nonzero block in row i
         {
@@ -604,17 +596,11 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
             }
 
             mat_idx = IDX(row, col, mat_leading_dim, out_mat_fmt); //find starting index of block in matrix
-            std::cout << mat_leading_dim << std::endl;
 
             int block_leading_dim = (vbmat.entries_fmt == 0) ? second_block_dim : main_block_dim;
 
             mat_cpy(vbmat.mab + vbmat_idx, row_block_dim, col_block_dim, block_leading_dim, vbmat.entries_fmt, out_mat + mat_idx, mat_leading_dim, out_mat_fmt); //write block from vbmat.mab to mat
-            
-            std::cout << "Matrix. i: " << i << " j: " << j << " row: " << row << " col: " << col << "row block dim: " << row_block_dim << " col block dim: " << col_block_dim << " vbmat_idx: " << vbmat_idx << " mat_idx: " << mat_idx << std::endl;
 
-            matprint(vbmat.mab + vbmat_idx, row_block_dim, col_block_dim, block_leading_dim, vbmat.entries_fmt);
-            matprint(out_mat + mat_idx, row_block_dim, col_block_dim, mat_leading_dim, out_mat_fmt);
-            
             vbmat_idx += row_block_dim * col_block_dim; //update vbmat.mab reading index
         }
     }
