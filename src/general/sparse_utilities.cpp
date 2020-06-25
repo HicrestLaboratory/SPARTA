@@ -1394,8 +1394,8 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
 int main()
 {
-    int rows = 10;
-    int cols = 40;
+    int rows = 20;
+    int cols = 10;
     int fmt_1 = 1;
     int fmt_2 = 0;
     int fmt_3 = 0;
