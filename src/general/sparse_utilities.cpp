@@ -75,7 +75,7 @@ int random_mat(DataT* mat, int rows, int cols, float sparsity)
 {
     //create a random matrix with given sparsity and unitary entries;
 
-    int nzs = (int)sparsity * rows * cols;
+    int nzs = (int) (sparsity * rows * cols);
     svd entries = svd(rows * cols, 0);
     std::fill(entries.begin(), entries.begin() + nzs, 1.);
 
