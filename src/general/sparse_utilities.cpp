@@ -1401,14 +1401,17 @@ int main()
 
 
     DataT mat2[rows * cols] = { 0 };
-    mat_cpy(mat, rows, cols, cols, fmt, mat2, cols, 0);
 
-    random_sparse_blocks_mat(mat, rows, cols, fmt, block_size, block_sparsity, block_entries_sparsity);
-    
-    std::wcout << "mat 1" << std::endl;
+    std::cout << "mat 1" << std::endl;
     matprint(mat, rows, cols, cols, fmt);
 
-    std::wcout << "mat 2" << std::endl;
+    random_sparse_blocks_mat(mat, rows, cols, fmt, block_size, block_sparsity, block_entries_sparsity);
+    mat_cpy(mat, rows, cols, cols, fmt, mat2, cols, 0);
+
+    std::cout << "mat 1" << std::endl;
+    matprint(mat, rows, cols, cols, fmt);
+
+    std::cout << "mat 2" << std::endl;
     matprint(mat2, rows, cols, cols, fmt);
 
     std::cout << "converting to vbs" << std::endl;
