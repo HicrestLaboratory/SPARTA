@@ -531,7 +531,7 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
     int out_mat_rows = vbmat.row_part[vbmat.block_rows];
     int out_mat_cols = vbmat.col_part[vbmat.block_cols];
-    int mat_leading_dim = out_mat_fmt == 0 ? out_mat_rows : out_mat_cols;
+    int mat_leading_dim = out_mat_fmt == 0 ? out_mat_cols : out_mat_rows;
     //-----------------------------------------------------
 
     int main_pos, main_block_dim, second_pos, second_block_dim;
