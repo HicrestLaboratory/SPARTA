@@ -509,7 +509,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
 
     for (int i = 0; i < jab_count; i++) 
     {
-
+        std::cout << "jab[" << i << "] : " << vbmat.jab[i] << std::endl;
     }
     //------------------------------------------------------------------------------------
 
