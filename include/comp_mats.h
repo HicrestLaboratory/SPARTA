@@ -45,8 +45,8 @@ struct VBS {
 
 ------------------------------------------------------------                        */
 
-    int rows;  	            /* the block row dimension of the matrix    	        */
-    int cols;	            /* the block column dimension of the matrix   	        */
+    int block_rows;  	            /* the block row dimension of the matrix    	        */
+    int block_cols;	            /* the block column dimension of the matrix   	        */
     int* nzcount;	        /* number of nonzero blocks in each block-row (-column) */
     int* jab;              /* block-columns (-rows) indices of nonzero blocks      */
     int* row_part;              /*cumulative number of row up to start of row partition element i (last element row_part[rows] is total number of rows)*/ 
@@ -80,8 +80,8 @@ struct VBSfx {
 ------------------------------------------------------------                        */
 
     int block_size;         /*side lenght of blocks                                 */
-    int rows;  	            /* the block row dimension of the matrix    	        */
-    int cols;	            /* the block column dimension of the matrix   	        */
+    int block_rows;  	            /* the block row dimension of the matrix    	        */
+    int block_cols;	            /* the block column dimension of the matrix   	        */
     int* nzcount;	        /* number of nonzero blocks in each block-row (-column) */
     int* jab;              /* block-columns (-rows) indices of nonzero blocks      */
     DataT* mab;             /* array containing all entries, block by block	        */
