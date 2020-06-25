@@ -609,7 +609,7 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
             mat_cpy(vbmat.mab + vbmat_idx, row_block_dim, col_block_dim, block_leading_dim, vbmat.entries_fmt, out_mat + mat_idx, mat_leading_dim, out_mat_fmt); //write block from vbmat.mab to mat
             
-            std::cout << "Matrix. i: " << i << " j: " << j << " row: " << row << " col: " << col << "row block dim: " << row_block_dim << " col block dim: " << col_block_dim << " vbmat_idx: " << vbmat_idx << std::endl;
+            std::cout << "Matrix. i: " << i << " j: " << j << " row: " << row << " col: " << col << "row block dim: " << row_block_dim << " col block dim: " << col_block_dim << " vbmat_idx: " << vbmat_idx << " mat_idx: " << mat_idx << std::endl;
 
             matprint(vbmat.mab + vbmat_idx, row_block_dim, col_block_dim, block_leading_dim, vbmat.entries_fmt);
             matprint(out_mat + mat_idx, row_block_dim, col_block_dim, mat_leading_dim, out_mat_fmt);
