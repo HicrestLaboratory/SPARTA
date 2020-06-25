@@ -929,9 +929,9 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
     if (permute_second)
     {
 
-        int ja_len = cmat.nzcount[i];
         int idx_perm[second_dim];
-        for (int j = 0; j < ja_len; j++)
+
+        for (int j = 0; j < second_dim; j++)
         {
             idx_perm[perm[j]] = j;   //this array stores the new names of column idxs ater the permutation (i.e. for permutation 3 1 0 2, it stores 2 1 3 0) 
         }
@@ -940,6 +940,8 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
         for (int i = 0; i < main_dim; i++)
         {
             ja = cmat.ja[i];
+            int ja_len = cmat.nzcount[i];
+
 
             //change column indices to new values (given by idx_perm)
             for (int j = 0; j < ja_len; j++)
