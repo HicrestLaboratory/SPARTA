@@ -1418,7 +1418,7 @@ int main()
 
     std::cout << "converting to vbs" << std::endl;
 
-    /*
+    
     convert_to_VBS(mat, rows, cols, fmt,
         vbmat,
         block_rows, row_part,
@@ -1429,12 +1429,9 @@ int main()
     std::cout << "converted" << std::endl;
     matprint(vbmat);
 
-    */
 
 
-
-/*
-
+    /*
     //    CMAT permuting tests
 
     int rows = 10;
@@ -1465,7 +1462,7 @@ int main()
     permute_CSR(cmat, perm1, 1);
     std::cout << "mat cols permuted" << std::endl;
     matprint(cmat);
-*/
 
 
+    */
 }
