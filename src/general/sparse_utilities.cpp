@@ -111,8 +111,11 @@ int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_
     int mat_lead_dim = (fmt == 0) ? cols : rows;
 
     //put nonzerovalues in the Mat
-    for (int ib = 0; ib < n_blocks; ib++) {//iterate through block rows
-        for (int jb = 0; jb < n_blocks; jb++) { //iterate through block columns
+    for (int i = 0; i < rows; i += block_size) {//iterate through block rows
+        int ib = i / block_size;
+        for (int j = 0; j < ; j += += block_size) { //iterate through block columns
+            int jb = j / block_size;
+
             if (blocks[ib * n_blocks + jb] != 0) {
                 //if block is nonempty, put random values in it;
 
