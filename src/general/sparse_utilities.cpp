@@ -947,10 +947,11 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
         int i = perm[idx]; //counter i refers to original order. Counter idx to permuted one. 
         if (group[i] == -1) //if row is still unassigned
         {
-            tmp_grp++;
-            group[i] = tmp_grp;
-            ja_0 = cmat.ja[i];
-            len_0 = cmat.nzcount[i];
+            tmp_grp++; //create new group
+            group[i] = tmp_grp; //assign row to group
+            
+            ja_0 = cmat.ja[i]; //the row in compressed sparse format
+            len_0 = cmat.nzcount[i];//the row length
             for (int jdx = idx + 1; jdx < main_dim; jdx++)
             {
                 int j = perm[jdx]; //counter j refers to original order. Counter jdx to permuted one. 
@@ -1209,11 +1210,11 @@ int norm2(int* arr, int len)
 }
 
 
-int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_perm, int* in_group, int* out_perm, *out_group,  int mode)
+int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_perm, int* in_group, *out_group,  int mode)
 {
     /*
     COMPUTES A GROUPING AND PERMUTATION FOR A CSR MATRIX (ALONG ITS MAIN DIMENSION) 
-    GIVEN A STARTING PERMUTATION AND A GROUPING; USES ANGLE METHOD;
+    GIVEN A STARTING PERMUTATION AND A GROUPING; USES ANGLE METHOD WITH A FIXED PARTITION OF THE COMPRESSED DIMENSION.
 
     IN: 
         cmat: the CSR matrix
@@ -1221,11 +1222,10 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
         in_perm: a permutation of the main dimension (rows in the same group should be adjacent in this permutation); 
         in_group: a grouping along the main dimension;
         eps: rows with cosine greater than eps will be merged.
-        mode: 0: consider at most element per block when evaluating sparsity patterns
-              1: consider all the elements in a block when evaluating sparsity patterns
+        mode: 0: consider at most one element per block when evaluating sparsity patterns
+              1: consider all the elements in a block (but not their order) when evaluating sparsity patterns
 
-    OUT: out_perm will store a new permutation of the CSR matrix
-         out_group will store a new grouping (coherent with in_group)
+    OUT: out_group will store a new grouping (compatible with in_group)
     */
 
     int main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
@@ -1233,44 +1233,48 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
     for (int i = 0; i < main_dim; i++)
     {
-        out_group[i] = -1;
+        out_group[i] = -1; //initialize out_group
     }
 
     int idx, jdx;
-    int this_group = -1;
-    int in_this_grp = 0;
-    int this_pattern[nB];
+    int this_group = -1; //the (out_)group the current row is in. 
+    int in_this_grp;
+    int this_pattern[nB]; //the pattern of the current row or group of rows
 
-    int that_group = -1;
-    int in_that_grp = 0;
+    int that_group;//the (in_)group the compared row is in
+    int in_that_grp;
     int that_pattern[nB];
 
-    for (int idx = 0; idx < main_dim; idx++)
+    for (int idx = 0; idx < main_dim; idx++) //Loop through (groups of) rows. Each one is confronted with all the unpaired ones to find those that will be merged.
     {
         i = in_perm[idx];           //idx counts in the permuted order. i counts in the original order;
         if (out_group[i] == -1)     //only consider still ungrouped rows;
         {
-            this_group++;               //dismiss last group
-            out_group[i] == this_group; //create new group
-            in_this_grp = 1;
+            this_group++;               //create new group
+
             int* arr0 = cmat.ja[i];
             int len0 = cmat.nzcount[i];
            
-            get_pattern(arr0, len0, comp_dim_partition, this_pattern, mode); //get the row pattern (stores into this_pattern)
-
-            jdx = idx + 1; //only checks elements after idx;
-            while ((jdx < main_dim) and (in_group[in_perm[jdx] == in_group[idx])) //check for elements in the same group of i (they are consecutive in in_perm)
+            jdx = idx; //idx to compare the row with. will only compare with elements after current row;
+ 
+            in_this_grp = 0;
+            while ((jdx < main_dim) and (in_group[in_perm[jdx]] == in_group[i])) //check for elements in the same in_group of i (they are consecutive in in_perm)
             {
                 out_group[in_perm[jdx]] == this_group;   //assign elements in the same in_group to the same out_group;
                 jdx++;
-                in_this_grp++;
+                in_this_grp++; //keep count of the elements in the group
             }
             
-            for (int b = 0; b < nB; b++)
+            get_pattern(arr0, len0, comp_dim_partition, this_pattern, mode); //get the row pattern (stores into this_pattern)
+
+            if (mode == 1)
             {
-                this_pattern[b] *= in_this_grp; //the pattern now contains all the rows of the group
+                for (int b = 0; b < nB; b++)
+                {
+                    this_pattern[b] *= in_this_grp; //multiply entries of the pattern with number of rows with the same pattern (same in_group)
+                }
             }
-            int norm_0 = norm2(this_pattern, nB);
+            int norm_0 = norm2(this_pattern, nB); //squared norm of the pattern
 
             while(jdx < main_dim) //loop through not-analyzed rows to be paired with the group
             {
@@ -1283,7 +1287,6 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
                     int* arr1 = cmat.ja[j];
                     int len1 = cmat.nzcount[j];
                     that_group = in_group[j];
-                    in_that_group += 1;
 
                     get_pattern(arr1, len1, comp_dim_partition, that_pattern, mode); //get the row pattern (store into that_pattern)
                     int norm_1 = norm2(that_pattern, nB); //get norm of the pattern
@@ -1294,10 +1297,11 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
                     }
                 }
 
-                while ((jdx < main_dim) and (in_group[in_perm[jdx]] == that_group)) //fast forward through rows of the same group as the one just analyzed
+                in_that_group = 0; 
+                while ((jdx < main_dim) and (in_group[in_perm[jdx]] == that_group)) //iterate over elements in the same group of the analyzed row j (j included)
                 {
                     in_that_grp++;
-                    if (merge) out_group[in_perm[jdx]] = this_group; //add elements of the same group of the merged element to this_group; 
+                    if (merge) out_group[in_perm[jdx]] = this_group; //if merge was decided, add group to current group 
                     jdx++;
                 }
 
@@ -1305,9 +1309,16 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
                 {
                     for (int b = 0; b < nB; b++)
                     {
-                        this_pattern[b] += in_that_grp * that_pattern[b]; //update pattern with merged rows
+                        if (mode == 0)
+                        {
+                            this_pattern[b] = std::max(this_pattern[b], that_pattern[b]);
+                        }
+                        else
+                        {
+                            this_pattern[b] += in_that_grp * that_pattern[b]; //update pattern with entries of merged rows
+                        }
                     }
-
+                    norm_0 = norm2(this_pattern, nB); //update norm of this pattern
                 }
             }
         }
