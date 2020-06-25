@@ -570,16 +570,22 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
     int* jab = vbmat.jab;
 
+    int nz_tot = 0; //counter for total nonzero blocks
     //COPY VALUES from vbmat to mat ------------------------------------------------------
     for (int i = 0; i < vbmat_main_dim; i++)
     {
         main_pos = b_main_ptr[i];
         main_block_dim = b_main_ptr[i + 1] - main_pos;
-        for (int nzs = 0; nzs < vbmat.nzcount[i]; nzs++)
+        
+        for (int nzs = 0; nzs < vbmat.nzcount[i]; nzs++) //iterate for all nonzero block in row i
         {
-            int j = jab[nzs];
+            j = jab[nz_tot]; //column of current non-zero block
+            nz_tot += 1; //count one nonzero block
+
             second_pos = b_second_ptr[j];
             second_block_dim = b_second_ptr[j + 1] - second_pos;
+
+            for (int h = 0; h < vbmat.
 
             if (vbmat.blocks_fmt == 0)
             {
