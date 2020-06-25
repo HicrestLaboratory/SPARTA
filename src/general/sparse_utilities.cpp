@@ -1418,6 +1418,7 @@ int main()
 
     std::cout << "converting to vbs" << std::endl;
 
+    VBS vbmat;
     
     convert_to_VBS(mat, rows, cols, fmt,
         vbmat,
