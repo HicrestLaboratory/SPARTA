@@ -384,6 +384,12 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     vbmat.blocks_fmt = vbmat_blocks_fmt;
     vbmat.entries_fmt = vbmat_entries_fmt;
 
+    vbmat.row_part = new int[block_rows];
+    vbmat.col_part = new int[block_cols];
+    std::copy(row_part, row_part + block_rows, vbmat.row_part);
+    std::copy(col_part, col_part + block_cols, vbmat.col_part);
+
+
     int vbmat_main_dim, vbmat_compressed_dim;
     int *b_main_ptr, *b_second_ptr;
 
