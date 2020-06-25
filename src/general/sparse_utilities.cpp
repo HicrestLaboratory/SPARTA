@@ -526,6 +526,7 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
     int ja_count = 0; //keeps total nonzero blocks count;
 
     int vbmat_main_dim, vbmat_compressed_dim;
+    int* b_main_ptr, * b_second_ptr;
 
     if (vbmat.blocks_fmt == 0)
     {
@@ -990,7 +991,7 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
         int i = perm[idx]; //counter i refers to original order. Counter idx to permuted one. 
         if (group[i] == -1) //if row is still unassigned
         {
-            tmp_grp++; //create new group
+            tmp_group++; //create new group
             group[i] = tmp_group; //assign row to group
             
             ja_0 = cmat.ja[i]; //the row in compressed sparse format
