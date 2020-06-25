@@ -507,12 +507,6 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
         }
     }
 
-    for (int i = 0; i < jab_count; i++) 
-    {
-        std::cout << "jab[" << i << "] : " << vbmat.jab[i] << std::endl;
-    }
-    //------------------------------------------------------------------------------------
-
     return 0;
 }
 
@@ -565,7 +559,7 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
     int* jab = vbmat.jab;
 
-    //COPY VALUES from mat to vbmat ------------------------------------------------------
+    //COPY VALUES from vbmat to mat ------------------------------------------------------
     for (int i = 0; i < vbmat_main_dim; i++)
     {
         main_pos = b_main_ptr[i];
@@ -1432,9 +1426,9 @@ int main()
     
 
     std::cout << "converted" << std::endl;
-    matprint(vbmat);
-
-
+    DataT mat3[rows * cols] = { 0 };
+    convert_to_mat(vbmat, mat3, 0);
+    matprint(mat3, rows, cols, cols, 0);
 
     /*
     //    CMAT permuting tests
