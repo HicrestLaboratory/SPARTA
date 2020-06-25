@@ -464,7 +464,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
 
     vbmat.jab = new int[jab.size()];
     vbmat.mab = new DataT[total_nonzero_entries];
-
+    std:copy(jab.begin(), jab.end(), vbmat.jab);
 
     int mat_idx = 0; //keeps reading position for mat
     int vbmat_idx = 0; //keeps writing position for vbmat 
@@ -499,13 +499,17 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
             mat_idx = IDX(row, col, mat_leading_dim, mat_fmt); //find starting index of block in matrix
 
             int block_leading_dim = (vbmat.entries_fmt == 0) ? second_block_dim : main_block_dim;
-            
+
             mat_cpy(mat + mat_idx, row_block_dim, col_block_dim, mat_leading_dim, mat_fmt, vbmat.mab + vbmat_idx, block_leading_dim, vbmat_entries_fmt); //write block from mat to vbmat.mab
-//            std::cout << "Matrix. i: " << i << " j: " << j << " row: " << row << " col: " << col << "row block dim: "<< row_block_dim << " col block dim: " << col_block_dim << " vbmat_idx: " << vbmat_idx << std::endl;
-            vbmat_idx += main_block_dim*second_block_dim;
+            std::cout << "Matrix. i: " << i << " j: " << j << " row: " << row << " col: " << col << "row block dim: "<< row_block_dim << " col block dim: " << col_block_dim << " vbmat_idx: " << vbmat_idx << std::endl;
+            vbmat_idx += main_block_dim * second_block_dim;
             jab_count++;
         }
-    std:copy(jab.begin(), jab.end(), vbmat.jab);
+    }
+
+    for (int i = 0; i < jab_count; i++) 
+    {
+
     }
     //------------------------------------------------------------------------------------
 
