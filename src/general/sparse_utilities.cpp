@@ -510,7 +510,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
             std::cout << "Matrix. i: " << i << " j: " << j << " row: " << row << " col: " << col << "row block dim: "<< row_block_dim << " col block dim: " << col_block_dim << " vbmat_idx: " << vbmat_idx << std::endl;
             
             matprint(vbmat.mab + vbmat_idx, row_block_dim, col_block_dim, block_leading_dim, vbmat.entries_fmt);
-            matprint(out_mat + mat_idx, row_block_dim, col_block_dim, mat_leading_dim, out_mat_fmt);
+            matprint(mat + mat_idx, row_block_dim, col_block_dim, mat_leading_dim, mat_fmt);
 
             
             vbmat_idx += main_block_dim * second_block_dim;
