@@ -1396,7 +1396,9 @@ int main()
 {
     int rows = 50;
     int cols = 40;
-    int fmt = 1;
+    int fmt_1 = 1;
+    int fmt_2 = 0;
+    int fmt_3 = 0;
 
     DataT mat[rows * cols] = { 0 };
     int block_size = 5;
@@ -1414,22 +1416,22 @@ int main()
     DataT mat2[rows * cols] = { 0 };
 
     std::cout << "mat 1" << std::endl;
-    matprint(mat, rows, cols, cols, fmt);
+    matprint(mat, rows, cols, cols, fmt_1);
 
-    random_sparse_blocks_mat(mat, rows, cols, fmt, block_size, block_sparsity, block_entries_sparsity);
-    mat_cpy(mat, rows, cols, cols, fmt, mat2, cols, 0);
+    random_sparse_blocks_mat(mat, rows, cols, fmt_1, block_size, block_sparsity, block_entries_sparsity);
+    mat_cpy(mat, rows, cols, cols, fmt_1, mat2, cols, fmt_2);
 
     std::cout << "mat 1" << std::endl;
-    matprint(mat, rows, cols, cols, fmt);
+    matprint(mat, rows, cols, cols, fmt_1);
 
     std::cout << "mat 2" << std::endl;
-    matprint(mat2, rows, cols, cols, fmt);
+    matprint(mat2, rows, cols, cols, fmt_2);
 
     std::cout << "converting to vbs" << std::endl;
     
     VBS vbmat;
     
-    convert_to_VBS(mat, rows, cols, fmt,
+    convert_to_VBS(mat, rows, cols, fmt_1,
         vbmat,
         block_rows, row_part,
         block_cols, col_part,
@@ -1438,8 +1440,8 @@ int main()
 
     std::cout << "converted" << std::endl;
     DataT mat3[rows * cols] = { 0 };
-    convert_to_mat(vbmat, mat3, 0);
-    matprint(mat3, rows, cols, cols, 0);
+    convert_to_mat(vbmat, mat3, fmt_3);
+    matprint(mat3, rows, cols, cols, fmt_3);
     
 
 
