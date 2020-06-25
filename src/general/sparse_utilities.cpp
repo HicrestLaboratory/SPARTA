@@ -1402,8 +1402,8 @@ int main()
 
     DataT mat[rows * cols] = { 0 };
     int block_size = 3;
-    float block_sparsity = 0.3;
-    float block_entries_sparsity = 0.5;
+    float block_sparsity = 0.7;
+    float block_entries_sparsity = 0.3;
 
     int block_rows = rows / block_size;
     int block_cols = cols / block_size;
