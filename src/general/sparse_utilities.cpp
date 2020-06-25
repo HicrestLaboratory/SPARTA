@@ -1419,11 +1419,12 @@ int main()
         block_rows, row_part,
         block_cols, col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
-    */
+    
 
     std::cout << "converted" << std::endl;
     matprint(vbmat);
 
+    */
 
 
 
