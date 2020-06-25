@@ -387,6 +387,9 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     svi jab;
     svd mab;
 
+    int vbmat_main_dim, vbmat_compressed_dim;
+    int* row_part, *col_part;
+
     if (vbmat.blocks_fmt == 0)
     {
         //if Compressed Sparse Row
@@ -395,8 +398,8 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
 
         // assign row and column pointers respectively
         // to counters for main and compressed dimension
-        int* b_main_ptr = row_part;
-        int* b_second_ptr = col_part;
+        b_main_ptr = row_part;
+        b_second_ptr = col_part;
 
     }
     else
@@ -407,8 +410,8 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
 
         // assign column and row pointers respectively
         // to counters for main and compressed dimension
-        int* b_main_ptr = col_part;
-        int* b_second_ptr = row_part;
+        b_main_ptr = col_part;
+        b_second_ptr = row_part;
     }
 
 
@@ -423,13 +426,13 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
         main_pos = b_main_ptr[i];
         main_block_dim = b_main_ptr[i + 1] - main_pos;
 
-        for (j = 0; j < vbmat_compressed_dim; j++)     //loops through compressed block dimension
+        for (int j = 0; j < vbmat_compressed_dim; j++)     //loops through compressed block dimension
         {
 
             second_pos = b_second_ptr[j];
             second_block_dim = b_second_ptr[j + 1] - second_pos;
 
-            if (vbmat.block_fmt == 0)
+            if (vbmat.blocks_fmt == 0)
             {
                 row = main_pos;
                 col = second_pos;
@@ -464,17 +467,17 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     int jab_count = 0;
 
     //COPY VALUES from mat to vbmat ------------------------------------------------------
-    for (i = 0; i < vbmat_main_dim; i++)
+    for (int i = 0; i < vbmat_main_dim; i++)
     {
         main_pos = b_main_ptr[i];
         main_block_dim = b_main_ptr[i + 1] - main_pos;
         for (int nzs = 0; nzs < vbmat.nzcount[i]; nzs++)
         {
-            j = jab[jab_count];
+            int j = jab[jab_count];
             second_pos = b_second_ptr[j];
             second_block_dim = b_second_ptr[j + 1] - second_pos;
 
-            if (vbmat.block_fmt == 0)
+            if (vbmat.blocks_fmt == 0)
             {
                 row = main_pos;
                 col = second_pos;
@@ -491,7 +494,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
 
             mat_idx = IDX(row, col, mat_leading_dim, mat_fmt); //find starting index of block in matrix
 
-            block_leading_dim = (vbmat.entries_fmt == 0) ? second_block_dim : main_block_dim;
+            int block_leading_dim = (vbmat.entries_fmt == 0) ? second_block_dim : main_block_dim;
             
             mat_cpy(mat + mat_idx, row_block_dim, col_block_dim, mat_leading_dim, mat_fmt, vbmat.mab + vbmat_idx, block_leading_dim, vbmat_entries_fmt); //write block from mat to vbmat.mab
             vbmat_idx += main_block_dim*second_block_dim;
@@ -523,6 +526,9 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
     int vbmat_idx = 0; //keeps writing position for vbmat 
     int ja_count = 0; //keeps total nonzero blocks count;
 
+    int vbmat_main_dim, vbmat_compressed_dim;
+    int* row_part, *col_part;
+
     if (vbmat.blocks_fmt == 0)
     {
         //if Compressed Sparse Row
@@ -531,8 +537,8 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
         // assign row and column pointers respectively
         // to counters for main and compressed dimension
-        int* b_main_ptr = row_part;
-        int* b_second_ptr = col_part;
+        b_main_ptr = row_part;
+        b_second_ptr = col_part;
 
     }
     else
@@ -543,8 +549,8 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
         // assign column and row pointers respectively
         // to counters for main and compressed dimension
-        int* b_main_ptr = col_part;
-        int* b_second_ptr = row_part;
+        b_main_ptr = col_part;
+        b_second_ptr = row_part;
     }
 
     int* jab = vbmat.jab;
