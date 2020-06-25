@@ -1413,8 +1413,8 @@ int main()
     int block_cols = cols / block_size;
     
     int block_size = 5;
-    int row_part[5] = { 0,5,10,15};
-    int col_part[3] = { 0,5,10,15,20,25 };
+    int row_part[4] = { 0,5,10,15};
+    int col_part[6] = { 0,5,10,15,20,25 };
     int vbmat_blocks_fmt = 1;
     int vbmat_entries_fmt = 1;
 
