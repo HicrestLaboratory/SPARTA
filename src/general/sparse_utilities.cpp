@@ -1389,7 +1389,7 @@ int main()
     float block_entries_sparsity = 0.5;
 
     random_sparse_blocks_mat(mat, rows, cols, fmt, block_size, block_sparsity, block_entries_sparsity);
-    matprint(mat, rows, cols, rows, fmt);
+    matprint(mat, rows, cols, cols, fmt);
 
 
 /*
