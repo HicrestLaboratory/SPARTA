@@ -1430,7 +1430,7 @@ int main()
     matprint(mat2, rows, cols, cols, fmt);
 
     std::cout << "converting to vbs" << std::endl;
-
+    /*
     VBS vbmat;
     
     convert_to_VBS(mat, rows, cols, fmt,
@@ -1444,6 +1444,9 @@ int main()
     DataT mat3[rows * cols] = { 0 };
     convert_to_mat(vbmat, mat3, 0);
     matprint(mat3, rows, cols, cols, 0);
+    */
+
+
 
     /*
     //    CMAT permuting tests
