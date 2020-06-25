@@ -579,13 +579,11 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
         
         for (int nzs = 0; nzs < vbmat.nzcount[i]; nzs++) //iterate for all nonzero block in row i
         {
-            j = jab[nz_tot]; //column of current non-zero block
+            int j = jab[nz_tot]; //column of current non-zero block
             nz_tot += 1; //count one nonzero block
 
             second_pos = b_second_ptr[j];
             second_block_dim = b_second_ptr[j + 1] - second_pos;
-
-            for (int h = 0; h < vbmat.
 
             if (vbmat.blocks_fmt == 0)
             {
