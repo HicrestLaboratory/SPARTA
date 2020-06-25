@@ -388,7 +388,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     svd mab;
 
     int vbmat_main_dim, vbmat_compressed_dim;
-    int* row_part, *col_part;
+    int *b_main_ptr, *b_second_ptr;
 
     if (vbmat.blocks_fmt == 0)
     {
@@ -527,7 +527,7 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
     int ja_count = 0; //keeps total nonzero blocks count;
 
     int vbmat_main_dim, vbmat_compressed_dim;
-    int* row_part, *col_part;
+    int* b_main_ptr, * b_second_ptr;
 
     if (vbmat.blocks_fmt == 0)
     {
