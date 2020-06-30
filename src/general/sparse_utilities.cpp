@@ -973,6 +973,9 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
     }
 }
 
+
+//TILL HERE: TESTED
+
 int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int mode)
 {
     //finds a group structure and a permutation for the main dimension of a CSR mat
@@ -1390,7 +1393,6 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
 
 }
-
 
 int main()
 {
