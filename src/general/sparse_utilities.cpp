@@ -841,23 +841,43 @@ int matprint(const CSR& cmat)
     matprint(tmp_mat, cmat.rows, cmat.cols, cmat.cols, 0);
 }
 
+int copy(const CSR& in_cmat, CSR& out_cmat) 
+{
+    out_cmat.fmt = in_cmt.fmt;
+    out_cmat.fmt = in_cmt.rows;
+    out_cmat.fmt = in_cmt.cols;
 
-//TODO copyCSR
+    int main_dim = (in_cmat.fmt == 0) ? in_fmt.rows : in_fmt.cols;
+
+    out_cmat.nzcount = new int[main_dim];
+    out_cmat.ja = new int* [main_dim];
+    out_cmat.ma = new DataT * [main_dim];
+
+    std::copy(in_cmat.nzcount, in_cmat.nzcount + main_dim, out_cmat.nzcount);
+
+    for (int i = 0; i < main_dim; i++)
+    {
+        int nzs = out_cmat.nzcount[i];
+        out_cmat.ja[i] = new int[nzs];
+        out_cmat.ma[i] = new DataT[nzs];
+
+        std::copy(in_cmat.ja[i], in_cmat.ja[i] + nzs, out_cmat.ja[i]);
+        std::copy(in_cmat.ma[i], in_cmat.ma[i] + nzs, out_cmat.ma[i]);
+    }
+
+}
 
 int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
 {
-    int main_dim = in_cmat.fmt == 0 ? in_cmat.rows : in_cmat.cols; //main dimension of in_mat; secondary of out_mat; 
-    int second_dim = in_cmat.fmt == 0 ? in_cmat.cols : in_cmat.cols; //secondary dimension of in_mat; main for out_mat;
+    int in_main_dim = in_cmat.fmt == 0 ? in_cmat.rows : in_cmat.cols; //main dimension of in_mat; secondary of out_mat; 
+    int in_second_dim = in_cmat.fmt == 0 ? in_cmat.cols : in_cmat.cols; //secondary dimension of in_mat; main for out_mat;
 
     if (new_fmt != in_cmat.fmt)
     {
-        out_cmat.fmt = new_fmt; //just change format instead of transposing
-        out_cmat.rows = in_cmat.rows;
-        out_cmat.cols = in_cmat.cols;
 
-        //COPY CSR
-        //RETURN
-        std::cout << "FORMAT CHANGE NOT IMPLEMENTED YET. USE SAME FORMAT" << std::endl;
+        copy(in_cmat, out_cmat);
+        out_cmat.fmt == new_fmt;
+
     }
     else
     {
@@ -867,13 +887,13 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
     }
 
 
-    out_cmat.nzcount = new int[second_dim];
-    out_cmat.ja = new int* [second_dim];
-    out_cmat.ma = new DataT *[second_dim];
+    out_cmat.nzcount = new int[in_second_dim];
+    out_cmat.ja = new int* [in_second_dim];
+    out_cmat.ma = new DataT *[in_second_dim];
     
 
     //find number of nonzero elements in each secondary row (which will be main row for the transpose); 
-    for (int i = 0; i < main_dim; i++)
+    for (int i = 0; i < in_main_dim; i++)
     {
         for (int nzs = 0; nzs < in_cmat.nzcount[i]; nzs++)
         {
@@ -882,10 +902,10 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
         }
     }
 
-    int counter[second_dim] = { 0 };
+    int counter[in_second_dim] = { 0 };
    
     //initialize arrays in out_cmat
-    for (int j = 0; j < second_dim; j++)
+    for (int j = 0; j < in_second_dim; j++)
     {
         out_cmat.ja[j] = new int[out_cmat.nzcount[j]];
         out_cmat.ma[j] = new DataT[out_cmat.nzcount[j]];
@@ -893,14 +913,14 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
 
 
     int c = 0;
-    for (int i = 0; i < main_dim; i++)
+    for (int i = 0; i < in_main_dim; i++)
     {
         for (int nzs = 0; nzs < in_cmat.nzcount[i]; nzs++)
         {
-            int j = in_cmat.ja[i][nzs]; //find in_cmat main_dim index of next nonzero element
+            int j = in_cmat.ja[i][nzs]; //find in_cmat main dim index of next nonzero element
             DataT elem = in_cmat.ma[i][nzs]; //value of that element;
 
-            c = counter[j]; //progressively fill out_cmat main_dim
+            c = counter[j]; //progressively fill out_cmat main dim
             out_cmat.ja[j][c] = i;
             out_cmat.ma[j][c] = elem;
         }
