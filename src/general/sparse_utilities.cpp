@@ -1427,7 +1427,7 @@ int main()
 
     int arr[5] = { 0,4,9,14,19 };
     int pattern[8] = { 0 };
-    int partition[9] = { 0,1,4,7,15,16,17,20,40 };
+    int partition[9] = { 0,1,2,3,4,5,6,7,20};
     int mode = 1;
     int h = hash(arr, 5, partition, 0);
     get_pattern(arr, 5, partition, pattern, 0);
