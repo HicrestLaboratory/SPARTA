@@ -1131,7 +1131,7 @@ int hash(int* arr, int a_len, int* block_partition, int mode)
         }
 
         hash += block_idx + 1;
-        std::out << "block_idx added " << block_idx + 1 << std::endl;
+        std::cout << "block_idx added " << block_idx + 1 << std::endl;
         prev_idx = block_idx;
     }
     return hash;
