@@ -1429,8 +1429,8 @@ int main()
     int pattern[9] = { 0 };
     int partition[9] = { 0,1,4,7,15,16,18,19,25 };
     int mode = 1;
-    get_pattern(arr, 5, partition, pattern, mode);
-    arr_print(pattern, 9);
+    int h = hash(arr, 5, partition, 0);
+    std::cout << h; 
 
     //VBMAT creation and transform test
     /*
