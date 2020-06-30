@@ -1257,7 +1257,7 @@ int get_pattern(int* arr0, int len0, int* block_partition, int* pattern, int mod
     int prev_idx = -1;
     int block_idx = 0;
 
-    while (nzs < a_len)
+    while (nzs < len0)
     {
         while (arr[nzs] >= block_partition[block_idx + 1])
         {
