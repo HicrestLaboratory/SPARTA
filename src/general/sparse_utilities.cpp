@@ -1429,7 +1429,7 @@ int main()
     int pattern[9] = { 0 };
     int partition[9] = { 0,1,4,7,15,16,18,19,25 };
     int mode = 0;
-    int get_pattern(arr, 5, partition, pattern, mode);
+    get_pattern(arr, 5, partition, pattern, mode);
     arr_print(pattern, 9);
 
     //VBMAT creation and transform test
