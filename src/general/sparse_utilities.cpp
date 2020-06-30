@@ -1275,6 +1275,7 @@ int get_pattern(int* arr0, int len0, int* block_partition, int* pattern, int mod
         {
             in_block = 1;
         }
+        std::cout << "i:" << i << std::endl;
         i++;
     }
     return 0;
