@@ -1426,8 +1426,7 @@ int main()
 {
 
     int arr[5] = { 0,4,9,14,19 };
-    int pattern[9] = { 0 };
-    pattern[9] = 100;
+    int pattern[8] = { 0 };
     int partition[9] = { 0,1,4,7,15,16,18,19,25 };
     int mode = 1;
     int h = hash(arr, 5, partition, 0);
