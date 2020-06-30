@@ -1429,8 +1429,8 @@ int main()
     int pattern[8] = { 0 };
     int partition[9] = { 0,1,2,3,4,5,6,7,20};
     int mode = 1;
-    int h = hash(arr, 5, partition, 0);
-    get_pattern(arr, 5, partition, pattern, 0);
+    int h = hash(arr, 5, partition, mode);
+    get_pattern(arr, 5, partition, pattern, mode);
     std::cout << "pattern: ";
     arr_print(pattern, 8);
     std::cout << "hash: " << h << std::endl;
