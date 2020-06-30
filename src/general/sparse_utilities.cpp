@@ -1008,6 +1008,7 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
 int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int mode)
 {
     //finds a group structure and a permutation for the main dimension of a CSR mat
+    //NOTE: this does NOT automatically permute the CSR
 
     // IN:
     //  cmat:        a matrix in CSR form
@@ -1250,7 +1251,7 @@ int get_pattern(int* arr0, int len0, int* block_partition, int* pattern, int mod
                    1: all elements in a block contribute
 
     OUT:
-        pattern: the pattern (has same length of block partition)
+        pattern: the pattern (has length of block partition - 1)
     */
 
     int i = 0;
@@ -1424,16 +1425,12 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
 int main()
 {
+    int a1[3] = { 0,5,10 };
+    int a2[4] = { 1, 6, 7, 11, };
+    int partition[5] = { 0,3,6,9,12 };
+    std::cout << check_same_pattern(a1, 3, a2, 4, partition, 1) << std::endl;
 
-    int arr[5] = { 0,4,9,14,19 };
-    int pattern[8] = { 0 };
-    int partition[9] = { 0,1,2,3,4,5,6,7,20};
-    int mode = 1;
-    int h = hash(arr, 5, partition, mode);
-    get_pattern(arr, 5, partition, pattern, mode);
-    std::cout << "pattern: ";
-    arr_print(pattern, 8);
-    std::cout << "hash: " << h << std::endl;
+
 
     //VBMAT creation and transform test
     /*
