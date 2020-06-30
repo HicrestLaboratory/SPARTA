@@ -843,11 +843,11 @@ int matprint(const CSR& cmat)
 
 int copy(const CSR& in_cmat, CSR& out_cmat) 
 {
-    out_cmat.fmt = in_cmt.fmt;
-    out_cmat.fmt = in_cmt.rows;
-    out_cmat.fmt = in_cmt.cols;
+    out_cmat.fmt = in_cmat.fmt;
+    out_cmat.fmt = in_cmat.rows;
+    out_cmat.fmt = in_cmat.cols;
 
-    int main_dim = (in_cmat.fmt == 0) ? in_fmt.rows : in_fmt.cols;
+    int main_dim = (in_cmat.fmt == 0) ? in_cmat.rows : in_cmat.cols;
 
     out_cmat.nzcount = new int[main_dim];
     out_cmat.ja = new int* [main_dim];
