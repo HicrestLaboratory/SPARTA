@@ -1261,6 +1261,7 @@ int get_pattern(int* arr0, int len0, int* block_partition, int* pattern, int mod
 
     while (i < len0)
     {
+        std::cout << "arr0[" << i << "]: " << arr0[i] << "   bp[" << block_idx + 1 << "]: " << block_partition[block_idx + 1] << std::endl;
         while (arr0[i] >= block_partition[block_idx + 1]) //check if idx out of block; in that case, procede to next block.
         {
             pattern[block_idx] = in_block;
