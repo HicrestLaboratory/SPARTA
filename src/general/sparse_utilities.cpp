@@ -1267,13 +1267,12 @@ int get_pattern(int* arr0, int len0, int* block_partition, int* pattern, int mod
         }
 
         in_block += 1;
-        if (mode == 0) && (in_block > 1)
+        if ((mode == 0) and (in_block > 1))
         {
             in_block = 1;
         }
 
         pattern[block_idx] = in_block;
-
         i++;
 
     }
