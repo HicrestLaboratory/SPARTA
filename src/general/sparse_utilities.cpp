@@ -1131,7 +1131,6 @@ int hash(int* arr, int a_len, int* block_partition, int mode)
         }
 
         hash += block_idx + 1;
-        std::cout << "block_idx added " << block_idx + 1 << std::endl;
         prev_idx = block_idx;
     }
     return hash;
@@ -1265,6 +1264,7 @@ int get_pattern(int* arr0, int len0, int* block_partition, int* pattern, int mod
         while (arr0[i] >= block_partition[block_idx + 1]) //check if idx out of block; in that case, procede to next block.
         {
             pattern[block_idx] = in_block;
+            std::cout << "pattern[" << block_idx << "]: " << in_block << std::endl;
             in_block = 0;
             block_idx++;
         }
