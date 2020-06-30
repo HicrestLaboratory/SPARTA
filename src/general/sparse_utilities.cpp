@@ -1252,34 +1252,29 @@ int get_pattern(int* arr0, int len0, int* block_partition, int* pattern, int mod
     OUT:
         pattern: the pattern (has same length of block partition)
     */
+    int nzs = 0;
 
+    int prev_idx = -1;
+    int block_idx = 0;
 
-    int i = 0;
-    int in_block = 0;
-
-    int block_idx = 0; //block_idx for pattern
-
-    while (i < len0)
+    while (nzs < a_len)
     {
-        std::cout << "arr0[" << i << "]: " << arr0[i] << "   bp[" << block_idx + 1 << "]: " << block_partition[block_idx + 1] << std::endl;
-        while (arr0[i] >= block_partition[block_idx + 1]) //check if idx out of block; in that case, procede to next block.
+        while (arr[nzs] >= block_partition[block_idx + 1])
         {
-            pattern[block_idx] = in_block;
-            std::cout << "pattern[" << block_idx << "]: " << in_block << std::endl;
-            in_block = 0;
             block_idx++;
-        }
+        };
 
-        in_block++;
-
-        if ((mode == 0) and (in_block > 1))
+        if ((block_idx == prev_idx) and (mode == 0)) //if mode is 0, only one element per block is considered in the hash sum;
         {
-            in_block = 1;
+            continue;
         }
-        std::cout << "i:" << i << std::endl;
-        i++;
+
+        pattern[block_idx] = 1;
+        prev_idx = block_idx;
+        nzs++;
     }
-    return 0;
+
+
 }
 
 int scalar_product(int* pat_0, int len_0, int* pat_1)
