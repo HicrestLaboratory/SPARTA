@@ -1427,8 +1427,19 @@ int main()
 {
     int a1[3] = { 0,5,10 };
     int a2[4] = { 1, 6, 7, 11, };
+    int mode = 0;
     int partition[5] = { 0,3,6,9,12 };
     std::cout << check_same_pattern(a1, 3, a2, 4, partition, 1) << std::endl;
+
+    int pattern1[4] = { 0 };
+    get_pattern(a1, 3, partition, pattern1, mode);
+    arr_print(pattern1, 4);
+
+    int pattern2[4] = { 0 };
+    get_pattern(a2, 4, partition, pattern2, mode);
+    arr_print(pattern2, 4);
+    
+    
 
 
 
