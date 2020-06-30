@@ -1432,7 +1432,7 @@ int main()
     int h = hash(arr, 5, partition, 0);
     get_pattern(arr, 5, partition, pattern, 0);
     std::cout << "pattern: ";
-    arr_print(pattern, 9);
+    arr_print(pattern, 8);
     std::cout << "hash: " << h << std::endl;
 
     //VBMAT creation and transform test
