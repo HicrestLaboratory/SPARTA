@@ -144,7 +144,7 @@ int arr_print(int* arr, int len)
     {
         std::cout << arr[i] << " ";
     }
-    std::cout << endl;
+    std::cout << std::endl;
 }
 
 int sort_permutation(int* perm, int* arr, int n)
