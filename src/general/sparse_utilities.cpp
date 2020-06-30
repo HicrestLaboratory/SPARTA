@@ -1259,7 +1259,7 @@ int get_pattern(int* arr0, int len0, int* block_partition, int* pattern, int mod
 
     while (nzs < len0)
     {
-        while (arr[nzs] >= block_partition[block_idx + 1])
+        while (arr0[nzs] >= block_partition[block_idx + 1])
         {
             block_idx++;
         };
