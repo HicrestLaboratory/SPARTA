@@ -138,6 +138,15 @@ int matprint(DataT* mat, int rows, int cols, int lead_dim, int fmt)
     }
 }
 
+int arr_print(int* arr, int len)
+{
+    for (int i = 0; i < len; i++)
+    {
+        std::cout << arr[i] << " ";
+    }
+    std::cout << endl;
+}
+
 int sort_permutation(int* perm, int* arr, int n)
 /*
 returns the permutation that would sort arrary arr
@@ -1232,16 +1241,15 @@ int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int* block_part
 //TODO get_pattern (and other pattern related functions) can be made more efficient by storing compressed blocks instead of an array of blocks
 int get_pattern(int* arr0, int len0, int* block_partition, int* pattern, int mode)
 {
-    /*get the pattern of an array w.r.t. a given block_partition
+    /*get the pattern of a compressed array w.r.t. a given block_partition
     IN:
-        arr0: the array
-        len0: length of the array (must end before last block ends)
-        block_partition: the partition. Indices in the same partition will be considered part of the same block;
+        arr0: the compressed array, storing index of nonzero elements of the uncompressed array.
+        len0: length of the compressed array, i.e. # of nonzero elements in the uncrompressed array;
+        block_partition, bp: the partition. Block i has boundary [ bp[i], bp[i+1] ) ;
         mode:      0: at most one element per block contributes
                    1: all elements in a block contribute
 
     OUT:
-        return the length of the pattern
         pattern: the pattern (has same length of block partition)
     */
 
@@ -1416,6 +1424,16 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
 int main()
 {
+
+    int arr[5] = { 0,4,9,14,19 };
+    int pattern[9] = { 0 };
+    int partition[9] = { 0,1,4,7,15,16,18,19,25 };
+    int mode = 0;
+    int get_pattern(arr, 5, partition, pattern, mode);
+    arr_print(pattern, 9);
+
+    //VBMAT creation and transform test
+    /*
     int rows = 15;
     int cols = 25;
     int fmt_1 = 0;
@@ -1469,7 +1487,7 @@ int main()
     DataT mat3[rows * cols] = { 0 };
     convert_to_mat(vbmat, mat3, fmt_3);
     matprint(mat3, rows, cols, lead_3, fmt_3);
-    
+    */
 
 
 
