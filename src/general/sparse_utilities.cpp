@@ -1428,7 +1428,7 @@ int main()
     int arr[5] = { 0,4,9,14,19 };
     int pattern[9] = { 0 };
     int partition[9] = { 0,1,4,7,15,16,18,19,25 };
-    int mode = 0;
+    int mode = 1;
     get_pattern(arr, 5, partition, pattern, mode);
     arr_print(pattern, 9);
 
