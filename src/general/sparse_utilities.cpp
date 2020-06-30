@@ -1252,29 +1252,32 @@ int get_pattern(int* arr0, int len0, int* block_partition, int* pattern, int mod
     OUT:
         pattern: the pattern (has same length of block partition)
     */
-    int nzs = 0;
 
-    int prev_idx = -1;
-    int block_idx = 0;
+    int i = 0;
+    int block_idx = 0; //block_idx for pattern
+    int in_block = 0;
 
-    while (nzs < len0)
+    while (i < len0)
     {
-        while (arr0[nzs] >= block_partition[block_idx + 1])
+        while (arr0[i] >= block_partition[block_idx + 1]) //check if idx out of block; in that case, procede to next block.
         {
+            pattern[block_idx] = in_block;
+            in_block = 0;
             block_idx++;
-        };
-
-        if ((block_idx == prev_idx) and (mode == 0)) //if mode is 0, only one element per block is considered in the hash sum;
-        {
-            continue;
         }
 
-        pattern[block_idx] = 1;
-        prev_idx = block_idx;
-        nzs++;
+        in_block += 1;
+        if (mode == 0) && (in_block > 1)
+        {
+            in_block = 1;
+        }
+
+        pattern[block_idx] = in_block;
+
+        i++;
+
     }
-
-
+    return 0;
 }
 
 int scalar_product(int* pat_0, int len_0, int* pat_1)
