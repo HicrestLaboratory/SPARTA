@@ -1101,8 +1101,8 @@ int hash(int* arr, int a_len, int* block_partition, int mode)
 {
     //evaluate hash function for a arbitrarily partitioned array of indices
     /* IN:
-            arr: the array of indices.
-            a_len: length fo the array;
+            arr: the array of indices (a compressed row)
+            a_len: length of the array;
             block_partition: start position of block i; elements in the same block give the same contribution to hash
             mode:  0: at most one element per block contribute to hash
                    1: all elements in a block contribute to hash
@@ -1131,6 +1131,7 @@ int hash(int* arr, int a_len, int* block_partition, int mode)
         }
 
         hash += block_idx + 1;
+        std::out << "block_idx added " << block_idx + 1 << std::endl;
         prev_idx = block_idx;
     }
     return hash;
