@@ -146,7 +146,7 @@ int matprint(DataT* mat, int rows, int* row_part, int row_blocks, int cols, int*
     {
         for (int i = row_part[ib]; i < row_part[ib + 1]; i++)
         {
-            for (int jb = 0; jb < col_block; jb++)
+            for (int jb = 0; jb < col_blocks; jb++)
             {
                 for (int j = col_part[jb]; j < col_part[jb + 1]; j++)
                 {
