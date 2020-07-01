@@ -1154,6 +1154,7 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
 
     sort_permutation(perm, hashes, main_dim); //find a permutation that sorts hashes
 
+
     int *ja_0, *ja_1;
     int len_0, len_1;
     int tmp_group = -1;
@@ -1162,7 +1163,6 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
     {
         int i = perm[idx]; //counter i refers to original order. Counter idx to permuted one. 
 
-        arr_print(group, main_dim); //DEBUG
         if (group[i] == -1) //if row is still unassigned
         {
 
