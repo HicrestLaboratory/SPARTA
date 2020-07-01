@@ -1055,6 +1055,7 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
 
     int hashes[main_dim]; //will store hash values. The hash of a row (col) is the sum of the indices (mod block_size) of its nonzero entries
 
+    std::cout << "main dim: " << main_dim; 
     for (int i = 0; i < main_dim; i++)
     {
         group[i] = -1;
