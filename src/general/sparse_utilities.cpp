@@ -1071,6 +1071,8 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
     {
         int i = perm[idx]; //counter i refers to original order. Counter idx to permuted one. 
 
+        std::cout << "group situation: ";
+        arr_print(group, main_dim); //DEBUG
         if (group[i] == -1) //if row is still unassigned
         {
             std::cout << "analyzing row " << i << std::endl;
