@@ -1512,7 +1512,7 @@ int main()
     std::cout << "Finding a reorder through the angle + hash method." << std::endl;
     int angle_perm[rows];
     int angle_grp[rows];
-    angle_method(cmat, 0.8, col_part, block_cols, hash_perm, angle_perm, hash_grp, angle_grp, 0);
+    angle_method(cmat, 0.8, col_part, block_cols, hash_perm, hash_grp, angle_grp, 0);
 
     std::cout << "Converting to VBS" << std::endl;
     
