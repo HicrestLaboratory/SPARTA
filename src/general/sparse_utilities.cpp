@@ -1145,21 +1145,14 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
 
     int hashes[main_dim]; //will store hash values. The hash of a row (col) is the sum of the indices (mod block_size) of its nonzero entries
 
-    std::cout << "main dim: " << main_dim; 
     for (int i = 0; i < main_dim; i++)
     {
         group[i] = -1;
-        std::cout << "group situation: ";
-        arr_print(group, main_dim); //DEBUG
 
         hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], comp_dim_partition, mode); //calculate hash value for each row
     }
-    std::cout << "group situation: ";
-    arr_print(group, main_dim); //DEBUG
 
     sort_permutation(perm, hashes, main_dim); //find a permutation that sorts hashes
-    std::cout << "group situation: ";
-    arr_print(group, main_dim); //DEBUG
 
     int *ja_0, *ja_1;
     int len_0, len_1;
@@ -1169,11 +1162,9 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
     {
         int i = perm[idx]; //counter i refers to original order. Counter idx to permuted one. 
 
-        std::cout << "group situation: ";
         arr_print(group, main_dim); //DEBUG
         if (group[i] == -1) //if row is still unassigned
         {
-            std::cout << "analyzing row " << i << std::endl;
 
             tmp_group++; //create new group
             group[i] = tmp_group; //assign row to group
@@ -1192,7 +1183,6 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
                 if (check_same_pattern(ja_0, len_0, ja_1, len_1, comp_dim_partition, mode))
                 {
                     group[j] = tmp_group; //assign row j to the tmp_group
-                    std::cout << "row " << i << " merged with row " << j << std::endl;
                 }
             }
         }
@@ -1605,8 +1595,8 @@ int main()
     std::cout << "mat converted to CSR:" << std::endl;
     matprint(cmat);
 
+    std::cout << "Permute the matrix main dimension with a random permutation: ";
     int* perm = randperm(rows);
-    std::cout << "The matrix main dimension will be permuted with the following permutation: ";
     arr_print(perm, rows);
 
     permute_CSR(cmat, perm, 0);
