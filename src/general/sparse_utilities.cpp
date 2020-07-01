@@ -1401,6 +1401,12 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
             }
             
             get_pattern(arr0, len0, comp_dim_partition, this_pattern, mode); //get the row pattern (stores into this_pattern)
+            std::cout << "studying pattern:";
+            arr_print(this_pattern, nB);
+            std::cout << "from array:";
+            arr_print(arr0, len0);
+
+
 
             if (mode == 1)
             {
