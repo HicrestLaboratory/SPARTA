@@ -1555,8 +1555,8 @@ int main()
 {
     
     //Create a random block matrix
-    int rows = 57;
-    int cols = 12;
+    int rows = 25;
+    int cols = 20;
     int mat_fmt = 0;
 
     int mat_leading_dim = cols;
@@ -1569,7 +1569,7 @@ int main()
     int block_rows = rows / block_size;
     int block_cols = cols / block_size;
 
-    int* row_part = linspan(0, rows, 4); 
+    int* row_part = linspan(0, rows, 5); 
     int* col_part = linspan(0, cols, 4); 
 
     random_sparse_blocks_mat(mat, rows, cols, mat_fmt, block_size, block_sparsity, block_entries_sparsity);
@@ -1600,7 +1600,7 @@ int main()
     std::cout << "Finding a reorder through the hash method." << std::endl;
     int hash_perm[rows];
     int hash_grp[rows];
-    int* estimate_col_part = linspan(0, cols, 3);
+    int* estimate_col_part = linspan(0, cols, 5);
 
     hash_permute(cmat, estimate_col_part, hash_perm, hash_grp, 0);
     
