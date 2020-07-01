@@ -1608,7 +1608,8 @@ int main()
     std::cout << "Finding a reorder through the angle + hash method." << std::endl;
     int angle_perm[rows];
     int angle_grp[rows];
-    angle_method(cmat, 0.1, col_part, block_cols, hash_perm, hash_grp, angle_grp, 0);
+    float eps = 0.6;
+    angle_method(cmat, eps, col_part, block_cols, hash_perm, hash_grp, angle_grp, 0);
 
     std::cout << "grouping found: ";
     arr_print(angle_grp, rows);
