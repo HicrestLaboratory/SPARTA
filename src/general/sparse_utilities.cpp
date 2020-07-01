@@ -1475,6 +1475,23 @@ int main()
     std::cout << "The random sparse block matrix:" << std::endl;
     matprint(mat, rows, cols, mat_leading_dim, mat_fmt);
 
+    std::cout << "Making first three rows equal:" << std::endl;
+    
+    for (int i = 1; i < 3; i++) 
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            int idx_a = IDX(0, j, mat_leading_dim, mat_fmt);
+            int idx_b = IDX(i, j, mat_leading_dim, mat_fmt);
+            mat[idx_b] = mat[idx_a];
+        }
+
+    }
+
+    matprint(mat, rows, cols, mat_leading_dim, mat_fmt);
+
+
+
     std::cout << "converting to cmat" << std::endl;
     
     CSR cmat;
@@ -1491,6 +1508,8 @@ int main()
     permute_CSR(cmat, perm, 0);
     std::cout << "CSR mat permuted:" << std::endl;
     matprint(cmat);
+
+    hash_permute
 
     std::cout << "Converting to VBS" << std::endl;
     
