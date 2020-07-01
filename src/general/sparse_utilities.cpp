@@ -1553,9 +1553,10 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
 int main()
 {
-    //create a random block matrix
-    int rows = 33;
-    int cols = 12;
+    
+    //Create a random block matrix
+    int rows = 57;
+    int cols = 20;
     int mat_fmt = 0;
 
     int mat_leading_dim = cols;
@@ -1568,15 +1569,18 @@ int main()
     int block_rows = rows / block_size;
     int block_cols = cols / block_size;
 
-    int* row_part = linspan(0, rows, 3);
-    int* col_part = linspan(0, cols, 3);
+    int* row_part = linspan(0, rows, 4); 
+    int* col_part = linspan(0, cols, 4); 
 
     random_sparse_blocks_mat(mat, rows, cols, mat_fmt, block_size, block_sparsity, block_entries_sparsity);
+    //-------------------------------------
+
+
 
     std::cout << "The random sparse block matrix:" << std::endl;
     matprint(mat, rows, cols, mat_leading_dim, mat_fmt);
 
-    std::cout << "converting to cmat" << std::endl;
+    std::cout << "converting to CSR" << std::endl;
     
     CSR cmat;
     int cmat_fmt = 0;
@@ -1596,7 +1600,9 @@ int main()
     std::cout << "Finding a reorder through the hash method." << std::endl;
     int hash_perm[rows];
     int hash_grp[rows];
-    hash_permute(cmat, col_part, hash_perm, hash_grp, 0);
+    int* estimate_col_part = linspan(0, cols, 3);
+
+    hash_permute(cmat, estimate_col_part, hash_perm, hash_grp, 0);
     
     std::cout << "reorder found:" << std::endl;
     arr_print(hash_perm, rows);
@@ -1609,7 +1615,7 @@ int main()
     int angle_perm[rows];
     int angle_grp[rows];
     float eps = 0.6;
-    angle_method(cmat, eps, col_part, block_cols, hash_perm, hash_grp, angle_grp, 0);
+    angle_method(cmat, eps, estimate_col_part, block_cols, hash_perm, hash_grp, angle_grp, 0);
 
     std::cout << "grouping found: ";
     arr_print(angle_grp, rows);
@@ -1636,7 +1642,7 @@ int main()
     convert_to_VBS(cmat,
         vbmat,
         angle_row_groups, angle_row_part,
-        block_cols, col_part,
+        block_cols, estimate_col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
     
     std::cout << "CSR converted to VBS:" << std::endl;
