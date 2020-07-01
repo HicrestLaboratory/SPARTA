@@ -1064,6 +1064,8 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
 
         hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], comp_dim_partition, mode); //calculate hash value for each row
     }
+    std::cout << "group situation: ";
+    arr_print(group, main_dim); //DEBUG
 
     sort_permutation(perm, hashes, main_dim); //find a permutation that sorts hashes
     std::cout << "group situation: ";
