@@ -178,7 +178,7 @@ int* linspan(int start, int end, int step)
         return(0);
     }
     int len = std::abs(end - start) / step;
-    new int arr[len + 1];
+    int* arr = new int[len + 1];
     int val = start;
     for (int i = 0; i < len + 1; i++)
     {
@@ -190,7 +190,7 @@ int* linspan(int start, int end, int step)
 
 int* randperm(int len)
 {
-    new int arr[len] = { 0 };
+    int* arr = new int[len];
     for (int i = 0; i < len; i++)
     {
         arr[i] = i;
@@ -1479,7 +1479,7 @@ int main()
     
     CSR cmat;
     int cmat_fmt = 0;
-    convert_to_CSR(mat, rows, cols, fmt, cmat, cmat_fmt);
+    convert_to_CSR(mat, rows, mat_leading_dim, mat_fmt, cmat, cmat_fmt);
     
     std::cout << "mat converted to CSR:" << std::endl;
     matprint(cmat);
