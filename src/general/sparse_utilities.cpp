@@ -1442,8 +1442,8 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
                     int norm_1 = norm2(that_pattern, nB); //get norm of the pattern
 
                     float scal = scalar_product(this_pattern, nB, that_pattern);
-                    std::cout << "scalar product: " << scal << " norm0: " << norm0 << "norm1: "<< norm1 << std::endl;
-                    if (scal^2 > eps * norm_0 * norm_1) //if cosine is > than epsilon, allow merge of groups
+                    std::cout << "scalar product: " << scal << " norm0: " << norm_0 << "norm1: "<< norm_1 << std::endl;
+                    if (scal*scal > eps * norm_0 * norm_1) //if cosine is > than epsilon, allow merge of groups
                     {
                         merge = true;
                         std::cout << "merging!" << std::endl;
