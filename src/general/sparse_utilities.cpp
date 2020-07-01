@@ -1059,6 +1059,9 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
     for (int i = 0; i < main_dim; i++)
     {
         group[i] = -1;
+        std::cout << "group situation: ";
+        arr_print(group, main_dim); //DEBUG
+
         hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], comp_dim_partition, mode); //calculate hash value for each row
     }
 
