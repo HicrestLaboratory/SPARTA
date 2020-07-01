@@ -1522,6 +1522,10 @@ int main()
     std::cout << "grouping found: ";
     arr_print(hash_grp, rows);
 
+    std::cout << "CSR will be appropriately reordered:" << std::endl;
+    permute_CSR(cmat, hash_perm, 0);
+    matprint(cmat);
+
     std::cout << "Converting to VBS" << std::endl;
     
     int vbmat_blocks_fmt = 1;
