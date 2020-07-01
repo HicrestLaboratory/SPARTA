@@ -1600,7 +1600,7 @@ int main()
     std::cout << "Finding a reorder through the hash method." << std::endl;
     int hash_perm[rows];
     int hash_grp[rows];
-    int* estimate_col_part = linspan(0, cols, 3);
+    int* estimate_col_part = linspan(0, cols, 5);
 
     hash_permute(cmat, estimate_col_part, hash_perm, hash_grp, 0);
     
