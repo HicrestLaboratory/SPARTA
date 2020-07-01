@@ -1380,6 +1380,8 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
         std::cout << "out_group[" << i << "] = " << out_group[i] << std::endl;
         if (out_group[i] == -1)     //only consider still ungrouped rows;
         {
+            this_group++;               //create new group
+            out_group[i] = this_group;
 
             std::cout << "idx = " << idx << " .analyzing row: " << i << " . This group is: " << this_group << std::endl;
             std::cout << "this pattern: ";
@@ -1388,8 +1390,6 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
             arr_print(that_pattern, nB);
             std::cout << "the out_group:";
             arr_print(out_group, main_dim);
-
-            this_group++;               //create new group
 
             int* arr0 = cmat.ja[i];
             int len0 = cmat.nzcount[i];
@@ -1533,7 +1533,7 @@ int main()
     std::cout << "Finding a reorder through the angle + hash method." << std::endl;
     int angle_perm[rows];
     int angle_grp[rows];
-    angle_method(cmat, 0.8, col_part, block_cols, hash_perm, hash_grp, angle_grp, 0);
+    angle_method(cmat, 1, col_part, block_cols, hash_perm, hash_grp, angle_grp, 0);
 
     std::cout << "grouping found: ";
     arr_print(angle_grp, rows);
