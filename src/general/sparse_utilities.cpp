@@ -1070,8 +1070,11 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
     for (int idx = 0; idx < main_dim; idx++) //scan main dimension in perm order and assign rows with same pattern to same group;
     {
         int i = perm[idx]; //counter i refers to original order. Counter idx to permuted one. 
+
         if (group[i] == -1) //if row is still unassigned
         {
+            std::cout << "analyzing row " << i << std::endl;
+
             tmp_group++; //create new group
             group[i] = tmp_group; //assign row to group
             
