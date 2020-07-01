@@ -87,6 +87,9 @@ int random_mat(DataT* mat, int rows, int cols, float sparsity)
 
 }
 
+
+///TODO
+// make version with arbitrary secondary dimension partition, instead of fixed block side
 int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_size, float block_sparsity, float block_entries_sparsity) 
 {
 
@@ -223,6 +226,19 @@ int* randperm(int len)
         arr[i] = i;
     }
     std::random_shuffle(arr, arr + len);
+    return arr;
+}
+
+int* rand_partition(int* part, int len, int blocks)
+{
+    int* arr = new int[len];
+    for (int i = 0; i < blocks; i++)
+    {
+        arr[i] = i;
+    }
+    std::random_shuffle(arr + 1, arr + len);
+    std::sort(arr + 1, arr + blocks + 1);
+    std::copy(arr, arr + blocks + 1, part);
     return arr;
 }
 
@@ -1597,6 +1613,8 @@ int main()
     std::cout << "CSR mat permuted:" << std::endl;
     matprint(cmat);
 
+
+    col_part = linspan(0, cols, 2);
     std::cout << "Finding a reorder through the hash method." << std::endl;
     int hash_perm[rows];
     int hash_grp[rows];
