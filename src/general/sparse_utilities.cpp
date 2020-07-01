@@ -1402,7 +1402,7 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
                 jdx++;
                 in_this_grp++; //keep count of the elements in the group
             }
-            std::cout << "after assigning groups, out_group: ";
+            std::cout << "after assigning groups, jdx: " << jdx << " ,out_group: ";
             arr_print(out_group, main_dim);
 
             for (int k = 0; k < nB; k++)
