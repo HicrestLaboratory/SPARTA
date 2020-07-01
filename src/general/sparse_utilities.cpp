@@ -1582,7 +1582,7 @@ int main()
 
 
     std::cout << "The random sparse block matrix:" << std::endl;
-    matprint(mat, rows, cols, mat_leading_dim, mat_fmt);
+    matprint(mat, rows, row_part, block_rows, cols, col_part, block_cols, mat_leading_dim, mat_fmt);
 
     std::cout << "converting to CSR" << std::endl;
     
