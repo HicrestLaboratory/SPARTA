@@ -140,6 +140,33 @@ int matprint(DataT* mat, int rows, int cols, int lead_dim, int fmt)
     }
 }
 
+int matprint(DataT* mat, int rows, int* row_part, int, row_blocks, int cols, int* col_part, int col_blocks, int fmt)
+{
+    for (int ib = 0; ib < row_blocks; i++)
+    {
+        for (int i = row_part[ib]; i < row_part[ib + 1]; i++)
+        {
+            for (int jb = 0; jb < col_block; jb++)
+            {
+                for (int j = col_part[jb]; j < col_part[jb + 1]; j++)
+                {
+                    int idx = IDX(i, j, lead_dim, fmt);
+                    std::cout << mat[idx] << " ";
+                }
+
+                std::cout << " ";
+
+            }
+
+            std::cout << std::endl;
+        }
+
+        std::cout << std::endl;
+        
+    }
+
+}
+
 int arr_print(int* arr, int len)
 {
     for (int i = 0; i < len; i++)
@@ -672,7 +699,7 @@ int matprint(const VBS& vbmat)
 
     DataT tmp_mat[mat_rows * mat_cols] = { 0 };
     convert_to_mat(vbmat, tmp_mat, 0);
-    matprint(tmp_mat, mat_rows, mat_cols, mat_cols, 0);
+    matprint(tmp_mat, mat_rows, vbmat.row_part, vbmat.block_rows, mat_cols, vbmat.col_part, vbmat. block_cols, mat_cols, 0);
 }
 
 
