@@ -1396,7 +1396,6 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
             jdx = idx; //idx to compare the row with. will only compare with elements after current row;
  
             in_this_grp = 0;
-            std::cout << "before assigning groups, in_grp[j] = " << in_group[in_perm[jdx]] << " ,in_grp[i] = " << in_group[i] << std::endl;
             while ((jdx < main_dim) and (in_group[in_perm[jdx]] == in_group[i])) //check for elements in the same in_group of i (they are consecutive in in_perm)
             {
                 out_group[in_perm[jdx]] = this_group;   //assign elements in the same in_group to the same out_group;
@@ -1406,10 +1405,6 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
             std::cout << "after assigning groups, out_group: ";
             arr_print(out_group, main_dim);
 
-            for (int k = 0; k < nB; k++)
-            {
-                this_pattern[k] = 0;
-            }
             get_pattern(arr0, len0, comp_dim_partition, this_pattern, mode); //get the row pattern (stores into this_pattern)
             std::cout << "studying pattern:";
             arr_print(this_pattern, nB);
