@@ -1436,11 +1436,15 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
                     that_group = in_group[j];
 
                     get_pattern(arr1, len1, comp_dim_partition, that_pattern, mode); //get the row pattern (store into that_pattern)
+
+                    std::cout << "trying to merge row " << j << " ; has pattern: "
+                    arr_print(that_pattern, nB);
                     int norm_1 = norm2(that_pattern, nB); //get norm of the pattern
 
                     if (scalar_product(this_pattern, nB, that_pattern)^2 > eps * norm_0 * norm_1) //if cosine is > than epsilon, allow merge of groups
                     {
                         merge = true;
+                        std::cout << "merging!" << std::endl;
                     }
                 }
 
