@@ -199,7 +199,6 @@ int* randperm(int len)
     return arr;
 }
 
-
 //VBSfx utilities
 
 int cleanVBS(VBSfx& vbmat)
@@ -1086,9 +1085,11 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
 
                 ja_1 = cmat.ja[j];
                 len_1 = cmat.nzcount[j];
+
                 if (check_same_pattern(ja_0, len_0, ja_1, len_1, comp_dim_partition, mode))
                 {
                     group[j] = tmp_group; //assign row j to the tmp_group
+                    std::cout << "row " << i << " merged with row " << j << std::endl;
                 }
             }
         }
