@@ -261,7 +261,7 @@ int count_groups(int* grp, int grp_len)
     return groups;
 
 }
-//TO FIX
+
 int grp_to_partition(int* grp, int grp_len, int* partition)
 {
     // IN: 
@@ -765,6 +765,7 @@ int matprint(const VBS& vbmat)
     matprint(tmp_mat, mat_rows, vbmat.row_part, vbmat.block_rows, mat_cols, vbmat.col_part, vbmat. block_cols, mat_cols, 0);
 }
 
+//TODO: efficient conversion CSR <-> VBS
 
 
 //CSR utilities
@@ -1123,7 +1124,7 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
 }
 
 
-//TILL HERE: TESTED
+//TODO: unify hash_permute, angle-permute and conversion to VBS
 
 int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int mode)
 {
