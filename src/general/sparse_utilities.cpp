@@ -1556,7 +1556,7 @@ int main()
     
     //Create a random block matrix
     int rows = 57;
-    int cols = 20;
+    int cols = 12;
     int mat_fmt = 0;
 
     int mat_leading_dim = cols;
@@ -1600,7 +1600,7 @@ int main()
     std::cout << "Finding a reorder through the hash method." << std::endl;
     int hash_perm[rows];
     int hash_grp[rows];
-    int* estimate_col_part = linspan(0, cols, 5);
+    int* estimate_col_part = linspan(0, cols, 3);
 
     hash_permute(cmat, estimate_col_part, hash_perm, hash_grp, 0);
     
