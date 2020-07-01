@@ -178,7 +178,7 @@ int* linspan(int start, int end, int step)
         return(0);
     }
     int len = std::abs(end - start) / step;
-    static int arr[len + 1];
+    new int arr[len + 1];
     int val = start;
     for (int i = 0; i < len + 1; i++)
     {
@@ -190,7 +190,7 @@ int* linspan(int start, int end, int step)
 
 int* randperm(int len)
 {
-    static int arr[len] = { 0 };
+    new int arr[len] = { 0 };
     for (int i = 0; i < len; i++)
     {
         arr[i] = i;
@@ -1488,7 +1488,7 @@ int main()
     std::cout << "The matrix main dimension will be permuted with the following permutation: ";
     arr_print(perm, 9);
 
-    permute_CSR(cmat, perm2, 0);
+    permute_CSR(cmat, perm, 0);
     std::cout << "CSR mat permuted:" << std::endl;
     matprint(cmat);
 
@@ -1497,8 +1497,8 @@ int main()
     int block_rows = rows / block_size;
     int block_cols = cols / block_size;
 
-    int row_part* = linspan(0, rows, 3);
-    int col_part* = linspan(0, cols, 3);
+    int* row_part = linspan(0, rows, 3);
+    int* col_part = linspan(0, cols, 3);
     int vbmat_blocks_fmt = 1;
     int vbmat_entries_fmt = 1;
     VBS vbmat;
