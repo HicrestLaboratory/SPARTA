@@ -1487,7 +1487,6 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
                 jdx++;
                 in_this_grp++; //keep count of the elements in the group
             }
-            arr_print(out_group, main_dim);
 
             get_pattern(arr0, len0, comp_dim_partition, this_pattern, mode); //get the row pattern (stores into this_pattern)
 
@@ -1517,7 +1516,6 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
                     get_pattern(arr1, len1, comp_dim_partition, that_pattern, mode); //get the row pattern (store into that_pattern)
 
-                    arr_print(that_pattern, nB);
                     int norm_1 = norm2(that_pattern, nB); //get norm of the pattern
 
                     float scal = scalar_product(this_pattern, nB, that_pattern);
