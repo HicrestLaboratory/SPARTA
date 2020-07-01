@@ -1377,6 +1377,7 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
     {
         i = in_perm[idx];           //idx counts in the permuted order. i counts in the original order;
 
+        std::cout << "out_group[" << i << "] = " << out_group[i] << std::endl;
         if (out_group[i] == -1)     //only consider still ungrouped rows;
         {
 
