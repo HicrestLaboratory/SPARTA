@@ -1464,7 +1464,7 @@ int main()
     int mat_leading_dim = cols;
 
     DataT mat[rows * cols] = { 0 };
-    float block_sparsity = 0.3;
+    float block_sparsity = 0.5;
     float block_entries_sparsity = 0.7;
 
     int block_size = 3;
