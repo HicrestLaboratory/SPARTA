@@ -1509,8 +1509,6 @@ int main()
     std::cout << "CSR mat permuted:" << std::endl;
     matprint(cmat);
 
-    hash_permute
-
     std::cout << "Converting to VBS" << std::endl;
     
     int block_rows = rows / block_size;
