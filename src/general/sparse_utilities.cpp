@@ -1468,7 +1468,11 @@ int main()
     float block_entries_sparsity = 0.7;
 
     int block_size = 3;
+    int block_rows = rows / block_size;
+    int block_cols = cols / block_size;
 
+    int* row_part = linspan(0, rows, 3);
+    int* col_part = linspan(0, cols, 3);
 
     random_sparse_blocks_mat(mat, rows, cols, mat_fmt, block_size, block_sparsity, block_entries_sparsity);
 
@@ -1509,13 +1513,17 @@ int main()
     std::cout << "CSR mat permuted:" << std::endl;
     matprint(cmat);
 
+    int hash_perm[rows];
+    int hash_grp[cols];
+    hash_permute(cmat, col_part, hash_perm, hash_grp, 0);
+    std::cout << "Hash permutation computed: ";
+    arr_print(hash_perm, rows);
+
+    std::cout << "grouping found: ";
+    arr_print(hash_grp, rows);
+
     std::cout << "Converting to VBS" << std::endl;
     
-    int block_rows = rows / block_size;
-    int block_cols = cols / block_size;
-
-    int* row_part = linspan(0, rows, 3);
-    int* col_part = linspan(0, cols, 3);
     int vbmat_blocks_fmt = 1;
     int vbmat_entries_fmt = 1;
     VBS vbmat;
