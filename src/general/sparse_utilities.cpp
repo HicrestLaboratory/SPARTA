@@ -1405,10 +1405,6 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
             std::cout << "after assigning groups, jdx: " << jdx << " ,out_group: ";
             arr_print(out_group, main_dim);
 
-            for (int k = 0; k < nB; k++)
-            {
-                this_pattern[k] = 0;
-            }
             get_pattern(arr0, len0, comp_dim_partition, this_pattern, mode); //get the row pattern (stores into this_pattern)
 
 
@@ -1483,7 +1479,7 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 int main()
 {
     //create a random block matrix
-    int rows = 9;
+    int rows = 33;
     int cols = 12;
     int mat_fmt = 0;
 
@@ -1537,10 +1533,15 @@ int main()
     std::cout << "Finding a reorder through the angle + hash method." << std::endl;
     int angle_perm[rows];
     int angle_grp[rows];
-    angle_method(cmat, 1, col_part, block_cols, hash_perm, hash_grp, angle_grp, 0);
+    angle_method(cmat, 0.8, col_part, block_cols, hash_perm, hash_grp, angle_grp, 0);
 
     std::cout << "grouping found: ";
     arr_print(angle_grp, rows);
+
+    sort_permutation(angle_perm, angle_grp, rows); //find a permutation that sorts hashes
+    std::cout << "The matrix permuted according to the angle algorithm: ";
+    permute_CSR(cmat, angle_perm, 0);
+
 
     std::cout << "Converting to VBS" << std::endl;
     
