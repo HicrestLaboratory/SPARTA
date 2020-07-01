@@ -1381,7 +1381,6 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
         if (out_group[i] == -1)     //only consider still ungrouped rows;
         {
             this_group++;               //create new group
-            out_group[i] = this_group;
 
             std::cout << "idx = " << idx << " .analyzing row: " << i << " . This group is: " << this_group << std::endl;
             std::cout << "this pattern: ";
@@ -1397,6 +1396,7 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
             jdx = idx; //idx to compare the row with. will only compare with elements after current row;
  
             in_this_grp = 0;
+            std::cout << "before assigning groups, in_grp[j] = " << in_group[in_perm[jdx]] << " ,in_grp[i] = " << in_group[i] << std::endl;
             while ((jdx < main_dim) and (in_group[in_perm[jdx]] == in_group[i])) //check for elements in the same in_group of i (they are consecutive in in_perm)
             {
                 out_group[in_perm[jdx]] == this_group;   //assign elements in the same in_group to the same out_group;
