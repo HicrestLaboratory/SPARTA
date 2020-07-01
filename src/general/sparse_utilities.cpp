@@ -1400,9 +1400,9 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
                 in_this_grp++; //keep count of the elements in the group
             }
             
-            for (auto k : arr0)
+            for (int k = 0; k < nB; k++)
             {
-                k = 0;
+                this_pattern[k] = 0;
             }
             get_pattern(arr0, len0, comp_dim_partition, this_pattern, mode); //get the row pattern (stores into this_pattern)
             std::cout << "studying pattern:";
