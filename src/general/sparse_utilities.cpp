@@ -226,42 +226,51 @@ int* randperm(int len)
     return arr;
 }
 
-int grp_to_partition(int* grp, int grp_len, int* partition)
+int count_groups(int* grp, int grp_len)
 {
-
     int perm[grp_len];
     sort_permutation(perm, grp, grp_len);
     int last_grp = -1;
-    int count = 0;
+    int groups = 0;
 
     for (int idx = 0; idx < grp_len; idx++)
     {
         int i = perm[idx];
         if (grp[i] != last_grp)
         {
-            count += 1;
+            groups += 1;
             last_grp = grp[i];
         }
     }
+    return groups
 
-    partition = new int[count + 1];
+}
+//TO FIX
+int grp_to_partition(int* grp, int grp_len, int* partition)
+{
+    // IN: 
+    //    grp: an array
+    //    grp_len: lenght of grp
+    // OUT: 
+    //    partition: partition similar entries of grp together (sorted by entry)
+    int perm[grp_len];
+    sort_permutation(perm, grp, grp_len);
     last_grp = -1;
-    count = 0;
+    group = 0;
 
     for (int idx = 0; idx < grp_len; idx++)
     {
         int i = perm[idx];
         if (grp[i] != last_grp)
         {
-            partition[count] = idx;
-            count += 1;
+            partition[group] = idx;
+            group += 1;
             last_grp = grp[i];
         }
         
     }
-    partition[count] = grp_len;
-    arr_print(partition, count + 1);
-    return count;
+    partition[group] = grp_len;
+    return group;
 }
 
 //VBSfx utilities
@@ -1436,9 +1445,9 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
     int main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
     int second_dim = cmat.fmt == 0 ? cmat.cols : cmat.rows;
 
-    for (int i = 0; i < main_dim; i++)
+    for (int i = 0; i < main_dim; i++)//initialize out_group
     {
-        out_group[i] = -1; //initialize out_group
+        out_group[i] = -1;
     }
 
     int idx, jdx;
@@ -1456,18 +1465,9 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
     {
         i = in_perm[idx];           //idx counts in the permuted order. i counts in the original order;
 
-        std::cout << "out_group[" << i << "] = " << out_group[i] << std::endl;
         if (out_group[i] == -1)     //only consider still ungrouped rows;
         {
             this_group++;               //create new group
-
-            std::cout << "idx = " << idx << " .analyzing row: " << i << " . This group is: " << this_group << std::endl;
-            std::cout << "this pattern: ";
-            arr_print(this_pattern, nB);
-            std::cout << "that pattern: ";
-            arr_print(that_pattern, nB);
-            std::cout << "the out_group:";
-            arr_print(out_group, main_dim);
 
             int* arr0 = cmat.ja[i];
             int len0 = cmat.nzcount[i];
@@ -1481,7 +1481,6 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
                 jdx++;
                 in_this_grp++; //keep count of the elements in the group
             }
-            std::cout << "after assigning groups, jdx: " << jdx << " ,out_group: ";
             arr_print(out_group, main_dim);
 
             get_pattern(arr0, len0, comp_dim_partition, this_pattern, mode); //get the row pattern (stores into this_pattern)
@@ -1512,16 +1511,13 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
                     get_pattern(arr1, len1, comp_dim_partition, that_pattern, mode); //get the row pattern (store into that_pattern)
 
-                    std::cout << "trying to merge row " << j << " ; has pattern: ";
                     arr_print(that_pattern, nB);
                     int norm_1 = norm2(that_pattern, nB); //get norm of the pattern
 
                     float scal = scalar_product(this_pattern, nB, that_pattern);
-                    std::cout << "scalar product: " << scal << " norm0: " << norm_0 << "norm1: "<< norm_1 << std::endl;
                     if (scal*scal > eps * norm_0 * norm_1) //if cosine is > than epsilon, allow merge of groups
                     {
                         merge = true;
-                        std::cout << "merging!" << std::endl;
                     }
                 }
 
@@ -1623,10 +1619,11 @@ int main()
 
     permute_CSR(cmat, angle_perm, 0);
 
-    int* angle_row_part;
-    int groups = grp_to_partition(angle_grp, rows, angle_row_part);
+    int angle_row_groups = count_groups(angle_grp, rows);
+    int angle_row_part[angle_row_groups];
+    grp_to_partition(angle_grp, rows, angle_row_part);
     std::cout << "The new row partition: ";
-    arr_print(angle_row_part, groups + 1);
+    arr_print(angle_row_part, angle_row_groups + 1);
 
 
     std::cout << "Converting to VBS" << std::endl;
@@ -1637,7 +1634,7 @@ int main()
     
     convert_to_VBS(cmat,
         vbmat,
-        block_rows, row_part,
+        angle_row_groups, angle_row_part,
         block_cols, col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
     
