@@ -226,6 +226,43 @@ int* randperm(int len)
     return arr;
 }
 
+int grp_to_partition(int* grp, int grp_len, int* partition)
+{
+
+    int perm[grp_len];
+    sort_permutation(perm, grp, grp_len);
+    int last_grp = -1;
+    int count = 0;
+
+    for (int idx = 0; idx < grp_len; idx++)
+    {
+        i = perm[idx];
+        if (grp[i] != last_grp)
+        {
+            count += 1;
+            last_grp = grp[i];
+        }
+    }
+
+    partition = new int[count + 1];
+    int last_grp = -1;
+    int count = 0;
+
+    for (int idx = 0; idx < grp_len; idx++)
+    {
+        i = perm[idx];
+        if (grp[i] != last_grp)
+        {
+            partition[count] = idx;
+            count += 1;
+            last_grp = grp[i];
+        }
+        
+    }
+    partition[count] = grp_len;
+    return count;
+}
+
 //VBSfx utilities
 
 int cleanVBS(VBSfx& vbmat)
@@ -1579,9 +1616,16 @@ int main()
     std::cout << "grouping found: ";
     arr_print(angle_grp, rows);
 
-    sort_permutation(angle_perm, angle_grp, rows); //find a permutation that sorts hashes
+    sort_permutation(angle_perm, angle_grp, rows); //find a permutation that sorts groups
+
     std::cout << "The matrix permuted according to the angle algorithm: ";
+
     permute_CSR(cmat, angle_perm, 0);
+
+    int* angle_row_part;
+    int groups = grp_to_partition(angle_grp, rows, angle_row_part);
+    std::cout << "The new row partition: ";
+    arr_print(row_part, groups);
 
 
     std::cout << "Converting to VBS" << std::endl;
