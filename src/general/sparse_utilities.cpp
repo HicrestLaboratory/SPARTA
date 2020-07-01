@@ -242,7 +242,7 @@ int count_groups(int* grp, int grp_len)
             last_grp = grp[i];
         }
     }
-    return groups
+    return groups;
 
 }
 //TO FIX
@@ -255,8 +255,8 @@ int grp_to_partition(int* grp, int grp_len, int* partition)
     //    partition: partition similar entries of grp together (sorted by entry)
     int perm[grp_len];
     sort_permutation(perm, grp, grp_len);
-    last_grp = -1;
-    group = 0;
+    int last_grp = -1;
+    int group = 0;
 
     for (int idx = 0; idx < grp_len; idx++)
     {
