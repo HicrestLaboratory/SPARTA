@@ -1627,9 +1627,11 @@ int main()
 
     sort_permutation(angle_perm, angle_grp, rows); //find a permutation that sorts groups
 
-    std::cout << "The matrix permuted according to the angle algorithm: ";
+    std::cout << "The CSR matrix permuted according to the angle algorithm: ";
 
     permute_CSR(cmat, angle_perm, 0);
+    matprint(cmat);
+
 
     int angle_row_groups = count_groups(angle_grp, rows);
     int angle_row_part[angle_row_groups];
