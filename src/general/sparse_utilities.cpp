@@ -260,6 +260,7 @@ int grp_to_partition(int* grp, int grp_len, int* partition)
         
     }
     partition[count] = grp_len;
+    arr_print(partition, count + 1)
     return count;
 }
 
