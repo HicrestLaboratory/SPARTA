@@ -1534,7 +1534,7 @@ int main()
 
     std::cout << "Finding a reorder through the hash method." << std::endl;
     int hash_perm[rows];
-    int hash_grp[cols];
+    int hash_grp[rows];
     hash_permute(cmat, col_part, hash_perm, hash_grp, 0);
     
     std::cout << "reorder found:" << std::endl;
