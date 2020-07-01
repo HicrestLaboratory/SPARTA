@@ -236,7 +236,7 @@ int grp_to_partition(int* grp, int grp_len, int* partition)
 
     for (int idx = 0; idx < grp_len; idx++)
     {
-        i = perm[idx];
+        int i = perm[idx];
         if (grp[i] != last_grp)
         {
             count += 1;
@@ -245,12 +245,12 @@ int grp_to_partition(int* grp, int grp_len, int* partition)
     }
 
     partition = new int[count + 1];
-    int last_grp = -1;
-    int count = 0;
+    last_grp = -1;
+    count = 0;
 
     for (int idx = 0; idx < grp_len; idx++)
     {
-        i = perm[idx];
+        int i = perm[idx];
         if (grp[i] != last_grp)
         {
             partition[count] = idx;
