@@ -1344,6 +1344,7 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
     IN: 
         cmat: the CSR matrix
         comp_dim_partition: the partition of the matrix along its compressed dimension. Element i is the start position of block i; last element is the length of the compressed dimension;
+        nB: the number of blocks in the partition
         in_perm: a permutation of the main dimension (rows in the same group should be adjacent in this permutation); 
         in_group: a grouping along the main dimension;
         eps: rows with cosine greater than eps will be merged.
@@ -1479,23 +1480,6 @@ int main()
     std::cout << "The random sparse block matrix:" << std::endl;
     matprint(mat, rows, cols, mat_leading_dim, mat_fmt);
 
-    std::cout << "Making first three rows equal:" << std::endl;
-    
-    for (int i = 1; i < 3; i++) 
-    {
-        for (int j = 0; j < cols; j++)
-        {
-            int idx_a = IDX(0, j, mat_leading_dim, mat_fmt);
-            int idx_b = IDX(i, j, mat_leading_dim, mat_fmt);
-            mat[idx_b] = mat[idx_a];
-        }
-
-    }
-
-    matprint(mat, rows, cols, mat_leading_dim, mat_fmt);
-
-
-
     std::cout << "converting to cmat" << std::endl;
     
     CSR cmat;
@@ -1505,26 +1489,30 @@ int main()
     std::cout << "mat converted to CSR:" << std::endl;
     matprint(cmat);
 
-    int* perm = randperm(9);
+    int* perm = randperm(rows);
     std::cout << "The matrix main dimension will be permuted with the following permutation: ";
-    arr_print(perm, 9);
+    arr_print(perm, rows);
 
     permute_CSR(cmat, perm, 0);
     std::cout << "CSR mat permuted:" << std::endl;
     matprint(cmat);
 
+    std::cout << "Finding a reorder through the hash method." << std::endl;
     int hash_perm[rows];
     int hash_grp[cols];
     hash_permute(cmat, col_part, hash_perm, hash_grp, 0);
-    std::cout << "Hash permutation computed: ";
+    
+    std::cout << "reorder found:" << std::endl;
     arr_print(hash_perm, rows);
 
     std::cout << "grouping found: ";
     arr_print(hash_grp, rows);
 
-    std::cout << "CSR will be appropriately reordered:" << std::endl;
-    permute_CSR(cmat, hash_perm, 0);
-    matprint(cmat);
+
+    std::cout << "Finding a reorder through the angle + hash method." << std::endl;
+    int angle_perm[rows];
+    int angle_grp[rows];
+    angle_method(cmat, 0.8, col_part, block_cols, hash_perm, angle_perm, hash_grp, angle_grp, 0);
 
     std::cout << "Converting to VBS" << std::endl;
     
