@@ -140,9 +140,9 @@ int matprint(DataT* mat, int rows, int cols, int lead_dim, int fmt)
     }
 }
 
-int matprint(DataT* mat, int rows, int* row_part, int, row_blocks, int cols, int* col_part, int col_blocks, int fmt)
+int matprint(DataT* mat, int rows, int* row_part, int row_blocks, int cols, int* col_part, int col_blocks, int lead_dim,  int fmt)
 {
-    for (int ib = 0; ib < row_blocks; i++)
+    for (int ib = 0; ib < row_blocks; ib++)
     {
         for (int i = row_part[ib]; i < row_part[ib + 1]; i++)
         {
