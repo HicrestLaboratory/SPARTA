@@ -1625,7 +1625,7 @@ int main()
     int* angle_row_part;
     int groups = grp_to_partition(angle_grp, rows, angle_row_part);
     std::cout << "The new row partition: ";
-    arr_print(row_part, groups + 1);
+    arr_print(angle_row_part, groups + 1);
 
 
     std::cout << "Converting to VBS" << std::endl;
