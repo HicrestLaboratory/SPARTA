@@ -1437,7 +1437,7 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
                     get_pattern(arr1, len1, comp_dim_partition, that_pattern, mode); //get the row pattern (store into that_pattern)
 
-                    std::cout << "trying to merge row " << j << " ; has pattern: "
+                    std::cout << "trying to merge row " << j << " ; has pattern: ";
                     arr_print(that_pattern, nB);
                     int norm_1 = norm2(that_pattern, nB); //get norm of the pattern
 
