@@ -1514,6 +1514,9 @@ int main()
     int angle_grp[rows];
     angle_method(cmat, 0.8, col_part, block_cols, hash_perm, hash_grp, angle_grp, 0);
 
+    std::cout << "grouping found: ";
+    arr_print(angle_grp, rows);
+
     std::cout << "Converting to VBS" << std::endl;
     
     int vbmat_blocks_fmt = 1;
