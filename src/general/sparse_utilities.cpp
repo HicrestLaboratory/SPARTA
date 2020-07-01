@@ -1365,7 +1365,7 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
     int idx, jdx;
     int this_group = -1; //the (out_)group the current row is in. 
     int in_this_grp;
-    int this_pattern[nB] = {0]; //the pattern of the current row or group of rows
+    int this_pattern[nB] = { 0 }; //the pattern of the current row or group of rows
 
     int that_group;//the (in_)group the compared row is in
     int in_that_grp;
