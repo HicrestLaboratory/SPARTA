@@ -1365,17 +1365,22 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
     int idx, jdx;
     int this_group = -1; //the (out_)group the current row is in. 
     int in_this_grp;
-    int this_pattern[nB]; //the pattern of the current row or group of rows
+    int this_pattern[nB] = {0]; //the pattern of the current row or group of rows
 
     int that_group;//the (in_)group the compared row is in
     int in_that_grp;
-    int that_pattern[nB];
+    int that_pattern[nB] = { 0 };
 
     int i, j;
 
     for (int idx = 0; idx < main_dim; idx++) //Loop through (groups of) rows. Each one is confronted with all the unpaired ones to find those that will be merged.
     {
         i = in_perm[idx];           //idx counts in the permuted order. i counts in the original order;
+        std::cout << "idx = " << idx << " .analyzing row: " << i << " . This group is: " << this_group << std::endl;
+        std::cout << "this pattern: ";
+        arr_print(this_pattern, nB);
+        std::cout << "that pattern: ";
+        arr_print(that_pattern, nB);
         if (out_group[i] == -1)     //only consider still ungrouped rows;
         {
             this_group++;               //create new group
