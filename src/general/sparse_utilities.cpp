@@ -1399,7 +1399,7 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
             std::cout << "before assigning groups, in_grp[j] = " << in_group[in_perm[jdx]] << " ,in_grp[i] = " << in_group[i] << std::endl;
             while ((jdx < main_dim) and (in_group[in_perm[jdx]] == in_group[i])) //check for elements in the same in_group of i (they are consecutive in in_perm)
             {
-                out_group[in_perm[jdx]] == this_group;   //assign elements in the same in_group to the same out_group;
+                out_group[in_perm[jdx]] = this_group;   //assign elements in the same in_group to the same out_group;
                 jdx++;
                 in_this_grp++; //keep count of the elements in the group
             }
