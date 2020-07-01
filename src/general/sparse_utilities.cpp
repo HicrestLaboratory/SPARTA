@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <cmath> // std::abs
 
+#include <random>
 #include <vector>
 #include <algorithm>    // std::random_shuffle
 
@@ -166,6 +168,35 @@ returns the permutation that would sort arrary arr
     std::sort(perm, perm + n,
         [&](const int& a, const int& b) {return (arr[a] < arr[b]); }
     );
+}
+
+int* linspan(int start, int end, int step)
+{
+    if (step <= 0)
+    {
+        std::cout << "Error: step must be positive" << std::endl;
+        return(0);
+    }
+    int len = std::abs(end - start) / step;
+    static int arr[len + 1];
+    int val = start;
+    for (int i = 0; i < len + 1; i++)
+    {
+        arr[i] = val;
+        val += step;
+    }
+    return arr;
+}
+
+int* randperm(int len)
+{
+    static int arr[len] = { 0 };
+    for (int i = 0; i < len; i++)
+    {
+        arr[i] = i;
+    }
+    std::random_shuffle(arr, arr + len);
+    return arr;
 }
 
 
@@ -1425,80 +1456,61 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
 int main()
 {
-    int a1[3] = { 0,5,10 };
-    int a2[4] = { 1, 6, 7, 11, };
-    int mode = 0;
-    int partition[5] = { 0,3,6,9,12 };
-    std::cout << check_same_pattern(a1, 3, a2, 4, partition, 1) << std::endl;
+    //create a random block matrix
+    int rows = 9;
+    int cols = 12;
+    int mat_fmt = 0;
 
-    int pattern1[4] = { 0 };
-    get_pattern(a1, 3, partition, pattern1, mode);
-    arr_print(pattern1, 4);
-
-    int pattern2[4] = { 0 };
-    get_pattern(a2, 4, partition, pattern2, mode);
-    arr_print(pattern2, 4);
-    
-    
-
-
-
-    //VBMAT creation and transform test
-    /*
-    int rows = 15;
-    int cols = 25;
-    int fmt_1 = 0;
-    int fmt_2 = 1;
-    int fmt_3 = 0;
-
-    int lead_1 = cols;
-    int lead_2 = rows;
-    int lead_3 = cols;
-
+    int mat_leading_dim = cols;
 
     DataT mat[rows * cols] = { 0 };
     float block_sparsity = 0.7;
     float block_entries_sparsity = 0.3;
 
-    int block_size = 5;
+    int block_size = 3;
+
+
+    random_sparse_blocks_mat(mat, rows, cols, mat_fmt, block_size, block_sparsity, block_entries_sparsity);
+
+    std::cout << "The random sparse block matrix:" << std::endl;
+    matprint(mat, rows, cols, mat_leading_dim, mat_fmt);
+
+    std::cout << "converting to cmat" << std::endl;
+    
+    CSR cmat;
+    int cmat_fmt = 0;
+    convert_to_CSR(mat, rows, cols, fmt, cmat, cmat_fmt);
+    
+    std::cout << "mat converted to CSR:" << std::endl;
+    matprint(cmat);
+
+    int* perm = randperm(9);
+    std::cout << "The matrix main dimension will be permuted with the following permutation: ";
+    arr_print(perm, 9);
+
+    permute_CSR(cmat, perm2, 0);
+    std::cout << "CSR mat permuted:" << std::endl;
+    matprint(cmat);
+
+    std::cout << "Converting to VBS" << std::endl;
+    
     int block_rows = rows / block_size;
     int block_cols = cols / block_size;
-    int row_part[4] = { 0,5,10,15};
-    int col_part[6] = { 0,5,10,15,20,25 };
+
+    int row_part* = linspan(0, rows, 3);
+    int col_part* = linspan(0, cols, 3);
     int vbmat_blocks_fmt = 1;
     int vbmat_entries_fmt = 1;
-
-
-    DataT mat2[rows * cols] = { 0 };
-
-    std::cout << "mat 1" << std::endl;
-    matprint(mat, rows, cols, lead_1, fmt_1);
-
-    random_sparse_blocks_mat(mat, rows, cols, fmt_1, block_size, block_sparsity, block_entries_sparsity);
-    mat_cpy(mat, rows, cols, lead_1, fmt_1, mat2, lead_2, fmt_2);
-
-    std::cout << "mat 1" << std::endl;
-    matprint(mat, rows, cols, lead_1, fmt_1);
-
-    std::cout << "mat 2" << std::endl;
-    matprint(mat2, rows, cols, lead_2, fmt_2);
-
-    std::cout << "converting to vbs" << std::endl;
-    
     VBS vbmat;
     
-    convert_to_VBS(mat, rows, cols, fmt_1,
+    convert_to_VBS(cmat,
         vbmat,
         block_rows, row_part,
         block_cols, col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
     
-
-    std::cout << "converted" << std::endl;
-    DataT mat3[rows * cols] = { 0 };
-    convert_to_mat(vbmat, mat3, fmt_3);
-    matprint(mat3, rows, cols, lead_3, fmt_3);
-    */
+    std::cout << "CSR converted to VBS:" << std::endl;
+    matprint(vbmat);
 
 
 
