@@ -1381,6 +1381,8 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
         arr_print(this_pattern, nB);
         std::cout << "that pattern: ";
         arr_print(that_pattern, nB);
+        std::cout << "the out_group:";
+        arr_print(out_group, main_dim);
         if (out_group[i] == -1)     //only consider still ungrouped rows;
         {
             this_group++;               //create new group
