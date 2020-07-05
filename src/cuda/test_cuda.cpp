@@ -156,7 +156,6 @@ int main(int argc, char *argv[]) {
         {
             cout << "CREATED A RANDOM CSR" << endl;
         }
-        matprint(cmat_A);
     }
 //______________________________________
 
@@ -234,8 +233,8 @@ int main(int argc, char *argv[]) {
 
 
     //VBS matrix parameters
-    int vbmat_blocks_fmt = 1;
-    int vbmat_entries_fmt = 1; //cuda needs column-major matrices
+    int vbmat_blocks_fmt = 0;
+    int vbmat_entries_fmt = 0; //cuda needs column-major matrices
     VBS vbmat_A;
     
     int block_rows = A_rows / block_size;
