@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     int verbose = 1;
 
     int input_type = 4;
-    int A_rows = 24;             //rows in the square input matrix;
+    int A_rows = 20;             //rows in the square input matrix;
     int A_cols = 24;
     int mat_A_fmt = 1;        //cuda needs column-major matrices
     int block_size = 4;     //block size for variable block matrix. Rows and columns must be evenly divisible by this;
