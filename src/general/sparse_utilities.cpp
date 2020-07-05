@@ -416,7 +416,10 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     vbmat.nztot = total_nonzero_entries;
     vbmat.jab = new int[jab.size()];
     vbmat.mab = new DataT[total_nonzero_entries];
+
     std:copy(jab.begin(), jab.end(), vbmat.jab);
+    arr_print(vbmat.nzcount, vbmat_main_dim);
+
 
     int mat_idx = 0; //keeps reading position for mat
     int vbmat_idx = 0; //keeps writing position for vbmat 
