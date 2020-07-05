@@ -309,7 +309,7 @@ int main(int argc, char *argv[]) {
 
     clock_t start_t = clock();
 
-    cublas_gemm_custom (mat_A, A_cols, A_rows, A_rows, mat_B, B_rows, B_rows, d_C, C_rows);
+    cublas_gemm_custom (mat_A, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, d_C, C_rows);
 
     double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
     
@@ -317,14 +317,14 @@ int main(int argc, char *argv[]) {
 
     matprint(matCgemm,C_rows, C_cols, C_rows, mat_Cgemm_fmt);
 
-    //vbr-dense cublas multiplication	
+    //VBS x dense cublas multiplication	
 	DataT mat_Cblock[C_rows*C_cols] = {};
     int mat_Cblock_fmt = 1;
 
     start_t = clock();
 
-	cublas_blockmat_multiply(vbmat, X_c, X_cols, Y_block);
-	
+    cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows);
+
 	total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
 	
 	cout <<"BlockSparse-Dense multiplication. Time taken: " << total_t<<endl;
@@ -340,14 +340,9 @@ int main(int argc, char *argv[]) {
 //        matprint(&Y_csr[0],spmat.n, X_cols);
 
 	cout << "GEMM RESULT" << endl;
-	matprint(&Y_gemm[0],Y_rows, Y_cols);
+    matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1);
 	
 	cout << "BLOCK RESULT" << endl;
-	matprint(&Y_block[0],Y_rows, Y_cols);
-
-//	cout << "BLOCK BATCH RESULT" << endl;
-//        matprint(&Y_batch[0],spmat.n, X_cols);
-
-
+    matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
 
 }

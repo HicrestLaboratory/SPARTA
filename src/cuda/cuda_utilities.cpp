@@ -17,12 +17,9 @@
 #include "sparse_utilities.h"
 
 #include <iostream>
+#include "..\..\include\cuda_utilities.h"
 
-
-using namespace std;
-
-
-void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, float *C){
+void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lead_dim, float *C, int C_lead_dim){
     //multiplies a VBS matrix (vbmatA) and a dense matrix (B); stores into (C)
     //vbmatA:       column-major entries storage;
     //              column-major block_storage; 
@@ -71,7 +68,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, float *C)
 
     //copy B to device (maybe more efficient to copy it block by block?)
     checkCudaErrors(cublasSetMatrix(
-        B_rows, B_cols, sizeof(float), B, B_rows, d_B, B_rows));
+        B_rows, B_cols, sizeof(float), B, B_lead_dim, d_B, B_rows));
 
 
     //creates streams. Each block rows is assigned a different stream.
@@ -105,7 +102,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, float *C)
             checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N,
                 rows_in_block, B_cols, cols_in_block,           //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
                 &alpha,
-                d_A_block rows_in_block,                        //blockA device pointer, leading dimension
+                d_A_block, rows_in_block,                        //blockA device pointer, leading dimension
                 d_B_block, B_rows,                              //blockB device pointer, leading dimension
                 &beta,
                 d_C_block, C_rows));                            //blockC device pointer, leading dimension
@@ -121,7 +118,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, float *C)
         cublasSetStream(handle, streams[ib]); 
         rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib];
         checkCudaErrors(cublasGetMatrix(
-            rows_in_block, C_cols, sizeof(float), d_C + vbmatA.row_part[ib], C_rows, C + vbmatA.row_part[ib], C_rows));
+            rows_in_block, C_cols, sizeof(float), d_C + vbmatA.row_part[ib], C_rows, C + vbmatA.row_part[ib], C_lead_dim));
 
     }
 
@@ -134,8 +131,6 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, float *C)
     checkCudaErrors(cublasDestroy(handle));
 
 }
-
-
 
 //Matrix-Matrix multiplication with cublas. A,B,C are in column-major order.
 //Matrix A and B are in host
