@@ -286,6 +286,12 @@ int main(int argc, char* argv[]) {
     DataT* mat_A = new DataT[A_rows * A_cols];
 
     convert_to_mat(cmat_A, mat_A, mat_A_fmt);
+    if (verbose > 0)
+    {
+        std::cout << "Dense matrix A created:" << std::endl;
+        matprint(mat_A, A_rows, A_cols, A_rows, mat_A_fmt);
+    }
+
 
     cout << fixed; //output format
 
