@@ -25,12 +25,12 @@
 
 using namespace std;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
 
- 
-    if (typeid(DataT) != typeid(float)){
-        cout<< "WARNING: only float supported for CUDA. Change DataT to float in sparse_utilities.h" <<endl;
-	return 1;
+
+    if (typeid(DataT) != typeid(float)) {
+        cout << "WARNING: only float supported for CUDA. Change DataT to float in sparse_utilities.h" << endl;
+        return 1;
     }
     opterr = 0;
 
@@ -53,22 +53,22 @@ int main(int argc, char *argv[]) {
                             //eps = 0 means all rows are merged into a single block
     int seed = 123;
 
-    
-    
-    
+
+
+
     srand(seed);
-    
+
     int* A_row_part;
     int* A_col_part;
 
-    
-    
-    
+
+
+
     //terminal options loop
     opterr = 0;
     char c;
-    while ((c = getopt (argc, argv, "i:s:k:o:n:e:p:b:v:")) != -1)
-      switch (c)
+    while ((c = getopt(argc, argv, "i:s:k:o:n:e:p:b:v:")) != -1)
+        switch (c)
         {
         case 'i':// select input example
             input_type = stoi(optarg);
@@ -76,22 +76,22 @@ int main(int argc, char *argv[]) {
             //  2: SNAP Edgelist
             //  3: MTX Format
             //  4: Random Variable Block matrix
-            if((input_type != 1) and (input_type != 4)){
+            if ((input_type != 1) and (input_type != 4)) {
                 input_type = 1;
-                cout<<"WARNING: CURRENTLY SUPPORTS ONLY i = 1 and i = 4. Using 1 (Random CSR)"<<endl;
+                cout << "WARNING: CURRENTLY SUPPORTS ONLY i = 1 and i = 4. Using 1 (Random CSR)" << endl;
             }
             break;
-        
+
         case 's': //select source file
             //has only effect for example 2 and 3;
             input_source = optarg;
             break;
-        
+
         case 'k': //input matrix sparsity
             //has only effect for example 1 and 4
             sparsity = stof(optarg);
-            if(sparsity < 0 or sparsity > 1){
-                fprintf (stderr, "Option -k tried to set sparsity outside of [0,1]");
+            if (sparsity < 0 or sparsity > 1) {
+                fprintf(stderr, "Option -k tried to set sparsity outside of [0,1]");
                 return 1;
             }
             break;
@@ -104,12 +104,12 @@ int main(int argc, char *argv[]) {
                 return 1;
             }
             break;
-                
+
         case 'n': //input matrix dimension
              //has only effect for example 1 and 4
             A_rows = stoi(optarg);
-	    break;
-        
+            break;
+
         case 'o': //number of column of output matrix
             B_cols = stoi(optarg);
             break;
@@ -118,36 +118,36 @@ int main(int argc, char *argv[]) {
             //ony used if i = 4, random VBS
             block_size = stoi(optarg);
             break;
-        
+
         case 'v': //verbose
             verbose = stoi(optarg);
             break;
 
         case 'e': //epsilon used for matrix reordering;
             eps = stof(optarg);
-            if(eps < 0. or eps > 1.){
-                fprintf (stderr, "Option -e tried to set epsilon outside of [0,1]");
+            if (eps < 0. or eps > 1.) {
+                fprintf(stderr, "Option -e tried to set epsilon outside of [0,1]");
                 return 1;
             }
-	    break;
-                
+            break;
+
         case '?':
-            fprintf (stderr, "Option -%c does not exists, or requires an argument.\n", optopt);
+            fprintf(stderr, "Option -%c does not exists, or requires an argument.\n", optopt);
             return 1;
         default:
-          abort ();
-	}
-    
+            abort();
+        }
 
-//INPUT CONVERSION TO Compressed Sparse Row (CSR)
 
-	CSR cmat_A; //this will hold the CSR matrix
+    //INPUT CONVERSION TO Compressed Sparse Row (CSR)
+
+    CSR cmat_A; //this will hold the CSR matrix
     int cmat_A_fmt = 0;
 
 
-//INPUT EXAMPLE 1: RANDOM CSR
-//create a random sparse matrix
-    if (input_type == 1){
+    //INPUT EXAMPLE 1: RANDOM CSR
+    //create a random sparse matrix
+    if (input_type == 1) {
         DataT rand_mat[A_cols * A_rows];
         random_mat(rand_mat, A_rows, A_cols, sparsity); //generate random mat
 
@@ -157,44 +157,44 @@ int main(int argc, char *argv[]) {
             cout << "CREATED A RANDOM CSR" << endl;
         }
     }
-//______________________________________
+    //______________________________________
 
 
-/*
-//NOT SUPPORTED 
-//INPUT EXAMPLE 2: read graph in edgelist format into CSR
-    if (input_type == 2){
-        if (input_source.empty()) input_source = "testgraph.txt";
-       
-        read_snap_format(spmat, input_source);         //Read a CSR matrix from a .txt edgelist (snap format) 
-        cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
+    /*
+    //NOT SUPPORTED
+    //INPUT EXAMPLE 2: read graph in edgelist format into CSR
+        if (input_type == 2){
+            if (input_source.empty()) input_source = "testgraph.txt";
+
+            read_snap_format(spmat, input_source);         //Read a CSR matrix from a .txt edgelist (snap format)
+            cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
 
 
-    }
- //______________________________________
- */
-
-
-/*
-//NOT SUPPORTED
-//INPUT EXAMPLE 3: read from MTX format
-    if (input_type == 3){
-        //read from mtx
-        if (input_source.empty()) input_source = "testmat.mtx";
-        read_mtx_format(spmat, input_source); //read into CSR
-        
-        cout << "IMPORTED A CSR FROM MTX FILE" << endl;
         }
+     //______________________________________
+     */
 
 
-//______________________________________
-*/
+     /*
+     //NOT SUPPORTED
+     //INPUT EXAMPLE 3: read from MTX format
+         if (input_type == 3){
+             //read from mtx
+             if (input_source.empty()) input_source = "testmat.mtx";
+             read_mtx_format(spmat, input_source); //read into CSR
+
+             cout << "IMPORTED A CSR FROM MTX FILE" << endl;
+             }
 
 
-//INPUT EXAMPLE 4: create a random matrix with block structure
-    if (input_type == 4){
-    
-    //A_rows and sparsity have been previously set by options. Default: n = 20, sparsity = 0.5;
+     //______________________________________
+     */
+
+
+     //INPUT EXAMPLE 4: create a random matrix with block structure
+    if (input_type == 4) {
+
+        //A_rows and sparsity have been previously set by options. Default: n = 20, sparsity = 0.5;
 
         DataT rand_block_mat[A_rows * A_cols];
 
@@ -212,21 +212,21 @@ int main(int argc, char *argv[]) {
                 << " Entries sparsity: " << sparsity
                 << endl;
         }
-	    //TODO optional: scramble the matrix row to see if the algo can reorder them.
+        //TODO optional: scramble the matrix row to see if the algo can reorder them.
 
     }
-        
-//___________________________________________
-//*******************************************
-//		END OF INPUT
-//spmat must hold a proper CSR matrix at this point
-//******************************************
 
-//reorder the CSR matrix spmat and convert to a Block Sparse Matrix
+    //___________________________________________
+    //*******************************************
+    //		END OF INPUT
+    //spmat must hold a proper CSR matrix at this point
+    //******************************************
 
-    //TODO: reorder cmat through angle algorithm
-    //      and retrieve row and block partition
-    //      from the angle algorithm grouping;
+    //reorder the CSR matrix spmat and convert to a Block Sparse Matrix
+
+        //TODO: reorder cmat through angle algorithm
+        //      and retrieve row and block partition
+        //      from the angle algorithm grouping;
 
     A_row_part = linspan(0, A_rows, block_size); //row and column partitions
     A_col_part = linspan(0, A_cols, block_size);
@@ -236,7 +236,7 @@ int main(int argc, char *argv[]) {
     int vbmat_blocks_fmt = 1;
     int vbmat_entries_fmt = 1; //cuda needs column-major matrices
     VBS vbmat_A;
-    
+
     int block_rows = A_rows / block_size;
     int block_cols = A_cols / block_size;
 
@@ -251,54 +251,62 @@ int main(int argc, char *argv[]) {
         block_cols, A_col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
 
-    cout<<"VBS matrix created:"<<endl;
-    matprint(vbmat_A);
+    if (verbose > 0)
+    {
+        cout << "VBS matrix created:" << endl;
+        matprint(vbmat_A);
+    }
 
-/*
-//*******************************************
-//        REPORT ON BLOCK STRUCTURE
-//******************************************
-    ofstream CSV_out;
-    CSV_out.open("output.txt");
+    /*
+    //*******************************************
+    //        REPORT ON BLOCK STRUCTURE
+    //******************************************
+        ofstream CSV_out;
+        CSV_out.open("output.txt");
 
-    string CSV_header = "MatrixSize,OriginalSparsity,Divisions,NonzeroBlocks,AvgBlockHeight,AvgBHError,AvgBlockLength,AvgBLError,NonzeroAreaFraction,AverageBlockPopulation,ABPError,NewSparsity"; 
-    CSV_out << CSV_header << endl;
+        string CSV_header = "MatrixSize,OriginalSparsity,Divisions,NonzeroBlocks,AvgBlockHeight,AvgBHError,AvgBlockLength,AvgBLError,NonzeroAreaFraction,AverageBlockPopulation,ABPError,NewSparsity";
+        CSV_out << CSV_header << endl;
 
-    bool verbose = true; //print mat analysis on screen too?
+        bool verbose = true; //print mat analysis on screen too?
 
-    //TODO write this function
-    //features_to_CSV(&vbmat, CSV_out, verbose);//write mat analysis on csv
-    CSV_out.close();
-*/	
+        //TODO write this function
+        //features_to_CSV(&vbmat, CSV_out, verbose);//write mat analysis on csv
+        CSV_out.close();
+    */
 
 
-//*******************************************
-//         MULTIPLICATION PHASE
-//___________________________________________
-//several ways of multiplying the sparse matrix
-//with a dense one, with benchmarks
-//******************************************
-    
-//create a dense array matrix from spmat (for CUBLAS GEMM)
-	DataT* mat_A = new DataT[A_rows*A_cols];
+    //*******************************************
+    //         MULTIPLICATION PHASE
+    //___________________________________________
+    //several ways of multiplying the sparse matrix
+    //with a dense one, with benchmarks
+    //******************************************
+
+    //create a dense array matrix from spmat (for CUBLAS GEMM)
+    DataT* mat_A = new DataT[A_rows * A_cols];
 
     convert_to_mat(cmat_A, mat_A, mat_A_fmt);
 
     cout << fixed; //output format
 
 
-    if (verbose > 1)
+    if (verbose > 0)
     {
         cout << "\n \n **************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl;
     }
-        
+
     //creating a random matrix X
-	int B_rows = A_cols;
+    int B_rows = A_cols;
     int mat_B_fmt = 1;
 
     DataT mat_B[B_rows * B_cols] = { 0 };
     random_mat(mat_B, B_rows, B_cols, B_sparsity);
 
+    if (verbose > 0)
+    {
+        std::cout << "Random matrix B created:" << std::endl;
+        matprint(mat_B, B_rows, B_cols, B_rows, mat_B_fmt);
+    }
 //----------------------------
 //creating the output matrix Y
 	int C_rows = A_rows;
