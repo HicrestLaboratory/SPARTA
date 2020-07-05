@@ -251,7 +251,8 @@ int main(int argc, char *argv[]) {
         block_cols, A_col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
 
-    cout<<"VBS matrix created"<<endl;
+    cout<<"VBS matrix created:"<<endl;
+    matprint(vbmat_A);
 
 /*
 //*******************************************
