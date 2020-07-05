@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
     //terminal options loop
     opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "i:s:k:o:n:e:p:b:v:")) != -1)
+    while ((c = getopt(argc, argv, "i:s:q:e:p:m:n:k:b:v:")) != -1)
         switch (c)
         {
         case 'i':// select input example
@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
             input_source = optarg;
             break;
 
-        case 'k': //input matrix sparsity
+        case 'q': //input matrix sparsity
             //has only effect for example 1 and 4
             sparsity = stof(optarg);
             if (sparsity < 0 or sparsity > 1) {
@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
             break;
 
         case 'b': //block sparsity
-        //has only effect for example 1 and 4
+        //has only effect for example 4
             block_sparsity = stof(optarg);
             if (block_sparsity < 0 or block_sparsity > 1) {
                 fprintf(stderr, "Option -b tried to set block sparsity outside of [0,1]");
@@ -107,13 +107,19 @@ int main(int argc, char* argv[]) {
             }
             break;
 
-        case 'n': //input matrix rows
+        case 'm': //input matrix rows
              //has only effect for example 1 and 4
             A_rows = stoi(optarg);
             break;
 
-        case 'o': //number of column of output matrix
+        case 'n': //input matrix rows
+     //has only effect for example 1 and 4
             B_cols = stoi(optarg);
+            break;
+
+        case 'k': //input matrix rows
+ //has only effect for example 1 and 4
+            A_cols = stoi(optarg);
             break;
 
         case 'p': //size of blocks
