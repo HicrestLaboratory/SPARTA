@@ -279,9 +279,9 @@ int main(int argc, char *argv[]) {
 //******************************************
     
 //create a dense array matrix from spmat (for CUBLAS GEMM)
-	int* mat_A = new DataT[A_rows*A_cols];
+	DataT* mat_A = new DataT[A_rows*A_cols];
 
-    convert_to_mat(cmat, mat_A, mat_A_fmt);
+    convert_to_mat(cmat_A, mat_A, mat_A_fmt);
 
     cout << fixed; //output format
 
