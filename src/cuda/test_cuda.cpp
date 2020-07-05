@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
     int block_rows = A_rows / block_size;
     int block_cols = A_cols / block_size;
 
-    if (A_rows % block_size != 0) or (A_cols % block_size != 0)
+    if ((A_rows % block_size != 0) or (A_cols % block_size != 0))
     {
         std::cout << "WARNING: The row or column dimension of the input matrix is not multiple of the block size " << std::endl;
     }
