@@ -314,7 +314,7 @@ int main(int argc, char* argv[]) {
 
 //dense-dense cublas gemm multiplication
     
-    DataT mat_Cgemm[C_rows * C_cols];
+    DataT mat_Cgemm[C_rows * C_cols] = { 0 };
     int mat_Cgemm_fmt = 1;
 
     clock_t start_t = clock();
