@@ -98,7 +98,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lea
 
             //define the sub-matrices
 	        const float* d_A_block = d_A + vbmat_idx;           //access the block on d_A.
-            float* d_C_block = d_C + vbmatA.row_part[id] ;  //access the block on d_C.
+            float* d_C_block = d_C + vbmatA.row_part[ib] ;  //access the block on d_C.
 
             //multiply the blocks, store result in d_C_block
             checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N,
