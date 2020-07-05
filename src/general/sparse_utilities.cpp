@@ -429,8 +429,9 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
         main_block_dim = b_main_ptr[i + 1] - main_pos;
         for (int nzs = 0; nzs < vbmat.nzcount[i]; nzs++)
         {
-            std::cout << "check: " << i << " , " << j << std::endl;
             int j = jab[jab_count];
+            std::cout << "check: " << i << " , " << j << std::endl;
+
             second_pos = b_second_ptr[j];
             second_block_dim = b_second_ptr[j + 1] - second_pos;
 
