@@ -292,9 +292,8 @@ int main(int argc, char* argv[]) {
         matprint(mat_A, A_rows, A_cols, A_rows, mat_A_fmt);
     }
 
-
-    cout << fixed; //output format
-
+    //output format
+    cout << fixed;
 
     if (verbose > 0)
     {
@@ -313,13 +312,16 @@ int main(int argc, char* argv[]) {
         std::cout << "Random matrix B created:" << std::endl;
         matprint(mat_B, B_rows, B_cols, B_rows, mat_B_fmt);
     }
-//----------------------------
-//creating the output matrix Y
+
+    //creating the output matrix Y
 	int C_rows = A_rows;
 	int C_cols = B_cols;
 
-//dense-dense cublas gemm multiplication
-    
+
+    //--------------------------------------------
+    //  dense-dense cublas gemm multiplication
+    //--------------------------------------------
+
     DataT mat_Cgemm[C_rows * C_cols] = { 0 };
     int mat_Cgemm_fmt = 1;
 
@@ -329,12 +331,18 @@ int main(int argc, char* argv[]) {
 
     double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
     
-    cout<<"Dense-Dense multiplication. Time taken: " << total_t<<endl;
+    if (verbose > 0)
+    {
+        cout << "Dense-Dense multiplication. Time taken: " << total_t << endl;
+    }
 
-    matprint(mat_Cgemm,C_rows, C_cols, C_rows, mat_Cgemm_fmt);
 
-    //VBS x dense cublas multiplication	
-	DataT mat_Cblock[C_rows*C_cols];
+
+    //--------------------------------------------
+    //      VBS x dense cublas multiplication	
+    //--------------------------------------------
+
+    DataT mat_Cblock[C_rows*C_cols];
     int mat_Cblock_fmt = 1;
 
     start_t = clock();
@@ -343,8 +351,10 @@ int main(int argc, char* argv[]) {
 
 	total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
 	
-	cout <<"BlockSparse-Dense multiplication. Time taken: " << total_t<<endl;
-
+    if (verbose > 0)
+    {
+        cout << "BlockSparse-Dense multiplication. Time taken: " << total_t << endl;
+    }
 
 //TODO CSR-dense cusparse multiplication
 
@@ -352,13 +362,13 @@ int main(int argc, char* argv[]) {
  
 //PRINT RESULTING MATRICES
 
-//	cout << "CSR RESULT" << endl;
-//        matprint(&Y_csr[0],spmat.n, X_cols);
+    if (verbose > 0)
 
-	cout << "GEMM RESULT" << endl;
-    matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1);
-	
-	cout << "BLOCK RESULT" << endl;
-    matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
+    {
+        cout << "GEMM RESULT" << endl;
+        matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1);
 
+        cout << "BLOCK RESULT" << endl;
+        matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
+    }
 }
