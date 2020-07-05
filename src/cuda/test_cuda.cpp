@@ -146,6 +146,7 @@ int main(int argc, char* argv[]) {
             abort();
         }
 
+    //TODO -h HELP
 
     //INPUT CONVERSION TO Compressed Sparse Row (CSR)
 
@@ -259,7 +260,7 @@ int main(int argc, char* argv[]) {
         block_cols, A_col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
 
-    if (verbose > 0)
+    if (verbose > 1)
     {
         cout << "VBS matrix created:" << endl;
         matprint(vbmat_A);
@@ -274,7 +275,7 @@ int main(int argc, char* argv[]) {
         block_cols, A_col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt, no_zero_mode);
 
-    if (verbose > 0)
+    if (verbose > 1)
     {
         cout << "VBS matrix (no zero blocks mode ON) created:" << endl;
         matprint(vbmat_A_full);
@@ -309,7 +310,7 @@ int main(int argc, char* argv[]) {
     DataT mat_A[A_rows * A_cols] = { 0 };
 
     convert_to_mat(cmat_A, mat_A, mat_A_fmt);
-    if (verbose > 0)
+    if (verbose > 1)
     {
         std::cout << "Dense matrix A created:" << std::endl;
         matprint(mat_A, A_rows, A_cols, A_rows, mat_A_fmt);
