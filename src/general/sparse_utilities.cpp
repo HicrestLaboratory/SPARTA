@@ -379,6 +379,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     {
         main_pos = b_main_ptr[i];
         main_block_dim = b_main_ptr[i + 1] - main_pos;
+        vbmat.nzcount[i] = 0;
 
         for (int j = 0; j < vbmat_compressed_dim; j++)     //loops through compressed block dimension
         {
