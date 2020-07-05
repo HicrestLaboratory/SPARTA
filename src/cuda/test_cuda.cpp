@@ -20,8 +20,10 @@
 #include <helper_cuda.h>
 
 #include "cuda_utilities.h"
-#include "comp_mats.h"
 #include "sparse_utilities.h"
+#include "comp_mats.h"
+
+using namespace std;
 
 int main(int argc, char *argv[]) {
 
@@ -40,7 +42,7 @@ int main(int argc, char *argv[]) {
     int mat_A_fmt = 1;        //cuda needs column-major matrices
     int block_size = 4;     //block size for variable block matrix. Rows and columns must be evenly divisible by this;
     float sparsity = 0.5;   //sparsity of the input matrix;
-    float block_sparsity = 0.5 //sparsity inside the blocks;
+    float block_sparsity = 0.5; //sparsity inside the blocks;
     string input_source;
 
     int B_cols = 20;    //number of columns in the output matrix;
