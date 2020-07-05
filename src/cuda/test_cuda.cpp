@@ -215,8 +215,6 @@ int main(int argc, char *argv[]) {
         }
 	    //TODO optional: scramble the matrix row to see if the algo can reorder them.
 
-        matprint(rand_block_mat, A_rows, A_cols, A_rows, mat_A_fmt);
-        matprint(cmat_A);
     }
         
 //___________________________________________
@@ -236,7 +234,7 @@ int main(int argc, char *argv[]) {
 
 
     //VBS matrix parameters
-    int vbmat_blocks_fmt = 0;
+    int vbmat_blocks_fmt = 1;
     int vbmat_entries_fmt = 1; //cuda needs column-major matrices
     VBS vbmat_A;
     
