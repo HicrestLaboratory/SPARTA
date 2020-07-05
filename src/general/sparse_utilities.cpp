@@ -95,8 +95,8 @@ int equal(int rows, int cols, DataT* A, int lead_A, int fmt_A, DataT* B, int lea
     {
         for (int j = 0; j < cols; j++)
         {
-            int idx_A = IDX(A, i, j, lead_A, fmt_A);
-            int idx_B = IDX(B, i, j, lead_B, fmt_B);
+            int idx_A = IDX(i, j, lead_A, fmt_A);
+            int idx_B = IDX(i, j, lead_B, fmt_B);
             if (A[idx_A] != B[idx_B]) return 0;
         }
     }
@@ -743,22 +743,6 @@ int convert_to_CSR(const DataT* in_mat, int mat_rows, int mat_cols, int mat_fmt,
         std::copy(tmp_ma, tmp_ma + nzs, cmat.ma[i]);
 
     }
-
-    return 0;
-}
-
-int convert_to_CSR(const VBSfx& vbmat, CSR& cmat, int csr_fmt)
-{
-    //TODO: if necessary, make conversion efficient;
-
-    int mat_rows = vbmat.block_cols * vbmat.block_size;
-    int mat_cols = vbmat.block_cols * vbmat.block_size;
-    int mat_size = mat_rows * mat_cols;
-    int mat_fmt = 0;
-
-    DataT mat[mat_size] = { 0 };
-    convert_to_mat(vbmat, mat, mat_fmt);
-    convert_to_CSR(mat, mat_rows, mat_cols, mat_fmt, cmat, csr_fmt);
 
     return 0;
 }

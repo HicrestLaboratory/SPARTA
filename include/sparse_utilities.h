@@ -90,8 +90,6 @@ int convert_to_mat(const CSR& cmat, DataT* out_mat, int out_mat_fmt);
 
 int convert_to_CSR(const DataT* in_mat, int mat_rows, int mat_cols, int mat_fmt, CSR& cmat, int cmat_fmt);
 
-int convert_to_CSR(const VBSfx& vbmat, CSR& cmat, int csr_fmt);
-
 int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt);
 
 int matprint(const CSR& cmat);
