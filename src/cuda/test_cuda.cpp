@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     float block_sparsity = 0.5; //sparsity inside the blocks;
     string input_source;
 
-    int B_cols = 20;    //number of columns in the output matrix;
+    int B_cols = 1;    //number of columns in the output matrix;
     float B_sparsity = 0.8; //sparsity of the multiplication matrix
 
     float eps = 0.5;        //this value sets how different two rows in the same block can be.
