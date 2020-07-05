@@ -12,11 +12,9 @@
 
 #include<stdio.h>
 
-
 #include "cuda_utilities.h"
-#include "globheads.h"
-#include "protos.h"
-#include "utilities.h"
+#include "comp_mats.h"
+#include "sparse_utilities.h"
 
 #include <iostream>
 
@@ -24,59 +22,117 @@
 using namespace std;
 
 
-void cublas_blockmat_multiply(const VBSparMat &VBMat, float *X, int X_cols, float *Y){
-    int N = VBMat.n, *bsz = VBMat.bsz;
-    int block_cols,block_rows,col;
-    int mat_n = bsz[N];
-    int X_rows = mat_n;
-    int Y_rows = mat_n;
-    int Y_cols = X_cols;
+void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, float *C){
+    //multiplies a VBS matrix (vbmatA) and a dense matrix (B); stores into (C)
+    //vbmatA:       column-major entries storage;
+    //              column-major block_storage; 
+    //B:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+    //C:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+
+    int A_rows = vbmatA.row_part[vbmatA.block_rows];
+    int A_cols = vbmatA.col_part[vbmatA.block_cols];
+
+    int mat_idx = 0; //keeps writing position for mat
+    int vbmat_idx = 0; //keeps reading position for vbmat 
+    int ja_count = 0; //keeps total nonzero blocks count;
+
+    int B_rows = A_cols;
 
     const float alpha = 1.0f;
     const float beta = 1.0f;
    
-    //loop vertically through block rows
-    for(int i = 0; i < N; i++ ) {
-        block_rows = bsz[i+1] - bsz[i];
+    int tot_nonzero_blocks = 0; //index for total nonzero blocks
+
+    int rows_in_block, cols_in_block;
+    unsigned int size_block, mem_size_block;
+
+    //TODO: allocate memory on device
+    unsigned int size_A = vbmatA.nztot; //total nonzero entries in vbmat
+    unsigned int mem_size_A = sizeof(float) * size_A;
+
+    unsigned int size_B = B_rows * B_cols;
+    unsigned int mem_size_B = sizeof(float) * size_B;
+
+    unsigned int size_C = C_rows * C_cols;
+    unsigned int mem_size_C = sizeof(float) * size_C;
+
+    cublasHandle_t handle;
+
+    checkCudaErrors(cublasCreate(&handle));
+
+    float* d_A, * d_B, * d_C;
+    checkCudaErrors(cudaMalloc((void**)&d_A, mem_size_A));
+    checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
+    checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
+
+    //copy to device the vbmat matrix (nonzero blocks are stored consecutively and in column major format)
+    checkCudaErrors(cublasSetVector(
+        size_A, sizeof(float), vbmat.mab, 1, d_A, 1));
+
+    //copy B to device (maybe more efficient to copy it block by block?)
+    checkCudaErrors(cublasSetMatrix(
+        B_rows, B_cols, sizeof(float), B, B_rows, d_B, B_rows));
 
 
-	//allocate device memory for block d_Y
-	//-----------------------------------------------
-	unsigned int size_dY = block_rows * Y_cols;
-	unsigned int mem_size_dY = sizeof(float) * size_dY;
+    //creates streams. Each block rows is assigned a different stream.
+    cudaStream_t streams[block_rows];
+    for (int ib = 0; ib < vbmatA.block_rows; ib++)
+    {
+        cudaStreamCreate(&(streams[ib]));
+    }
 
-	float *d_Y;
-	checkCudaErrors(cudaMalloc((void **) &d_Y, mem_size_dY));
+    //loop through all blocks
+    for(int jb = 0; jb < vbmatA.block_cols; jb++ )      //loop horizontally through block columns
+    {
+        cols_in_block = vbmatA.col_part[jb+1] - col_part[jb];
+        const float* d_block_B = d_B + col_part[jb];    //access the block of B that is going to be multiplied with blocks of A in column jb
 
-        //-----------------------------------------------
+        for(int nzs = 0; nzs < vbmatA.nzcount[i]; nzs++)        //loop vertically through nonzero blocks
 
+        {
 
-	//loop horizontaly through block columns
-        for(int j = 0; j<VBMat.nzcount[i]; j++){
-		col = VBMat.ja[i][j];
-		block_cols = bsz[col+1] - bsz[col];
-		//multiply the block matrices
-		 //define the sub-matrices
-		const float* block = (VBMat.ba)[i][j];  //access block i,j (stored in column major order).
-		const float* blockX = X + bsz[col];     //access the block of X that is going to be multiplied with the (i,j)block of VBMat
+            int ib = vbmat.jab[tot_nonzero_blocks];             //the block row position of a nonzero block 
+            tot_nonzero_blocks += 1;
+            rows_in_block = vbmatA.row_part[col + 1] - vbmatA.row_part[col]; //the row height of the block
 
-		cublas_gemm_custom(block, block_cols, block_rows, block_rows,
-                   blockX, X_cols, X_rows,
-                   d_Y, block_rows,
-		   alpha, beta);
-	}
+            cublasSetStream(handle, streams[ib]);               //each block row works on a different stream
 
-	//retrieve matrix from device and free memory
-	/*--------------------------------------*/
+            //define the sub-matrices
+	        const float* d_A_block = d_A + vbmat_idx;           //access the block on d_A.
+            const float* d_C_block = d_C + vbmatA.row_part[col] ;  //access the block on d_C.
 
-	float* blockY = Y + bsz[i];             //i indicates the vertical block of Y that is going to be updated               
-	checkCudaErrors(cublasGetMatrix(
-                                    block_rows, Y_cols, sizeof(float), d_Y, block_rows, blockY, Y_rows));
-   
-	checkCudaErrors(cudaFree(d_Y));
-	/*-------------------------------------*/
+            //multiply the blocks, store result in d_C_block
+            checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N,
+                rows_in_block, B_cols, cols_in_block,           //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+                &alpha,
+                d_A_block rows_in_block,                        //blockA device pointer, leading dimension
+                d_B_block, B_rows,                              //blockB device pointer, leading dimension
+                &beta,
+                d_C_block, C_rows));                            //blockC device pointer, leading dimension
+
+            vbmat_idx += rows_in_block * cols_in_block;
+	    }
 
     }
+
+    //let each stream copy the relevant C block from device
+    for (int ib = 0; ib < vbmatA.block_rows; ib++)
+    {
+        cublasSetStream(handle, streams[ib]); 
+        rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib];
+        checkCudaErrors(cublasGetMatrix(
+            rows_in_block, C_cols, sizeof(float), d_C + vbmatA.row_part[ib], C_rows, C + vbmatA.row_part[ib], C_rows));
+
+    }
+
+    cudaDeviceSynchronize();
+
+    checkCudaErrors(cudaFree(d_C));
+    checkCudaErrors(cudaFree(d_A));
+    checkCudaErrors(cudaFree(d_B));
+
+    checkCudaErrors(cublasDestroy(handle));
+
 }
 
 
@@ -84,40 +140,45 @@ void cublas_blockmat_multiply(const VBSparMat &VBMat, float *X, int X_cols, floa
 //Matrix-Matrix multiplication with cublas. A,B,C are in column-major order.
 //Matrix A and B are in host
 //Matrix d_C is in device to allow for accumulation of results
-int cublas_gemm_custom(const float *A, unsigned int A_cols, unsigned int A_rows, unsigned int lda,
+int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols, unsigned int lda,
 	const float *B, unsigned int B_cols, unsigned int ldb,
-	float *d_C, unsigned int ldc,
+	float *C, unsigned int ldc,
 	const float alpha,
 	const float beta)
 {
-    int block_size = 16;
-    cublasStatus_t stat;
     
     //deduce matrices dimensions
     unsigned int B_rows = A_cols;
     unsigned int C_rows = A_rows;
     unsigned int C_cols = B_cols;
-    
+
+
+    //allocate memory on device
     unsigned int size_A = A_rows * A_cols;
     unsigned int mem_size_A = sizeof(float) * size_A;
 
     unsigned int size_B = B_rows * B_cols;
     unsigned int mem_size_B = sizeof(float) * size_B;    
-    
+  
+    unsigned int size_C = C_rows * C_cols;
+    unsigned int mem_size_C = sizeof(float) * size_C;
+
+    cublasHandle_t handle;
+
+    checkCudaErrors(cublasCreate(&handle));
+
+    //TODO ALLOCATE MEMORY OUT OF FUNCTION
     // allocate device memory
-    float *d_A, *d_B;
+    float *d_A, *d_B, *d_C;
     checkCudaErrors(cudaMalloc((void **) &d_A, mem_size_A));
     checkCudaErrors(cudaMalloc((void **) &d_B, mem_size_B)); 
-    
+    checkCudaErrors(cudaMalloc((void **) &d_C, mem_size_C));
+
     //copy matrices to device
     checkCudaErrors(cublasSetMatrix(
                                     A_rows, A_cols, sizeof(float), A, lda, d_A, A_rows));
     checkCudaErrors(cublasSetMatrix(
                                     B_rows, B_cols, sizeof(float), B, ldb, d_B, B_rows));
-
-    // setup execution parameters
-    dim3 threads(block_size, block_size);
-    dim3 grid(C_cols / threads.x, C_rows / threads.y);
 
     // CUBLAS version 2.0
     cublasHandle_t handle;
@@ -132,22 +193,19 @@ int cublas_gemm_custom(const float *A, unsigned int A_cols, unsigned int A_rows,
                                 d_B, B_rows,
                                 &beta,
                                 d_C, C_rows));
+
     // copy result from device to host 
+    checkCudaErrors(cublasGetMatrix(C_rows, C_cols, sizeof(float), d_C, C_rows, C, C_rows));
+
+    cudaDeviceSynchronize();
+
+    // clean up memory
+    checkCudaErrors(cudaFree(d_C));
+    checkCudaErrors(cudaFree(d_A));
+    checkCudaErrors(cudaFree(d_B));
 
     // Destroy the handle
     checkCudaErrors(cublasDestroy(handle));
-
-    // clean up memory
-    checkCudaErrors(cudaFree(d_A));
-    checkCudaErrors(cudaFree(d_B));
 	
     return 0;
 }
-
-
-void randomInit(float *data, int size)
-{
-    for (int i = 0; i < size; ++i)
-        data[i] = rand() / (float)RAND_MAX;
-}
-

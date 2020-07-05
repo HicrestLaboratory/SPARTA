@@ -48,6 +48,7 @@ struct VBS {
     int block_rows;  	            /* the block row dimension of the matrix    	        */
     int block_cols;	            /* the block column dimension of the matrix   	        */
     int* nzcount;	        /* number of nonzero blocks in each block-row (-column) */
+    int nztot;              /* total number of nonzero element in mab*/
     int* jab;              /* block-columns (-rows) indices of nonzero blocks      */
     int* row_part;              /*cumulative number of row up to start of row partition element i (last element row_part[rows] is total number of rows)*/ 
     int* col_part;              /*cumulative number of row up to start of col partition element i (last element col_part[cols] is total number of cols) */

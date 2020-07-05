@@ -7,10 +7,6 @@
 #include <math.h>
 #include <typeinfo>
 
-#include "globheads.h"
-#include "protos.h"
-#include "utilities.h"
-
 // Utilities and system includes
 #include <assert.h>
 #include <helper_string.h>  // helper for shared functions common to CUDA Samples
@@ -24,31 +20,52 @@
 #include <helper_cuda.h>
 
 #include "cuda_utilities.h"
-
+#include "comp_mats.h"
+#include "sparse_utilities.h"
 
 int main(int argc, char *argv[]) {
 
  
     if (typeid(DataT) != typeid(float)){
-        cout<< "WARNING: only float supported for CUDA. Change DataT to float in protos.h" <<endl;
+        cout<< "WARNING: only float supported for CUDA. Change DataT to float in sparse_utilities.h" <<endl;
 	return 1;
     }
     opterr = 0;
 
+    int verbose = 1;
+
     int input_type = 1;
-    int n = 20;             //rows in the square input matrix;
-    int out_columns = 5;    //number of columns in the output matrix;
+    int A_rows = 24;             //rows in the square input matrix;
+    int A_cols = 24;
+    int mat_A_fmt = 1;        //cuda needs column-major matrices
+    int block_size = 4;     //block size for variable block matrix. Rows and columns must be evenly divisible by this;
     float sparsity = 0.5;   //sparsity of the input matrix;
+    float block_sparsity = 0.5 //sparsity inside the blocks;
     string input_source;
+
+    int B_cols = 20;    //number of columns in the output matrix;
+    float B_sparsity = 0.8; //sparsity of the multiplication matrix
+
     float eps = 0.5;        //this value sets how different two rows in the same block can be.
                             //eps = 1 means only rows with equal structure are merged into a block
                             //eps = 0 means all rows are merged into a single block
-   
+    int seed = 123;
 
+    
+    
+    
+    srand(seed);
+    
+    int* A_row_part;
+    int* A_col_part;
+
+    
+    
+    
     //terminal options loop
     opterr = 0;
     char c;
-    while ((c = getopt (argc, argv, "i:s:k:o:n:e:")) != -1)
+    while ((c = getopt (argc, argv, "i:s:k:o:n:e:p:b:v:")) != -1)
       switch (c)
         {
         case 'i':// select input example
@@ -57,9 +74,9 @@ int main(int argc, char *argv[]) {
             //  2: SNAP Edgelist
             //  3: MTX Format
             //  4: Random Variable Block matrix
-            if(input_type < 1 or input_type > 4){
-                input_type = 0;
-                cout<<"WARNING: invalid input reference. Using 1 (Random CSR)"<<endl;
+            if((input_type != 1) and (input_type != 4)){
+                input_type = 1;
+                cout<<"WARNING: CURRENTLY SUPPORTS ONLY i = 1 and i = 4. Using 1 (Random CSR)"<<endl;
             }
             break;
         
@@ -71,19 +88,37 @@ int main(int argc, char *argv[]) {
         case 'k': //input matrix sparsity
             //has only effect for example 1 and 4
             sparsity = stof(optarg);
-                if(sparsity < 0 or sparsity > 1){
-                    fprintf (stderr, "Option -k tried to set sparsity outside of [0,1]");
-                    return 1;
-                }
-          break;
+            if(sparsity < 0 or sparsity > 1){
+                fprintf (stderr, "Option -k tried to set sparsity outside of [0,1]");
+                return 1;
+            }
+            break;
+
+        case 'b': //block sparsity
+        //has only effect for example 1 and 4
+            block_sparsity = stof(optarg);
+            if (block_sparsity < 0 or block_sparsity > 1) {
+                fprintf(stderr, "Option -b tried to set block sparsity outside of [0,1]");
+                return 1;
+            }
+            break;
                 
         case 'n': //input matrix dimension
              //has only effect for example 1 and 4
-            n = stoi(optarg);
+            A_rows = stoi(optarg);
 	    break;
         
         case 'o': //number of column of output matrix
             out_columns = stoi(optarg);
+            break;
+
+        case 'p': //size of blocks
+            //ony used if i = 4, random VBS
+            block_size = stoi(optarg);
+            break;
+        
+        case 'v': //verbose
+            verbose = stoi(optarg);
             break;
 
         case 'e': //epsilon used for matrix reordering;
@@ -104,21 +139,27 @@ int main(int argc, char *argv[]) {
 
 //INPUT CONVERSION TO Compressed Sparse Row (CSR)
 
-	SparMat spmat; //this will hold the CSR matrix
+	CSR cmat_A; //this will hold the CSR matrix
+    int cmat_A_fmt = 0;
 
 
 //INPUT EXAMPLE 1: RANDOM CSR
 //create a random sparse matrix
     if (input_type == 1){
-        Mat rand_mat;
-        random_sparse_mat(rand_mat, n, (float) sparsity); //generate random Mat
-        convert_to_CSR(rand_mat, spmat);
-        cout << "CREATED A RANDOM CSR" << endl;
+        DataT rand_mat[A_cols * A_rows];
+        random_mat(rand_mat, A_rows, A_cols, sparsity); //generate random mat
 
+        convert_to_CSR(rand_mat, A_rows, A_cols, mat_A_fmt, cmat_A, cmat_A_fmt);
+        if (verbose > 0)
+        {
+            cout << "CREATED A RANDOM CSR" << endl;
+        }
     }
 //______________________________________
 
-//TODO add import error notification
+
+/*
+//NOT SUPPORTED 
 //INPUT EXAMPLE 2: read graph in edgelist format into CSR
     if (input_type == 2){
         if (input_source.empty()) input_source = "testgraph.txt";
@@ -129,8 +170,11 @@ int main(int argc, char *argv[]) {
 
     }
  //______________________________________
-        
-//TODO add import error notification
+ */
+
+
+/*
+//NOT SUPPORTED
 //INPUT EXAMPLE 3: read from MTX format
     if (input_type == 3){
         //read from mtx
@@ -142,21 +186,31 @@ int main(int argc, char *argv[]) {
 
 
 //______________________________________
+*/
+
+
 //INPUT EXAMPLE 4: create a random matrix with block structure
     if (input_type == 4){
     
-    //n and sparsity have been previously set by options. Default: n = 20, sparsity = 0.5;
-	int n_block = 3; //number of blocks
-	float k_block = sqrt(sparsity); //percentage of non-zero blocks,must always be greater than sparsity
+    //A_rows and sparsity have been previously set by options. Default: n = 20, sparsity = 0.5;
 
-	Mat rnd_bmat;
-	random_sparse_blocks_mat(rnd_bmat, n, n_block, k_block, sparsity); //generate the random sparse matrix with block structure
-    
-	convert_to_CSR(rnd_bmat, spmat); //convert it to CSR
-        
-    cout << "CREATED A RANDOM BLOCK MATRIX" << endl;
+        DataT rand_block_mat[A_rows * A_cols];
 
-	//TODO optional: scramble the matrix row to see if the algo can reorder them.
+        random_sparse_blocks_mat(rand_block_mat, A_rows, A_cols, mat_A_fmt, block_size, block_sparsity, sparsity);
+
+        convert_to_CSR(rand_mat, A_rows, A_cols, mat_A_fmt, cmat_A, cmat_A_fmt);
+
+        if (verbose > 0)
+        {
+            cout << "CREATED A RANDOM BLOCK MATRIX:"
+                << " Rows = " << A_rows
+                << " Columns: " << A_cols
+                << " Block size: " << block_size
+                << " Block sparsity: " << block_sparsity
+                << " Entries sparsity: " << sparsity
+                << endl;
+        }
+	    //TODO optional: scramble the matrix row to see if the algo can reorder them.
 
     }
         
@@ -166,15 +220,38 @@ int main(int argc, char *argv[]) {
 //spmat must hold a proper CSR matrix at this point
 //******************************************
 
-//reorder the CSR matrix spmat and generate a Block Sparse Matrix
+//reorder the CSR matrix spmat and convert to a Block Sparse Matrix
 
-    VBSparMat vbmat; //Variable Blocks matrix format
-    make_sparse_blocks(spmat, vbmat,eps); //reorders the csr so that it has dense blocks. 
-                                          //Then convert the reordered csr into a vbmat
-                                          //that has sparse blocks.
+    //TODO: reorder cmat through angle algorithm
+    //      and retrieve row and block partition
+    //      from the angle algorithm grouping;
 
-    cout<<"CSR permuted. VBSparMat created"<<endl;
+    int* A_row_part = linspan(0, A_rows, block_size); //row and column partitions
+    int* A_col_part = linspan(0, A_cols, block_size);
 
+
+    //VBS matrix parameters
+    int vbmat_blocks_fmt = 0;
+    int vbmat_entries_fmt = 1; //cuda needs column-major matrices
+    VBS vbmat_A;
+    
+    int block_rows = A_rows / block_size;
+    int block_cols = A_cols / block_size;
+
+    if (A_rows % block_size != 0) or (A_cols % block_size != 0)
+    {
+        std::cout << "WARNING: The row or column dimension of the input matrix is not multiple of the block size " << std::endl;
+    }
+
+    convert_to_VBS(cmat,
+        vbmat_A,
+        block_rows, A_row_part,
+        block_cols, A_col_part,
+        vbmat_blocks_fmt, vbmat_entries_fmt);
+
+    cout<<"VBS matrix created"<<endl;
+
+/*
 //*******************************************
 //        REPORT ON BLOCK STRUCTURE
 //******************************************
@@ -185,9 +262,12 @@ int main(int argc, char *argv[]) {
     CSV_out << CSV_header << endl;
 
     bool verbose = true; //print mat analysis on screen too?
-    features_to_CSV(&vbmat, CSV_out, verbose);//write mat analysis on csv
+
+    //TODO write this function
+    //features_to_CSV(&vbmat, CSV_out, verbose);//write mat analysis on csv
     CSV_out.close();
-	
+*/	
+
 
 //*******************************************
 //         MULTIPLICATION PHASE
@@ -197,78 +277,51 @@ int main(int argc, char *argv[]) {
 //******************************************
     
 //create a dense array matrix from spmat (for CUBLAS GEMM)
-    	Mat mat;
-    	int mat_n = spmat.n;
-    	DataT* mat_arr;
-	    mat_arr = new DataT[mat_n*mat_n];
-    	convert_from_CSR(spmat, mat);
-    	std::copy((mat.vec).begin(), (mat.vec).end(), mat_arr);
+	mat_A = new DataT[A_rows*A_cols];
 
-	    DataT* mat_arr_c = new DataT[mat_n*mat_n]; //column major version of mat_arr
-	    convert_to_col_major(mat_arr, mat_arr_c, mat_n, mat_n);
+    convert_to_mat(cmat, mat_A, mat_A_fmt);
 
-    	cout << fixed; //output format
+    cout << fixed; //output format
 
 
-//TODO make all matrices in column-major format from the start, or better give the choice. 
-	    cout << "\n \n **************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl; 
-
+    if (verbose > 1)
+    {
+        cout << "\n \n **************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl;
+    }
         
-        //creating the dense matrix X
-	    int X_rows = spmat.n;
-	    int X_cols = out_columns;
+    //creating a random matrix X
+	int B_rows = A_cols;
+    int mat_B_fmt = 1;
 
-	    int seed = 123;
-  	    srand(seed);
-	    DataT X[X_rows*X_cols];
-  	    for (int k=0; k<X_rows*X_cols; k++) {
-            DataT x =  rand()%100;
-    		X[k] = x/100;
-  	    }
-
-   	    DataT X_c[X_rows*X_cols]; //column major version of X
-    	convert_to_col_major(X, X_c, X_rows, X_cols);
+    DataT mat_B[B_rows * B_cols];
+    random_mat(mat_B, B_rows, B_cols, B_sparsity)
 
 
 //----------------------------
 //creating the output matrix Y
-	int Y_rows = spmat.n;
-	int Y_cols = X_cols;
-
-
-//result matrices, to be filled in column-major format
-
-    	DataT Y_gemm[Y_rows * Y_cols];
-	//DataT Y_csr[Y_rows * Y_cols];
-    	DataT Y_block[Y_rows * Y_cols] = {};
-	//DataT Y_batch[Y_rows * Y_cols] = {};
+	int C_rows = spmat.n;
+	int C_cols = X_cols;
 
 //dense-dense cublas gemm multiplication
     
-    	clock_t start_t = clock();
+    DataT mat_Cgemm[C_rows * C_cols];
+    int mat_Cgemm_fmt = 1;
 
-    	unsigned int size_Y = Y_rows * Y_cols;
-    	unsigned int mem_size_Y = size_Y * sizeof(float);
-  	DataT *d_Y;
-   	checkCudaErrors(cudaMalloc((void **) &d_Y, mem_size_Y)); 
+    clock_t start_t = clock();
 
-    	cublas_gemm_custom (mat_arr_c, mat_n, mat_n, mat_n, X, X_cols, X_rows, d_Y, mat_n);
+    cublas_gemm_custom (mat_A, A_cols, A_rows, A_rows, mat_B, B_rows, B_rows, d_C, C_rows);
 
-    	checkCudaErrors(cublasGetMatrix(Y_rows, Y_cols, sizeof(float), d_Y, mat_n, Y_gemm, mat_n));
+    double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
+    
+    cout<<"Dense-Dense multiplication. Time taken: " << total_t<<endl;
 
-    	checkCudaErrors(cudaFree(d_Y));
- 
-    	double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
-    	cout<<"Dense-Dense multiplication. Time taken: " << total_t<<endl;
+    matprint(matCgemm,C_rows, C_cols, C_rows, mat_Cgemm_fmt);
 
+    //vbr-dense cublas multiplication	
+	DataT mat_Cblock[C_rows*C_cols] = {};
+    int mat_Cblock_fmt = 1;
 
-	matprint(mat_arr_c,mat_n,mat_n);
-
-	matprint(vbmat);
-//vbr-dense cublas multiplication	
-	DataT Y_block_c[X_rows*X_cols] = {};
-
-        start_t = clock();
+    start_t = clock();
 
 	cublas_blockmat_multiply(vbmat, X_c, X_cols, Y_block);
 	

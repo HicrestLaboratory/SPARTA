@@ -7,8 +7,6 @@
 #include <vector>
 #include <algorithm>    // std::random_shuffle
 
-
-
 #include "comp_mats.h"
 #include "sparse_utilities.h"
 
@@ -85,6 +83,25 @@ int random_mat(DataT* mat, int rows, int cols, float sparsity)
     std::copy(entries.begin(), entries.end(), mat);
 
 
+}
+
+int leading_dim(int rows, int cols, int fmt)
+{
+    return (fmt == 0) ? cols : rows;
+}
+
+int equal(int rows, int cols, DataT* A, int lead_A, int fmt_A, DataT* B, int lead_B, int fmt_B)
+{
+    for (int i = 0; i < rows; i++)
+    {
+        for (j = 0; j < cols; j++)
+        {
+            int idx_A = IDX(A, i, j, lead_A, fmt_A);
+            int idx_B = IDX(B, i, j, lead_B, fmt_B);
+            if (A[idx_A] != B[idx_B]) return 0;
+        }
+    }
+    return 1;
 }
 
 
@@ -597,6 +614,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     }
     //----------------------------------------------------------------------------------
 
+    vbmat.nztot = total_nonzero_entries;
     vbmat.jab = new int[jab.size()];
     vbmat.mab = new DataT[total_nonzero_entries];
     std:copy(jab.begin(), jab.end(), vbmat.jab);
@@ -663,7 +681,6 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
     int mat_idx = 0; //keeps writing position for mat
     int vbmat_idx = 0; //keeps reading position for vbmat 
-    int ja_count = 0; //keeps total nonzero blocks count;
 
     int vbmat_main_dim, vbmat_compressed_dim;
     int* b_main_ptr, * b_second_ptr;
@@ -1556,7 +1573,7 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
 }
 
-int main()
+int test()
 {
     
     //Create a random block matrix
