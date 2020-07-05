@@ -7,7 +7,6 @@
 #include <vector>
 #include <algorithm>    // std::random_shuffle
 
-#include "comp_mats.h"
 #include "sparse_utilities.h"
 
 typedef std::vector<int> svi;

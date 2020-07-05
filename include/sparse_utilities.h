@@ -1,7 +1,5 @@
 #pragma once
-
-typedef float DataT;
-
+#include "comp_mats.h"
 
 
 //permutes an array of n elements (original) according to a permutation (perm);
