@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
 	    break;
         
         case 'o': //number of column of output matrix
-            out_columns = stoi(optarg);
+            B_cols = stoi(optarg);
             break;
 
         case 'p': //size of blocks
@@ -200,7 +200,7 @@ int main(int argc, char *argv[]) {
 
         random_sparse_blocks_mat(rand_block_mat, A_rows, A_cols, mat_A_fmt, block_size, block_sparsity, sparsity);
 
-        convert_to_CSR(rand_mat, A_rows, A_cols, mat_A_fmt, cmat_A, cmat_A_fmt);
+        convert_to_CSR(rand_block_mat, A_rows, A_cols, mat_A_fmt, cmat_A, cmat_A_fmt);
 
         if (verbose > 0)
         {
@@ -228,8 +228,8 @@ int main(int argc, char *argv[]) {
     //      and retrieve row and block partition
     //      from the angle algorithm grouping;
 
-    int* A_row_part = linspan(0, A_rows, block_size); //row and column partitions
-    int* A_col_part = linspan(0, A_cols, block_size);
+    A_row_part = linspan(0, A_rows, block_size); //row and column partitions
+    A_col_part = linspan(0, A_cols, block_size);
 
 
     //VBS matrix parameters
@@ -245,7 +245,7 @@ int main(int argc, char *argv[]) {
         std::cout << "WARNING: The row or column dimension of the input matrix is not multiple of the block size " << std::endl;
     }
 
-    convert_to_VBS(cmat,
+    convert_to_VBS(cmat_A,
         vbmat_A,
         block_rows, A_row_part,
         block_cols, A_col_part,
@@ -279,7 +279,7 @@ int main(int argc, char *argv[]) {
 //******************************************
     
 //create a dense array matrix from spmat (for CUBLAS GEMM)
-	mat_A = new DataT[A_rows*A_cols];
+	int* mat_A = new DataT[A_rows*A_cols];
 
     convert_to_mat(cmat, mat_A, mat_A_fmt);
 
@@ -296,13 +296,13 @@ int main(int argc, char *argv[]) {
     int mat_B_fmt = 1;
 
     DataT mat_B[B_rows * B_cols];
-    random_mat(mat_B, B_rows, B_cols, B_sparsity)
+    random_mat(mat_B, B_rows, B_cols, B_sparsity);
 
 
 //----------------------------
 //creating the output matrix Y
-	int C_rows = spmat.n;
-	int C_cols = X_cols;
+	int C_rows = A_rows;
+	int C_cols = B_cols;
 
 //dense-dense cublas gemm multiplication
     
@@ -311,16 +311,16 @@ int main(int argc, char *argv[]) {
 
     clock_t start_t = clock();
 
-    cublas_gemm_custom (mat_A, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, d_C, C_rows);
+    cublas_gemm_custom (mat_A, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f);
 
     double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
     
     cout<<"Dense-Dense multiplication. Time taken: " << total_t<<endl;
 
-    matprint(matCgemm,C_rows, C_cols, C_rows, mat_Cgemm_fmt);
+    matprint(mat_Cgemm,C_rows, C_cols, C_rows, mat_Cgemm_fmt);
 
     //VBS x dense cublas multiplication	
-	DataT mat_Cblock[C_rows*C_cols] = {};
+	DataT mat_Cblock[C_rows*C_cols];
     int mat_Cblock_fmt = 1;
 
     start_t = clock();
