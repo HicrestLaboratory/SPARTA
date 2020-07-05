@@ -319,7 +319,7 @@ int cleanVBS(VBS& vbmat)
     return 0;
 }
 
-int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbmat, int block_rows, int* row_part, int block_cols, int *col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt)
+int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbmat, int block_rows, int* row_part, int block_cols, int *col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode)
 {
 
     vbmat.block_rows = block_rows;
@@ -403,7 +403,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
             }
 
             matpos = IDX(row, col, mat_leading_dim, mat_fmt);    //find starting index of block in matrix
-            if (!is_empty(mat + matpos, row_block_dim, col_block_dim, mat_leading_dim, mat_fmt))        //check if block is non-empty
+            if (!is_empty(mat + matpos, row_block_dim, col_block_dim, mat_leading_dim, mat_fmt) or no_zero_mode == 1)        //check if block is non-empty
             {
                 vbmat.nzcount[i] += 1;  //one more nonzero block on the compressed dimension
                 total_nonzero_entries += main_block_dim * second_block_dim;

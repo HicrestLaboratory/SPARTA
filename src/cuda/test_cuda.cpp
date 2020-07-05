@@ -14,6 +14,8 @@
 // CUDA runtime
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
+#include <cusparse_v2.h>
+
 
 // CUDA and CUBLAS functions
 #include <helper_functions.h>
@@ -34,7 +36,7 @@ int main(int argc, char* argv[]) {
     }
     opterr = 0;
 
-    int verbose = 1;
+    int verbose = 3;
 
     int input_type = 4;
     int A_rows = 12;             //rows in the square input matrix;
@@ -105,7 +107,7 @@ int main(int argc, char* argv[]) {
             }
             break;
 
-        case 'n': //input matrix dimension
+        case 'n': //input matrix rows
              //has only effect for example 1 and 4
             A_rows = stoi(optarg);
             break;
@@ -257,6 +259,21 @@ int main(int argc, char* argv[]) {
         matprint(vbmat_A);
     }
 
+    //create a VBS with same structure as vbmat_A but which treats zero blocks as full blocks. Used for comparison.
+    VBS vbmat_A_full;
+    int no_zero_mode = 1;
+    convert_to_VBS(cmat_A,
+        vbmat_A_full,
+        block_rows, A_row_part,
+        block_cols, A_col_part,
+        vbmat_blocks_fmt, vbmat_entries_fmt, no_zero_mode);
+
+    if (verbose > 0)
+    {
+        cout << "VBS matrix (no zero blocks mode ON) created:" << endl;
+        matprint(vbmat_A_full);
+    }
+
     /*
     //*******************************************
     //        REPORT ON BLOCK STRUCTURE
@@ -307,11 +324,8 @@ int main(int argc, char* argv[]) {
     DataT mat_B[B_rows * B_cols] = { 0 };
     random_mat(mat_B, B_rows, B_cols, B_sparsity);
 
-    if (verbose > 0)
-    {
-        std::cout << "Random matrix B created:" << std::endl;
-        matprint(mat_B, B_rows, B_cols, B_rows, mat_B_fmt);
-    }
+    if (verbose > 0)        std::cout << "Random matrix B created:" << std::endl;
+    if (verbose > 1)        matprint(mat_B, B_rows, B_cols, B_rows, mat_B_fmt);
 
     //creating the output matrix Y
 	int C_rows = A_rows;
@@ -331,53 +345,84 @@ int main(int argc, char* argv[]) {
 
     double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
     
-    if (verbose > 0)
+    if (verbose > 0)        cout << "Dense-Dense multiplication. Time taken: " << total_t << endl;
+    if (verbose > 1)        
     {
-        cout << "Dense-Dense multiplication. Time taken: " << total_t << endl;
+        cout << "GEMM RESULT" << endl;  
+        matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1); 
     }
-
-
 
     //--------------------------------------------
     //      VBS x dense cublas multiplication	
     //--------------------------------------------
 
-    DataT mat_Cblock[C_rows*C_cols];
+    DataT mat_Cblock[C_rows * C_cols];
     int mat_Cblock_fmt = 1;
 
     start_t = clock();
 
     cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows);
 
-	total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
-	
+    total_t = (clock() - start_t) / (double)CLOCKS_PER_SEC;
+
     if (verbose > 0)
     {
         cout << "BlockSparse-Dense multiplication. Time taken: " << total_t << endl;
     }
-
-//TODO CSR-dense cusparse multiplication
-
- 
- 
-//PRINT RESULTING MATRICES
-
-    if (verbose > 0)
-
+    if (verbose > 1)
     {
-        cout << "GEMM RESULT" << endl;
-        matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1);
 
         cout << "BLOCK RESULT" << endl;
         matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
     }
 
-    if (equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock, C_rows, mat_Cblock_fmt))
+    int block_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock, C_rows, mat_Cblock_fmt);
+    if block_success
     {
-        std::cout <<  "Block matrix multiplication test: SUCCESS" << std::endl;
+        std::cout << "Block matrix multiplication test: SUCCESS" << std::endl;
     }
     else
     {
         std::cout << "Block matrix multiplication test: FAILED" << std::endl;
     }
+
+    //--------------------------------------------
+//      VBS x dense cublas multiplication	
+//--------------------------------------------
+
+    DataT mat_Cblock_full[C_rows * C_cols];
+    int mat_Cblock_full_fmt = 1;
+
+    start_t = clock();
+
+    cublas_blockmat_multiply(vbmat_A_full, mat_B, B_cols, B_rows, mat_Cblock_full, C_rows);
+
+    total_t = (clock() - start_t) / (double)CLOCKS_PER_SEC;
+
+    if (verbose > 0)
+    {
+        cout << "BlockSparse-Dense multiplication (no zero mode ON). Time taken: " << total_t << endl;
+    }
+    if (verbose > 1)
+    {
+
+        cout << "BLOCK RESULT (no zero mode ON)" << endl;
+        matprint(mat_Cblock_full, C_rows, C_cols, C_rows, 1);
+    }
+
+    int block_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock_full, C_rows, mat_Cblock_full_fmt);
+    if block_success
+    {
+        std::cout << "Block matrix multiplication test: SUCCESS" << std::endl;
+    }
+    else
+    {
+        std::cout << "Block matrix multiplication test: FAILED" << std::endl;
+    }
+
 }
+
+//TODO CSR-dense cusparse multiplication
+
+ 
+ 
