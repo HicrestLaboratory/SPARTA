@@ -151,6 +151,7 @@ int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols,
 
 
     //allocate memory on device
+    //-------------------------------------------------------
     unsigned int size_A = A_rows * A_cols;
     unsigned int mem_size_A = sizeof(float) * size_A;
 
@@ -160,12 +161,11 @@ int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols,
     unsigned int size_C = C_rows * C_cols;
     unsigned int mem_size_C = sizeof(float) * size_C;
 
-    //TODO ALLOCATE MEMORY OUT OF FUNCTION
-    // allocate device memory
     float *d_A, *d_B, *d_C;
     checkCudaErrors(cudaMalloc((void **) &d_A, mem_size_A));
     checkCudaErrors(cudaMalloc((void **) &d_B, mem_size_B)); 
     checkCudaErrors(cudaMalloc((void **) &d_C, mem_size_C));
+    //-------------------------------------------------------
 
     //copy matrices to device
     checkCudaErrors(cublasSetMatrix(
@@ -201,4 +201,128 @@ int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols,
     checkCudaErrors(cublasDestroy(handle));
 	
     return 0;
+}
+
+
+int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, float* C, int C_lead_dim, 
+    const float alpha,
+    const float beta)
+{
+    if (cmat.fmt != 0)
+    {
+        std::cout << "ERROR: cusparse_gemm_custom only supports CSR (row-major) " << std::endl;
+        return 1;
+    }
+
+
+    //fill csrRowPtr (holds number of nonzero entries up to row i)
+    int *csrRowPtr = new int[cmat.rows + 1];
+    csrRowPtr[0] = 0;
+
+    int nnz = 0;
+    for (int i = 0; i < cmat.rows; i++)
+    {
+        nnz += cmat.nzcount[i];
+        csrRowPtr[i + 1] = nnz;
+   
+    }
+    //-------------------------------------------------------------
+
+    //fill csrVal (the nonzero values) and csrColInd (their column indices)
+    int* csrColInd = new int[nnz];
+    float* csrVal = new float[nnz];
+    nnz = 0;
+    for (int i = 0; i < cmat.rows; i++)
+    {
+        nnz += cmat.nzcount[i];
+        std::copy(cmat.ja[i], cmat.ja[i] + cmat.nzcount[i], csrColInd + nnz);
+        std::copy(cmat.ma[i], cmat.ma[i] + cmat.nzcount[i], csrVal + nnz);
+    }
+
+    cusparseHandle_t handle;
+    cusparseMatDescr_t descrA;
+    checkCudaErrors(cusparseCreateMatDescr(&descrA));
+
+    //allocate memory on device
+    unsigned int mem_size_csrVal = sizeof(float) * nnz;
+    unsigned int mem_size_csrColInd = sizeof(float) * nnz;
+    unsigned int mem_size_csrRowPtr = sizeof(float) * (cmat.rows + 1);
+
+    unsigned int B_rows = cmat.cols;
+    unsigned int size_B = B_rows * B_cols;
+    unsigned int mem_size_B = sizeof(float) * size_B;
+    
+    unsigned int C_rows = cmat.rows;
+    unsigned int C_cols = B_cols;
+    unsigned int size_C = C_rows * C_cols;
+    unsigned int mem_size_C = sizeof(float) * size_C;
+
+    // allocate device memory
+    int* d_RowPtr, * d_ColInd;
+    float* d_Val;
+    checkCudaErrors(cudaMalloc((void**)&d_RowPtr, mem_size_csrRowPtr));
+    checkCudaErrors(cudaMalloc((void**)&d_ColInd, mem_size_csrColInd));
+    checkCudaErrors(cudaMalloc((void**)&d_Val, mem_size_csrVal));
+
+    float * d_B, * d_C;
+    checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
+    checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
+
+    //copy arrays and matrices to device
+    checkCudaErrors(cublasSetVector(
+        nnz, sizeof(float),
+        csrVal, 1, d_Val, 1));
+
+    checkCudaErrors(cublasSetVector(
+        nnz, sizeof(float),
+        csrColInd, 1, d_ColInd, 1));
+
+    checkCudaErrors(cublasSetVector(
+        (cmat.rows + 1), sizeof(float),
+        csrRowPtr, 1, d_RowPtr, 1));
+
+    checkCudaErrors(cublasSetMatrix(
+        B_rows, B_cols, sizeof(float), B, B_lead_dim, d_B, B_rows));
+
+    if (beta != 0)
+    {
+        checkCudaErrors(cublasSetMatrix(
+            C_rows, C_cols, sizeof(float), C, C_lead_dim, d_C, C_rows));
+    }
+
+    checkCudaErrors(
+        cusparseScsrmm(handle,
+            CUSPARSE_OPERATION_NON_TRANSPOSE,
+            cmat.rows,
+            B_cols,
+            cmat.cols,
+            csrRowPtr[cmat.rows + 1],
+            alpha,
+            descrA,
+            d_Val,
+            d_RowPtr,
+            d_ColInd,
+            d_B,
+            B_rows,
+            beta,
+            d_C,
+            C_rows)
+    );
+
+
+    // copy result from device to host 
+    checkCudaErrors(cublasGetMatrix(C_rows, C_cols, sizeof(float), d_C, C_rows, C, C_rows));
+
+    cudaDeviceSynchronize();
+
+    // clean up memory
+    checkCudaErrors(cudaFree(d_B));
+    checkCudaErrors(cudaFree(d_C));
+    checkCudaErrors(cudaFree(d_Val));
+    checkCudaErrors(cudaFree(d_RowPtr));
+    checkCudaErrors(cudaFree(d_ColInd));
+
+    // Destroy the handle
+    checkCudaErrors(cusparseDestroy(handle));
+
 }
