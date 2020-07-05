@@ -1,4 +1,4 @@
-include "comp_mats.h"
+#include "comp_mats.h"
 
 void cublas_blockmat_multiply(const VBS& vbmatA, float* B, int B_cols, int B_lead_dim, float* C, int C_lead_dim);
 
