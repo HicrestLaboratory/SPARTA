@@ -156,6 +156,7 @@ int main(int argc, char *argv[]) {
         {
             cout << "CREATED A RANDOM CSR" << endl;
         }
+        matprint(cmat_A);
     }
 //______________________________________
 
