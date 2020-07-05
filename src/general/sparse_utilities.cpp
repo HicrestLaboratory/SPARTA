@@ -9,8 +9,6 @@
 
 #include "comp_mats.h"
 #include "sparse_utilities.h"
-#include "..\..\include\sparse_utilities.h"
-
 
 typedef std::vector<int> svi;
 typedef std::vector<DataT> svd;
