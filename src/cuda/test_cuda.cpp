@@ -372,7 +372,7 @@ int main(int argc, char* argv[]) {
         matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
     }
 
-    if equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock, C_rows, mat_Cblock_fmt)
+    if (equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock, C_rows, mat_Cblock_fmt))
     {
         std::cout <<  "Block matrix multiplication test: SUCCESS" << std::endl;
     }
