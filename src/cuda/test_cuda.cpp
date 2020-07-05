@@ -283,7 +283,7 @@ int main(int argc, char* argv[]) {
     //******************************************
 
     //create a dense array matrix from spmat (for CUBLAS GEMM)
-    DataT* mat_A[A_rows * A_cols] = { 0 };
+    DataT mat_A[A_rows * A_cols] = { 0 };
 
     convert_to_mat(cmat_A, mat_A, mat_A_fmt);
     if (verbose > 0)
