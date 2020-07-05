@@ -377,7 +377,7 @@ int main(int argc, char* argv[]) {
     }
 
     int block_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock, C_rows, mat_Cblock_fmt);
-    if block_success
+    if (block_success)
     {
         std::cout << "Block matrix multiplication test: SUCCESS" << std::endl;
     }
@@ -410,8 +410,8 @@ int main(int argc, char* argv[]) {
         matprint(mat_Cblock_full, C_rows, C_cols, C_rows, 1);
     }
 
-    int block_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock_full, C_rows, mat_Cblock_full_fmt);
-    if block_success
+    int block_full_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock_full, C_rows, mat_Cblock_full_fmt);
+    if (block_full_success)
     {
         std::cout << "Block matrix multiplication test: SUCCESS" << std::endl;
     }
