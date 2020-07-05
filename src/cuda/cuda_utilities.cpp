@@ -34,6 +34,9 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lea
 
     int B_rows = A_cols;
 
+    int C_rows = A_rows;
+    int C_cols = B_cols;
+
     const float alpha = 1.0f;
     const float beta = 1.0f;
    
@@ -63,7 +66,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lea
 
     //copy to device the vbmat matrix (nonzero blocks are stored consecutively and in column major format)
     checkCudaErrors(cublasSetVector(
-        size_A, sizeof(float), vbmat.mab, 1, d_A, 1));
+        size_A, sizeof(float), vbmatA.mab, 1, d_A, 1));
 
     //copy B to device (maybe more efficient to copy it block by block?)
     checkCudaErrors(cublasSetMatrix(
@@ -71,7 +74,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lea
 
 
     //creates streams. Each block rows is assigned a different stream.
-    cudaStream_t streams[block_rows];
+    cudaStream_t streams[vbmatA.block_rows];
     for (int ib = 0; ib < vbmatA.block_rows; ib++)
     {
         cudaStreamCreate(&(streams[ib]));
@@ -80,16 +83,16 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lea
     //loop through all blocks
     for(int jb = 0; jb < vbmatA.block_cols; jb++ )      //loop horizontally through block columns
     {
-        cols_in_block = vbmatA.col_part[jb+1] - col_part[jb];
-        const float* d_block_B = d_B + col_part[jb];    //access the block of B that is going to be multiplied with blocks of A in column jb
+        cols_in_block = vbmatA.col_part[jb+1] - vbmatA.col_part[jb];
+        const float* d_B_block = d_B + vbmatA.col_part[jb];    //access the block of B that is going to be multiplied with blocks of A in column jb
 
-        for(int nzs = 0; nzs < vbmatA.nzcount[i]; nzs++)        //loop vertically through nonzero blocks
+        for(int nzs = 0; nzs < vbmatA.nzcount[nzs]; nzs++)        //loop vertically through nonzero blocks
 
         {
 
-            int ib = vbmat.jab[tot_nonzero_blocks];             //the block row position of a nonzero block 
+            int ib = vbmatA.jab[tot_nonzero_blocks];             //the block row position of a nonzero block 
             tot_nonzero_blocks += 1;
-            rows_in_block = vbmatA.row_part[col + 1] - vbmatA.row_part[col]; //the row height of the block
+            rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
 
             cublasSetStream(handle, streams[ib]);               //each block row works on a different stream
 
@@ -156,10 +159,6 @@ int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols,
   
     unsigned int size_C = C_rows * C_cols;
     unsigned int mem_size_C = sizeof(float) * size_C;
-
-    cublasHandle_t handle;
-
-    checkCudaErrors(cublasCreate(&handle));
 
     //TODO ALLOCATE MEMORY OUT OF FUNCTION
     // allocate device memory
