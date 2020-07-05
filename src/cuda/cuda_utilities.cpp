@@ -85,7 +85,6 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lea
     {
         cols_in_block = vbmatA.col_part[jb+1] - vbmatA.col_part[jb];
         const float* d_B_block = d_B + vbmatA.col_part[jb];    //access the block of B that is going to be multiplied with blocks of A in column jb
-
         for(int nzs = 0; nzs < vbmatA.nzcount[nzs]; nzs++)        //loop vertically through nonzero blocks
 
         {
@@ -93,6 +92,9 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lea
             int ib = vbmatA.jab[tot_nonzero_blocks];             //the block row position of a nonzero block 
             tot_nonzero_blocks += 1;
             rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
+
+            std::cout << "Multiplying block; ib: " << ib << " jb: " << jb << std::endl;
+
 
             cublasSetStream(handle, streams[ib]);               //each block row works on a different stream
 
