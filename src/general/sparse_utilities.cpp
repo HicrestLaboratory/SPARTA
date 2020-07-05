@@ -560,7 +560,7 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
 }
 
-int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int* colpart, int vbmat_block_fmt, int vbmat_entries_fmt)
+int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int* colpart, int vbmat_block_fmt, int vbmat_entries_fmt, int no_zero_mode)
 {
     //WARNING: this does the additional step of converting to and from uncompressed array. 
     //TODO: if necessary, make conversion efficient;
@@ -571,7 +571,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, in
     int mat_fmt = 0;
     DataT mat[mat_size] = { 0 };
     convert_to_mat(cmat, mat, mat_fmt);
-    convert_to_VBS(mat, mat_rows, mat_cols, mat_fmt, vbmat, block_rows, rowpart, block_cols, colpart, vbmat_block_fmt, vbmat_entries_fmt);
+    convert_to_VBS(mat, mat_rows, mat_cols, mat_fmt, vbmat, block_rows, rowpart, block_cols, colpart, vbmat_block_fmt, vbmat_entries_fmt, no_zero_mode);
 
     return 0;
 }

@@ -78,7 +78,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
 
 int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt);
 
-int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int* colpart, int vbmat_block_fmt, int vbmat_entries_fmt);
+int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int* colpart, int vbmat_block_fmt, int vbmat_entries_fmt, int no_zero_mode = 0);
 
 int matprint(const VBS& vbmat);
 
