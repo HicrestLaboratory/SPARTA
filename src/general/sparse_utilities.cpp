@@ -565,6 +565,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, in
     int mat_fmt = 0;
     DataT mat[mat_size] = { 0 };
     convert_to_mat(cmat, mat, mat_fmt);
+    std::cout << "converted to mat" << std::endl;
     convert_to_VBS(mat, mat_rows, mat_cols, mat_fmt, vbmat, block_rows, rowpart, block_cols, colpart, vbmat_block_fmt, vbmat_entries_fmt);
 
     return 0;
