@@ -412,6 +412,8 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     }
     //----------------------------------------------------------------------------------
 
+
+    std::cout << "first check" << std::endl;
     vbmat.nztot = total_nonzero_entries;
     vbmat.jab = new int[jab.size()];
     vbmat.mab = new DataT[total_nonzero_entries];
