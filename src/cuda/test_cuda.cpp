@@ -215,6 +215,7 @@ int main(int argc, char *argv[]) {
         }
 	    //TODO optional: scramble the matrix row to see if the algo can reorder them.
 
+        matprint(rand_block_mat, A_rows, A_cols, A_rows, mat_A_fmt);
     }
         
 //___________________________________________
