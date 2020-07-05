@@ -297,12 +297,7 @@ int main(int argc, char *argv[]) {
     int mat_B_fmt = 1;
 
     DataT mat_B[B_rows * B_cols] = { 0 };
-    //random_mat(mat_B, B_rows, B_cols, B_sparsity);
-    for (int i = 0; i < B_cols; i++)
-    {
-        mat_B[i * B_rows + i] = 1;
-    }
-    matprint(mat_B, B_rows, B_cols, B_rows, 1);
+    random_mat(mat_B, B_rows, B_cols, B_sparsity);
 
 //----------------------------
 //creating the output matrix Y
