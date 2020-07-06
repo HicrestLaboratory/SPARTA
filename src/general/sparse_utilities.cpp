@@ -777,16 +777,14 @@ int matprint(const CSR& cmat)
 int copy(const CSR& in_cmat, CSR& out_cmat) 
 {
     out_cmat.fmt = in_cmat.fmt;
-    out_cmat.fmt = in_cmat.rows;
-    out_cmat.fmt = in_cmat.cols;
+    out_cmat.rows = in_cmat.rows;
+    out_cmat.cols = in_cmat.cols;
 
     int main_dim = (in_cmat.fmt == 0) ? in_cmat.rows : in_cmat.cols;
 
     out_cmat.nzcount = new int[main_dim];
     out_cmat.ja = new int* [main_dim];
     out_cmat.ma = new DataT * [main_dim];
-
-    arr_print(out_cmat.nzcount, main_dim);
 
     std::copy(in_cmat.nzcount, in_cmat.nzcount + main_dim, out_cmat.nzcount);
 
@@ -798,8 +796,6 @@ int copy(const CSR& in_cmat, CSR& out_cmat)
 
         std::copy((in_cmat.ja)[i], (in_cmat.ja)[i] + nzs, (out_cmat.ja)[i]);
         std::copy((in_cmat.ma)[i], (in_cmat.ma)[i] + nzs, (out_cmat.ma)[i]);
-
-        arr_print(out_cmat.ja[i], nzs);
 
     }
 
