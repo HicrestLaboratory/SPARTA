@@ -7,7 +7,7 @@
 #include <math.h>
 #include <typeinfo>
 
-// Utilities and system includes
+// Utilities and system include
 #include <assert.h>
 #include <helper_string.h>  // helper for shared functions common to CUDA Samples
 
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
                             //eps = 1 means only rows with equal structure are merged into a block
                             //eps = 0 means all rows are merged into a single block
     int seed = 123;
-
+    float precision = 0.0001;        //precision for float equality check
 
 
 
@@ -385,7 +385,7 @@ int main(int argc, char* argv[]) {
         matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
     }
 
-    int block_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock, C_rows, mat_Cblock_fmt);
+    int block_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock, C_rows, mat_Cblock_fmt, precision);
     if (!block_success)
     {
         std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
@@ -415,7 +415,7 @@ int main(int argc, char* argv[]) {
         matprint(mat_Cblock_full, C_rows, C_cols, C_rows, 1);
     }
 
-    int block_full_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock_full, C_rows, mat_Cblock_full_fmt);
+    int block_full_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock_full, C_rows, mat_Cblock_full_fmt, precision);
     if (!block_full_success)
     {
         std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
