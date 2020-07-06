@@ -48,6 +48,7 @@ int main(int argc, char* argv[]) {
     float sparsity = 0.5;   //sparsity of the input matrix;
     float block_sparsity = 0.5; //sparsity inside the blocks;
     string input_source;
+    int scramble = 1; //scramble the input matrix?
 
     int B_cols = 5;    //number of columns in the output matrix;
     float B_sparsity = 0.8; //sparsity of the multiplication matrix
@@ -242,6 +243,12 @@ int main(int argc, char* argv[]) {
     A_row_part = linspan(0, A_rows, block_size); //row and column partitions
     A_col_part = linspan(0, A_cols, block_size);
 
+    if (scramble)
+    {
+        int* random_permutation = randperm(A_rows);
+        permute_CSR(cmat_A, random_permutation, 0);
+    }
+
 
     //VBS matrix parameters
     int vbmat_blocks_fmt = 1;
@@ -283,7 +290,7 @@ int main(int argc, char* argv[]) {
         matprint(vbmat_A_full);
     }
 
-    //create a VBS which is permuted with the asymmetric angle method
+    //then create a VBS which is permuted with the asymmetric angle method
     VBS vbmat_angle_hash;
     angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_angle_hash, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
     if (verbose > 1)
