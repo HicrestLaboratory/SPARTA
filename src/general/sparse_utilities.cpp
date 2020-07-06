@@ -1261,14 +1261,14 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
 
     int angle_perm[main_dim];
     int angle_grp[main_dim];
-    int* angle_main_partition;
+    int* angle_main_part;
     int angle_main_grps;
 
     angle_method(cmat, eps, compressed_dim_partition, nB, hash_perm, hash_grp, angle_grp, mode);
 
     sort_permutation(angle_perm, angle_grp, main_dim); //find a permutation that sorts groups
     grp_to_partition(angle_grp, main_dim, angle_main_part);
-    angle_main_grps = count_groups(angle_grp, main);
+    angle_main_grps = count_groups(angle_grp, main_dim);
 
     CSR cmat_cpy;
     copy(cmat, cmat_cpy);
@@ -1298,7 +1298,7 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     convert_to_VBS(cmat_cpy,
         vbmat,
         angle_main_grps, angle_main_part,
-        block_cols, col_part,
+        col_blocks, col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
 
     cleanCSR(cmat_cpy);
