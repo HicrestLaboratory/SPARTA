@@ -230,8 +230,6 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     }
     //-------------------------------------------------------------
 
-    std::cout << "check" << std::endl;
-
     //fill csrVal (the nonzero values) and csrColInd (their column indices)
     int* csrColInd = new int[nnz];
     float* csrVal = new float[nnz];
@@ -247,13 +245,11 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     cusparseMatDescr_t descrA;
     checkCudaErrors(cusparseCreateMatDescr(&descrA));
 
-    std::cout << "check" << std::endl;
-
 
     //allocate memory on device
     unsigned int mem_size_csrVal = sizeof(float) * nnz;
-    unsigned int mem_size_csrColInd = sizeof(float) * nnz;
-    unsigned int mem_size_csrRowPtr = sizeof(float) * (cmat.rows + 1);
+    unsigned int mem_size_csrColInd = sizeof(int) * nnz;
+    unsigned int mem_size_csrRowPtr = sizeof(int) * (cmat.rows + 1);
 
     unsigned int B_rows = cmat.cols;
     unsigned int size_B = B_rows * B_cols;
@@ -263,8 +259,6 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     unsigned int C_cols = B_cols;
     unsigned int size_C = C_rows * C_cols;
     unsigned int mem_size_C = sizeof(float) * size_C;
-
-    std::cout << "check" << std::endl;
 
 
     // allocate device memory
