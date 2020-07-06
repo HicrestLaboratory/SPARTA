@@ -389,8 +389,6 @@ int main(int argc, char* argv[]) {
         std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
     }
 
-    delete[] mat_Cblock;
-
 
     //--------------------------------------------
 //      VBS x dense cublas multiplication (no zero blocks mode)
@@ -421,8 +419,6 @@ int main(int argc, char* argv[]) {
     {
         std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
     }
-
-    delete[] mat_Cblock_full;
 
 
     //--------------------------------------------
@@ -464,8 +460,6 @@ int main(int argc, char* argv[]) {
     {
         std::cout << "WARNING: CSR-Dense cusparse multiplication test: FAILED" << std::endl;
     }
-
-    delete[] mat_C_csrmm;
 
 
 
