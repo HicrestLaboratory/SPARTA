@@ -334,10 +334,15 @@ int main(int argc, char* argv[]) {
     if (verbose > 0)        std::cout << "Random matrix B created:" << std::endl;
     if (verbose > 1)        matprint(mat_B, B_rows, B_cols, B_rows, mat_B_fmt);
 
-    //creating the output matrix Y
+    //defining the output matrix C
 	int C_rows = A_rows;
 	int C_cols = B_cols;
 
+
+    if (verbose == -1)
+    {
+        cout << "cublas_gemm " << "paolo_block " << "paolo_block_full " << "cusparse_csrmm " << endl;
+    }
 
     //--------------------------------------------
     //  dense-dense cublas gemm multiplication
