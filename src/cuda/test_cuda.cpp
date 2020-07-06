@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <math.h>
 #include <typeinfo>
+#include <iterator>
+#include <algorithm>
 
 // Utilities and system include
 #include <assert.h>
