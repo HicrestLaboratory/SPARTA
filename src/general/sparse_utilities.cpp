@@ -562,6 +562,98 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
 }
 
+int extract_shapes(const VBS& vbmat, svi &heights, svi &lengths)
+{
+    //input:
+    //  vmat: a VBS matrix
+
+    //output variables
+    heights.clear();
+    lengths.clear();
+    //determine out_mat dimensions-------------------------
+
+    int rows = vbmat.row_part[vbmat.block_rows];
+    int cols = vbmat.col_part[vbmat.block_cols];
+    int mat_leading_dim = out_mat_fmt == 0 ? out_mat_cols : out_mat_rows;
+    //-----------------------------------------------------
+
+    int main_pos, main_block_dim, second_pos, second_block_dim;
+    int row, col, row_block_dim, col_block_dim;
+
+    int mat_idx = 0; //keeps writing position for mat
+    int vbmat_idx = 0; //keeps reading position for vbmat 
+
+    int vbmat_main_dim, vbmat_compressed_dim;
+    int* b_main_ptr, * b_second_ptr;
+
+    if (vbmat.blocks_fmt == 0)
+    {
+        //if Compressed Sparse Row
+        vbmat_main_dim = vbmat.block_rows;
+        vbmat_compressed_dim = vbmat.block_cols;
+
+        // assign row and column pointers respectively
+        // to counters for main and compressed dimension
+        b_main_ptr = vbmat.row_part;
+        b_second_ptr = vbmat.col_part;
+
+    }
+    else
+    {
+        //if Compressed Sparse Columns
+        vbmat_main_dim = vbmat.block_cols;
+        vbmat_compressed_dim = vbmat.block_rows;
+
+        // assign column and row pointers respectively
+        // to counters for main and compressed dimension
+        b_main_ptr = vbmat.col_part;
+        b_second_ptr = vbmat.row_part;
+    }
+
+    int* jab = vbmat.jab;
+
+    int nz_tot = 0; //counter for total nonzero blocks
+    //COPY VALUES from vbmat to mat ------------------------------------------------------
+    for (int i = 0; i < vbmat_main_dim; i++)
+    {
+        main_pos = b_main_ptr[i];
+        main_block_dim = b_main_ptr[i + 1] - main_pos;
+
+        for (int nzs = 0; nzs < vbmat.nzcount[i]; nzs++) //iterate for all nonzero block in row i
+        {
+            int j = jab[nz_tot]; //column of current non-zero block
+            nz_tot += 1; //count one nonzero block
+
+            second_pos = b_second_ptr[j];
+            second_block_dim = b_second_ptr[j + 1] - second_pos;
+
+            if (vbmat.blocks_fmt == 0)
+            {
+                row = main_pos;
+                col = second_pos;
+                row_block_dim = main_block_dim;
+                col_block_dim = second_block_dim;
+            }
+            else
+            {
+                row = second_pos;
+                col = main_pos;
+                row_block_dim = second_block_dim;
+                col_block_dim = main_block_dim;
+            }
+
+            vbmat_idx += row_block_dim * col_block_dim; //update vbmat.mab reading index
+            heights.push_back(row_block_dim);
+            lengths.push_back(col_block_dim);
+
+        }
+    }
+    //------------------------------------------------------------------------------------
+
+    return 0;
+
+}
+
 int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int* colpart, int vbmat_block_fmt, int vbmat_entries_fmt, int no_zero_mode)
 {
     //WARNING: this does the additional step of converting to and from uncompressed array. 
@@ -1342,48 +1434,87 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     cleanCSR(cmat_cpy);
 }
 
-/*
-int symmetric_angle_hash_method(CSR& cmat, float eps, VBS& vbmat)
+symmetric_angle_hash_method(CSR& cmat, float eps, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt)
 {
+    //create a VBS reordering the main (uncompressed) dimension of a CSR matrix according to the angle+hash algorithm
+    //do not change the original array
 
     int rows = cmat.rows;
     int cols = cmat.cols;
     if (rows != cols)
     {
-        std::cout << "WARNING: symmetric angle hash method requires symmetric matrix." << std::endl;
+        std::cout << "WARNING! symmetric_angel_hash_method only accepts symmetric matrices" << std::endl;
         return 1;
     }
 
-    int main_dim = (cmat.fmt == 0) ? rows : cols;
-    compressed_dim_partition = linspan(0, main_dim, 1); //no blocs on the compressed dimension
+    int n = rows;
 
-    int hash_perm[main_dim];
-    int hash_grp[main_dim];
+    int hash_perm[n];
+    int hash_grp[n];
+    compressed_dim_partition = linspan(0, n, 1);
 
     hash_permute(cmat, compressed_dim_partition, hash_perm, hash_grp, 0);
 
-    permute_CSR(cmat, angle_perm, 2);
+    CSR cmat_cpy;
+    copy(cmat, cmat_cpy);
+
+    permute_CSR(cmat_cpy, hash_perm, 2); //permute both rows and columns of the matrix according to hash_perm;
+    permute(hash_grp, hash_perm, n); //permute hash_grp to be aligned with the CSR
     
-    permute(hash_grp, hash_perm, main_dim);
+    int hash_group_count = count_groups(hash_grp, n);
+    int hash_partition[hash_group_count];
+    grp_to_partition(hash_grp, n, hash_partition); //extract row and block partition from grouping;
 
-    int newpartition[main_dim];
-    new_partition = grp_to_partition(hash_grp, main_dim, compressed_dim_partition);
+    hash_perm = linspace(0, n - 1, 1); //make angle_perm into identity permutation
 
-    int* identity_perm = linspan(0, main_dim, 1);
 
-    int angle_perm[main_dim];
-    int angle_grp[main_dim];
+    int angle_perm[n];
+    int angle_grp[n];
 
-    angle_method(cmat, eps, compressed_dim_partition, nB, identity_perm, hash_grp, angle_grp, 1);
+    angle_method(cmat, eps, hash_partition, hash_group_count, hash_perm, hash_grp, angle_grp, mode);
 
-    sort_permutation(angle_perm, angle_grp, main_dim); //find a permutation that sorts groups
+    sort_permutation(angle_perm, angle_grp, n); //find a permutation that sorts groups
 
-    permute_CSR(cmat, angle_perm, cmat.fmt);
 
-    compressed_dim_partition = grp_to_partition(hash_grp, main_dim, compressed_dim_partition);
+    int angle_main_grps;
+    angle_main_grps = count_groups(angle_grp, n);
 
+    int angle_main_part[angle_main_grps];
+
+    grp_to_partition(angle_grp, n, angle_main_part);
+
+    permute_CSR(cmat_cpy, angle_perm, 2); //permute the tmp CSR
+
+    int* row_part;
+    int row_blocks;
+    int* col_part;
+    int col_blocks;
+
+    if (cmat.fmt == 0)
+    {
+        row_part = angle_main_part;
+        row_blocks = angle_main_grps;
+        col_part = compressed_dim_partition;
+        col_blocks = nB;
+    }
+    else
+    {
+        col_part = angle_main_part;
+        col_blocks = angle_main_grps;
+        row_part = compressed_dim_partition;
+        row_blocks = nB;
+    }
+
+    convert_to_VBS(cmat_cpy,
+        vbmat,
+        angle_main_grps, angle_main_part,
+        col_blocks, col_part,
+        vbmat_blocks_fmt, vbmat_entries_fmt);
+
+    cleanCSR(cmat_cpy);
 }
-*/
+
+
 
 int angle_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB,int* in_perm, int* in_group, int *out_group,  int mode)
 {

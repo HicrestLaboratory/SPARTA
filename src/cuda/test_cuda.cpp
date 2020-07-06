@@ -28,8 +28,39 @@
 #include "comp_mats.h"
 
 using namespace std;
-typedef std::vector<double> vec_d;
+typedef std::vector<float> vec_d;
 typedef std::vector<string> vec_str;
+typedef std::vector<int> vec_i;
+
+float mean(vec_d v)
+{
+    float m = 0.;
+    for (auto t : v)
+    {
+        m += t;
+    }
+    m /= v.size();
+    return m;
+}
+
+float std(vec_d v)
+{
+
+    float m = mean(v);
+    float s = 0.;
+    for (auto t : v)
+    {
+        s += (t - m) * (t - m);
+    }
+    s = sqrt(s / v.size())
+}
+
+template <class myType>
+int output_couple(string names, string values, string name, myType value)
+{
+    names << name << " ";
+    values << to_string(value) << " ";
+}
 
 int main(int argc, char* argv[]) {
 
@@ -43,6 +74,7 @@ int main(int argc, char* argv[]) {
     int verbose = 3;
 
     int input_type = 4;
+    int algos = -1;
     int A_rows = 12;             //rows in the square input matrix;
     int A_cols = 8;
     int mat_A_fmt = 1;        //cuda needs column-major matrices
@@ -53,7 +85,7 @@ int main(int argc, char* argv[]) {
     int scramble = 1; //scramble the input matrix?
 
     int B_cols = 5;    //number of columns in the output matrix;
-    float B_sparsity = 0.8; //sparsity of the multiplication matrix
+    float B_sparsity = 1.; //sparsity of the multiplication matrix
 
     float eps = 0.5;        //this value sets how different two rows in the same block can be.
                             //eps = 1 means only rows with equal structure are merged into a block
@@ -61,6 +93,9 @@ int main(int argc, char* argv[]) {
     int seed = 123;
     float precision = 0.0001;        //precision for float equality check
 
+    int warmup = 0;         //number of warmup experiments
+    int experiment_reps = 1; //number of non-warmup repetitions
+    int algo = -1;           //algorithm choice (-1: all)
 
 
     srand(seed);
@@ -83,9 +118,9 @@ int main(int argc, char* argv[]) {
             //  2: SNAP Edgelist
             //  3: MTX Format
             //  4: Random Variable Block matrix
-            if ((input_type != 1) and (input_type != 4)) {
-                input_type = 1;
-                cout << "WARNING: CURRENTLY SUPPORTS ONLY i = 1 and i = 4. Using 1 (Random CSR)" << endl;
+            if ((input_type != 1) and (input_type != 4) and (input_type != 3) {
+                input_type = 4;
+                cout << "WARNING: CURRENTLY SUPPORTS ONLY i = 1,3,4. Using 4 (Random CSR)" << endl;
             }
             break;
 
@@ -238,26 +273,43 @@ int main(int argc, char* argv[]) {
     //spmat must hold a proper CSR matrix at this point
     //******************************************
 
-    //reorder the CSR matrix spmat and convert to a Block Sparse Matrix
 
-        //TODO: reorder cmat through angle algorithm
-        //      and retrieve row and block partition
-        //      from the angle algorithm grouping;
-
-    A_row_part = linspan(0, A_rows, block_size); //row and column partitions
-    A_col_part = linspan(0, A_cols, block_size);
-
+    //scramble the original matrix
     if (scramble)
     {
         int* random_permutation = randperm(A_rows);
         permute_CSR(cmat_A, random_permutation, 0);
     }
 
+    //*******************************************
+    //	 CREATES (several) VBS from the CSR, EXTRACT FEATURES
+    //******************************************
 
-    //VBS matrix parameters
+    string output_names;
+    string output_values;
+
+
+    float A_sparsity = ((float) nnz_count(cmat_A))/(A_rows*A_cols);
+
+
+    output_couple(output_names, output_values, "input_type", input_type);
+    output_couple(output_names, output_values, "A_rows", A_rows);
+    output_couple(output_names, output_values, "A_cols", A_cols);
+    output_couple(output_names, output_values, "A_entries_sparsity", A_sparsity);
+    output_couple(output_names, output_values, "A_block_sparsity", block_sparsity);
+    output_couple(output_names, output_values, "A_block_size", block_size);
+
+    output_couple(output_names, output_values, "B_cols", B_cols);
+    output_couple(output_names, output_values, "B_sparsity", B_sparsity);
+
+
+    //create a VBS with fixed block dimension (see input)
     int vbmat_blocks_fmt = 1;
     int vbmat_entries_fmt = 1; //cuda needs column-major matrices
     VBS vbmat_A;
+
+    A_row_part = linspan(0, A_rows, block_size); //row and column partitions
+    A_col_part = linspan(0, A_cols, block_size);
 
     int block_rows = A_rows / block_size;
     int block_cols = A_cols / block_size;
@@ -294,8 +346,9 @@ int main(int argc, char* argv[]) {
         matprint(vbmat_A_full);
     }
 
-    //then create a VBS which is permuted with the asymmetric angle method
+    //create a VBS which is permuted with the asymmetric angle method
     VBS vbmat_A_angle;
+
     angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
     if (verbose > 1)
     {
@@ -303,24 +356,10 @@ int main(int argc, char* argv[]) {
         matprint(vbmat_A_angle);
     }
 
-
-    /*
-    //*******************************************
-    //        REPORT ON BLOCK STRUCTURE
-    //******************************************
-        ofstream CSV_out;
-        CSV_out.open("output.txt");
-
-        string CSV_header = "MatrixSize,OriginalSparsity,Divisions,NonzeroBlocks,AvgBlockHeight,AvgBHError,AvgBlockLength,AvgBLError,NonzeroAreaFraction,AverageBlockPopulation,ABPError,NewSparsity";
-        CSV_out << CSV_header << endl;
-
-        bool verbose = true; //print mat analysis on screen too?
-
-        //TODO write this function
-        //features_to_CSV(&vbmat, CSV_out, verbose);//write mat analysis on csv
-        CSV_out.close();
-    */
-
+    //report on block structure
+    float VBS_effective_sparsity = ((float)vbmat_A_angle.nztot) / (A_rows * A_cols);
+    output_couple(output_names, output_values, "VBS_AHA_effective_sparsity", VBS_effective_sparsity);
+    output_couple(output_names, output_values, "VBS_AHA_block_rows", vbmat_A_angle.block_rows);
 
     //*******************************************
     //         MULTIPLICATION PHASE
@@ -329,23 +368,21 @@ int main(int argc, char* argv[]) {
     //with a dense one, with benchmarks
     //******************************************
 
-    //create a dense array matrix from spmat (for CUBLAS GEMM)
-    DataT mat_A[A_rows * A_cols] = { 0 };
-
-    convert_to_mat(cmat_A, mat_A, mat_A_fmt);
-    if (verbose > 1)
-    {
-        std::cout << "Dense matrix A created:" << std::endl;
-        matprint(mat_A, A_rows, A_cols, A_rows, mat_A_fmt);
-    }
-
+    //keeps track of time
+    double dt;
+    vec_d algo_times;
+    float mean_time;
+    float std_time;
+   
     //output format
     cout << fixed;
 
-    if (verbose > 0)
-    {
-        cout << "\n \n **************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl;
-    }
+    output_couple(output_names, output_values, "Warmup", warmup);
+    output_couple(output_names, output_values, "Repetitions", experiment_reps);
+    output_couple(output_names, output_values, "Algorithm", algo);
+
+
+    if (verbose > 0)        cout << "\n \n ************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl;
 
     //creating a random matrix X
     int B_rows = A_cols;
@@ -362,170 +399,209 @@ int main(int argc, char* argv[]) {
 	int C_cols = B_cols;
 
 
-    vec_d algo_times; 
-    vec_str algos;
-
     //--------------------------------------------
     //  dense-dense cublas gemm multiplication
     //--------------------------------------------
-
-    DataT mat_Cgemm[C_rows * C_cols] = { 0 };
-    int mat_Cgemm_fmt = 1;
-
-    clock_t start_t = clock();
-
-    cublas_gemm_custom (mat_A, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f);
-
-    double total_t = (clock() - start_t)/(double) CLOCKS_PER_SEC;
-    
-    if (verbose > 0)        cout << "Dense-Dense multiplication. Time taken: " << total_t << endl;
-    if (verbose > 1)        
+    if ((algo == 1) or (algo == -1))
     {
-        cout << "GEMM RESULT" << endl;  
-        matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1); 
+        //create a dense array matrix from cmat_A
+
+        DataT mat_A[A_rows * A_cols] = { 0 };
+        convert_to_mat(cmat_A, mat_A, mat_A_fmt);
+
+        DataT mat_Cgemm[C_rows * C_cols] = { 0 };
+        int mat_Cgemm_fmt = 1;
+
+        algo_times.clean();
+        for (int i = -warmup; i < experiment_reps; i++)
+        {
+            cublas_gemm_custom(mat_A, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
+            //only saves non-warmup runs
+            if(i >= 0) algo_times.push_back(dt);
+        }
+
+        mean_time = mean(algo_times);
+        std_time = std(algo_times);
+        output_couple(output_names, output_values, "gemm_mean", mean_time);
+        output_couple(output_names, output_values, "gemm_std", std_time);
+
+
+        if (verbose > 0)        cout << "Dense-Dense multiplication. Time taken: " << mean_time << endl;
+        if (verbose > 1)
+        {
+            cout << "GEMM Matrix:" << endl;
+            matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1);
+        }
+
     }
 
-    algo_times.push_back(total_t);
-    algos.push_back("cublas_gemm");
 
     //--------------------------------------------
     //      VBS x dense cublas multiplication	
     //--------------------------------------------
-
-    DataT mat_Cblock[C_rows * C_cols];
-    int mat_Cblock_fmt = 1;
-
-    start_t = clock();
-
-    cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows);
-
-    total_t = (clock() - start_t) / (double)CLOCKS_PER_SEC;
-
-    if (verbose > 0)
+    if ((algo == 2) or (algo == -1))
     {
-        cout << "BlockSparse-Dense multiplication. Time taken: " << total_t << endl;
-    }
-    if (verbose > 1)
-    {
+        DataT mat_Cblock[C_rows * C_cols];
+        int mat_Cblock_fmt = 1;
 
-        cout << "BLOCK RESULT" << endl;
-        matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
+        algo_times.clean();
+        for (int i = -warmup; i < experiment_reps; i++)
+        {
+            cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt);
+            //only saves non-warmup runs
+            if (i >= 0) algo_times.push_back(dt);
+        }
+
+        mean_time = mean(algo_times);
+        std_time = std(algo_times);
+        output_couple(output_names, output_values, "VBSmm_mean", mean_time);
+        output_couple(output_names, output_values, "VBSmm_std", std_time);
+
+
+        if (verbose > 0)
+        {
+            cout << "BlockSparse-Dense multiplication. Time taken: " << mean_time << endl;
+        }
+        if (verbose > 1)
+        {
+
+            cout << "BLOCK RESULT" << endl;
+            matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
+        }
+
+        /* 
+        //correctness check
+        int block_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock, C_rows, mat_Cblock_fmt, precision);
+        if (!block_success)
+        {
+            std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
+        }
+        */
     }
 
-    int block_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock, C_rows, mat_Cblock_fmt, precision);
-    if (!block_success)
-    {
-        std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
-    }
-
-    algo_times.push_back(total_t);
-    algos.push_back("VBS_paolo");
 
     //--------------------------------------------
     //      VBS x dense cublas multiplication (no zero blocks mode)
     //--------------------------------------------
-
-    DataT mat_Cblock_full[C_rows * C_cols];
-    int mat_Cblock_full_fmt = 1;
-
-    start_t = clock();
-
-    cublas_blockmat_multiply(vbmat_A_full, mat_B, B_cols, B_rows, mat_Cblock_full, C_rows);
-
-    total_t = (clock() - start_t) / (double)CLOCKS_PER_SEC;
-
-    if (verbose > 0)
+    if ((algo == 3) or (algo == -1))
     {
-        cout << "BlockSparse-Dense multiplication (no zero mode ON). Time taken: " << total_t << endl;
-    }
-    if (verbose > 1)
-    {
+        DataT mat_Cblock_full[C_rows * C_cols];
+        int mat_Cblock_full_fmt = 1;
 
-        cout << "BLOCK RESULT (no zero mode ON)" << endl;
-        matprint(mat_Cblock_full, C_rows, C_cols, C_rows, 1);
+
+        algo_times.clean();
+        for (int i = -warmup; i < experiment_reps; i++)
+        {
+            cublas_blockmat_multiply(vbmat_A_full, mat_B, B_cols, B_rows, mat_Cblock_full, C_rows, dt);
+            if (i >= 0) algo_times.push_back(dt);
+        }
+
+        mean_time = mean(algo_times);
+        std_time = std(algo_times);
+        output_couple(output_names, output_values, "VBSmm_nozeros_mean", mean_time);
+        output_couple(output_names, output_values, "VBSmm_nozeros_std", std_time);
+
+
+        if (verbose > 0)
+        {
+            cout << "BlockSparse-Dense multiplication (no zero mode ON). Time taken: " << mean_time << endl;
+        }
+        if (verbose > 1)
+        {
+
+            cout << "BLOCK RESULT (no zero mode ON)" << endl;
+            matprint(mat_Cblock_full, C_rows, C_cols, C_rows, 1);
+        }
+
+        int block_full_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock_full, C_rows, mat_Cblock_full_fmt, precision);
+        if (!block_full_success)
+        {
+            std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
+        }
     }
 
-    int block_full_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock_full, C_rows, mat_Cblock_full_fmt, precision);
-    if (!block_full_success)
-    {
-        std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
-    }
-
-    algo_times.push_back(total_t);
-    algos.push_back("VBS_paolo_full");
 
     //--------------------------------------------
     //      VBS x dense cublas multiplication (permuted with angle algorithm)
     //--------------------------------------------
-
-    DataT mat_Cblock_angle[C_rows * C_cols];
-    int mat_Cblock_angle_fmt = 1;
-
-    start_t = clock();
-
-    cublas_blockmat_multiply(vbmat_A_angle, mat_B, B_cols, B_rows, mat_Cblock_angle, C_rows);
-
-    total_t = (clock() - start_t) / (double)CLOCKS_PER_SEC;
-
-    if (verbose > 0)
-    {
-        cout << "BlockSparse-Dense multiplication (permuted with AHS). Time taken: " << total_t << endl;
-    }
-    if (verbose > 1)
+    if ((algo == 4) or (algo == -1))
     {
 
-        cout << "BLOCK RESULT (permuted with AHS)" << endl;
-        matprint(mat_Cblock_angle, C_rows, C_cols, C_rows, mat_Cblock_angle_fmt);
+        DataT mat_Cblock_angle[C_rows * C_cols];
+        int mat_Cblock_angle_fmt = 1;
+
+        algo_times.clean();
+        for (int i = -warmup; i < experiment_reps; i++)
+        {
+            cublas_blockmat_multiply(vbmat_A_angle, mat_B, B_cols, B_rows, mat_Cblock_angle, C_rows, dt);
+            if (i >= 0) algo_times.push_back(dt);
+        }
+
+        mean_time = mean(algo_times);
+        std_time = std(algo_times);
+        output_couple(output_names, output_values, "VBSmm_mean", mean_time);
+        output_couple(output_names, output_values, "VBSmm_std", std_time);
+
+        if (verbose > 0)
+        {
+            cout << "BlockSparse-Dense multiplication (permuted with AHS). Time taken: " << mean_time << endl;
+        }
+        if (verbose > 1)
+        {
+
+            cout << "BLOCK RESULT (permuted with AHS)" << endl;
+            matprint(mat_Cblock_angle, C_rows, C_cols, C_rows, mat_Cblock_angle_fmt);
+        }
     }
-
-    algo_times.push_back(total_t);
-    algos.push_back("VBS_AHS");
-
-
 
 
     //--------------------------------------------
     //      CSR x Dense cusparse multiplication
     //--------------------------------------------
-
-
-
-
-    DataT mat_C_csrmm[C_rows * C_cols];
-    int mat_C_csrmm_fmt = 1;
-
-    //prepare the cusparse CSR format
-    int nnz = count_nnz(cmat_A);
-    int csrRowPtr[cmat_A.rows + 1];
-    int csrColInd[nnz];
-    float csrVal[nnz];
-    prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
-
-    start_t = clock();
-
-    cusparse_gemm_custom(cmat_A.rows, cmat_A.cols, nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f);
-
-    total_t = (clock() - start_t) / (double)CLOCKS_PER_SEC;
-
-    if (verbose > 0)
-    {
-        cout << "CSR-Dense cusparse multiplication. Time taken: " << total_t << endl;
-    }
-    if (verbose > 1)
+    if ((algo == 5) or (algo == -1))
     {
 
-        cout << "CSR-dense cusparse:" << endl;
-        matprint(mat_C_csrmm, C_rows, C_cols, C_rows, 1);
-    }
+        DataT mat_C_csrmm[C_rows * C_cols];
+        int mat_C_csrmm_fmt = 1;
 
-    int csrmm_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_C_csrmm, C_rows, mat_C_csrmm_fmt, precision);
-    if (!csrmm_success)
-    {
-        std::cout << "WARNING: CSR-Dense cusparse multiplication test: FAILED" << std::endl;
-    }
+        //prepare the cusparse CSR format
+        int nnz = count_nnz(cmat_A);
+        int csrRowPtr[cmat_A.rows + 1];
+        int csrColInd[nnz];
+        float csrVal[nnz];
+        prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
+        
+        algo_times.clean();
+        for (int i = -warmup; i < experiment_reps; i++)
+        {
+            cusparse_gemm_custom(cmat_A.rows, cmat_A.cols, nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f, dt);
+            if (i >= 0) algo_times.push_back(dt);
+        }
 
-    algo_times.push_back(total_t);
-    algos.push_back("cusparse_csrmm");
+        mean_time = mean(algo_times);
+        std_time = std(algo_times);
+        output_couple(output_names, output_values, "VBSmm_mean", mean_time);
+        output_couple(output_names, output_values, "VBSmm_std", std_time);
+
+
+        if (verbose > 0)
+        {
+            cout << "CSR-Dense cusparse multiplication. Time taken: " << mean_time << endl;
+        }
+        if (verbose > 1)
+        {
+
+            cout << "CSR-dense cusparse:" << endl;
+            matprint(mat_C_csrmm, C_rows, C_cols, C_rows, 1);
+        }
+
+        int csrmm_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_C_csrmm, C_rows, mat_C_csrmm_fmt, precision);
+        if (!csrmm_success)
+        {
+            std::cout << "WARNING: CSR-Dense cusparse multiplication test: FAILED" << std::endl;
+        }
+
+    }
 
 
     //cleaning
@@ -533,22 +609,11 @@ int main(int argc, char* argv[]) {
     cleanVBS(vbmat_A_full);
     cleanCSR(cmat_A);
 
-    cout << endl;
-
-
     //OUTPUT PHASE
     if (verbose == -1)
     {
-        copy(algos.begin(),
-            algos.end(),
-            ostream_iterator<string>(cout, " "));
-
-        cout << endl;
-        copy(algo_times.begin(),
-            algo_times.end(),
-            ostream_iterator<double>(cout, " "));
-
-        cout<<endl;
+        cout << output_names << endl;
+        cout << output_values << endl;
     }
 
 

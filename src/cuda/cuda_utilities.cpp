@@ -20,7 +20,7 @@
 #include "comp_mats.h"
 #include "sparse_utilities.h"
 
-void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lead_dim, float *C, int C_lead_dim){
+void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lead_dim, float *C, int C_lead_dim, float &dt){
     //multiplies a VBS matrix (vbmatA) and a dense matrix (B); stores into (C)
     //vbmatA:       column-major entries storage;
     //              column-major block_storage; 
@@ -75,6 +75,13 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lea
         B_rows, B_cols, sizeof(float), B, B_lead_dim, d_B, B_rows));
 
 
+
+    //initialize cuda events
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+
     //creates streams. Each block rows is assigned a different stream.
     cudaStream_t streams[vbmatA.block_rows];
     for (int ib = 0; ib < vbmatA.block_rows; ib++)
@@ -116,6 +123,16 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lea
 
     }
 
+    //record the elapsed time onto dt
+    cudaDeviceSynchronize();
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&dt, start, stop);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+
+
+
     //let each stream copy the relevant C block from device
     for (int ib = 0; ib < vbmatA.block_rows; ib++)
     {
@@ -143,14 +160,14 @@ int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols,
 	const float *B, unsigned int B_cols, unsigned int ldb,
 	float *C, unsigned int ldc,
 	const float alpha,
-	const float beta)
+	const float beta,
+    float& dt)
 {
     
     //deduce matrices dimensions
     unsigned int B_rows = A_cols;
     unsigned int C_rows = A_rows;
     unsigned int C_cols = B_cols;
-
 
     //allocate memory on device
     //-------------------------------------------------------
@@ -180,6 +197,12 @@ int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols,
 
     checkCudaErrors(cublasCreate(&handle));
 
+    //initialize cuda events
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+
     //Perform gemm operation with cublas
     checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N,
                                 A_rows, B_cols, A_cols,
@@ -189,10 +212,17 @@ int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols,
                                 &beta,
                                 d_C, C_rows));
 
+
+    //record the elapsed time onto dt
+    cudaDeviceSynchronize();
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&dt, start, stop);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+
     // copy result from device to host 
     checkCudaErrors(cublasGetMatrix(C_rows, C_cols, sizeof(float), d_C, C_rows, C, C_rows));
-
-    cudaDeviceSynchronize();
 
     // clean up memory
     checkCudaErrors(cudaFree(d_C));
@@ -208,7 +238,8 @@ int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols,
 
 int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrColInd, float* csrVal, float* B, int B_cols, int B_lead_dim, float* C, int C_lead_dim, 
     const float alpha,
-    const float beta)
+    const float beta,
+    float& dt)
 {
 
 
@@ -267,6 +298,12 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
     checkCudaErrors(cusparseCreateMatDescr(&descrA));
     checkCudaErrors(cusparseCreate(&handle));
     
+    //initialize cuda events
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+
     checkCudaErrors(
         cusparseScsrmm(handle,
             CUSPARSE_OPERATION_NON_TRANSPOSE,
@@ -287,7 +324,13 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
     );
 
 
+    //record the elapsed time onto dt
     cudaDeviceSynchronize();
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&dt, start, stop);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
 
     // copy result from device to host 
     checkCudaErrors(cublasGetMatrix(C_rows, C_cols, sizeof(float), d_C, C_rows, C, C_rows));
