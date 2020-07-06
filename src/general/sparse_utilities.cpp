@@ -944,8 +944,8 @@ int count_nnz(CSR& cmat)
     return nnz;
 }
 
-void read_mtx_format(CSR& cmat, string infilename, int cmat_fmt) {
-    ifstream file(infilename);
+void read_mtx_format(CSR& cmat, std::string infilename, int cmat_fmt) {
+    std::ifstream file(infilename);
     int rows, cols, num_lines;
 
     // Ignore comments headers
@@ -954,7 +954,7 @@ void read_mtx_format(CSR& cmat, string infilename, int cmat_fmt) {
     // Read number of rows and columns
     file >> rows >> cols >> num_lines;
 
-    vector<DataT> temp_vec(rows * rows, 0.0);
+    std::vector<DataT> temp_vec(rows * rows, 0.0);
 
     // fill the matrix with data
     for (int l = 0; l < num_lines; l++)

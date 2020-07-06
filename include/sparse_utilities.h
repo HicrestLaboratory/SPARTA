@@ -1,5 +1,7 @@
 #pragma once
 #include "comp_mats.h"
+#include <string>
+
 
 
 //permutes an array of n elements (original) according to a permutation (perm);
@@ -100,7 +102,7 @@ int permute_CSR(CSR& cmat, int* perm, int dim);
 
 int count_nnz(CSR& cmat);
 
-void read_mtx_format(CSR& cmat, string infilename, int cmat_fmt);
+void read_mtx_format(CSR& cmat, std::string infilename, int cmat_fmt);
 
 int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int mode);
 
