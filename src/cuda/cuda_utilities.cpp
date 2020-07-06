@@ -276,16 +276,30 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
         nnz, sizeof(float),
         csrVal, 1, d_Val, 1));
 
+    std::cout << "check" << std::endl;
+
+
     checkCudaErrors(cublasSetVector(
         nnz, sizeof(int),
         csrColInd, 1, d_ColInd, 1));
+
+    std::cout << "check" << std::endl;
+
 
     checkCudaErrors(cublasSetVector(
         (cmat.rows + 1), sizeof(int),
         csrRowPtr, 1, d_RowPtr, 1));
 
+    std::cout << "check" << std::endl;
+
+
+
     checkCudaErrors(cublasSetMatrix(
         B_rows, B_cols, sizeof(float), B, B_lead_dim, d_B, B_rows));
+
+    std::cout << "check" << std::endl;
+
+
 
     if (beta != 0)
     {
