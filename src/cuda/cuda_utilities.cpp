@@ -273,7 +273,7 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
             rows,
             B_cols,
             cols,
-            csrRowPtr[cmat.rows + 1],
+            nnz,
             &alpha,
             descrA,
             d_Val,
