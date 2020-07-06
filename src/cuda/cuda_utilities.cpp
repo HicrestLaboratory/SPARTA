@@ -17,7 +17,6 @@
 #include "cuda_utilities.h"
 #include "comp_mats.h"
 #include "sparse_utilities.h"
-#include "..\..\include\cuda_utilities.h"
 
 void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lead_dim, float *C, int C_lead_dim){
     //multiplies a VBS matrix (vbmatA) and a dense matrix (B); stores into (C)
