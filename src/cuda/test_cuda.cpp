@@ -428,11 +428,12 @@ int main(int argc, char* argv[]) {
     DataT mat_C_csrmm[C_rows * C_cols];
     int mat_C_csrmm_fmt = 1;
 
-    int* csrColInd;
-    int* csrRowPtr;
-    float* csrVal;
-    prepare_cusparse_CSR(cmat_A, &csrRowPtr, &csrColInd, &csrVal);
-    int nnz = csrRowPtr[cmat_A.rows];
+    //prepare the cusparse CSR format
+    int nnz = nnz(cmat_A);
+    int csrRowPtr[cmat_A.rows + 1];
+    int csrColInd[nnz];
+    float csrVal[nnz];
+    prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
 
     arr_print(csrColInd, nnz);
     arr_print(csrRowPtr, cmat_A.rows + 1);

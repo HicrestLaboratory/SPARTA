@@ -926,6 +926,16 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
     }
 }
 
+int nnz(CSR& cmat)
+{
+    int nnz = 0;
+    int main = (cmat.fmat == 0) ? rows : cols;
+    for (int i = 0; i < main; i++)
+    {
+        nnz += cmat.nzcount[i];
+    }
+    return nnz;
+}
 
 //TODO: unify hash_permute, angle-permute and conversion to VBS
 
