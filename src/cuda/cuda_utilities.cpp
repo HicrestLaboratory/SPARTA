@@ -305,7 +305,7 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
 }
 
 
-int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int* csrColInd, float* csrVal)
+int prepare_cusparse_CSR(CSR& cmat, int& csrRowPtr[], int & csrColInd[], float &csrVal[])
 {
     if (cmat.fmt != 0)
     {
