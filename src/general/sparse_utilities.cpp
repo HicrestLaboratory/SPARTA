@@ -1272,15 +1272,16 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     int angle_main_grps;
     angle_main_grps = count_groups(angle_grp, main_dim);
 
-    std::cout << "OK" << std:: endl;
     int angle_main_part[angle_main_grps];
 
     grp_to_partition(angle_grp, main_dim, angle_main_part);
-    std::cout << "OK" << std::endl;
 
+    arr_print(angle_grp, main_dim);
+    arr_print(angle_main_part, angle_main_grps);
 
     CSR cmat_cpy;
     copy(cmat, cmat_cpy);
+    matprint(cmat_cpy);
 
     permute_CSR(cmat_cpy, angle_perm, cmat_cpy.fmt); //permute the tmp CSR
 
