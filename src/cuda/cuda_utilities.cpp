@@ -276,7 +276,7 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     {
         std::cout << csrVal[i] << " ";
     }
-    std::cout << endl;
+    std::cout << std::endl;
 
     checkCudaErrors(cublasSetVector(
         nnz, sizeof(int),
