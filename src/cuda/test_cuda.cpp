@@ -430,7 +430,7 @@ int main(int argc, char* argv[]) {
 
     start_t = clock();
 
-    cusparse_gemm_custom(cmat_A, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows);
+    cusparse_gemm_custom(cmat_A, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f);
 
     total_t = (clock() - start_t) / (double)CLOCKS_PER_SEC;
 
