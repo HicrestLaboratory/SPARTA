@@ -1270,6 +1270,7 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     grp_to_partition(angle_grp, main_dim, angle_main_part);
     angle_main_grps = count_groups(angle_grp, main_dim);
 
+    std::cout << "OK" << std::endl;
     CSR cmat_cpy;
     copy(cmat, cmat_cpy);
 

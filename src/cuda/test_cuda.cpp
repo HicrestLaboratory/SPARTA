@@ -283,13 +283,13 @@ int main(int argc, char* argv[]) {
         matprint(vbmat_A_full);
     }
 
-    //create a VBS which is permuted with my method
-    VBS vbmat_angle_hush;
-    angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_angle_hush, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
+    //create a VBS which is permuted with the asymmetric angle method
+    VBS vbmat_angle_hash;
+    angle_hash_method(cmat_A, eps, A_col_part, block_cols, hash_perm, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
     if (verbose > 1)
     {
         cout << "VBS matrix (asymmetric angle method) created:" << endl;
-        matprint(vbmat_A_full);
+        matprint(vbmat_angle_hush);
     }
 
 
