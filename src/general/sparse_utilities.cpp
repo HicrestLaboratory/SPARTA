@@ -954,7 +954,7 @@ void read_mtx_format(CSR& cmat, std::string infilename, int cmat_fmt) {
     // Read number of rows and columns
     file >> rows >> cols >> num_lines;
 
-    std::vector<DataT> temp_vec(rows * rows, 0.0);
+    std::vector<DataT> tmp_vec(rows * rows, 0.0);
 
     // fill the matrix with data
     for (int l = 0; l < num_lines; l++)
@@ -962,7 +962,7 @@ void read_mtx_format(CSR& cmat, std::string infilename, int cmat_fmt) {
         DataT data;
         int row, col;
         file >> row >> col >> data;
-        temp_vec[(row - 1) + (col - 1) * rows] = data;
+        tmp_vec[(row - 1) + (col - 1) * rows] = data;
     }
 
     DataT tmp_mat[rows * rows];
