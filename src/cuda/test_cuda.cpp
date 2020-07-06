@@ -352,7 +352,7 @@ int main(int argc, char* argv[]) {
 
 
     vec_d algo_times; 
-    ved_str algos;
+    vec_str algos;
 
     //--------------------------------------------
     //  dense-dense cublas gemm multiplication
