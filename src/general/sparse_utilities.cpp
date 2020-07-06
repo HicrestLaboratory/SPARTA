@@ -88,7 +88,7 @@ int leading_dim(int rows, int cols, int fmt)
     return (fmt == 0) ? cols : rows;
 }
 
-int equal(int rows, int cols, DataT* A, int lead_A, int fmt_A, DataT* B, int lead_B, int fmt_B)
+int equal(int rows, int cols, DataT* A, int lead_A, int fmt_A, DataT* B, int lead_B, int fmt_B, DataT eps)
 {
     for (int i = 0; i < rows; i++)
     {
@@ -96,7 +96,7 @@ int equal(int rows, int cols, DataT* A, int lead_A, int fmt_A, DataT* B, int lea
         {
             int idx_A = IDX(i, j, lead_A, fmt_A);
             int idx_B = IDX(i, j, lead_B, fmt_B);
-            if (A[idx_A] != B[idx_B]) return 0;
+            if (std::abs(A[idx_A] - B[idx_B]) > eps) return 0;
         }
     }
     return 1;

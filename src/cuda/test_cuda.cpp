@@ -386,17 +386,13 @@ int main(int argc, char* argv[]) {
     }
 
     int block_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock, C_rows, mat_Cblock_fmt);
-    if (block_success)
+    if (!block_success)
     {
-        std::cout << "Block matrix multiplication test: SUCCESS" << std::endl;
-    }
-    else
-    {
-        std::cout << "Block matrix multiplication test: FAILED" << std::endl;
+        std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
     }
 
     //--------------------------------------------
-//      VBS x dense cublas multiplication	
+//      VBS x dense cublas multiplication (no zero blocks mode)
 //--------------------------------------------
 
     DataT mat_Cblock_full[C_rows * C_cols];
@@ -420,14 +416,12 @@ int main(int argc, char* argv[]) {
     }
 
     int block_full_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock_full, C_rows, mat_Cblock_full_fmt);
-    if (block_full_success)
+    if (!block_full_success)
     {
-        std::cout << "Block matrix multiplication test: SUCCESS" << std::endl;
+        std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
     }
-    else
-    {
-        std::cout << "Block matrix multiplication test: FAILED" << std::endl;
-    }
+
+
 
 }
 

@@ -50,7 +50,7 @@ int random_mat(DataT* mat, int rows, int cols, float sparsity);
 
 int leading_dim(int rows, int cols, int fmt);
 
-int equal(int rows, int cols, DataT* A, int lead_A, int fmt_A, DataT* B, int lead_B, int fmt_B);
+int equal(int rows, int cols, DataT* A, int lead_A, int fmt_A, DataT* B, int lead_B, int fmt_B, DataT eps);
 
 int random_sparse_blocks_mat(DataT* mat, int rows, int cols, int fmt, int block_size, float block_sparsity, float block_entries_sparsity);
 
