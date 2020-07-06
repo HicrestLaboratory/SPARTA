@@ -289,6 +289,7 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     {
         checkCudaErrors(cublasSetMatrix(
             C_rows, C_cols, sizeof(float), C, C_lead_dim, d_C, C_rows));
+        std::cout << "copying C" << std::endl;
     }
 
     cusparseHandle_t handle;
