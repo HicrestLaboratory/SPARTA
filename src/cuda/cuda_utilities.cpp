@@ -319,9 +319,6 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
 
     cudaDeviceSynchronize();
 
-    matprint(d_C, C_rows, C_cols, C_rows, 1);
-
-
     // copy result from device to host 
     checkCudaErrors(cublasGetMatrix(C_rows, C_cols, sizeof(float), d_C, C_rows, C, C_rows));
 
