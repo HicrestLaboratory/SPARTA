@@ -305,7 +305,7 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
 }
 
 
-int prepare_cusparse_CSR(CSR& cmat, int& csrRowPtr[], int & csrColInd[], float &csrVal[])
+int prepare_cusparse_CSR(CSR& cmat, int** csrRowPtr[], int **csrColInd[], float **csrVal[])
 {
     if (cmat.fmt != 0)
     {
@@ -315,25 +315,25 @@ int prepare_cusparse_CSR(CSR& cmat, int& csrRowPtr[], int & csrColInd[], float &
 
 
     //fill csrRowPtr (element i holds number of nonzero entries up to row i)
-    csrRowPtr = new int[cmat.rows + 1];
-    csrRowPtr[0] = 0;
+    *csrRowPtr = new int[cmat.rows + 1];
+    *csrRowPtr[0] = 0;
 
     int nnz = 0;
     for (int i = 0; i < cmat.rows; i++)
     {
         nnz += cmat.nzcount[i];
-        csrRowPtr[i + 1] = nnz;
+        (*csrRowPtr)[i + 1] = nnz;
     }
     //-------------------------------------------------------------
 
     //fill csrVal (the nonzero values) and csrColInd (their column indices)
-    csrColInd = new int[nnz];
-    csrVal = new float[nnz];
+    *csrColInd = new int[nnz];
+    *csrVal = new float[nnz];
     nnz = 0;
     for (int i = 0; i < cmat.rows; i++)
     {
-        std::copy(cmat.ja[i], cmat.ja[i] + cmat.nzcount[i], csrColInd + nnz);
-        std::copy(cmat.ma[i], cmat.ma[i] + cmat.nzcount[i], csrVal + nnz);
+        std::copy(cmat.ja[i], cmat.ja[i] + cmat.nzcount[i], *csrColInd + nnz);
+        std::copy(cmat.ma[i], cmat.ma[i] + cmat.nzcount[i], *csrVal + nnz);
         nnz += cmat.nzcount[i];
 
     }
