@@ -562,6 +562,8 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
 }
 
+//TODO: fix
+/*
 int extract_shapes(const VBS& vbmat, svi &heights, svi &lengths)
 {
     //input:
@@ -653,6 +655,7 @@ int extract_shapes(const VBS& vbmat, svi &heights, svi &lengths)
     return 0;
 
 }
+*/
 
 int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int* colpart, int vbmat_block_fmt, int vbmat_entries_fmt, int no_zero_mode)
 {
@@ -1434,7 +1437,10 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     cleanCSR(cmat_cpy);
 }
 
-symmetric_angle_hash_method(CSR& cmat, float eps, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt)
+
+//TODO fix
+/*
+int symmetric_angle_hash_method(CSR& cmat, float eps, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt)
 {
     //create a VBS reordering the main (uncompressed) dimension of a CSR matrix according to the angle+hash algorithm
     //do not change the original array
@@ -1513,8 +1519,7 @@ symmetric_angle_hash_method(CSR& cmat, float eps, VBS& vbmat, int vbmat_blocks_f
 
     cleanCSR(cmat_cpy);
 }
-
-
+*/
 
 int angle_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB,int* in_perm, int* in_group, int *out_group,  int mode)
 {
