@@ -434,6 +434,8 @@ int main(int argc, char* argv[]) {
     prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
     int nnz = csrRowPtr[cmat_A.rows];
 
+    arr_print(csrColInd, nnz);
+    arr_print(csrRowPtr, cmat_A.rows + 1);
 
     start_t = clock();
 
