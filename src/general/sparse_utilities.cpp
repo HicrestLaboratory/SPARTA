@@ -1254,33 +1254,29 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     int cols = cmat.cols;
     int main_dim = (cmat.fmt == 0) ? rows : cols;
 
-    std::cout << "OK" << std::endl;
 
     int hash_perm[main_dim];
     int hash_grp[main_dim];
 
     hash_permute(cmat, compressed_dim_partition, hash_perm, hash_grp, mode);
     
-    std::cout << "OK" << std::endl;
-
     int angle_perm[main_dim];
     int angle_grp[main_dim];
     int* angle_main_part;
     int angle_main_grps;
 
 
-    std::cout << "OK" << std::endl;
-
     angle_method(cmat, eps, compressed_dim_partition, nB, hash_perm, hash_grp, angle_grp, mode);
 
-    std::cout << "OK" << std::endl;
+    arr_print(angle_grp, main_dim);
+    arr_print(hash_grp, main_dim);
+    arr_print(hash_perm, main_dim);
 
 
     sort_permutation(angle_perm, angle_grp, main_dim); //find a permutation that sorts groups
     grp_to_partition(angle_grp, main_dim, angle_main_part);
     angle_main_grps = count_groups(angle_grp, main_dim);
 
-    std::cout << "OK" << std::endl;
     CSR cmat_cpy;
     copy(cmat, cmat_cpy);
 
