@@ -786,6 +786,8 @@ int copy(const CSR& in_cmat, CSR& out_cmat)
     out_cmat.ja = new int* [main_dim];
     out_cmat.ma = new DataT * [main_dim];
 
+    arr_print(out_cmat.nzcount, main_dim);
+
     std::copy(in_cmat.nzcount, in_cmat.nzcount + main_dim, out_cmat.nzcount);
 
     for (int i = 0; i < main_dim; i++)
@@ -796,6 +798,9 @@ int copy(const CSR& in_cmat, CSR& out_cmat)
 
         std::copy((in_cmat.ja)[i], (in_cmat.ja)[i] + nzs, (out_cmat.ja)[i]);
         std::copy((in_cmat.ma)[i], (in_cmat.ma)[i] + nzs, (out_cmat.ma)[i]);
+
+        arr_print(out_cmat.ja[i], nzs);
+
     }
 
 }
@@ -1280,7 +1285,6 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     copy(cmat, cmat_cpy);
     matprint(cmat_cpy);
 
-    std::cout << "OK" << std::endl;
     permute_CSR(cmat_cpy, angle_perm, cmat_cpy.fmt); //permute the tmp CSR
 
     int* row_part;
