@@ -259,59 +259,30 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     int* d_RowPtr, * d_ColInd;
     float* d_Val;
 
-    std::cout << "check" << std::endl;
-
-
     checkCudaErrors(cudaMalloc((void**)&d_RowPtr, mem_size_csrRowPtr));
-
-    std::cout << "check" << std::endl;
-
-
     checkCudaErrors(cudaMalloc((void**)&d_ColInd, mem_size_csrColInd));
-
-    std::cout << "check" << std::endl;
-
-
     checkCudaErrors(cudaMalloc((void**)&d_Val, mem_size_csrVal));
-
-    std::cout << "check" << std::endl;
-
 
     float * d_B, * d_C;
     checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
     checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
-
-    std::cout << "check" << std::endl;
-
 
     //copy arrays and matrices to device
     checkCudaErrors(cublasSetVector(
         nnz, sizeof(float),
         csrVal, 1, d_Val, 1));
 
-    std::cout << "check" << std::endl;
-
-
     checkCudaErrors(cublasSetVector(
         nnz, sizeof(int),
         csrColInd, 1, d_ColInd, 1));
-
-    std::cout << "check" << std::endl;
-
 
     checkCudaErrors(cublasSetVector(
         (cmat.rows + 1), sizeof(int),
         csrRowPtr, 1, d_RowPtr, 1));
 
-    std::cout << "check" << std::endl;
-
-
 
     checkCudaErrors(cublasSetMatrix(
         B_rows, B_cols, sizeof(float), B, B_lead_dim, d_B, B_rows));
-
-    std::cout << "check" << std::endl;
-
 
 
     if (beta != 0)
@@ -320,12 +291,10 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
             C_rows, C_cols, sizeof(float), C, C_lead_dim, d_C, C_rows));
     }
 
-    std::cout << "check" << std::endl;
-
-    return 0;
-
     cusparseHandle_t handle;
     cusparseMatDescr_t descrA;
+
+    return 0;
 
     checkCudaErrors(cusparseCreateMatDescr(&descrA));
     checkCudaErrors(cusparseCreate(&handle));
