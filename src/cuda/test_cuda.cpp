@@ -435,9 +435,6 @@ int main(int argc, char* argv[]) {
     float csrVal[nnz];
     prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
 
-    arr_print(csrColInd, nnz);
-    arr_print(csrRowPtr, cmat_A.rows + 1);
-
     start_t = clock();
 
     cusparse_gemm_custom(cmat_A.rows, cmat_A.cols, nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f);
