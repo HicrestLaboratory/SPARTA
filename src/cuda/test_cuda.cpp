@@ -58,8 +58,8 @@ float std(vec_d v)
 template <class myType>
 int output_couple(string names, string values, string name, myType value)
 {
-    names << name << " ";
-    values << to_string(value) << " ";
+    names += name + " ";
+    values += to_string(value) + " ";
 }
 
 int main(int argc, char* argv[]) {
