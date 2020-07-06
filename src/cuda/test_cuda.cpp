@@ -51,7 +51,7 @@ float std_dev(vec_d v)
     {
         s += (t - m) * (t - m);
     }
-    s = sqrt(s / v.size())
+    s = sqrt(s / v.size());
 }
 
 template <class myType>
@@ -420,7 +420,7 @@ int main(int argc, char* argv[]) {
         }
 
         mean_time = mean(algo_times);
-        std_time = std(algo_times);
+        std_time = std_dev(algo_times);
         output_couple(output_names, output_values, "gemm_mean", mean_time);
         output_couple(output_names, output_values, "gemm_std", std_time);
 
@@ -452,7 +452,7 @@ int main(int argc, char* argv[]) {
         }
 
         mean_time = mean(algo_times);
-        std_time = std(algo_times);
+        std_time = std_dev(algo_times);
         output_couple(output_names, output_values, "VBSmm_mean", mean_time);
         output_couple(output_names, output_values, "VBSmm_std", std_time);
 
@@ -496,7 +496,7 @@ int main(int argc, char* argv[]) {
         }
 
         mean_time = mean(algo_times);
-        std_time = std(algo_times);
+        std_time = std_dev(algo_times);
         output_couple(output_names, output_values, "VBSmm_nozeros_mean", mean_time);
         output_couple(output_names, output_values, "VBSmm_nozeros_std", std_time);
 
@@ -537,7 +537,7 @@ int main(int argc, char* argv[]) {
         }
 
         mean_time = mean(algo_times);
-        std_time = std(algo_times);
+        std_time = std_dev(algo_times);
         output_couple(output_names, output_values, "VBSmm_mean", mean_time);
         output_couple(output_names, output_values, "VBSmm_std", std_time);
 
@@ -578,7 +578,7 @@ int main(int argc, char* argv[]) {
         }
 
         mean_time = mean(algo_times);
-        std_time = std(algo_times);
+        std_time = std_dev(algo_times);
         output_couple(output_names, output_values, "VBSmm_mean", mean_time);
         output_couple(output_names, output_values, "VBSmm_std", std_time);
 
