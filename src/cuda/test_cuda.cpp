@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
     //terminal options loop
     opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "a:i:s:q:e:m:n:p:r:s:k:b:v:w:")) != -1)
+    while ((c = getopt(argc, argv, "a:i:S:q:e:m:n:p:r:s:k:b:v:w:")) != -1)
         switch (c)
         {
         case 'i':// select input example
@@ -187,7 +187,7 @@ int main(int argc, char* argv[]) {
             experiment_reps = stoi(optarg);
             break;
 
-        case 's': //random seed
+        case 'S': //random seed
             seed = stoi(optarg);
             break;
 
