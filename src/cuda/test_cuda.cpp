@@ -55,7 +55,7 @@ float std_dev(vec_d v)
 }
 
 template <class myType>
-int output_couple(string names, string values, string name, myType value)
+int output_couple(string& names, string& values, string name, myType value)
 {
     names += name + " ";
     values += to_string(value) + " ";
