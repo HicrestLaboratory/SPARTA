@@ -73,7 +73,6 @@ int main(int argc, char* argv[]) {
     int verbose = 3;
 
     int input_type = 4;
-    int algos = -1;
     int A_rows = 12;             //rows in the square input matrix;
     int A_cols = 8;
     int mat_A_fmt = 1;        //cuda needs column-major matrices
@@ -97,11 +96,6 @@ int main(int argc, char* argv[]) {
     int algo = -1;           //algorithm choice (-1: all)
     int correct_check = 0;
 
-
-
-
-    srand(seed);
-
     int* A_row_part;
     int* A_col_part;
 
@@ -111,7 +105,7 @@ int main(int argc, char* argv[]) {
     //terminal options loop
     opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "i:s:q:e:p:m:n:k:b:v:")) != -1)
+    while ((c = getopt(argc, argv, "a:i:s:q:e:m:n:p:r:s:k:b:v:w:")) != -1)
         switch (c)
         {
         case 'i':// select input example
@@ -126,9 +120,58 @@ int main(int argc, char* argv[]) {
             }
             break;
 
+        case 'a': //algorithm selection:
+                  /*    -1: all
+                         1: gemm
+                         2: VBS
+                         3: VBS - no zeros
+                         4: VBS - AHS
+                         5: cusparse
+                  
+                  */
+            algo = stoi(optarg);
+            break;
+
+        case 'b': //block sparsity
+//has only effect for example 4
+            block_sparsity = stof(optarg);
+            if (block_sparsity < 0 or block_sparsity > 1) {
+                fprintf(stderr, "Option -b tried to set block sparsity outside of [0,1]");
+                return 1;
+            }
+            break;
+
+        case 'e': //epsilon used for matrix reordering;
+            eps = stof(optarg);
+            if (eps < 0. or eps > 1.) {
+                fprintf(stderr, "Option -e tried to set epsilon outside of [0,1]");
+                return 1;
+            }
+            break;
+
         case 's': //select source file
             //has only effect for example 2 and 3;
             input_source = optarg;
+            break;
+
+        case 'm': //input matrix rows
+            //has only effect for example 1 and 4
+            A_rows = stoi(optarg);
+            break;
+
+        case 'n': //input matrix rows
+            //has only effect for example 1 and 4
+            B_cols = stoi(optarg);
+            break;
+
+        case 'k': //input matrix rows
+            //has only effect for example 1 and 4
+            A_cols = stoi(optarg);
+            break;
+
+        case 'p': //size of blocks
+            //ony used if i = 4, random VBS
+            block_size = stoi(optarg);
             break;
 
         case 'q': //input matrix sparsity
@@ -140,45 +183,20 @@ int main(int argc, char* argv[]) {
             }
             break;
 
-        case 'b': //block sparsity
-        //has only effect for example 4
-            block_sparsity = stof(optarg);
-            if (block_sparsity < 0 or block_sparsity > 1) {
-                fprintf(stderr, "Option -b tried to set block sparsity outside of [0,1]");
-                return 1;
-            }
+        case 'r': //number of experiment repetitions
+            experiment_reps = stoi(optarg);
             break;
 
-        case 'm': //input matrix rows
-             //has only effect for example 1 and 4
-            A_rows = stoi(optarg);
-            break;
-
-        case 'n': //input matrix rows
-     //has only effect for example 1 and 4
-            B_cols = stoi(optarg);
-            break;
-
-        case 'k': //input matrix rows
- //has only effect for example 1 and 4
-            A_cols = stoi(optarg);
-            break;
-
-        case 'p': //size of blocks
-            //ony used if i = 4, random VBS
-            block_size = stoi(optarg);
+        case 's': //random seed
+            seed = stoi(optarg);
             break;
 
         case 'v': //verbose
             verbose = stoi(optarg);
             break;
 
-        case 'e': //epsilon used for matrix reordering;
-            eps = stof(optarg);
-            if (eps < 0. or eps > 1.) {
-                fprintf(stderr, "Option -e tried to set epsilon outside of [0,1]");
-                return 1;
-            }
+        case 'w': //warmup repetitions
+            warmup = stoi(optarg);
             break;
 
         case '?':
@@ -189,6 +207,8 @@ int main(int argc, char* argv[]) {
         }
 
     //TODO -h HELP
+
+    srand(seed);
 
     //INPUT CONVERSION TO Compressed Sparse Row (CSR)
 
