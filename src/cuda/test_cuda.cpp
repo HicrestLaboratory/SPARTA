@@ -43,9 +43,8 @@ float mean(vec_d v)
     return m;
 }
 
-float std(vec_d v)
+float std_dev(vec_d v)
 {
-
     float m = mean(v);
     float s = 0.;
     for (auto t : v)
