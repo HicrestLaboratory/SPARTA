@@ -1254,15 +1254,22 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     int cols = cmat.cols;
     int main_dim = (cmat.fmt == 0) ? rows : cols;
 
+    std::cout << "OK" << std::endl;
+
     int hash_perm[main_dim];
     int hash_grp[main_dim];
 
     hash_permute(cmat, compressed_dim_partition, hash_perm, hash_grp, mode);
+    
+    std::cout << "OK" << std::endl;
 
     int angle_perm[main_dim];
     int angle_grp[main_dim];
     int* angle_main_part;
     int angle_main_grps;
+
+
+    std::cout << "OK" << std::endl;
 
     angle_method(cmat, eps, compressed_dim_partition, nB, hash_perm, hash_grp, angle_grp, mode);
 
