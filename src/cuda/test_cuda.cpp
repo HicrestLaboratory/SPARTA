@@ -411,7 +411,7 @@ int main(int argc, char* argv[]) {
         DataT mat_Cgemm[C_rows * C_cols] = { 0 };
         int mat_Cgemm_fmt = 1;
 
-        algo_times.clean();
+        algo_times.clear();
         for (int i = -warmup; i < experiment_reps; i++)
         {
             cublas_gemm_custom(mat_A, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
