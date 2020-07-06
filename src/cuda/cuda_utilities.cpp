@@ -297,9 +297,6 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
 
     checkCudaErrors(cusparseCreateMatDescr(&descrA));
     checkCudaErrors(cusparseCreate(&handle));
-
-    return 0;
-
     
     checkCudaErrors(
         cusparseScsrmm(handle,
