@@ -5,6 +5,8 @@
 // CUDA runtime
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
+#include <cusparse_v2.h>
+
 
 // CUDA and CUBLAS functions
 #include <helper_functions.h>
