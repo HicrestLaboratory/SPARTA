@@ -285,11 +285,11 @@ int main(int argc, char* argv[]) {
 
     //create a VBS which is permuted with the asymmetric angle method
     VBS vbmat_angle_hash;
-    angle_hash_method(cmat_A, eps, A_col_part, block_cols, hash_perm, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
+    angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_angle_hash, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
     if (verbose > 1)
     {
         cout << "VBS matrix (asymmetric angle method) created:" << endl;
-        matprint(vbmat_angle_hush);
+        matprint(vbmat_angle_hash);
     }
 
 
