@@ -546,7 +546,9 @@ int main(int argc, char* argv[]) {
         cout << endl;
         copy(algo_times.begin(),
             algo_times.end(),
-            ostream_iterator<int>(cout, " "));
+            ostream_iterator<double>(cout, " "));
+
+        cout<<endl;
     }
 
 
