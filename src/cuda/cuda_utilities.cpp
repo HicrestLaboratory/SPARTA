@@ -294,7 +294,6 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     cusparseHandle_t handle;
     cusparseMatDescr_t descrA;
 
-
     checkCudaErrors(cusparseCreateMatDescr(&descrA));
     checkCudaErrors(cusparseCreate(&handle));
     
@@ -317,19 +316,14 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
             C_rows)
     );
 
-
-    std::cout << "check" << std::endl;
-
+    matprint(d_C, C_rows, C_cols, C_rows, 1);
 
     // copy result from device to host 
     checkCudaErrors(cublasGetMatrix(C_rows, C_cols, sizeof(float), d_C, C_rows, C, C_rows));
 
-    cudaDeviceSynchronize();
+    cudaDeviceSynchronize()
 
-    std::cout << "check" << std::endl;
-
-
-    // clean up memory
+    // clean up memor;y
     checkCudaErrors(cudaFree(d_B));
     checkCudaErrors(cudaFree(d_C));
     checkCudaErrors(cudaFree(d_Val));
