@@ -794,8 +794,8 @@ int copy(const CSR& in_cmat, CSR& out_cmat)
         out_cmat.ja[i] = new int[nzs];
         out_cmat.ma[i] = new DataT[nzs];
 
-        std::copy(in_cmat.ja[i], in_cmat.ja[i] + nzs, out_cmat.ja[i]);
-        std::copy(in_cmat.ma[i], in_cmat.ma[i] + nzs, out_cmat.ma[i]);
+        std::copy((in_cmat.ja)[i], (in_cmat.ja)[i] + nzs, (out_cmat.ja)[i]);
+        std::copy((in_cmat.ma)[i], (in_cmat.ma)[i] + nzs, (out_cmat.ma)[i]);
     }
 
 }
@@ -1275,9 +1275,6 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     int angle_main_part[angle_main_grps];
 
     grp_to_partition(angle_grp, main_dim, angle_main_part);
-
-    arr_print(angle_grp, main_dim);
-    arr_print(angle_main_part, angle_main_grps);
 
     CSR cmat_cpy;
     copy(cmat, cmat_cpy);
