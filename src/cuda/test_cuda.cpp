@@ -359,6 +359,11 @@ int main(int argc, char* argv[]) {
         matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1); 
     }
 
+    if (verbose == -1)
+    {
+        cout << total_t << " ";
+    }
+
     //--------------------------------------------
     //      VBS x dense cublas multiplication	
     //--------------------------------------------
@@ -389,7 +394,10 @@ int main(int argc, char* argv[]) {
         std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
     }
 
-
+    if (verbose == -1)
+    {
+        cout << total_t << " ";
+    }
     //--------------------------------------------
 //      VBS x dense cublas multiplication (no zero blocks mode)
 //--------------------------------------------
@@ -418,6 +426,11 @@ int main(int argc, char* argv[]) {
     if (!block_full_success)
     {
         std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
+    }
+
+    if (verbose == -1)
+    {
+        cout << total_t << " ";
     }
 
 
@@ -459,6 +472,11 @@ int main(int argc, char* argv[]) {
     if (!csrmm_success)
     {
         std::cout << "WARNING: CSR-Dense cusparse multiplication test: FAILED" << std::endl;
+    }
+
+    if (verbose == -1)
+    {
+        cout << total_t << " ";
     }
 
 
