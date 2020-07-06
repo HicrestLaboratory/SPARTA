@@ -45,7 +45,7 @@ NVCC          := $(CUDA_PATH)/bin/nvcc -ccbin $(CXX)
 CUDA_INCLUDE  = -I include/cuda_inc
 CUDA_INCLUDE += $(INCLUDE) 
 
-CUDA_LDFLAGS = -lcublas
+CUDA_LDFLAGS = -lcublas -lcusparse
 #----------------------------------------------
 
 OBJ_DIR = ./obj

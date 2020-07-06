@@ -292,6 +292,7 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
             C_rows, C_cols, sizeof(float), C, C_lead_dim, d_C, C_rows));
     }
 
+    checkCudaErrors(
         cusparseScsrmm(handle,
             CUSPARSE_OPERATION_NON_TRANSPOSE,
             cmat.rows,
@@ -307,7 +308,8 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
             B_rows,
             &beta,
             d_C,
-            C_rows);
+            C_rows)
+    );
 
 
     // copy result from device to host 
