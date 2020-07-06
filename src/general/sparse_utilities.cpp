@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream> //ifstream
+
 #include <cmath> // std::abs
+#include <string>
+
 
 #include <random>
 #include <vector>
