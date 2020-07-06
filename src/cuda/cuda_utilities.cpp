@@ -225,9 +225,7 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     for (int i = 0; i < cmat.rows; i++)
     {
         nnz += cmat.nzcount[i];
-        csrRowPtr[i + 1] = nnz;
-        std::cout << csrRowPtr[i + 1] << std::endl;
-   
+        csrRowPtr[i + 1] = nnz;   
     }
     //-------------------------------------------------------------
 
@@ -237,9 +235,10 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     nnz = 0;
     for (int i = 0; i < cmat.rows; i++)
     {
-        nnz += cmat.nzcount[i];
         std::copy(cmat.ja[i], cmat.ja[i] + cmat.nzcount[i], csrColInd + nnz);
         std::copy(cmat.ma[i], cmat.ma[i] + cmat.nzcount[i], csrVal + nnz);
+        nnz += cmat.nzcount[i];
+
     }
 
     matprint(cmat);
