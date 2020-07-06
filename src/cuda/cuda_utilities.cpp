@@ -245,7 +245,13 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     cusparseMatDescr_t descrA;
     checkCudaErrors(cusparseCreateMatDescr(&descrA));
 
-    cusparseCreate(&handle);
+    std::cout << "check" << std::endl;
+
+
+    checkCudaErrors(cusparseCreate(&handle));
+
+    std::cout << "check" << std::endl;
+
 
     //allocate memory on device
     unsigned int mem_size_csrVal = sizeof(float) * nnz;
