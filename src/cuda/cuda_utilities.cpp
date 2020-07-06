@@ -241,8 +241,11 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
         std::copy(cmat.ma[i], cmat.ma[i] + cmat.nzcount[i], csrVal + nnz);
     }
 
-    cusparseHandle_t handle;
+    cusparseHandle_t handle = 0;
     cusparseMatDescr_t descrA;
+
+
+    checkCudaErrors(cusparseCreate(&handle));
     checkCudaErrors(cusparseCreateMatDescr(&descrA));
 
 

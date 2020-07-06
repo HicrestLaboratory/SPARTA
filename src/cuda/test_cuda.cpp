@@ -424,7 +424,9 @@ int main(int argc, char* argv[]) {
     //--------------------------------------------
     //      CSR x Dense cusparse multiplication
     //--------------------------------------------
-    /*
+
+
+
     DataT mat_C_csrmm[C_rows * C_cols];
     int mat_C_csrmm_fmt = 1;
 
@@ -451,7 +453,6 @@ int main(int argc, char* argv[]) {
         std::cout << "WARNING: CSR-Dense cusparse multiplication test: FAILED" << std::endl;
     }
 
-    */
 
 
 }
