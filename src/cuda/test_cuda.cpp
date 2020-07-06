@@ -291,12 +291,12 @@ int main(int argc, char* argv[]) {
     }
 
     //then create a VBS which is permuted with the asymmetric angle method
-    VBS vbmat_angle_hash;
-    angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_angle_hash, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
+    VBS vbmat_A_angle;
+    angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
     if (verbose > 1)
     {
         cout << "VBS matrix (asymmetric angle method) created:" << endl;
-        matprint(vbmat_angle_hash);
+        matprint(vbmat_A_angle);
     }
 
 
@@ -418,8 +418,8 @@ int main(int argc, char* argv[]) {
     algos.push_back("VBS_paolo");
 
     //--------------------------------------------
-//      VBS x dense cublas multiplication (no zero blocks mode)
-//--------------------------------------------
+    //      VBS x dense cublas multiplication (no zero blocks mode)
+    //--------------------------------------------
 
     DataT mat_Cblock_full[C_rows * C_cols];
     int mat_Cblock_full_fmt = 1;
@@ -449,6 +449,35 @@ int main(int argc, char* argv[]) {
 
     algo_times.push_back(total_t);
     algos.push_back("VBS_paolo_full");
+
+    //--------------------------------------------
+    //      VBS x dense cublas multiplication (permuted with angle algorithm)
+    //--------------------------------------------
+
+    DataT mat_Cblock_angle[C_rows * C_cols];
+    int mat_Cblock_angle_fmt = 1;
+
+    start_t = clock();
+
+    cublas_blockmat_multiply(vbmat_A_angle, mat_B, B_cols, B_rows, mat_Cblock_angle, C_rows);
+
+    total_t = (clock() - start_t) / (double)CLOCKS_PER_SEC;
+
+    if (verbose > 0)
+    {
+        cout << "BlockSparse-Dense multiplication (permuted with AHS). Time taken: " << total_t << endl;
+    }
+    if (verbose > 1)
+    {
+
+        cout << "BLOCK RESULT (permuted with AHS)" << endl;
+        matprint(mat_Cblock_angle, C_rows, C_cols, C_rows, mat_Cblock_angle_fmt);
+    }
+
+    algo_times.push_back(total_t);
+    algos.push_back("VBS_AHS");
+
+
 
 
     //--------------------------------------------
