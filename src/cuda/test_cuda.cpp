@@ -569,8 +569,8 @@ int main(int argc, char* argv[]) {
 
         mean_time = mean(algo_times);
         std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "VBSmm_mean", mean_time);
-        output_couple(output_names, output_values, "VBSmm_std", std_time);
+        output_couple(output_names, output_values, "VBSmm_angle_mean", mean_time);
+        output_couple(output_names, output_values, "VBSmm_angle_std", std_time);
 
         if (verbose > 0)
         {
@@ -610,8 +610,8 @@ int main(int argc, char* argv[]) {
 
         mean_time = mean(algo_times);
         std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "VBSmm_mean", mean_time);
-        output_couple(output_names, output_values, "VBSmm_std", std_time);
+        output_couple(output_names, output_values, "cusparse_spmm_mean", mean_time);
+        output_couple(output_names, output_values, "cusparse_spmm_std", std_time);
 
 
         if (verbose > 0)
