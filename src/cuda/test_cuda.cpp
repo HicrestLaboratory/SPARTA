@@ -455,6 +455,11 @@ int main(int argc, char* argv[]) {
 
 
 
+
+    cleanVBS(vbmat_A);
+    cleanVBS(vbmat_A_full);
+    cleanCSR(cmat_A);
+
 }
 
 //TODO CSR-dense cusparse multiplication
