@@ -217,7 +217,7 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     }
 
 
-    //fill csrRowPtr (holds number of nonzero entries up to row i)
+    //fill csrRowPtr (element i holds number of nonzero entries up to row i)
     int *csrRowPtr = new int[cmat.rows + 1];
     csrRowPtr[0] = 0;
 
@@ -229,6 +229,8 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
    
     }
     //-------------------------------------------------------------
+
+    std::cout << "check" << std::endl;
 
     //fill csrVal (the nonzero values) and csrColInd (their column indices)
     int* csrColInd = new int[nnz];
@@ -245,6 +247,9 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     cusparseMatDescr_t descrA;
     checkCudaErrors(cusparseCreateMatDescr(&descrA));
 
+    std::cout << "check" << std::endl;
+
+
     //allocate memory on device
     unsigned int mem_size_csrVal = sizeof(float) * nnz;
     unsigned int mem_size_csrColInd = sizeof(float) * nnz;
@@ -259,6 +264,9 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     unsigned int size_C = C_rows * C_cols;
     unsigned int mem_size_C = sizeof(float) * size_C;
 
+    std::cout << "check" << std::endl;
+
+
     // allocate device memory
     int* d_RowPtr, * d_ColInd;
     float* d_Val;
@@ -269,6 +277,9 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     float * d_B, * d_C;
     checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
     checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
+
+    std::cout << "check" << std::endl;
+
 
     //copy arrays and matrices to device
     checkCudaErrors(cublasSetVector(
@@ -292,6 +303,9 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
             C_rows, C_cols, sizeof(float), C, C_lead_dim, d_C, C_rows));
     }
 
+    std::cout << "check" << std::endl;
+
+
     checkCudaErrors(
         cusparseScsrmm(handle,
             CUSPARSE_OPERATION_NON_TRANSPOSE,
@@ -312,10 +326,16 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     );
 
 
+    std::cout << "check" << std::endl;
+
+
     // copy result from device to host 
     checkCudaErrors(cublasGetMatrix(C_rows, C_cols, sizeof(float), d_C, C_rows, C, C_rows));
 
     cudaDeviceSynchronize();
+
+    std::cout << "check" << std::endl;
+
 
     // clean up memory
     checkCudaErrors(cudaFree(d_B));
