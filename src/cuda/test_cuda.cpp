@@ -421,6 +421,37 @@ int main(int argc, char* argv[]) {
         std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
     }
 
+    //--------------------------------------------
+    //      CSR x Dense cusparse multiplication
+    //--------------------------------------------
+
+    DataT mat_C_csrmm[C_rows * C_cols];
+    int mat_C_csrmm_fmt = 1;
+
+    start_t = clock();
+
+    cusparse_gemm_custom(cmat_A, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows);
+
+    total_t = (clock() - start_t) / (double)CLOCKS_PER_SEC;
+
+    if (verbose > 0)
+    {
+        cout << "CSR-Dense cusparse multiplication. Time taken: " << total_t << endl;
+    }
+    if (verbose > 1)
+    {
+
+        cout << "CSR-dense cusparse:" << endl;
+        matprint(mat_C_csrmm, C_rows, C_cols, C_rows, 1);
+    }
+
+    int csrmm_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_C_csrmm, C_rows, mat_C_csrmm_fmt, precision);
+    if (!csrmm_success)
+    {
+        std::cout << "WARNING: CSR-Dense cusparse multiplication test: FAILED" << std::endl;
+    }
+
+
 
 
 }
