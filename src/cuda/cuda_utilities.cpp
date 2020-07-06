@@ -244,9 +244,16 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     cusparseHandle_t handle = 0;
     cusparseMatDescr_t descrA;
 
+    std::cout << "check" << std::endl;
+    std::cout << "check" << std::endl;
 
     checkCudaErrors(cusparseCreate(&handle));
+    std::cout << "check" << std::endl;
+    std::cout << "check" << std::endl;
+
     checkCudaErrors(cusparseCreateMatDescr(&descrA));
+    std::cout << "check" << std::endl;
+    std::cout << "check" << std::endl;
 
 
     //allocate memory on device
