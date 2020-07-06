@@ -206,53 +206,22 @@ int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols,
 }
 
 
-int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, float* C, int C_lead_dim, 
+int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrColInd, float* csrVal, float* B, int B_cols, int B_lead_dim, float* C, int C_lead_dim, 
     const float alpha,
     const float beta)
 {
-    if (cmat.fmt != 0)
-    {
-        std::cout << "ERROR: cusparse_gemm_custom only supports CSR (row-major) " << std::endl;
-        return 1;
-    }
 
-
-    //fill csrRowPtr (element i holds number of nonzero entries up to row i)
-    int csrRowPtr[cmat.rows + 1];
-    csrRowPtr[0] = 0;
-
-    int nnz = 0;
-    for (int i = 0; i < cmat.rows; i++)
-    {
-        nnz += cmat.nzcount[i];
-        csrRowPtr[i + 1] = nnz;   
-    }
-    //-------------------------------------------------------------
-
-    //fill csrVal (the nonzero values) and csrColInd (their column indices)
-    int csrColInd[nnz];
-    float csrVal[nnz];
-    nnz = 0;
-    for (int i = 0; i < cmat.rows; i++)
-    {
-        std::copy(cmat.ja[i], cmat.ja[i] + cmat.nzcount[i], csrColInd + nnz);
-        std::copy(cmat.ma[i], cmat.ma[i] + cmat.nzcount[i], csrVal + nnz);
-        nnz += cmat.nzcount[i];
-
-    }
-
-    matprint(cmat);
 
     //allocate memory on device
     unsigned int mem_size_csrVal = sizeof(float) * nnz;
     unsigned int mem_size_csrColInd = sizeof(int) * nnz;
-    unsigned int mem_size_csrRowPtr = sizeof(int) * (cmat.rows + 1);
+    unsigned int mem_size_csrRowPtr = sizeof(int) * (rows + 1);
 
-    unsigned int B_rows = cmat.cols;
+    unsigned int B_rows = cols;
     unsigned int size_B = B_rows * B_cols;
     unsigned int mem_size_B = sizeof(float) * size_B;
     
-    unsigned int C_rows = cmat.rows;
+    unsigned int C_rows = rows;
     unsigned int C_cols = B_cols;
     unsigned int size_C = C_rows * C_cols;
     unsigned int mem_size_C = sizeof(float) * size_C;
@@ -274,26 +243,13 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
         nnz, sizeof(float),
         csrVal, 1, d_Val, 1));
 
-    for (int i = 0; i < nnz; i++)
-    {
-        std::cout << csrVal[i] << " ";
-    }
-    std::cout << std::endl;
-
     checkCudaErrors(cublasSetVector(
         nnz, sizeof(int),
         csrColInd, 1, d_ColInd, 1));
 
-    arr_print(csrColInd, nnz);
-
-
     checkCudaErrors(cublasSetVector(
-        (cmat.rows + 1), sizeof(int),
+        (rows + 1), sizeof(int),
         csrRowPtr, 1, d_RowPtr, 1));
-
-    arr_print(csrRowPtr, cmat.rows + 1);
-
-
 
     checkCudaErrors(cublasSetMatrix(
         B_rows, B_cols, sizeof(float), B, B_lead_dim, d_B, B_rows));
@@ -314,9 +270,9 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     checkCudaErrors(
         cusparseScsrmm(handle,
             CUSPARSE_OPERATION_NON_TRANSPOSE,
-            cmat.rows,
+            rows,
             B_cols,
-            cmat.cols,
+            cols,
             csrRowPtr[cmat.rows + 1],
             &alpha,
             descrA,
@@ -346,4 +302,39 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     // Destroy the handle
     checkCudaErrors(cusparseDestroy(handle));
 
+}
+
+
+int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int* csrColInd, float* csrVal)
+{
+    if (cmat.fmt != 0)
+    {
+        std::cout << "ERROR: cusparse_gemm_custom only supports CSR (row-major) " << std::endl;
+        return 1;
+    }
+
+
+    //fill csrRowPtr (element i holds number of nonzero entries up to row i)
+    csrRowPtr = new int[cmat.rows + 1];
+    csrRowPtr[0] = 0;
+
+    int nnz = 0;
+    for (int i = 0; i < cmat.rows; i++)
+    {
+        nnz += cmat.nzcount[i];
+        csrRowPtr[i + 1] = nnz;
+    }
+    //-------------------------------------------------------------
+
+    //fill csrVal (the nonzero values) and csrColInd (their column indices)
+    csrColInd = new int[nnz];
+    csrVal = new float[nnz];
+    nnz = 0;
+    for (int i = 0; i < cmat.rows; i++)
+    {
+        std::copy(cmat.ja[i], cmat.ja[i] + cmat.nzcount[i], csrColInd + nnz);
+        std::copy(cmat.ma[i], cmat.ma[i] + cmat.nzcount[i], csrVal + nnz);
+        nnz += cmat.nzcount[i];
+
+    }
 }

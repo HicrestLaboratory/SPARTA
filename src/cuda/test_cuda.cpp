@@ -428,9 +428,16 @@ int main(int argc, char* argv[]) {
     DataT mat_C_csrmm[C_rows * C_cols];
     int mat_C_csrmm_fmt = 1;
 
+    int* csrColInd;
+    int* csrRowPtr;
+    float* csrVal;
+    prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
+    int nnz = csrRowPtr[cmat.rows];
+
+
     start_t = clock();
 
-    cusparse_gemm_custom(cmat_A, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f);
+    cusparse_gemm_custom(cmat_A.rows, cmat_A.cols, nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f);
 
     total_t = (clock() - start_t) / (double)CLOCKS_PER_SEC;
 
