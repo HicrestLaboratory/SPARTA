@@ -95,6 +95,9 @@ int main(int argc, char* argv[]) {
     int warmup = 0;         //number of warmup experiments
     int experiment_reps = 1; //number of non-warmup repetitions
     int algo = -1;           //algorithm choice (-1: all)
+    int correct_check = 0;
+
+
 
 
     srand(seed);
@@ -414,7 +417,7 @@ int main(int argc, char* argv[]) {
         algo_times.clear();
         for (int i = -warmup; i < experiment_reps; i++)
         {
-            cublas_gemm_custom(mat_A, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
+            cublas_gemm_custom(mat_A, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, &dt);
             //only saves non-warmup runs
             if(i >= 0) algo_times.push_back(dt);
         }
@@ -443,10 +446,10 @@ int main(int argc, char* argv[]) {
         DataT mat_Cblock[C_rows * C_cols];
         int mat_Cblock_fmt = 1;
 
-        algo_times.clean();
+        algo_times.clear();
         for (int i = -warmup; i < experiment_reps; i++)
         {
-            cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt);
+            cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows, &dt);
             //only saves non-warmup runs
             if (i >= 0) algo_times.push_back(dt);
         }
@@ -468,14 +471,15 @@ int main(int argc, char* argv[]) {
             matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
         }
 
-        /* 
-        //correctness check
-        int block_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock, C_rows, mat_Cblock_fmt, precision);
-        if (!block_success)
+        if (correct_check)
         {
-            std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
+            int block_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock, C_rows, mat_Cblock_fmt, precision);
+            if (!block_success)
+            {
+                std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
+            }
         }
-        */
+
     }
 
 
@@ -488,10 +492,10 @@ int main(int argc, char* argv[]) {
         int mat_Cblock_full_fmt = 1;
 
 
-        algo_times.clean();
+        algo_times.clear();
         for (int i = -warmup; i < experiment_reps; i++)
         {
-            cublas_blockmat_multiply(vbmat_A_full, mat_B, B_cols, B_rows, mat_Cblock_full, C_rows, dt);
+            cublas_blockmat_multiply(vbmat_A_full, mat_B, B_cols, B_rows, mat_Cblock_full, C_rows, &dt);
             if (i >= 0) algo_times.push_back(dt);
         }
 
@@ -512,10 +516,13 @@ int main(int argc, char* argv[]) {
             matprint(mat_Cblock_full, C_rows, C_cols, C_rows, 1);
         }
 
-        int block_full_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock_full, C_rows, mat_Cblock_full_fmt, precision);
-        if (!block_full_success)
+        if (correct_check)
         {
-            std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
+            int block_full_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock_full, C_rows, mat_Cblock_full_fmt, precision);
+            if (!block_full_success)
+            {
+                std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
+            }
         }
     }
 
@@ -529,7 +536,7 @@ int main(int argc, char* argv[]) {
         DataT mat_Cblock_angle[C_rows * C_cols];
         int mat_Cblock_angle_fmt = 1;
 
-        algo_times.clean();
+        algo_times.clear();
         for (int i = -warmup; i < experiment_reps; i++)
         {
             cublas_blockmat_multiply(vbmat_A_angle, mat_B, B_cols, B_rows, mat_Cblock_angle, C_rows, dt);
@@ -570,10 +577,10 @@ int main(int argc, char* argv[]) {
         float csrVal[nnz];
         prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
         
-        algo_times.clean();
+        algo_times.clear();
         for (int i = -warmup; i < experiment_reps; i++)
         {
-            cusparse_gemm_custom(cmat_A.rows, cmat_A.cols, nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f, dt);
+            cusparse_gemm_custom(cmat_A.rows, cmat_A.cols, nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f, *dt);
             if (i >= 0) algo_times.push_back(dt);
         }
 
