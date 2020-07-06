@@ -371,7 +371,7 @@ int main(int argc, char* argv[]) {
     //******************************************
 
     //keeps track of time
-    double dt;
+    float dt;
     vec_d algo_times;
     float mean_time;
     float std_time;
@@ -417,7 +417,7 @@ int main(int argc, char* argv[]) {
         algo_times.clear();
         for (int i = -warmup; i < experiment_reps; i++)
         {
-            cublas_gemm_custom(mat_A, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, &dt);
+            cublas_gemm_custom(mat_A, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
             //only saves non-warmup runs
             if(i >= 0) algo_times.push_back(dt);
         }
@@ -449,7 +449,7 @@ int main(int argc, char* argv[]) {
         algo_times.clear();
         for (int i = -warmup; i < experiment_reps; i++)
         {
-            cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows, &dt);
+            cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt);
             //only saves non-warmup runs
             if (i >= 0) algo_times.push_back(dt);
         }
@@ -495,7 +495,7 @@ int main(int argc, char* argv[]) {
         algo_times.clear();
         for (int i = -warmup; i < experiment_reps; i++)
         {
-            cublas_blockmat_multiply(vbmat_A_full, mat_B, B_cols, B_rows, mat_Cblock_full, C_rows, &dt);
+            cublas_blockmat_multiply(vbmat_A_full, mat_B, B_cols, B_rows, mat_Cblock_full, C_rows, dt);
             if (i >= 0) algo_times.push_back(dt);
         }
 
