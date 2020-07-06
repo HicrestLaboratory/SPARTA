@@ -274,7 +274,7 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     //copy arrays and matrices to device
     checkCudaErrors(cublasSetVector(
         nnz, sizeof(float),
-        csrVal, 1, d_Val, 1));
+        csrVal, 0, d_Val, 0));
 
     std::cout << "check" << std::endl;
 
