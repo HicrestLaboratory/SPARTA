@@ -940,6 +940,33 @@ int count_nnz(CSR& cmat)
     return nnz;
 }
 
+void read_mtx_format(CSR& cmat, string infilename, int cmat_fmt) {
+    ifstream file(infilename);
+    int rows, cols, num_lines;
+
+    // Ignore comments headers
+    while (file.peek() == '%') file.ignore(2048, '\n');
+
+    // Read number of rows and columns
+    file >> rows >> cols >> num_lines;
+
+    vector<DataT> temp_vec(rows * rows, 0.0);
+
+    // fill the matrix with data
+    for (int l = 0; l < num_lines; l++)
+    {
+        DataT data;
+        int row, col;
+        file >> row >> col >> data;
+        temp_vec[(row - 1) + (col - 1) * rows] = data;
+    }
+
+    DataT tmp_mat[rows * rows];
+    std::copy(tmp_vec.begin(), tmp_vec.end(), tmp_mat);
+    convert_to_CSR(tmp_mat, rows, cols, 0, cmat, cmat_fmt);
+
+}
+
 //TODO: unify hash_permute, angle-permute and conversion to VBS
 
 int hash_permute(CSR& cmat, int* compressed_dim_partition, int* perm, int* group, int mode)

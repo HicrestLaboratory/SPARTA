@@ -100,6 +100,8 @@ int permute_CSR(CSR& cmat, int* perm, int dim);
 
 int count_nnz(CSR& cmat);
 
+void read_mtx_format(CSR& cmat, string infilename, int cmat_fmt);
+
 int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int mode);
 
 int hash(int* arr, int a_len, int block_size, int mode);

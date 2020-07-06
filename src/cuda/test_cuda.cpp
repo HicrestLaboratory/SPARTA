@@ -187,20 +187,22 @@ int main(int argc, char* argv[]) {
      */
 
 
-     /*
-     //NOT SUPPORTED
      //INPUT EXAMPLE 3: read from MTX format
-         if (input_type == 3){
-             //read from mtx
-             if (input_source.empty()) input_source = "testmat.mtx";
-             read_mtx_format(spmat, input_source); //read into CSR
+    if (input_type == 3) 
+    {
+        //read from mtx
+        if (input_source.empty()) input_source = "testmat.mtx";
+        read_mtx_format(cmat_A, input_source, cmat_A_fmt); //read into CSR
 
-             cout << "IMPORTED A CSR FROM MTX FILE" << endl;
-             }
+        if (verbose > 0)
+        {
+            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
+        }
+    }
+
 
 
      //______________________________________
-     */
 
 
      //INPUT EXAMPLE 4: create a random matrix with block structure
@@ -530,6 +532,22 @@ int main(int argc, char* argv[]) {
     cleanCSR(cmat_A);
 
     cout << endl;
+
+
+    //OUTPUT PHASE
+    if (verbose == -1)
+    {
+        copy(algos.begin(),
+            algos.end(),
+            ostream_iterator<int>(cout, " "));
+
+        cout << endl;
+        copy(algo_times.begin(),
+            algo_times.end(),
+            ostream_iterator<int>(cout, " "));
+    }
+
+
 
 }
 
