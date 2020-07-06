@@ -264,26 +264,12 @@ int cusparse_gemm_custom(const CSR& cmat, float* B, int B_cols, int B_lead_dim, 
     int* d_RowPtr, * d_ColInd;
     float* d_Val;
     checkCudaErrors(cudaMalloc((void**)&d_RowPtr, mem_size_csrRowPtr));
-
-    std::cout << "check" << std::endl;
-
-
     checkCudaErrors(cudaMalloc((void**)&d_ColInd, mem_size_csrColInd));
-
-    std::cout << "check" << std::endl;
-
-
     checkCudaErrors(cudaMalloc((void**)&d_Val, mem_size_csrVal));
-
-    std::cout << "check" << std::endl;
-
 
     float * d_B, * d_C;
     checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
     checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
-
-    std::cout << "check" << std::endl;
-
 
     //copy arrays and matrices to device
     checkCudaErrors(cublasSetVector(
