@@ -1273,6 +1273,9 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
 
     angle_method(cmat, eps, compressed_dim_partition, nB, hash_perm, hash_grp, angle_grp, mode);
 
+    std::cout << "OK" << std::endl;
+
+
     sort_permutation(angle_perm, angle_grp, main_dim); //find a permutation that sorts groups
     grp_to_partition(angle_grp, main_dim, angle_main_part);
     angle_main_grps = count_groups(angle_grp, main_dim);
