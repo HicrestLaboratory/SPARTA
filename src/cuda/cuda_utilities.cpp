@@ -315,13 +315,13 @@ int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int *csrColInd, float *csrVa
 
 
     //fill csrRowPtr (element i holds number of nonzero entries up to row i)
-    *csrRowPtr[0] = 0;
+    csrRowPtr[0] = 0;
 
     int nnz = 0;
     for (int i = 0; i < cmat.rows; i++)
     {
         nnz += cmat.nzcount[i];
-        (*csrRowPtr)[i + 1] = nnz;
+        csrRowPtr[i + 1] = nnz;
     }
     //-------------------------------------------------------------
 
@@ -329,8 +329,8 @@ int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int *csrColInd, float *csrVa
     nnz = 0;
     for (int i = 0; i < cmat.rows; i++)
     {
-        std::copy(cmat.ja[i], cmat.ja[i] + cmat.nzcount[i], *csrColInd + nnz);
-        std::copy(cmat.ma[i], cmat.ma[i] + cmat.nzcount[i], *csrVal + nnz);
+        std::copy(cmat.ja[i], cmat.ja[i] + cmat.nzcount[i], csrColInd + nnz);
+        std::copy(cmat.ma[i], cmat.ma[i] + cmat.nzcount[i], csrVal + nnz);
         nnz += cmat.nzcount[i];
 
     }
