@@ -429,7 +429,7 @@ int main(int argc, char* argv[]) {
     int mat_C_csrmm_fmt = 1;
 
     //prepare the cusparse CSR format
-    int nnz = nnz(cmat_A);
+    int nnz = count_nnz(cmat_A);
     int csrRowPtr[cmat_A.rows + 1];
     int csrColInd[nnz];
     float csrVal[nnz];

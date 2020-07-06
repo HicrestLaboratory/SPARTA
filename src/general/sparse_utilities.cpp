@@ -926,7 +926,7 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
     }
 }
 
-int nnz(CSR& cmat)
+int count_nnz(CSR& cmat)
 {
     int nnz = 0;
     int main = (cmat.fmt == 0) ? cmat.rows : cmat.cols;
