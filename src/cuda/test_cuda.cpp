@@ -26,6 +26,8 @@
 #include "comp_mats.h"
 
 using namespace std;
+typedef std::vector<double> vec_d;
+typedef std::vector<string> vec_str;
 
 int main(int argc, char* argv[]) {
 
@@ -281,6 +283,16 @@ int main(int argc, char* argv[]) {
         matprint(vbmat_A_full);
     }
 
+    //create a VBS which is permuted with my method
+    VBS vbmat_angle_hush;
+    angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_angle_hush, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
+    if (verbose > 1)
+    {
+        cout << "VBS matrix (asymmetric angle method) created:" << endl;
+        matprint(vbmat_A_full);
+    }
+
+
     /*
     //*******************************************
     //        REPORT ON BLOCK STRUCTURE
@@ -339,10 +351,8 @@ int main(int argc, char* argv[]) {
 	int C_cols = B_cols;
 
 
-    if (verbose == -1)
-    {
-        cout << "cublas_gemm " << "paolo_block " << "paolo_block_full " << "cusparse_csrmm " << endl;
-    }
+    vec_d algo_times; 
+    ved_str algos;
 
     //--------------------------------------------
     //  dense-dense cublas gemm multiplication
@@ -364,10 +374,8 @@ int main(int argc, char* argv[]) {
         matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1); 
     }
 
-    if (verbose == -1)
-    {
-        cout << total_t << " ";
-    }
+    algo_times.push_back(total_t);
+    algos.push_back("cublas_gemm");
 
     //--------------------------------------------
     //      VBS x dense cublas multiplication	
@@ -399,10 +407,9 @@ int main(int argc, char* argv[]) {
         std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
     }
 
-    if (verbose == -1)
-    {
-        cout << total_t << " ";
-    }
+    algo_times.push_back(total_t);
+    algos.push_back("VBS_paolo");
+
     //--------------------------------------------
 //      VBS x dense cublas multiplication (no zero blocks mode)
 //--------------------------------------------
@@ -433,10 +440,8 @@ int main(int argc, char* argv[]) {
         std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
     }
 
-    if (verbose == -1)
-    {
-        cout << total_t << " ";
-    }
+    algo_times.push_back(total_t);
+    algos.push_back("VBS_paolo_full");
 
 
     //--------------------------------------------
@@ -479,16 +484,16 @@ int main(int argc, char* argv[]) {
         std::cout << "WARNING: CSR-Dense cusparse multiplication test: FAILED" << std::endl;
     }
 
-    if (verbose == -1)
-    {
-        cout << total_t << " ";
-    }
+    algo_times.push_back(total_t);
+    algos.push_back("cusparse_csrmm");
 
 
-
+    //cleaning
     cleanVBS(vbmat_A);
     cleanVBS(vbmat_A_full);
     cleanCSR(cmat_A);
+
+    cout << endl;
 
 }
 

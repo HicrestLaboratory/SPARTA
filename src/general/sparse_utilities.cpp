@@ -863,6 +863,8 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
 
 int permute_CSR(CSR& cmat, int* perm, int dim) {
     //permutes rows (dim == 0), cols (dim == 1) or both (dim==2) of a matrix in CSR form;
+    //dim = cmat.fmt will permute the main dimension;
+
 
     int main_dim = (cmat.fmt == 0) ? cmat.rows : cmat.cols;
     int second_dim = (cmat.fmt == 0) ? cmat.cols : cmat.rows;
@@ -939,7 +941,7 @@ int count_nnz(CSR& cmat)
 
 //TODO: unify hash_permute, angle-permute and conversion to VBS
 
-int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int mode)
+int hash_permute(CSR& cmat, int* compressed_dim_partition, int* perm, int* group, int mode)
 {
     //finds a group structure and a permutation for the main dimension of a CSR mat
     //NOTE: this does NOT automatically permute the CSR
@@ -963,7 +965,7 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
     {
         group[i] = -1;
 
-        hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], comp_dim_partition, mode); //calculate hash value for each row
+        hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], compressed_dim_partition, mode); //calculate hash value for each row
     }
 
     sort_permutation(perm, hashes, main_dim); //find a permutation that sorts hashes
@@ -994,7 +996,7 @@ int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int 
                 ja_1 = cmat.ja[j];
                 len_1 = cmat.nzcount[j];
 
-                if (check_same_pattern(ja_0, len_0, ja_1, len_1, comp_dim_partition, mode))
+                if (check_same_pattern(ja_0, len_0, ja_1, len_1, compressed_dim_partition, mode))
                 {
                     group[j] = tmp_group; //assign row j to the tmp_group
                 }
@@ -1243,7 +1245,109 @@ int norm2(int* arr, int len)
 }
 
 
-int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_perm, int* in_group, int *out_group,  int mode)
+int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt, int mode)
+{
+    //create a VBS reordering the main (uncompressed) dimension of a CSR matrix according to the angle+hash algorithm
+    //do not change the original array
+
+    int rows = cmat.rows;
+    int cols = cmat.cols;
+    int main_dim = (cmat.fmt == 0) ? rows : cols;
+
+    int hash_perm[main_dim];
+    int hash_grp[main_dim];
+
+    hash_permute(cmat, compressed_dim_partition, hash_perm, hash_grp, mode);
+
+    int angle_perm[main_dim];
+    int angle_grp[main_dim];
+    int* angle_main_partition;
+    int angle_main_grps;
+
+    angle_method(cmat, eps, compressed_dim_partition, nB, hash_perm, hash_grp, angle_grp, mode);
+
+    sort_permutation(angle_perm, angle_grp, main_dim); //find a permutation that sorts groups
+    grp_to_partition(angle_grp, main_dim, angle_main_part);
+    angle_main_grps = count_groups(angle_grp, main);
+
+    CSR cmat_cpy;
+    copy(cmat, cmat_cpy);
+
+    permute_CSR(cmat_cpy, angle_perm, cmat_cpy.fmt); //permute the tmp CSR
+
+    int* row_part;
+    int row_blocks;
+    int* col_part;
+    int col_blocks;
+
+    if (cmat.fmt == 0)
+    {
+        row_part = angle_main_part;
+        row_blocks = angle_main_grps;
+        col_part = compressed_dim_partition;
+        col_blocks = nB;
+    }
+    else
+    {
+        col_part = angle_main_part;
+        col_blocks = angle_main_grps;
+        row_part = compressed_dim_partition;
+        row_blocks = nB;
+    }
+
+    convert_to_VBS(cmat_cpy,
+        vbmat,
+        angle_main_grps, angle_main_part,
+        block_cols, col_part,
+        vbmat_blocks_fmt, vbmat_entries_fmt);
+
+    cleanCSR(cmat_cpy);
+}
+
+/*
+int symmetric_angle_hash_method(CSR& cmat, float eps, VBS& vbmat)
+{
+
+    int rows = cmat.rows;
+    int cols = cmat.cols;
+    if (rows != cols)
+    {
+        std::cout << "WARNING: symmetric angle hash method requires symmetric matrix." << std::endl;
+        return 1;
+    }
+
+    int main_dim = (cmat.fmt == 0) ? rows : cols;
+    compressed_dim_partition = linspan(0, main_dim, 1); //no blocs on the compressed dimension
+
+    int hash_perm[main_dim];
+    int hash_grp[main_dim];
+
+    hash_permute(cmat, compressed_dim_partition, hash_perm, hash_grp, 0);
+
+    permute_CSR(cmat, angle_perm, 2);
+    
+    permute(hash_grp, hash_perm, main_dim);
+
+    int newpartition[main_dim];
+    new_partition = grp_to_partition(hash_grp, main_dim, compressed_dim_partition);
+
+    int* identity_perm = linspan(0, main_dim, 1);
+
+    int angle_perm[main_dim];
+    int angle_grp[main_dim];
+
+    angle_method(cmat, eps, compressed_dim_partition, nB, identity_perm, hash_grp, angle_grp, 1);
+
+    sort_permutation(angle_perm, angle_grp, main_dim); //find a permutation that sorts groups
+
+    permute_CSR(cmat, angle_perm, cmat.fmt);
+
+    compressed_dim_partition = grp_to_partition(hash_grp, main_dim, compressed_dim_partition);
+
+}
+*/
+
+int angle_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB,int* in_perm, int* in_group, int *out_group,  int mode)
 {
     /*
     COMPUTES A GROUPING AND PERMUTATION FOR A CSR MATRIX (ALONG ITS MAIN DIMENSION) 
@@ -1251,7 +1355,7 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
 
     IN: 
         cmat: the CSR matrix
-        comp_dim_partition: the partition of the matrix along its compressed dimension. Element i is the start position of block i; last element is the length of the compressed dimension;
+        compressed_dim_partition: the partition of the matrix along its compressed dimension. Element i is the start position of block i; last element is the length of the compressed dimension;
         nB: the number of blocks in the partition
         in_perm: a permutation of the main dimension (rows in the same group should be adjacent in this permutation); 
         in_group: a grouping along the main dimension;
@@ -1302,7 +1406,7 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
                 in_this_grp++; //keep count of the elements in the group
             }
 
-            get_pattern(arr0, len0, comp_dim_partition, this_pattern, mode); //get the row pattern (stores into this_pattern)
+            get_pattern(arr0, len0, compressed_dim_partition, this_pattern, mode); //get the row pattern (stores into this_pattern)
 
 
 
@@ -1328,7 +1432,7 @@ int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB,int* in_p
                     int len1 = cmat.nzcount[j];
                     that_group = in_group[j];
 
-                    get_pattern(arr1, len1, comp_dim_partition, that_pattern, mode); //get the row pattern (store into that_pattern)
+                    get_pattern(arr1, len1, compressed_dim_partition, that_pattern, mode); //get the row pattern (store into that_pattern)
 
                     int norm_1 = norm2(that_pattern, nB); //get norm of the pattern
 
