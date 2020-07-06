@@ -929,7 +929,7 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
 int nnz(CSR& cmat)
 {
     int nnz = 0;
-    int main = (cmat.fmat == 0) ? rows : cols;
+    int main = (cmat.fmt == 0) ? cmat.rows : cmat.cols;
     for (int i = 0; i < main; i++)
     {
         nnz += cmat.nzcount[i];
