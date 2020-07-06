@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
     float precision = 0.0001;        //precision for float equality check
 
     int warmup = 0;         //number of warmup experiments
-    int experiment_reps = 1; //number of non-warmup repetitions
+    int experiment_reps = 5; //number of non-warmup repetitions
     int algo = -1;           //algorithm choice (-1: all)
     int correct_check = 0;
 
