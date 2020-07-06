@@ -366,8 +366,6 @@ int main(int argc, char* argv[]) {
     DataT mat_Cblock[C_rows * C_cols];
     int mat_Cblock_fmt = 1;
 
-    std::cout << "HEY" << std::endl;
-
     start_t = clock();
 
     cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows);
