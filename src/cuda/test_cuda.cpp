@@ -432,7 +432,7 @@ int main(int argc, char* argv[]) {
     int* csrRowPtr;
     float* csrVal;
     prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
-    int nnz = csrRowPtr[cmat.rows];
+    int nnz = csrRowPtr[cmat_A.rows];
 
 
     start_t = clock();
