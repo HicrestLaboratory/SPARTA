@@ -677,7 +677,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, in
     int mat_cols = cmat.cols;
     int mat_size = mat_rows * mat_cols;
     int mat_fmt = 0;
-    DataT* mat = new DataT[mat_size] = { 0 };
+    DataT* mat = new DataT[mat_size]{ 0 };
     convert_to_mat(cmat, mat, mat_fmt);
     convert_to_VBS(mat, mat_rows, mat_cols, mat_fmt, vbmat, block_rows, rowpart, block_cols, colpart, vbmat_block_fmt, vbmat_entries_fmt, no_zero_mode);
     delete[] mat;
@@ -690,7 +690,7 @@ int matprint(const VBS& vbmat)
     int mat_rows = vbmat.row_part[vbmat.block_rows];
     int mat_cols = vbmat.col_part[vbmat.block_cols];
 
-    DataT* tmp_mat = new int [mat_rows * mat_cols] = { 0 };
+    DataT* tmp_mat = new int [mat_rows * mat_cols]{ 0 };
     convert_to_mat(vbmat, tmp_mat, 0);
     matprint(tmp_mat, mat_rows, vbmat.row_part, vbmat.block_rows, mat_cols, vbmat.col_part, vbmat. block_cols, mat_cols, 0);
     delete[] tmp_mat;
@@ -875,7 +875,7 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt)
     int mat_size = mat_rows * mat_cols;
     int mat_fmt = 0;
 
-    DataT* mat = new DataT[mat_size] = { 0 };
+    DataT* mat = new DataT[mat_size]{ 0 };
     convert_to_mat(vbmat, mat, mat_fmt);
     convert_to_CSR(mat, mat_rows, mat_cols, mat_fmt, cmat, csr_fmt);
     delete[] mat;
@@ -953,7 +953,7 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
         }
     }
 
-    int counter = new int[in_second_dim] = { 0 };
+    int* counter = new int[in_second_dim]{ 0 };
    
     //initialize arrays in out_cmat
     for (int j = 0; j < in_second_dim; j++)
