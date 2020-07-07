@@ -655,8 +655,14 @@ int main(int argc, char* argv[]) {
 
 
     delete[] mat_B;
+    std::cout << "??????" << endl;
+
     cleanVBS(vbmat_A);
+    std::cout << "??????" << endl;
+
     cleanVBS(vbmat_A_full);
+    std::cout << "??????" << endl;
+
     cleanCSR(cmat_A);
 
     std::cout << "??????" << endl;
