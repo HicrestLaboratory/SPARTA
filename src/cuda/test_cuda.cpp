@@ -344,19 +344,19 @@ int main(int argc, char* argv[]) {
 
     A_row_part = new int[block_rows + 1]; //partitions have one element more for the rightmost border.
     A_col_part = new int[block_cols + 1];
-    std::cout << "??????" << std::endl;
 
 
     linspan(A_row_part, 0, A_rows + 1, block_size); //row and column partitions
     linspan(A_col_part, 0, A_cols + 1, block_size);
-
-    std::cout << "??????" << std::endl;
 
 
     if ((A_rows % block_size != 0) or (A_cols % block_size != 0))
     {
         std::cout << "WARNING: The row or column dimension of the input matrix is not multiple of the block size " << std::endl;
     }
+    
+    std::cout << "??????" << std::endl;
+
 
     convert_to_VBS(cmat_A,
         vbmat_A,

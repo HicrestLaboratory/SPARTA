@@ -259,7 +259,7 @@ int* rand_partition(int* part, int len, int blocks)
 
 int count_groups(int* grp, int grp_len)
 {
-    int perm[grp_len];
+    int* perm = new int[grp_len];
     sort_permutation(perm, grp, grp_len);
     int last_grp = -1;
     int groups = 0;
@@ -273,6 +273,8 @@ int count_groups(int* grp, int grp_len)
             last_grp = grp[i];
         }
     }
+
+    delete[] perm;
     return groups;
 
 }
@@ -284,7 +286,7 @@ int grp_to_partition(int* grp, int grp_len, int* partition)
     //    grp_len: lenght of grp
     // OUT: 
     //    partition: partition similar entries of grp together (sorted by entry)
-    int perm[grp_len];
+    int* perm = new int[grp_len];
     sort_permutation(perm, grp, grp_len);
     int last_grp = -1;
     int group = 0;
@@ -301,6 +303,8 @@ int grp_to_partition(int* grp, int grp_len, int* partition)
         
     }
     partition[group] = grp_len;
+
+    delete[] perm;
     return group;
 }
 
@@ -321,8 +325,6 @@ int cleanVBS(VBS& vbmat)
 int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbmat, int block_rows, int* row_part, int block_cols, int *col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode)
 {
 
-    std::cout << "??????" << std::endl;
-
     vbmat.block_rows = block_rows;
     vbmat.block_cols = block_cols;
 
@@ -333,9 +335,6 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     vbmat.col_part = new int[block_cols + 1];
     std::copy(row_part, row_part + block_rows + 1, vbmat.row_part);
     std::copy(col_part, col_part + block_cols + 1, vbmat.col_part);
-
-
-    std::cout << "??????" << std::endl;
 
     int vbmat_main_dim, vbmat_compressed_dim;
     int *b_main_ptr, *b_second_ptr;
@@ -364,8 +363,6 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
         b_second_ptr = row_part;
     }
 
-    std::cout << "??????" << std::endl;
-
     int main_pos, main_block_dim, second_pos, second_block_dim;
     int row, col, row_block_dim, col_block_dim;
     int total_nonzero_entries = 0; 
@@ -377,9 +374,6 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     svi jab;
     svd mab;
 
- 
-    std::cout << "??????" << std::endl;
-
 
     //FIND BLOCK STRUCTURE--------------------------------------------------------------
     for (int i = 0; i < vbmat_main_dim; i++)        //loops trough main block dimension
@@ -387,9 +381,6 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
         main_pos = b_main_ptr[i];
         main_block_dim = b_main_ptr[i + 1] - main_pos;
         vbmat.nzcount[i] = 0;
-
-        std::cout << "??????" << std::endl;
-
 
         for (int j = 0; j < vbmat_compressed_dim; j++)     //loops through compressed block dimension
         {
@@ -686,9 +677,10 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, in
     int mat_cols = cmat.cols;
     int mat_size = mat_rows * mat_cols;
     int mat_fmt = 0;
-    DataT mat[mat_size] = { 0 };
+    DataT* mat = new DataT[mat_size] = { 0 };
     convert_to_mat(cmat, mat, mat_fmt);
     convert_to_VBS(mat, mat_rows, mat_cols, mat_fmt, vbmat, block_rows, rowpart, block_cols, colpart, vbmat_block_fmt, vbmat_entries_fmt, no_zero_mode);
+    delete[] mat;
 
     return 0;
 }
@@ -698,9 +690,10 @@ int matprint(const VBS& vbmat)
     int mat_rows = vbmat.row_part[vbmat.block_rows];
     int mat_cols = vbmat.col_part[vbmat.block_cols];
 
-    DataT tmp_mat[mat_rows * mat_cols] = { 0 };
+    DataT* tmp_mat = new int [mat_rows * mat_cols] = { 0 };
     convert_to_mat(vbmat, tmp_mat, 0);
     matprint(tmp_mat, mat_rows, vbmat.row_part, vbmat.block_rows, mat_cols, vbmat.col_part, vbmat. block_cols, mat_cols, 0);
+    delete[] tmp_mat;
 }
 
 //TODO: efficient conversion CSR <-> VBS
@@ -839,8 +832,8 @@ int convert_to_CSR(const DataT* in_mat, int mat_rows, int mat_cols, int mat_fmt,
     cmat.ja = new int* [cmat_main_dim];
     cmat.ma = new DataT* [cmat_main_dim];
 
-    int tmp_ja[cmat_compressed_dim];
-    DataT tmp_ma[cmat_compressed_dim];
+    int* tmp_ja = new int[cmat_compressed_dim];
+    DataT* tmp_ma = new DataT[cmat_compressed_dim];
 
     int mat_lead_dim = mat_fmt == 0 ? cmat.cols : cmat.rows;
 
@@ -867,6 +860,9 @@ int convert_to_CSR(const DataT* in_mat, int mat_rows, int mat_cols, int mat_fmt,
 
     }
 
+    delete[] tmp_ma;
+    delete[] tmp_ja;
+
     return 0;
 }
 
@@ -879,18 +875,20 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt)
     int mat_size = mat_rows * mat_cols;
     int mat_fmt = 0;
 
-    DataT mat[mat_size] = { 0 };
+    DataT* mat = new DataT[mat_size] = { 0 };
     convert_to_mat(vbmat, mat, mat_fmt);
     convert_to_CSR(mat, mat_rows, mat_cols, mat_fmt, cmat, csr_fmt);
+    delete[] mat;
 
     return 0;
 }
 
 int matprint(const CSR& cmat)
 {
-    DataT tmp_mat[cmat.rows * cmat.cols] = { 0 };
+    DataT* tmp_mat = new DataT[cmat.rows * cmat.cols] = { 0 };
     convert_to_mat(cmat, tmp_mat, 0);
     matprint(tmp_mat, cmat.rows, cmat.cols, cmat.cols, 0);
+    delete[] tmp_mat;
 }
 
 int copy(const CSR& in_cmat, CSR& out_cmat) 
@@ -955,7 +953,7 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
         }
     }
 
-    int counter[in_second_dim] = { 0 };
+    int counter = new int[in_second_dim] = { 0 };
    
     //initialize arrays in out_cmat
     for (int j = 0; j < in_second_dim; j++)
@@ -978,6 +976,8 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
             out_cmat.ma[j][c] = elem;
         }
     }
+    
+    delete[] counter;
 
 }
 
@@ -1083,9 +1083,10 @@ void read_mtx_format(CSR& cmat, std::string infilename, int cmat_fmt) {
         tmp_vec[(row - 1) + (col - 1) * rows] = data;
     }
 
-    DataT tmp_mat[rows * rows];
+    DataT* tmp_mat = new DataT[rows * rows];
     std::copy(tmp_vec.begin(), tmp_vec.end(), tmp_mat);
     convert_to_CSR(tmp_mat, rows, cols, 0, cmat, cmat_fmt);
+    delete[] tmp_mat;
 
 }
 
@@ -1109,7 +1110,7 @@ int hash_permute(CSR& cmat, int* compressed_dim_partition, int* perm, int* group
     int main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
     int second_dim = cmat.fmt == 0 ? cmat.cols : cmat.rows;
 
-    int hashes[main_dim]; //will store hash values. The hash of a row (col) is the sum of the indices (mod block_size) of its nonzero entries
+    int* hashes = new int[main_dim]; //will store hash values. The hash of a row (col) is the sum of the indices (mod block_size) of its nonzero entries
 
     for (int i = 0; i < main_dim; i++)
     {
@@ -1154,6 +1155,7 @@ int hash_permute(CSR& cmat, int* compressed_dim_partition, int* perm, int* group
         }
     }
 
+    delete[] hashes;
     sort_permutation(perm, group, main_dim); //stores in perm a permutation that sorts rows by group
 }
 
@@ -1405,14 +1407,13 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     int main_dim = (cmat.fmt == 0) ? rows : cols;
 
 
-    int hash_perm[main_dim];
-    int hash_grp[main_dim];
+    int* hash_perm = new int[main_dim];
+    int* hash_grp = new int[main_dim];
 
     hash_permute(cmat, compressed_dim_partition, hash_perm, hash_grp, mode);
     
-    int angle_perm[main_dim];
-    int angle_grp[main_dim];
-
+    int* angle_perm = new int[main_dim];
+    int* angle_grp = new int[main_dim];
 
     angle_method(cmat, eps, compressed_dim_partition, nB, hash_perm, hash_grp, angle_grp, mode);
 
@@ -1422,7 +1423,7 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     int angle_main_grps;
     angle_main_grps = count_groups(angle_grp, main_dim);
 
-    int angle_main_part[angle_main_grps];
+    int* angle_main_part = new int[angle_main_grps];
 
     grp_to_partition(angle_grp, main_dim, angle_main_part);
 
@@ -1457,7 +1458,14 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
         col_blocks, col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
 
+
+    //cleaning
     cleanCSR(cmat_cpy);
+    delete[] hash_perm;
+    delete[] hash_grp;
+    delete[] angle_perm;
+    delete[] angle_grp;
+    delete[] angle_main_part;
 }
 
 
@@ -1574,11 +1582,11 @@ int angle_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB,int
     int idx, jdx;
     int this_group = -1; //the (out_)group the current row is in. 
     int in_this_grp;
-    int this_pattern[nB] = { 0 }; //the pattern of the current row or group of rows
+    int* this_pattern = new int[nB]{ 0 }; //the pattern of the current row or group of rows
 
     int that_group;//the (in_)group the compared row is in
     int in_that_grp;
-    int that_pattern[nB] = { 0 };
+    int* that_pattern = new int[nB]{ 0 };
 
     int i, j;
 
@@ -1666,6 +1674,9 @@ int angle_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB,int
             }
         }
     }
+
+    delete[] this_pattern;
+    delete[] that_pattern;
 
 
 }
