@@ -697,12 +697,12 @@ int matprint(const VBS& vbmat)
 
     int mat_rows = vbmat.row_part[vbmat.block_rows];    
     int mat_cols = vbmat.col_part[vbmat.block_cols];
-    DataT* tmp_mat = new DataT[mat_rows * mat_cols];
+    DataT* temp_mat = new DataT[mat_rows * mat_cols];
 
-    convert_to_mat(vbmat, tmp_mat, 0);
+    convert_to_mat(vbmat, temp_mat, 0);
     
-    matprint(tmp_mat, mat_rows, vbmat.row_part, vbmat.block_rows, mat_cols, vbmat.col_part, vbmat. block_cols, mat_cols, 0);
-    delete[] tmp_mat;
+    matprint(temp_mat, mat_rows, vbmat.row_part, vbmat.block_rows, mat_cols, vbmat.col_part, vbmat. block_cols, mat_cols, 0);
+    delete[] temp_mat;
 }
 
 //TODO: efficient conversion CSR <-> VBS
