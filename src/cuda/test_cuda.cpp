@@ -655,6 +655,7 @@ int main(int argc, char* argv[]) {
 
     delete[] mat_B;
     cleanVBS(vbmat_A);
+    matprint(vbamt_A_full);
     cleanVBS(vbmat_A_full);
     cleanCSR(cmat_A);
     //OUTPUT PHASE

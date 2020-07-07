@@ -434,8 +434,6 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
 
     std:copy(jab.begin(), jab.end(), vbmat.jab);
 
- 
-
 
     int mat_idx = 0; //keeps reading position for mat
     int vbmat_idx = 0; //keeps writing position for vbmat 
