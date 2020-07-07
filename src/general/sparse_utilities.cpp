@@ -690,7 +690,7 @@ int matprint(const VBS& vbmat)
     int mat_rows = vbmat.row_part[vbmat.block_rows];
     int mat_cols = vbmat.col_part[vbmat.block_cols];
 
-    DataT* tmp_mat = new int [mat_rows * mat_cols]{ 0 };
+    DataT* tmp_mat = new DataT[mat_rows * mat_cols]{ 0 };
     convert_to_mat(vbmat, tmp_mat, 0);
     matprint(tmp_mat, mat_rows, vbmat.row_part, vbmat.block_rows, mat_cols, vbmat.col_part, vbmat. block_cols, mat_cols, 0);
     delete[] tmp_mat;
@@ -885,7 +885,7 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt)
 
 int matprint(const CSR& cmat)
 {
-    DataT* tmp_mat = new DataT[cmat.rows * cmat.cols] = { 0 };
+    DataT* tmp_mat = new DataT[cmat.rows * cmat.cols]{ 0 };
     convert_to_mat(cmat, tmp_mat, 0);
     matprint(tmp_mat, cmat.rows, cmat.cols, cmat.cols, 0);
     delete[] tmp_mat;
