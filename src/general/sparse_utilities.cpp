@@ -220,22 +220,19 @@ returns the permutation that would sort arrary arr
     );
 }
 
-int* linspan(int start, int end, int step)
+int linspan(int* arr, int start, int end, int step)
 {
     if (step <= 0)
     {
         std::cout << "Error: step must be positive" << std::endl;
         return(0);
     }
-    int len = std::abs(end - start) / step;
-    int* arr = new int[len + 1];
     int val = start;
-    for (int i = 0; i < len + 1; i++)
+    for (int i = 0; val < end; i++)
     {
         arr[i] = val;
         val += step;
     }
-    return arr;
 }
 
 int randperm(int* arr, int len)
