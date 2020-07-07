@@ -511,9 +511,6 @@ int main(int argc, char* argv[]) {
         output_couple(output_names, output_values, "VBSmm_mean", mean_time);
         output_couple(output_names, output_values, "VBSmm_std", std_time);
 
-        cleanVBS(vbmat_A);
-
-
 
         if (verbose > 0)
         {
@@ -604,6 +601,9 @@ int main(int argc, char* argv[]) {
 
         delete[] mat_Cblock_angle;
     }
+
+    cleanVBS(vbmat_A);
+
 
 
     //--------------------------------------------
