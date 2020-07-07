@@ -414,6 +414,8 @@ int main(int argc, char* argv[]) {
     int B_rows = A_cols;
     int mat_B_fmt = 1;
 
+
+    //TODO smart pointers for matrices
     DataT* mat_B = new DataT[B_rows * B_cols]{ 0 };
     random_mat(mat_B, B_rows, B_cols, B_sparsity);
 
@@ -434,7 +436,7 @@ int main(int argc, char* argv[]) {
         std::cout << "looking for memory error" << std::endl;
 
 
-        DataT* mat_A_gemm = new DataT [A_rows * A_cols] = { 0 };
+        DataT* mat_A_gemm = new DataT [A_rows * A_cols]{ 0 };
         std::cout << "looking for memory error" << std::endl;
 
 
@@ -442,7 +444,7 @@ int main(int argc, char* argv[]) {
         std::cout << "looking for memory error" << std::endl;
 
 
-        DataT* mat_Cgemm = new DataT[C_rows * C_cols] = { 0 };
+        DataT* mat_Cgemm = new DataT[C_rows * C_cols]{ 0 };
         int mat_Cgemm_fmt = 1;
 
         std::cout << "looking for memory error" << std::endl;
