@@ -314,21 +314,15 @@ int grp_to_partition(int* grp, int grp_len, int* partition)
 int cleanVBS(VBS& vbmat)
 {
 
-    std::cout << "cleaning vbs??????" << std::endl;
+    if (vbmat.nzcount) delete[] vbmat.nzcount;
 
-    delete[] vbmat.nzcount;
-    std::cout << "??????" << std::endl;
+    if (vbmat.jab) delete[] vbmat.jab;
 
-    delete[] vbmat.jab;
-    std::cout << "??????" << std::endl;
+    if (vbmat.mab) delete[] vbmat.mab;
 
-    delete[] vbmat.mab;
-    std::cout << "??????" << std::endl;
+    if (vbmat.row_part) delete[] vbmat.row_part;
 
-    delete[] vbmat.row_part;
-    std::cout << "??????" << std::endl;
-
-    delete[] vbmat.col_part;
+    if (vbmat.col_part) delete[] vbmat.col_part;
 
     return 0;
 }

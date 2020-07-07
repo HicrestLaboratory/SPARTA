@@ -640,8 +640,6 @@ int main(int argc, char* argv[]) {
             matprint(mat_C_csrmm, C_rows, C_cols, C_rows, 1);
         }
 
-        std::cout << "??????" << endl;
-
         delete[] mat_C_csrmm;
         delete[] csrColInd;
         delete[] csrRowPtr;
