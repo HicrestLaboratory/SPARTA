@@ -651,22 +651,12 @@ int main(int argc, char* argv[]) {
 
 
     //cleaning
-    std::cout << "??????" << endl;
 
 
     delete[] mat_B;
-    std::cout << "??????" << endl;
-
     cleanVBS(vbmat_A);
-    std::cout << "??????" << endl;
-
     cleanVBS(vbmat_A_full);
-    std::cout << "??????" << endl;
-
     cleanCSR(cmat_A);
-
-    std::cout << "??????" << endl;
-
     //OUTPUT PHASE
     if (verbose == -1)
     {
