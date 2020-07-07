@@ -369,6 +369,7 @@ int main(int argc, char* argv[]) {
 
     cleanVBS(vbmat_A);
 
+    return 0;
 
     //create a VBS with same structure as vbmat_A but which treats zero blocks as full blocks. Used for comparison.
     VBS vbmat_A_full;
