@@ -303,7 +303,7 @@ int main(int argc, char* argv[]) {
     //scramble the original matrix
     if (scramble)
     {
-        int random_permutation = new int[A_rows] 
+        int* random_permutation = new int[A_rows];
         randperm(random_permutation, A_rows);
         permute_CSR(cmat_A, random_permutation, 0);
         delete[] random_permutation;
