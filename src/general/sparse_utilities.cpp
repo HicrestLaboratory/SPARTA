@@ -692,8 +692,8 @@ int matprint(const VBS& vbmat)
 {
 
     std::cout << vbmat.block_rows << " " << vbmat.block_cols << std::endl;
-    arr_print(vbmat.row_part, vbmat.block_rows);
-    arr_print(vbmat.row_part, vbmat.block_cols);
+    arr_print(vbmat.row_part, vbmat.block_rows + 1);
+    arr_print(vbmat.col_part, vbmat.block_cols + 1);
 
     int mat_rows = vbmat.row_part[vbmat.block_rows];
     int mat_cols = vbmat.col_part[vbmat.block_cols];
