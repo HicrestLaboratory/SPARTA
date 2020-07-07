@@ -364,6 +364,8 @@ int main(int argc, char* argv[]) {
         block_cols, A_col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
 
+    cleanVBS(vbmat_A);
+
 
     if (verbose > 0) cout << "VBS matrix created." << endl;
     if (verbose > 1) matprint(vbmat_A);
@@ -437,9 +439,6 @@ int main(int argc, char* argv[]) {
     //defining the output matrix C
 	int C_rows = A_rows;
 	int C_cols = B_cols;
-
-    cleanVBS(vbmat_A);
-
 
     //--------------------------------------------
     //  dense-dense cublas gemm multiplication
