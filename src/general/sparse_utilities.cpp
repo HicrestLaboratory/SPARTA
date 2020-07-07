@@ -314,7 +314,7 @@ int grp_to_partition(int* grp, int grp_len, int* partition)
 int cleanVBS(VBS& vbmat)
 {
 
-    std::cout << "??????" << std::endl;
+    std::cout << "cleaning vbs??????" << std::endl;
 
     delete[] vbmat.nzcount;
     std::cout << "??????" << std::endl;
