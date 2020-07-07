@@ -418,9 +418,6 @@ int main(int argc, char* argv[]) {
     output_couple(output_names, output_values, "Repetitions", experiment_reps);
     output_couple(output_names, output_values, "Algorithm", algo);
 
-    cleanVBS(vbmat_A);
-
-
 
     if (verbose > 0)        cout << "\n \n ************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl;
 
@@ -513,6 +510,9 @@ int main(int argc, char* argv[]) {
         std_time = std_dev(algo_times);
         output_couple(output_names, output_values, "VBSmm_mean", mean_time);
         output_couple(output_names, output_values, "VBSmm_std", std_time);
+
+        cleanVBS(vbmat_A);
+
 
 
         if (verbose > 0)
