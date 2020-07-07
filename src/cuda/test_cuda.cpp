@@ -566,6 +566,8 @@ int main(int argc, char* argv[]) {
         delete[] mat_Cblock_full;
     }
 
+    cleanVBS(vbmat_A);
+
 
     //--------------------------------------------
     //      VBS x dense cublas multiplication (permuted with angle algorithm)
@@ -660,11 +662,7 @@ int main(int argc, char* argv[]) {
         cout << output_values << endl;
     }
 
-    cleanVBS(vbmat_A);
-
-
     delete[] mat_B;
-    cleanVBS(vbmat_A);
     cleanVBS(vbmat_A_full);
     cleanVBS(vbmat_A_angle);
     cleanCSR(cmat_A);
