@@ -367,10 +367,6 @@ int main(int argc, char* argv[]) {
     if (verbose > 0) cout << "VBS matrix created." << endl;
     if (verbose > 1) matprint(vbmat_A);
 
-    cleanVBS(vbmat_A);
-
-    return 0;
-
     //create a VBS with same structure as vbmat_A but which treats zero blocks as full blocks. Used for comparison.
     VBS vbmat_A_full;
     int no_zero_mode = 1;
