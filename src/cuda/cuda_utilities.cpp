@@ -188,22 +188,32 @@ int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols,
     checkCudaErrors(cudaMalloc((void **) &d_C, mem_size_C));
     //-------------------------------------------------------
 
+    int mem = 0;
+    std::cout << "looking for memory error" << mem++ << std::endl;
+
     //copy matrices to device
     checkCudaErrors(cublasSetMatrix(
                                     A_rows, A_cols, sizeof(float), A, lda, d_A, A_rows));
     checkCudaErrors(cublasSetMatrix(
                                     B_rows, B_cols, sizeof(float), B, ldb, d_B, B_rows));
 
+    std::cout << "looking for memory error" << mem++ << std::endl;
+
     // CUBLAS version 2.0
     cublasHandle_t handle;
 
     checkCudaErrors(cublasCreate(&handle));
+
+    std::cout << "looking for memory error" << mem++ << std::endl;
+
 
     //initialize cuda events
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
     cudaEventRecord(start, 0);
+
+    std::cout << "looking for memory error" << mem++ << std::endl;
 
     //Perform gemm operation with cublas
     checkCudaErrors(cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N,
@@ -215,6 +225,8 @@ int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols,
                                 d_C, C_rows));
 
 
+    std::cout << "looking for memory error" << mem++ << std::endl;
+
     //record the elapsed time onto dt
     cudaDeviceSynchronize();
     cudaEventRecord(stop, 0);
@@ -223,13 +235,19 @@ int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols,
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
 
+    std::cout << "looking for memory error" << mem++ << std::endl;
+
     // copy result from device to host 
     checkCudaErrors(cublasGetMatrix(C_rows, C_cols, sizeof(float), d_C, C_rows, C, C_rows));
+
+    std::cout << "looking for memory error" << mem++ << std::endl;
 
     // clean up memory
     checkCudaErrors(cudaFree(d_C));
     checkCudaErrors(cudaFree(d_A));
     checkCudaErrors(cudaFree(d_B));
+
+    std::cout << "looking for memory error" << mem++ << std::endl;
 
     // Destroy the handle
     checkCudaErrors(cublasDestroy(handle));
