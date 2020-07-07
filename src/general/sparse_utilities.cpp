@@ -695,7 +695,7 @@ int matprint(const VBS& vbmat)
 
     convert_to_mat(vbmat, temp_mat, 0);
     
-    matprint(temp_mat, mat_rows, vbmat.row_part, vbmat.block_rows, mat_cols, vbmat.col_part, vbmat. block_cols, mat_cols, 0);
+    matprint(temp_mat, vbmat.row_part[vbmat.block_rows], vbmat.row_part, vbmat.block_rows, vbmat.col_part[vbmat.block_cols], vbmat.col_part, vbmat. block_cols, vbmat.col_part[vbmat.block_cols], 0);
     delete[] temp_mat;
 }
 
