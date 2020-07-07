@@ -640,6 +640,8 @@ int main(int argc, char* argv[]) {
             matprint(mat_C_csrmm, C_rows, C_cols, C_rows, 1);
         }
 
+        std::cout << "??????" << endl;
+
         delete[] mat_C_csrmm;
         delete[] csrColInd;
         delete[] csrRowPtr;
@@ -649,11 +651,15 @@ int main(int argc, char* argv[]) {
 
 
     //cleaning
+    std::cout << "??????" << endl;
+
 
     delete[] mat_B;
     cleanVBS(vbmat_A);
     cleanVBS(vbmat_A_full);
     cleanCSR(cmat_A);
+
+    std::cout << "??????" << endl;
 
     //OUTPUT PHASE
     if (verbose == -1)
