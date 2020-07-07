@@ -363,7 +363,6 @@ int main(int argc, char* argv[]) {
         block_rows, A_row_part,
         block_cols, A_col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
-    cleanVBS(vbmat_A);
 
 
     if (verbose > 0) cout << "VBS matrix created." << endl;
@@ -418,6 +417,9 @@ int main(int argc, char* argv[]) {
     output_couple(output_names, output_values, "Warmup", warmup);
     output_couple(output_names, output_values, "Repetitions", experiment_reps);
     output_couple(output_names, output_values, "Algorithm", algo);
+
+    cleanVBS(vbmat_A);
+
 
 
     if (verbose > 0)        cout << "\n \n ************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl;
