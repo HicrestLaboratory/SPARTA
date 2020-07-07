@@ -376,21 +376,16 @@ int main(int argc, char* argv[]) {
         block_cols, A_col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt, no_zero_mode);
 
-    if (verbose > 1)
-    {
-        cout << "VBS matrix (no zero blocks mode ON) created:" << endl;
-        matprint(vbmat_A_full);
-    }
+    if (verbose > 0)    cout << "VBS matrix (no zero blocks mode ON) created:" << endl;
+    if (verbose > 1)    matprint(vbmat_A_full);
 
     //create a VBS which is permuted with the asymmetric angle method
     VBS vbmat_A_angle;
 
     angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
-    if (verbose > 1)
-    {
-        cout << "VBS matrix (asymmetric angle method) created:" << endl;
-        matprint(vbmat_A_angle);
-    }
+    
+    if (verbose > 0)    cout << "VBS matrix (asymmetric angle method) created:" << endl;
+    if (verbose > 1)    matprint(vbmat_A_angle);
 
     //report on block structure
     float VBS_effective_sparsity = ((float)vbmat_A_angle.nztot) / (A_rows * A_cols);
