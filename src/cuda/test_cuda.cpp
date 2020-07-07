@@ -355,16 +355,12 @@ int main(int argc, char* argv[]) {
         std::cout << "WARNING: The row or column dimension of the input matrix is not multiple of the block size " << std::endl;
     }
     
-    std::cout << "??????" << std::endl;
-
 
     convert_to_VBS(cmat_A,
         vbmat_A,
         block_rows, A_row_part,
         block_cols, A_col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
-
-    std::cout << "??????" << std::endl;
 
     if (verbose > 0) cout << "VBS matrix created." << endl;
     if (verbose > 1) matprint(vbmat_A);
@@ -615,9 +611,9 @@ int main(int argc, char* argv[]) {
 
         //prepare the cusparse CSR format
         int nnz = count_nnz(cmat_A);
-        int csrRowPtr[cmat_A.rows + 1];
-        int csrColInd[nnz];
-        float csrVal[nnz];
+        int* csrRowPtr = new int[cmat_A.rows + 1];
+        int* csrColInd = new int[nnz];
+        float* csrVal = new float[nnz];
         prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
         
         algo_times.clear();
@@ -645,6 +641,9 @@ int main(int argc, char* argv[]) {
         }
 
         delete[] mat_C_csrmm;
+        delete[] csrColInd;
+        delete[] csrRowPtr;
+        delete[] csrVal;
 
     }
 
