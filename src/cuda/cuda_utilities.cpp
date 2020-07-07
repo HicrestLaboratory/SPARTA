@@ -165,6 +165,8 @@ int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols,
 	const float beta,
     float& dt)
 {
+
+    int mem = 0;
     
     //deduce matrices dimensions
     unsigned int B_rows = A_cols;
@@ -182,13 +184,22 @@ int cublas_gemm_custom(const float *A, unsigned int A_rows, unsigned int A_cols,
     unsigned int size_C = C_rows * C_cols;
     unsigned int mem_size_C = sizeof(float) * size_C;
 
+    std::cout << "looking for memory error" << mem++ << std::endl;
+
+
     float *d_A, *d_B, *d_C;
     checkCudaErrors(cudaMalloc((void **) &d_A, mem_size_A));
+    
+    std::cout << "looking for memory error" << mem++ << std::endl;
+
     checkCudaErrors(cudaMalloc((void **) &d_B, mem_size_B)); 
+
+    std::cout << "looking for memory error" << mem++ << std::endl;
+
+
     checkCudaErrors(cudaMalloc((void **) &d_C, mem_size_C));
     //-------------------------------------------------------
 
-    int mem = 0;
     std::cout << "looking for memory error" << mem++ << std::endl;
 
     //copy matrices to device
