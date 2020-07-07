@@ -428,25 +428,35 @@ int main(int argc, char* argv[]) {
     {
         //create a dense array matrix from cmat_A
 
+
+        cout << "looking for memeory error" << endl;
         DataT mat_A[A_rows * A_cols] = { 0 };
+        cout << "looking for memeory error" << endl;
+
         convert_to_mat(cmat_A, mat_A, mat_A_fmt);
+        cout << "looking for memeory error" << endl;
 
         DataT mat_Cgemm[C_rows * C_cols] = { 0 };
+        cout << "looking for memeory error" << endl;
+
         int mat_Cgemm_fmt = 1;
+        cout << "looking for memeory error" << endl;
 
         algo_times.clear();
+        cout << "looking for memeory error" << endl;
+
         for (int i = -warmup; i < experiment_reps; i++)
         {
             cublas_gemm_custom(mat_A, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
             //only saves non-warmup runs
             if(i >= 0) algo_times.push_back(dt);
         }
+        cout << "looking for memeory error" << endl;
 
         mean_time = mean(algo_times);
         std_time = std_dev(algo_times);
         output_couple(output_names, output_values, "gemm_mean", mean_time);
         output_couple(output_names, output_values, "gemm_std", std_time);
-
 
         if (verbose > 0)        cout << "Dense-Dense multiplication. Time taken: " << mean_time << endl;
         if (verbose > 1)
