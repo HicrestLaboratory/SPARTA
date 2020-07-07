@@ -75,20 +75,18 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lea
         B_rows, B_cols, sizeof(float), B, B_lead_dim, d_B, B_rows));
 
 
+    //initialize cuda events
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+
     //creates streams. Each block rows is assigned a different stream.
     cudaStream_t streams[vbmatA.block_rows];
     for (int ib = 0; ib < vbmatA.block_rows; ib++)
     {
         cudaStreamCreate(&(streams[ib]));
     }
-
-
-	
-    //initialize cuda events
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord(start, 0);
 	
 	
     //loop through all blocks
