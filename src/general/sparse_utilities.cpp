@@ -693,7 +693,7 @@ int matprint(const VBS& vbmat)
 
     int mat_rows = vbmat.row_part[vbmat.block_rows];    
     int mat_cols = vbmat.col_part[vbmat.block_cols];
-    std::cout << mat_rows << " " << mat_cols;
+    std::cout << vbmat.row_part[vbmat.block_rows];
     DataT* temp_mat = new DataT[mat_rows * mat_cols]{0};
 
     convert_to_mat(vbmat, temp_mat, 0);
