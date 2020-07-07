@@ -302,6 +302,8 @@ int main(int argc, char* argv[]) {
     //scramble the original matrix
     if (scramble)
     {
+
+        if (verbose > 0) cout << "input matrix rows scrambled" << endl;
         int* random_permutation = new int[A_rows];
         randperm(random_permutation, A_rows);
         permute_CSR(cmat_A, random_permutation, 0);
@@ -361,6 +363,8 @@ int main(int argc, char* argv[]) {
         block_rows, A_row_part,
         block_cols, A_col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
+    cleanVBS(vbmat_A);
+
 
     if (verbose > 0) cout << "VBS matrix created." << endl;
     if (verbose > 1) matprint(vbmat_A);
@@ -650,12 +654,6 @@ int main(int argc, char* argv[]) {
 
     //cleaning
 
-
-    delete[] mat_B;
-    cleanVBS(vbmat_A);
-    cleanVBS(vbmat_A_full);
-    cleanVBS(vbmat_A_angle);
-    cleanCSR(cmat_A);
     //OUTPUT PHASE
     if (verbose == -1)
     {
@@ -663,6 +661,13 @@ int main(int argc, char* argv[]) {
         cout << output_values << endl;
     }
 
+
+
+    delete[] mat_B;
+    cleanVBS(vbmat_A);
+    cleanVBS(vbmat_A_full);
+    cleanVBS(vbmat_A_angle);
+    cleanCSR(cmat_A);
 
 
 }
