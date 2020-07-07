@@ -654,9 +654,7 @@ int main(int argc, char* argv[]) {
 
 
     delete[] mat_B;
-    matprint(vbmat_A);
     cleanVBS(vbmat_A);
-    matprint(vbmat_A_full);
     cleanVBS(vbmat_A_full);
     cleanVBS(vbmat_A_angle);
     cleanCSR(cmat_A);
