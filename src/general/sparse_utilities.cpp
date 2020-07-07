@@ -690,16 +690,17 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, in
 
 int matprint(const VBS& vbmat)
 {
+
+    std::cout << vbmat.block_rows << " " << vbmat.block_cols << std::endl;
+    arr_print(vbmat.row_part, vbmat.block_rows);
+    arr_print(vbmat.row_part, vbmat.block_cols);
+
     int mat_rows = vbmat.row_part[vbmat.block_rows];
     int mat_cols = vbmat.col_part[vbmat.block_cols];
 
     DataT* tmp_mat = new DataT[mat_rows * mat_cols]{ 0 };
-
-    std::cout << "here" << std::endl;
-
     convert_to_mat(vbmat, tmp_mat, 0);
     
-    std::cout << "here" << std::endl;
     matprint(tmp_mat, mat_rows, vbmat.row_part, vbmat.block_rows, mat_cols, vbmat.col_part, vbmat. block_cols, mat_cols, 0);
     delete[] tmp_mat;
 }
