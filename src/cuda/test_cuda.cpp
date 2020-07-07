@@ -427,13 +427,22 @@ int main(int argc, char* argv[]) {
     if ((algo == 1) or (algo == -1))
     {
         //create a dense array matrix from cmat_A
+        std::cout << "looking for memory error" << std::endl;
 
 
         DataT mat_A[A_rows * A_cols] = { 0 };
+        std::cout << "looking for memory error" << std::endl;
+
+
         convert_to_mat(cmat_A, mat_A, mat_A_fmt);
+        std::cout << "looking for memory error" << std::endl;
+
 
         DataT mat_Cgemm[C_rows * C_cols] = { 0 };
         int mat_Cgemm_fmt = 1;
+
+        std::cout << "looking for memory error" << std::endl;
+
 
         algo_times.clear();
         std::cout << "looking for memory error" << std::endl;
