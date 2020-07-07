@@ -438,6 +438,8 @@ int main(int argc, char* argv[]) {
 	int C_rows = A_rows;
 	int C_cols = B_cols;
 
+    cleanVBS(vbmat_A);
+
 
     //--------------------------------------------
     //  dense-dense cublas gemm multiplication
@@ -565,8 +567,6 @@ int main(int argc, char* argv[]) {
         //TODO add correctness check
         delete[] mat_Cblock_full;
     }
-
-    cleanVBS(vbmat_A);
 
 
     //--------------------------------------------
