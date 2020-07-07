@@ -602,9 +602,6 @@ int main(int argc, char* argv[]) {
         delete[] mat_Cblock_angle;
     }
 
-    cleanVBS(vbmat_A);
-
-
 
     //--------------------------------------------
     //      CSR x Dense cusparse multiplication
@@ -663,6 +660,7 @@ int main(int argc, char* argv[]) {
         cout << output_values << endl;
     }
 
+    cleanVBS(vbmat_A);
 
 
     delete[] mat_B;
