@@ -700,9 +700,15 @@ int matprint(const VBS& vbmat)
     std::cout << "WTF" << std::endl;
     
     int mat_cols = vbmat.col_part[vbmat.block_cols];
+    
+    std::cout << "WTF" << std::endl;
 
 
     DataT* tmp_mat = new DataT[mat_rows * mat_cols]{ 0 };
+
+    std::cout << "WTF" << std::endl;
+
+
     convert_to_mat(vbmat, tmp_mat, 0);
     
     matprint(tmp_mat, mat_rows, vbmat.row_part, vbmat.block_rows, mat_cols, vbmat.col_part, vbmat. block_cols, mat_cols, 0);
