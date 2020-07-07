@@ -436,6 +436,8 @@ int main(int argc, char* argv[]) {
         int mat_Cgemm_fmt = 1;
 
         algo_times.clear();
+        std::cout << "looking for memory error" << std::endl;
+
         for (int i = -warmup; i < experiment_reps; i++)
         {
             cublas_gemm_custom(mat_A, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
