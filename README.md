@@ -11,9 +11,9 @@ Variable Block Compressed Sparse (Rows or Columns) is used to store block-sparse
 Running the code requires either Intel MKL library or the CUDA Toolkit.
 MKL Library: https://software.intel.com/en-us/mkl
 
-CUDA install;
-Donwload the cuda toolkit (currently supported 10.0): https://developer.nvidia.com/cuda-downloads
-Set the CUDA_PATH variable to your cuda path (default is /usr/local/cuda-10.0)
+CUDA install
+* Donwload the cuda toolkit (currently supported 10.0) and follow the instructions: https://developer.nvidia.com/cuda-downloads
+* Set the CUDA_PATH variable to your cuda path (default is /usr/local/cuda-10.0)
 
 
 The files have the following structure
