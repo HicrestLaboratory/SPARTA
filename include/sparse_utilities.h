@@ -66,7 +66,7 @@ int sort_permutation(int* perm, int* arr, int n);
 
 int* linspan(int start, int end, int step);
 
-int* randperm(int len);
+int randperm(int* arr, int len);
 
 int* rand_partition(int* part, int len, int blocks);
 

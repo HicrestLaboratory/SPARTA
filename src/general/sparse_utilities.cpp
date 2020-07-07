@@ -238,15 +238,13 @@ int* linspan(int start, int end, int step)
     return arr;
 }
 
-int* randperm(int len)
+int randperm(int* arr, int len)
 {
-    int* arr = new int[len];
     for (int i = 0; i < len; i++)
     {
         arr[i] = i;
     }
     std::random_shuffle(arr, arr + len);
-    return arr;
 }
 
 int* rand_partition(int* part, int len, int blocks)
@@ -1668,142 +1666,4 @@ int angle_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB,int
     }
 
 
-}
-
-int test()
-{
-    
-    //Create a random block matrix
-    int rows = 33;
-    int cols = 12;
-    int mat_fmt = 0;
-
-    int mat_leading_dim = cols;
-
-    DataT mat[rows * cols] = { 0 };
-    float block_sparsity = 0.5;
-    float block_entries_sparsity = 0.7;
-
-    int block_size = 3;
-    int block_rows = rows / block_size;
-    int block_cols = cols / block_size;
-
-    int* row_part = linspan(0, rows, 3); 
-    int* col_part = linspan(0, cols, 3); 
-
-    random_sparse_blocks_mat(mat, rows, cols, mat_fmt, block_size, block_sparsity, block_entries_sparsity);
-    //-------------------------------------
-
-
-
-    std::cout << "The random sparse block matrix:" << std::endl;
-    matprint(mat, rows, row_part, block_rows, cols, col_part, block_cols, mat_leading_dim, mat_fmt);
-
-    std::cout << "converting to CSR" << std::endl;
-    
-    CSR cmat;
-    int cmat_fmt = 0;
-    convert_to_CSR(mat, rows, mat_leading_dim, mat_fmt, cmat, cmat_fmt);
-    
-    std::cout << "mat converted to CSR:" << std::endl;
-    matprint(cmat);
-
-    std::cout << "Permute the matrix main dimension with a random permutation: ";
-    int* perm = randperm(rows);
-    arr_print(perm, rows);
-
-    permute_CSR(cmat, perm, 0);
-    std::cout << "CSR mat permuted:" << std::endl;
-    matprint(cmat);
-
-
-    col_part = linspan(0, cols, 2);
-    std::cout << "Finding a reorder through the hash method." << std::endl;
-    int hash_perm[rows];
-    int hash_grp[rows];
-
-    hash_permute(cmat, col_part, hash_perm, hash_grp, 0);
-    
-    std::cout << "reorder found:" << std::endl;
-    arr_print(hash_perm, rows);
-
-    std::cout << "grouping found: ";
-    arr_print(hash_grp, rows);
-
-
-    std::cout << "Finding a reorder through the angle + hash method." << std::endl;
-    int angle_perm[rows];
-    int angle_grp[rows];
-    float eps = 0.6;
-    angle_method(cmat, eps, col_part, block_cols, hash_perm, hash_grp, angle_grp, 0);
-
-    std::cout << "grouping found: ";
-    arr_print(angle_grp, rows);
-
-    sort_permutation(angle_perm, angle_grp, rows); //find a permutation that sorts groups
-
-    std::cout << "The CSR matrix permuted according to the angle algorithm: ";
-
-    permute_CSR(cmat, angle_perm, 0);
-    matprint(cmat);
-
-
-    int angle_row_groups = count_groups(angle_grp, rows);
-    int angle_row_part[angle_row_groups];
-    grp_to_partition(angle_grp, rows, angle_row_part);
-    std::cout << "The new row partition: ";
-    arr_print(angle_row_part, angle_row_groups + 1);
-
-
-    std::cout << "Converting to VBS" << std::endl;
-    
-    int vbmat_blocks_fmt = 1;
-    int vbmat_entries_fmt = 1;
-    VBS vbmat;
-    
-    convert_to_VBS(cmat,
-        vbmat,
-        angle_row_groups, angle_row_part,
-        block_cols, col_part,
-        vbmat_blocks_fmt, vbmat_entries_fmt);
-    
-    std::cout << "CSR converted to VBS:" << std::endl;
-    matprint(vbmat);
-
-
-
-    /*
-    //    CMAT permuting tests
-
-    int rows = 10;
-    int cols = 5;
-    int fmt = 0;
-    DataT mat[rows * cols] = { 0 };
-    mat[1] = 1.;
-    mat[15] = 2.;
-    mat[28] = 3.;
-
-    matprint(mat, rows, cols, cols, fmt);
-    std::cout << "printed mat" << std::endl;
-
-    CSR cmat; 
-    int cmat_fmt = 0;
-    convert_to_CSR(mat, rows, cols, fmt, cmat, cmat_fmt);
-
-    matprint(cmat);
-    std::cout << "mat converted to CSR" << std::endl;
-
-    int perm1[cols] = { 1,2,3,0,4 };
-    int perm2[rows] = { 1,2,0,9,8,7,3,4,6,5 };
-    
-    permute_CSR(cmat, perm2, 0);
-    std::cout << "mat rows permuted" << std::endl;
-    matprint(cmat);
-    
-    permute_CSR(cmat, perm1, 1);
-    std::cout << "mat cols permuted" << std::endl;
-    matprint(cmat);
-
-
-    */
 }
