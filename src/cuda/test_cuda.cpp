@@ -351,11 +351,8 @@ int main(int argc, char* argv[]) {
         block_cols, A_col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
 
-    if (verbose > 1)
-    {
-        cout << "VBS matrix created:" << endl;
-        matprint(vbmat_A);
-    }
+    if (verbose > 0) cout << "VBS matrix created." << endl;
+    if (verbose > 1) matprint(vbmat_A);
 
     //create a VBS with same structure as vbmat_A but which treats zero blocks as full blocks. Used for comparison.
     VBS vbmat_A_full;
