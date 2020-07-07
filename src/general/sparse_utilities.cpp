@@ -321,6 +321,8 @@ int cleanVBS(VBS& vbmat)
 int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbmat, int block_rows, int* row_part, int block_cols, int *col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode)
 {
 
+    std::cout << "??????" << std::endl;
+
     vbmat.block_rows = block_rows;
     vbmat.block_cols = block_cols;
 
@@ -332,6 +334,8 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     std::copy(row_part, row_part + block_rows + 1, vbmat.row_part);
     std::copy(col_part, col_part + block_cols + 1, vbmat.col_part);
 
+
+    std::cout << "??????" << std::endl;
 
     int vbmat_main_dim, vbmat_compressed_dim;
     int *b_main_ptr, *b_second_ptr;
@@ -360,6 +364,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
         b_second_ptr = row_part;
     }
 
+    std::cout << "??????" << std::endl;
 
     int main_pos, main_block_dim, second_pos, second_block_dim;
     int row, col, row_block_dim, col_block_dim;
@@ -373,6 +378,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     svd mab;
 
  
+    std::cout << "??????" << std::endl;
 
 
     //FIND BLOCK STRUCTURE--------------------------------------------------------------
@@ -382,8 +388,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
         main_block_dim = b_main_ptr[i + 1] - main_pos;
         vbmat.nzcount[i] = 0;
 
-     
-        std::cout << i << std::endl;
+        std::cout << "??????" << std::endl;
 
 
         for (int j = 0; j < vbmat_compressed_dim; j++)     //loops through compressed block dimension
