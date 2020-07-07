@@ -317,16 +317,16 @@ int cleanVBS(VBS& vbmat)
     std::cout << "??????" << std::endl;
 
     delete[] vbmat.nzcount;
-    std::cout << "??????" << endl;
+    std::cout << "??????" << std::endl;
 
     delete[] vbmat.jab;
-    std::cout << "??????" << endl;
+    std::cout << "??????" << std::endl;
 
     delete[] vbmat.mab;
-    std::cout << "??????" << endl;
+    std::cout << "??????" << std::endl;
 
     delete[] vbmat.row_part;
-    std::cout << "??????" << endl;
+    std::cout << "??????" << std::endl;
 
     delete[] vbmat.col_part;
 
