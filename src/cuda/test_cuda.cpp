@@ -225,7 +225,7 @@ int main(int argc, char* argv[]) {
         convert_to_CSR(rand_mat, A_rows, A_cols, mat_A_fmt, cmat_A, cmat_A_fmt);
         if (verbose > 0)
         {
-            cout << "CREATED A RANDOM CSR" << endl;
+            cout << "CREATED A RANDOM CSR with sparsity = " << sparsity << endl;
         }
     }
     //______________________________________
@@ -278,11 +278,11 @@ int main(int argc, char* argv[]) {
         if (verbose > 0)
         {
             cout << "CREATED A RANDOM BLOCK MATRIX:"
-                << " Rows = " << A_rows
-                << " Columns: " << A_cols
-                << " Block size: " << block_size
-                << " Block sparsity: " << block_sparsity
-                << " Entries sparsity: " << sparsity
+                << " Rows = " << A_rows << "\n"
+                << " Columns: " << A_cols << "\n"
+                << " Block size: " << block_size << "\n"
+                << " Block sparsity: " << block_sparsity << "\n"
+                << " Entries sparsity: " << sparsity << "\n"
                 << endl;
         }
         //TODO optional: scramble the matrix row to see if the algo can reorder them.
