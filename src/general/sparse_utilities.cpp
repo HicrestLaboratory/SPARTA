@@ -370,12 +370,17 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     int row, col, row_block_dim, col_block_dim;
     int total_nonzero_entries = 0;
 
+    int look_for_mem = 0;
+    std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+
     vbmat.nzcount = new int[vbmat_main_dim]; //initialize nzcount, which stores number of nonzero blocks for each block-row (-column)
     int mat_leading_dim = mat_fmt == 0 ? mat_cols : mat_rows;
 
     int matpos;
     svi jab;
     svd mab;
+
+    std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
 
 
     //FIND BLOCK STRUCTURE--------------------------------------------------------------
@@ -384,6 +389,10 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
         main_pos = b_main_ptr[i];
         main_block_dim = b_main_ptr[i + 1] - main_pos;
         vbmat.nzcount[i] = 0;
+
+        std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+        stdd::cout << i << std::endl;
+
 
         for (int j = 0; j < vbmat_compressed_dim; j++)     //loops through compressed block dimension
         {
@@ -417,6 +426,8 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     }
     //----------------------------------------------------------------------------------
 
+    std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+
 
     vbmat.nztot = total_nonzero_entries;
     vbmat.jab = new int[jab.size()];
@@ -424,15 +435,24 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
 
     std:copy(jab.begin(), jab.end(), vbmat.jab);
 
+    std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+
+
     int mat_idx = 0; //keeps reading position for mat
     int vbmat_idx = 0; //keeps writing position for vbmat 
     int jab_count = 0;
+
+    std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+
 
     //COPY VALUES from mat to vbmat ------------------------------------------------------
     for (int i = 0; i < vbmat_main_dim; i++)
     {
         main_pos = b_main_ptr[i];
         main_block_dim = b_main_ptr[i + 1] - main_pos;
+
+        std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+
         for (int nzs = 0; nzs < vbmat.nzcount[i]; nzs++)
         {
             int j = jab[jab_count];
@@ -465,6 +485,9 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
             jab_count++;
         }
     }
+
+    std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+
 
     return 0;
 }
