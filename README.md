@@ -5,8 +5,8 @@ The project aims to investigate new data structures and compression algorithms f
 
 The repository contains code for compressing sparse matrices into dense block data-structure. 
 
-Input sparse matrices are stored in Compressed Sparse Row (CSR) format. 
-Variable Block Compressed Sparse Row is used to store block-sparse matrices. 
+Input sparse matrices are stored in Compressed Sparse Row (CSR) or Compressed sparse columns (CSC) format. 
+Variable Block Compressed Sparse (Rows or Columns) is used to store block-sparse matrices. 
 
 Running the code requires either Intel MKL library or the CUDA Toolkit.
 MKL Library: https://software.intel.com/en-us/mkl
