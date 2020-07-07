@@ -368,10 +368,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
 
     int main_pos, main_block_dim, second_pos, second_block_dim;
     int row, col, row_block_dim, col_block_dim;
-    int total_nonzero_entries = 0;
-
-    int look_for_mem = 0;
-    std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+    int total_nonzero_entries = 0; 
 
     vbmat.nzcount = new int[vbmat_main_dim]; //initialize nzcount, which stores number of nonzero blocks for each block-row (-column)
     int mat_leading_dim = mat_fmt == 0 ? mat_cols : mat_rows;
@@ -380,7 +377,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     svi jab;
     svd mab;
 
-    std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+ 
 
 
     //FIND BLOCK STRUCTURE--------------------------------------------------------------
@@ -390,7 +387,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
         main_block_dim = b_main_ptr[i + 1] - main_pos;
         vbmat.nzcount[i] = 0;
 
-        std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+     
         std::cout << i << std::endl;
 
 
@@ -426,7 +423,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
     }
     //----------------------------------------------------------------------------------
 
-    std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+ 
 
 
     vbmat.nztot = total_nonzero_entries;
@@ -435,14 +432,14 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
 
     std:copy(jab.begin(), jab.end(), vbmat.jab);
 
-    std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+ 
 
 
     int mat_idx = 0; //keeps reading position for mat
     int vbmat_idx = 0; //keeps writing position for vbmat 
     int jab_count = 0;
 
-    std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+ 
 
 
     //COPY VALUES from mat to vbmat ------------------------------------------------------
@@ -451,7 +448,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
         main_pos = b_main_ptr[i];
         main_block_dim = b_main_ptr[i + 1] - main_pos;
 
-        std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+     
 
         for (int nzs = 0; nzs < vbmat.nzcount[i]; nzs++)
         {
@@ -486,7 +483,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
         }
     }
 
-    std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
+ 
 
 
     return 0;
@@ -1023,7 +1020,7 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
     if (permute_second)
     {
 
-        int idx_perm[second_dim];
+        int* idx_perm = new int[second_dim];
 
         for (int j = 0; j < second_dim; j++)
         {
@@ -1043,11 +1040,14 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
                 ja[j] = idx_perm[ja[j]]; //assign the new names to indices
             }
 
-            int tmp_perm[ja_len];
+            int* tmp_perm = new int[ja_len] {0};
             sort_permutation(tmp_perm, ja, ja_len); //find correct reorder of column indices.
             permute(cmat.ja[i], tmp_perm, ja_len); //sort ja[i]
             permute(cmat.ma[i], tmp_perm, ja_len); //permute ma[i] with the same permutation;
+            delete[] tmp_perm;
         }
+
+        delete[] idx_perm;
     }
 }
 
