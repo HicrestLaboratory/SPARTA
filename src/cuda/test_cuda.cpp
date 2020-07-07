@@ -219,10 +219,12 @@ int main(int argc, char* argv[]) {
     //INPUT EXAMPLE 1: RANDOM CSR
     //create a random sparse matrix
     if (input_type == 1) {
-        DataT rand_mat[A_cols * A_rows];
+        DataT* rand_mat = new DataT[A_cols * A_rows];
         random_mat(rand_mat, A_rows, A_cols, sparsity); //generate random mat
 
         convert_to_CSR(rand_mat, A_rows, A_cols, mat_A_fmt, cmat_A, cmat_A_fmt);
+        delete[] rand_mat;
+
         if (verbose > 0)
         {
             cout << "CREATED A RANDOM CSR with sparsity = " << sparsity << endl;
@@ -269,11 +271,13 @@ int main(int argc, char* argv[]) {
 
         //A_rows and sparsity have been previously set by options. Default: n = 20, sparsity = 0.5;
 
-        DataT rand_block_mat[A_rows * A_cols];
+        DataT* rand_block_mat = new DataT [A_rows * A_cols];
 
         random_sparse_blocks_mat(rand_block_mat, A_rows, A_cols, mat_A_fmt, block_size, block_sparsity, sparsity);
 
         convert_to_CSR(rand_block_mat, A_rows, A_cols, mat_A_fmt, cmat_A, cmat_A_fmt);
+        
+        delete[] rand_block_mat;
 
         if (verbose > 0)
         {
@@ -410,7 +414,7 @@ int main(int argc, char* argv[]) {
     int B_rows = A_cols;
     int mat_B_fmt = 1;
 
-    DataT mat_B[B_rows * B_cols] = { 0 };
+    DataT* mat_B = new DataT[B_rows * B_cols]{ 0 };
     random_mat(mat_B, B_rows, B_cols, B_sparsity);
 
     if (verbose > 0)        std::cout << "Random matrix B created:" << std::endl;
@@ -430,15 +434,15 @@ int main(int argc, char* argv[]) {
         std::cout << "looking for memory error" << std::endl;
 
 
-        DataT mat_A[A_rows * A_cols] = { 0 };
+        DataT* mat_A_gemm = new DataT [A_rows * A_cols] = { 0 };
         std::cout << "looking for memory error" << std::endl;
 
 
-        convert_to_mat(cmat_A, mat_A, mat_A_fmt);
+        convert_to_mat(cmat_A, mat_A_gemm, mat_A_fmt);
         std::cout << "looking for memory error" << std::endl;
 
 
-        DataT mat_Cgemm[C_rows * C_cols] = { 0 };
+        DataT* mat_Cgemm = new DataT[C_rows * C_cols] = { 0 };
         int mat_Cgemm_fmt = 1;
 
         std::cout << "looking for memory error" << std::endl;
@@ -449,7 +453,7 @@ int main(int argc, char* argv[]) {
 
         for (int i = -warmup; i < experiment_reps; i++)
         {
-            cublas_gemm_custom(mat_A, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
+            cublas_gemm_custom(mat_A_gemm, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
             //only saves non-warmup runs
             if(i >= 0) algo_times.push_back(dt);
         }
@@ -465,6 +469,9 @@ int main(int argc, char* argv[]) {
             cout << "GEMM Matrix:" << endl;
             matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1);
         }
+        
+        delete[] mat_A_gemm;
+        delete[] mat_Cgemm;
 
     }
 
@@ -474,7 +481,7 @@ int main(int argc, char* argv[]) {
     //--------------------------------------------
     if ((algo == 2) or (algo == -1))
     {
-        DataT mat_Cblock[C_rows * C_cols];
+        DataT* mat_Cblock = new DataT[C_rows * C_cols];
         int mat_Cblock_fmt = 1;
 
         algo_times.clear();
@@ -502,16 +509,8 @@ int main(int argc, char* argv[]) {
             matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
         }
 
-        /*
-        if (correct_check)
-        {
-            int block_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock, C_rows, mat_Cblock_fmt, precision);
-            if (!block_success)
-            {
-                std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
-            }
-        }
-        */
+        //TODO add correctness check
+        delete[] mat_Cblock;
 
     }
 
@@ -521,7 +520,7 @@ int main(int argc, char* argv[]) {
     //--------------------------------------------
     if ((algo == 3) or (algo == -1))
     {
-        DataT mat_Cblock_full[C_rows * C_cols];
+        DataT* mat_Cblock_full = new DataT[C_rows * C_cols];
         int mat_Cblock_full_fmt = 1;
 
 
@@ -549,16 +548,8 @@ int main(int argc, char* argv[]) {
             matprint(mat_Cblock_full, C_rows, C_cols, C_rows, 1);
         }
 
-        /*
-        if (correct_check)
-        {
-            int block_full_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_Cblock_full, C_rows, mat_Cblock_full_fmt, precision);
-            if (!block_full_success)
-            {
-                std::cout << "WARNING: Block matrix multiplication test: FAILED" << std::endl;
-            }
-        }
-        */
+        //TODO add correctness check
+        delete[] mat_Cblock_full;
     }
 
 
@@ -568,7 +559,7 @@ int main(int argc, char* argv[]) {
     if ((algo == 4) or (algo == -1))
     {
 
-        DataT mat_Cblock_angle[C_rows * C_cols];
+        DataT* mat_Cblock_angle = new DataT[C_rows * C_cols];
         int mat_Cblock_angle_fmt = 1;
 
         algo_times.clear();
@@ -593,6 +584,8 @@ int main(int argc, char* argv[]) {
             cout << "BLOCK RESULT (permuted with AHS)" << endl;
             matprint(mat_Cblock_angle, C_rows, C_cols, C_rows, mat_Cblock_angle_fmt);
         }
+
+        delete[] mat_Cblock_angle;
     }
 
 
@@ -602,7 +595,7 @@ int main(int argc, char* argv[]) {
     if ((algo == 5) or (algo == -1))
     {
 
-        DataT mat_C_csrmm[C_rows * C_cols];
+        DataT* mat_C_csrmm = new DataT[C_rows * C_cols];
         int mat_C_csrmm_fmt = 1;
 
         //prepare the cusparse CSR format
@@ -636,19 +629,14 @@ int main(int argc, char* argv[]) {
             matprint(mat_C_csrmm, C_rows, C_cols, C_rows, 1);
         }
 
-        /*
-        //correctness check
-        int csrmm_success = equal(C_rows, C_cols, mat_Cgemm, C_rows, mat_Cgemm_fmt, mat_C_csrmm, C_rows, mat_C_csrmm_fmt, precision);
-        if (!csrmm_success)
-        {
-            std::cout << "WARNING: CSR-Dense cusparse multiplication test: FAILED" << std::endl;
-        }
-        */
+        delete[] mat_C_csrmm;
 
     }
 
 
     //cleaning
+
+    delete[] mat_B;
     cleanVBS(vbmat_A);
     cleanVBS(vbmat_A_full);
     cleanCSR(cmat_A);
