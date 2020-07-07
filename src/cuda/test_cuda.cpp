@@ -299,8 +299,6 @@ int main(int argc, char* argv[]) {
     //spmat must hold a proper CSR matrix at this point
     //******************************************
 
-    std::cout << "??????" << std::endl;
-
     //scramble the original matrix
     if (scramble)
     {
@@ -317,13 +315,10 @@ int main(int argc, char* argv[]) {
     string output_names;
     string output_values;
 
-    std::cout << "??????" << std::endl;
-
 
     float A_sparsity = ((float) count_nnz(cmat_A))/(A_rows*A_cols);
 
 
-    std::cout << "??????" << std::endl;
 
 
     output_couple(output_names, output_values, "input_type", input_type);
@@ -346,22 +341,31 @@ int main(int argc, char* argv[]) {
     int block_rows = A_rows / block_size;
     int block_cols = A_cols / block_size;
 
+    std::cout << "??????" << std::endl;
+
     A_row_part = new int[block_rows + 1]; //partitions have one element more for the rightmost border.
     A_col_part = new int[block_cols + 1];
         
     linspan(A_row_part, 0, A_rows + 1, block_size); //row and column partitions
     linspan(A_col_part, 0, A_cols + 1, block_size);
 
+    std::cout << "??????" << std::endl;
+
+
     if ((A_rows % block_size != 0) or (A_cols % block_size != 0))
     {
         std::cout << "WARNING: The row or column dimension of the input matrix is not multiple of the block size " << std::endl;
     }
+
+    std::cout << "??????" << std::endl;
 
     convert_to_VBS(cmat_A,
         vbmat_A,
         block_rows, A_row_part,
         block_cols, A_col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
+
+    std::cout << "??????" << std::endl;
 
     if (verbose > 0) cout << "VBS matrix created." << endl;
     if (verbose > 1) matprint(vbmat_A);
