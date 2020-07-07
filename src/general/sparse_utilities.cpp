@@ -691,11 +691,14 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, in
 int matprint(const VBS& vbmat)
 {
 
-    DataT* temp_mat = new DataT[vbmat.row_part[vbmat.block_rows] * vbmat.col_part[vbmat.block_cols]]{0};
+    int rows = vbmat.row_part[vbmat.block_rows];    
+    int cols = vbmat.col_part[vbmat.block_cols];
+
+    DataT* temp_mat = new DataT[rows * cols]{0};
 
     convert_to_mat(vbmat, temp_mat, 0);
     
-    matprint(temp_mat, vbmat.row_part[vbmat.block_rows], vbmat.row_part, vbmat.block_rows, vbmat.col_part[vbmat.block_cols], vbmat.col_part, vbmat. block_cols, vbmat.col_part[vbmat.block_cols], 0);
+    matprint(temp_mat, rows, vbmat.row_part, vbmat.block_rows, cols, vbmat.col_part, vbmat. block_cols, cols, 0);
     delete[] temp_mat;
 }
 
@@ -1468,7 +1471,6 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     delete[] hash_grp;
     delete[] angle_perm;
     delete[] angle_grp;
-    delete[] angle_main_part;
 }
 
 
