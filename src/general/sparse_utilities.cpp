@@ -391,7 +391,7 @@ int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbm
         vbmat.nzcount[i] = 0;
 
         std::cout << "looking for memory fault " << look_for_mem++ << std::endl;
-        stdd::cout << i << std::endl;
+        std::cout << i << std::endl;
 
 
         for (int j = 0; j < vbmat_compressed_dim; j++)     //loops through compressed block dimension
