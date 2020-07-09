@@ -78,4 +78,5 @@ Options for the cuda_test:
 * New algorithm for Matrix reordering and compression to support no-coherent blocks (DONE!)
 * New algorithm for sparse-sparse multiplication
 * Bring back support for MKL
+
 **Stay Tuned!**
