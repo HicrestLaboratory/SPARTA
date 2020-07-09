@@ -1,5 +1,5 @@
 # SPARTA
-**SP**arse **A**ccele**R**ation on **T**ensor **A**rchitecture
+**SPAR**arse acceleration on **T**ensor **A**rchitecture
 
 The project aims to investigate new data structures and compression algorithms for exploting new architecture capabilities, specifically designed for deep learning, for computations which are **sparse and irregular** instead, such as graph analytics.
 
