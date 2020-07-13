@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
     float density = 0.5;   //density of the input matrix;
     float block_density = 0.5; //density inside the blocks;
     string input_source;
-    int scramble = 1; //scramble the input matrix?
+    int scramble = 0; //scramble the input matrix?
 
     int B_cols = 5;    //number of columns in the output matrix;
     float B_density = 1.; //density of the multiplication matrix
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
     //terminal options loop
     opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "a:i:S:q:e:m:n:p:r:s:k:b:v:w:")) != -1)
+    while ((c = getopt(argc, argv, "a:b:i:q:e:f:m:n:p:r:k:s:v:w:S:")) != -1)
         switch (c)
         {
         case 'i':// select input example
@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
             }
             break;
 
-        case 's': //select source file
+        case 'f': //select source file
             //has only effect for example 2 and 3;
             input_source = optarg;
             break;
@@ -192,6 +192,13 @@ int main(int argc, char* argv[]) {
         case 'r': //number of experiment repetitions
             experiment_reps = stoi(optarg);
             break;
+
+
+        case 's': //scramble the input matrix?  0: NO SCRAMBLE
+                    //                          1: SCRAMBLE the rows randomly 
+            scramble = stoi(optarg);
+            break;
+
 
         case 'S': //random seed
             seed = stoi(optarg);
