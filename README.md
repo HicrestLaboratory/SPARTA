@@ -53,7 +53,7 @@ Options for the cuda_test:
 
 * -b: density of blocks (% of nonzero blocks) (only for i = 4)
 
-* -s: source file (only for i = 2, 3)
+* -f: source file (only for i = 2, 3)
 
 * -m: first matrix rows
 
@@ -66,6 +66,10 @@ Options for the cuda_test:
 * -q: density of entries (% of nonzero entries. if i = 4, % of nonzeros inside each nonzero block)
 
 * -r: number of experiment repetitions
+
+* -s: scramble input matrix. 
+* * 0: no scramble. 
+* * 1: scramble rows
 
 * -S: random seed;
 
