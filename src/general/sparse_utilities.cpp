@@ -1070,7 +1070,7 @@ int count_nnz(CSR& cmat)
 
 int count_nnz_blocks(VBS& vbmat)
 {
-    int main_block_dim = (vbmat.fmt == 0) ? vbmat.block_rows : vbmat.block_cols;
+    int main_block_dim = (vbmat.blocks_fmt == 0) ? vbmat.block_rows : vbmat.block_cols;
     int nz_blocks = 0;
     for (int ib = 0; ib < main_block_dim; ib++)
     {
