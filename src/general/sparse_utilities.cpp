@@ -1455,7 +1455,12 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     CSR cmat_cpy;
     copy(cmat, cmat_cpy);
 
+    std::cout << "debug" << std::endl;
+
+
     permute_CSR(cmat_cpy, angle_perm, cmat_cpy.fmt); //permute the tmp CSR
+
+    std::cout << "debug" << std::endl;
 
     int* row_part;
     int row_blocks;
@@ -1476,6 +1481,8 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
         row_part = compressed_dim_partition;
         row_blocks = nB;
     }
+
+    std::cout << "debug" << std::endl;
 
     convert_to_VBS(cmat_cpy,
         vbmat,
