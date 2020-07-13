@@ -387,27 +387,29 @@ int main(int argc, char* argv[]) {
     //---------------------------------------------------
 
 
-    //create a VBS which is permuted with the asymmetric angle method
-    VBS vbmat_A_angle;
+    if (algo == 4 or algo == -1)
+    {
+        //create a VBS which is permuted with the asymmetric angle method
+        VBS vbmat_A_angle;
 
-    angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
-    
-    if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
-    if (verbose > 1)    matprint(vbmat_A_angle);
- 
-    //report on the block structure of vbmat_A_angle
-    float VBS_effective_density = ((float)vbmat_A_angle.nztot) / (A_rows * A_cols);
+        angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
+
+        if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
+        if (verbose > 1)    matprint(vbmat_A_angle);
+
+        //report on the block structure of vbmat_A_angle
+        float VBS_effective_density = ((float)vbmat_A_angle.nztot) / (A_rows * A_cols);
 
 
-    int min_block_H = *(std::min_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows));
-    int max_block_H = *(std::max_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows));
+        int min_block_H = *(std::min_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows));
+        int max_block_H = *(std::max_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows));
 
-    output_couple(output_names, output_values, "VBS_AAM_effective_density", VBS_effective_density);
-    output_couple(output_names, output_values, "VBS_AAM_block_rows", vbmat_A_angle.block_rows);
-    output_couple(output_names, output_values, "VBS_AAM_nz_blocks", count_nnz_blocks(vbmat_A_angle));
-    output_couple(output_names, output_values, "VBS_AAM_min_block_H", min_block_H);
-    output_couple(output_names, output_values, "VBS_AAM_max_block_H", max_block_H);
-
+        output_couple(output_names, output_values, "VBS_AAM_effective_density", VBS_effective_density);
+        output_couple(output_names, output_values, "VBS_AAM_block_rows", vbmat_A_angle.block_rows);
+        output_couple(output_names, output_values, "VBS_AAM_nz_blocks", count_nnz_blocks(vbmat_A_angle));
+        output_couple(output_names, output_values, "VBS_AAM_min_block_H", min_block_H);
+        output_couple(output_names, output_values, "VBS_AAM_max_block_H", max_block_H);
+    }
     //*******************************************
     //         MULTIPLICATION PHASE
     //___________________________________________

@@ -1448,7 +1448,6 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
 
     CSR cmat_cpy;
     copy(cmat, cmat_cpy);
-    matprint(cmat_cpy);
 
 
     permute_CSR(cmat_cpy, angle_perm, cmat_cpy.fmt); //permute the tmp CSR
