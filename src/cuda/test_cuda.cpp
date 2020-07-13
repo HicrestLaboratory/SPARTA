@@ -673,7 +673,8 @@ int main(int argc, char* argv[]) {
 
     delete[] mat_B;
     cleanVBS(vbmat_A_full);
-    cleanVBS(vbmat_A_angle);
+
+    if (algo == 4 or algo == -1) cleanVBS(vbmat_A_angle);
     cleanCSR(cmat_A);
 
 
