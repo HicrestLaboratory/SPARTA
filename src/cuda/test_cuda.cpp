@@ -387,10 +387,10 @@ int main(int argc, char* argv[]) {
     //---------------------------------------------------
 
 
+    VBS vbmat_A_angle;
     if (algo == 4 or algo == -1)
     {
         //create a VBS which is permuted with the asymmetric angle method
-        VBS vbmat_A_angle;
 
         angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
 
