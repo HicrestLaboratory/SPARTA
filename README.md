@@ -51,7 +51,7 @@ Options for the cuda_test:
 * * 4: VBSmm with asymmetric hash-angle reordering
 * * 5: cusparse spmm
 
-* -b: block sparsity (only for i = 4)
+* -b: density of blocks (% of nonzero blocks) (only for i = 4)
 
 * -s: source file (only for i = 2, 3)
 
@@ -63,7 +63,7 @@ Options for the cuda_test:
 
 * -p: size of VBS blocks
 
-* -q: entries sparsity (if i = 4, block entries sparsity)
+* -q: density of entries (% of nonzero entries. if i = 4, % of nonzeros inside each nonzero block)
 
 * -r: number of experiment repetitions
 
