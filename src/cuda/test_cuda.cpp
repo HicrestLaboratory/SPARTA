@@ -483,10 +483,10 @@ int main(int argc, char* argv[]) {
 
         mean_time = mean(algo_times);
         std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "gemm_mean (ms)", mean_time);
+        output_couple(output_names, output_values, "gemm_mean(ms)", mean_time);
         output_couple(output_names, output_values, "gemm_std", std_time);
 
-        if (verbose > 0)        cout << "Dense-Dense multiplication. Time taken (ms): " << mean_time << endl;
+        if (verbose > 0)        cout << "Dense-Dense multiplication. Time taken(ms): " << mean_time << endl;
         if (verbose > 1)
         {
             cout << "GEMM Matrix:" << endl;
@@ -517,13 +517,13 @@ int main(int argc, char* argv[]) {
 
         mean_time = mean(algo_times);
         std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "VBSmm_mean (ms)", mean_time);
+        output_couple(output_names, output_values, "VBSmm_mean(ms)", mean_time);
         output_couple(output_names, output_values, "VBSmm_std", std_time);
 
 
         if (verbose > 0)
         {
-            cout << "BlockSparse-Dense multiplication. Time taken (ms): " << mean_time << endl;
+            cout << "BlockSparse-Dense multiplication. Time taken(ms): " << mean_time << endl;
         }
         if (verbose > 1)
         {
@@ -556,13 +556,13 @@ int main(int argc, char* argv[]) {
 
         mean_time = mean(algo_times);
         std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "VBSmm_nozeros_mean (ms)", mean_time);
+        output_couple(output_names, output_values, "VBSmm_nozeros_mean(ms)", mean_time);
         output_couple(output_names, output_values, "VBSmm_nozeros_std", std_time);
 
 
         if (verbose > 0)
         {
-            cout << "BlockSparse-Dense multiplication (no zero mode ON). Time taken (ms): " << mean_time << endl;
+            cout << "BlockSparse-Dense multiplication (no zero mode ON). Time taken(ms): " << mean_time << endl;
         }
         if (verbose > 1)
         {
@@ -594,12 +594,12 @@ int main(int argc, char* argv[]) {
 
         mean_time = mean(algo_times);
         std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "VBSmm_angle_mean (ms)", mean_time);
+        output_couple(output_names, output_values, "VBSmm_angle_mean(ms)", mean_time);
         output_couple(output_names, output_values, "VBSmm_angle_std", std_time);
 
         if (verbose > 0)
         {
-            cout << "BlockSparse-Dense multiplication (permuted with AHS). Time taken (ms): " << mean_time << endl;
+            cout << "BlockSparse-Dense multiplication (permuted with AHS). Time taken(ms): " << mean_time << endl;
         }
         if (verbose > 1)
         {
@@ -637,7 +637,7 @@ int main(int argc, char* argv[]) {
 
         mean_time = mean(algo_times);
         std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "cusparse_spmm_mean (ms)", mean_time);
+        output_couple(output_names, output_values, "cusparse_spmm_mean(ms)", mean_time);
         output_couple(output_names, output_values, "cusparse_spmm_std", std_time);
 
 
