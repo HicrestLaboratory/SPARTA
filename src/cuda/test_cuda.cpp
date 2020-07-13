@@ -399,8 +399,8 @@ int main(int argc, char* argv[]) {
     float VBS_effective_density = ((float)vbmat_A_angle.nztot) / (A_rows * A_cols);
 
 
-    int min_block_H = std::min_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows);
-    int max_block_H = std::max_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows);
+    int min_block_H = *(std::min_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows));
+    int max_block_H = *(std::max_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows));
 
     output_couple(output_names, output_values, "VBS_AAM_effective_density", VBS_effective_density);
     output_couple(output_names, output_values, "VBS_AAM_block_rows", vbmat_A_angle.block_rows);
