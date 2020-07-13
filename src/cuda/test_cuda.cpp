@@ -34,6 +34,7 @@ typedef std::vector<int> vec_i;
 
 float mean(vec_d v)
 {
+    //mean of a vector
     float m = 0.;
     for (auto t : v)
     {
@@ -45,6 +46,7 @@ float mean(vec_d v)
 
 float std_dev(vec_d v)
 {
+    //std of a vector
     float m = mean(v);
     float s = 0.;
     for (auto t : v)
@@ -54,9 +56,13 @@ float std_dev(vec_d v)
     s = sqrt(s / v.size());
 }
 
+
 template <class myType>
 int output_couple(string& names, string& values, string name, myType value)
 {
+    //append name to names and value to values; add spaces
+    //used to produce output in CSV-like form;
+
     names += name + " ";
     values += to_string(value) + " ";
 }
@@ -77,13 +83,13 @@ int main(int argc, char* argv[]) {
     int A_cols = 8;
     int mat_A_fmt = 1;        //cuda needs column-major matrices
     int block_size = 4;     //block size for variable block matrix. Rows and columns must be evenly divisible by this;
-    float sparsity = 0.5;   //sparsity of the input matrix;
-    float block_sparsity = 0.5; //sparsity inside the blocks;
+    float density = 0.5;   //density of the input matrix;
+    float block_density = 0.5; //density inside the blocks;
     string input_source;
     int scramble = 1; //scramble the input matrix?
 
     int B_cols = 5;    //number of columns in the output matrix;
-    float B_sparsity = 1.; //sparsity of the multiplication matrix
+    float B_density = 1.; //density of the multiplication matrix
 
     float eps = 0.5;        //this value sets how different two rows in the same block can be.
                             //eps = 1 means only rows with equal structure are merged into a block
@@ -132,11 +138,11 @@ int main(int argc, char* argv[]) {
             algo = stoi(optarg);
             break;
 
-        case 'b': //block sparsity
+        case 'b': //block density
 //has only effect for example 4
-            block_sparsity = stof(optarg);
-            if (block_sparsity < 0 or block_sparsity > 1) {
-                fprintf(stderr, "Option -b tried to set block sparsity outside of [0,1]");
+            block_density = stof(optarg);
+            if (block_density < 0 or block_density > 1) {
+                fprintf(stderr, "Option -b tried to set block density outside of [0,1]");
                 return 1;
             }
             break;
@@ -174,11 +180,11 @@ int main(int argc, char* argv[]) {
             block_size = stoi(optarg);
             break;
 
-        case 'q': //input matrix sparsity
+        case 'q': //density of input matrix
             //has only effect for example 1 and 4
-            sparsity = stof(optarg);
-            if (sparsity < 0 or sparsity > 1) {
-                fprintf(stderr, "Option -k tried to set sparsity outside of [0,1]");
+            density = stof(optarg);
+            if (density < 0 or density > 1) {
+                fprintf(stderr, "Option -k tried to set density outside of [0,1]");
                 return 1;
             }
             break;
@@ -220,14 +226,14 @@ int main(int argc, char* argv[]) {
     //create a random sparse matrix
     if (input_type == 1) {
         DataT* rand_mat = new DataT[A_cols * A_rows];
-        random_mat(rand_mat, A_rows, A_cols, sparsity); //generate random mat
+        random_mat(rand_mat, A_rows, A_cols, density); //generate random mat
 
         convert_to_CSR(rand_mat, A_rows, A_cols, mat_A_fmt, cmat_A, cmat_A_fmt);
         delete[] rand_mat;
 
         if (verbose > 0)
         {
-            cout << "CREATED A RANDOM CSR with sparsity = " << sparsity << endl;
+            cout << "CREATED A RANDOM CSR with density = " << density << endl;
         }
     }
     //______________________________________
@@ -269,11 +275,11 @@ int main(int argc, char* argv[]) {
      //INPUT EXAMPLE 4: create a random matrix with block structure
     if (input_type == 4) {
 
-        //A_rows and sparsity have been previously set by options. Default: n = 20, sparsity = 0.5;
+        //A_rows and density have been previously set by options. Default: n = 20, density = 0.5;
 
         DataT* rand_block_mat = new DataT [A_rows * A_cols];
 
-        random_sparse_blocks_mat(rand_block_mat, A_rows, A_cols, mat_A_fmt, block_size, block_sparsity, sparsity);
+        random_sparse_blocks_mat(rand_block_mat, A_rows, A_cols, mat_A_fmt, block_size, block_density, density);
 
         convert_to_CSR(rand_block_mat, A_rows, A_cols, mat_A_fmt, cmat_A, cmat_A_fmt);
         
@@ -285,8 +291,8 @@ int main(int argc, char* argv[]) {
                 << " Rows = " << A_rows << "\n"
                 << " Columns: " << A_cols << "\n"
                 << " Block size: " << block_size << "\n"
-                << " Block sparsity: " << block_sparsity << "\n"
-                << " Entries sparsity: " << sparsity << "\n"
+                << " Density OF blocks: " << block_density << "\n"
+                << " Density IN blocks: " << density << "\n"
                 << endl;
         }
         //TODO optional: scramble the matrix row to see if the algo can reorder them.
@@ -318,23 +324,20 @@ int main(int argc, char* argv[]) {
     string output_values;
 
 
-    float A_sparsity = ((float) count_nnz(cmat_A))/(A_rows*A_cols);
-
-
-
+    float A_density = ((float) count_nnz(cmat_A))/(A_rows*A_cols);
 
     output_couple(output_names, output_values, "input_type", input_type);
     output_couple(output_names, output_values, "A_rows", A_rows);
     output_couple(output_names, output_values, "A_cols", A_cols);
-    output_couple(output_names, output_values, "A_entries_sparsity", A_sparsity);
-    output_couple(output_names, output_values, "A_block_sparsity", block_sparsity);
+    output_couple(output_names, output_values, "A_entries_density", A_density);
+    output_couple(output_names, output_values, "A_block_density", block_density);
     output_couple(output_names, output_values, "A_block_size", block_size);
 
     output_couple(output_names, output_values, "B_cols", B_cols);
-    output_couple(output_names, output_values, "B_sparsity", B_sparsity);
+    output_couple(output_names, output_values, "B_density", B_density);
 
 
-    //create a VBS with fixed block dimension (see input)
+    //Create a VBS with fixed block dimension (see input)
     int vbmat_blocks_fmt = 1;
     int vbmat_entries_fmt = 1; //cuda needs column-major matrices
     VBS vbmat_A;
@@ -366,8 +369,11 @@ int main(int argc, char* argv[]) {
 
     if (verbose > 0) cout << "VBS matrix created." << endl;
     if (verbose > 1) matprint(vbmat_A);
+    //---------------------------------------------------
 
-    //create a VBS with same structure as vbmat_A but which treats zero blocks as full blocks. Used for comparison.
+
+
+    //Create a VBS with same structure as vbmat_A but which treats zero blocks as full blocks. Used for comparison.
     VBS vbmat_A_full;
     int no_zero_mode = 1;
     convert_to_VBS(cmat_A,
@@ -378,19 +384,29 @@ int main(int argc, char* argv[]) {
 
     if (verbose > 0)    cout << "VBS matrix (no zero blocks mode ON) created:" << endl;
     if (verbose > 1)    matprint(vbmat_A_full);
+    //---------------------------------------------------
+
 
     //create a VBS which is permuted with the asymmetric angle method
     VBS vbmat_A_angle;
 
     angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
     
-    if (verbose > 0)    cout << "VBS matrix (asymmetric angle method) created:" << endl;
+    if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
     if (verbose > 1)    matprint(vbmat_A_angle);
+ 
+    //report on the block structure of vbmat_A_angle
+    float VBS_effective_density = ((float)vbmat_A_angle.nztot) / (A_rows * A_cols);
 
-    //report on block structure
-    float VBS_effective_sparsity = ((float)vbmat_A_angle.nztot) / (A_rows * A_cols);
-    output_couple(output_names, output_values, "VBS_AHA_effective_sparsity", VBS_effective_sparsity);
-    output_couple(output_names, output_values, "VBS_AHA_block_rows", vbmat_A_angle.block_rows);
+
+    int min_block_H = std::min_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows);
+    int max_block_H = std::max_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows);
+
+    output_couple(output_names, output_values, "VBS_AAM_effective_density", VBS_effective_density);
+    output_couple(output_names, output_values, "VBS_AAM_block_rows", vbmat_A_angle.block_rows);
+    output_couple(output_names, output_values, "VBS_AAM_nz_blocks", count_nnz_blocks(vbmat_A_angle));
+    output_couple(output_names, output_values, "VBS_AAM_min_block_H", min_block_H);
+    output_couple(output_names, output_values, "VBS_AAM_max_block_H", max_block_H);
 
     //*******************************************
     //         MULTIPLICATION PHASE
@@ -423,7 +439,7 @@ int main(int argc, char* argv[]) {
     //TODO smart pointers for matrices
 
     DataT* mat_B = new DataT[B_rows * B_cols]{ 0 };
-    random_mat(mat_B, B_rows, B_cols, B_sparsity);
+    random_mat(mat_B, B_rows, B_cols, B_density);
 
     if (verbose > 0)        std::cout << "Random matrix B created:" << std::endl;
     if (verbose > 1)        matprint(mat_B, B_rows, B_cols, B_rows, mat_B_fmt);
@@ -467,10 +483,10 @@ int main(int argc, char* argv[]) {
 
         mean_time = mean(algo_times);
         std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "gemm_mean", mean_time);
+        output_couple(output_names, output_values, "gemm_mean (ms)", mean_time);
         output_couple(output_names, output_values, "gemm_std", std_time);
 
-        if (verbose > 0)        cout << "Dense-Dense multiplication. Time taken: " << mean_time << endl;
+        if (verbose > 0)        cout << "Dense-Dense multiplication. Time taken (ms): " << mean_time << endl;
         if (verbose > 1)
         {
             cout << "GEMM Matrix:" << endl;
@@ -501,13 +517,13 @@ int main(int argc, char* argv[]) {
 
         mean_time = mean(algo_times);
         std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "VBSmm_mean", mean_time);
+        output_couple(output_names, output_values, "VBSmm_mean (ms)", mean_time);
         output_couple(output_names, output_values, "VBSmm_std", std_time);
 
 
         if (verbose > 0)
         {
-            cout << "BlockSparse-Dense multiplication. Time taken: " << mean_time << endl;
+            cout << "BlockSparse-Dense multiplication. Time taken (ms): " << mean_time << endl;
         }
         if (verbose > 1)
         {
@@ -540,13 +556,13 @@ int main(int argc, char* argv[]) {
 
         mean_time = mean(algo_times);
         std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "VBSmm_nozeros_mean", mean_time);
+        output_couple(output_names, output_values, "VBSmm_nozeros_mean (ms)", mean_time);
         output_couple(output_names, output_values, "VBSmm_nozeros_std", std_time);
 
 
         if (verbose > 0)
         {
-            cout << "BlockSparse-Dense multiplication (no zero mode ON). Time taken: " << mean_time << endl;
+            cout << "BlockSparse-Dense multiplication (no zero mode ON). Time taken (ms): " << mean_time << endl;
         }
         if (verbose > 1)
         {
@@ -578,12 +594,12 @@ int main(int argc, char* argv[]) {
 
         mean_time = mean(algo_times);
         std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "VBSmm_angle_mean", mean_time);
+        output_couple(output_names, output_values, "VBSmm_angle_mean (ms)", mean_time);
         output_couple(output_names, output_values, "VBSmm_angle_std", std_time);
 
         if (verbose > 0)
         {
-            cout << "BlockSparse-Dense multiplication (permuted with AHS). Time taken: " << mean_time << endl;
+            cout << "BlockSparse-Dense multiplication (permuted with AHS). Time taken (ms): " << mean_time << endl;
         }
         if (verbose > 1)
         {
@@ -621,7 +637,7 @@ int main(int argc, char* argv[]) {
 
         mean_time = mean(algo_times);
         std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "cusparse_spmm_mean", mean_time);
+        output_couple(output_names, output_values, "cusparse_spmm_mean (ms)", mean_time);
         output_couple(output_names, output_values, "cusparse_spmm_std", std_time);
 
 
@@ -647,7 +663,7 @@ int main(int argc, char* argv[]) {
     //cleaning
 
     //OUTPUT PHASE
-    if (verbose == -1)
+    if ((verbose == -1) or (verbose > 1))
     {
         cout << output_names << endl;
         cout << output_values << endl;

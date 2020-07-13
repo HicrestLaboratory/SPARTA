@@ -76,6 +76,8 @@ int grp_to_partition(int* grp, int grp_len, int* partition);
 
 int cleanVBS(VBS& vbmat);
 
+int count_nnz_blocks(VBS& vbmat);
+
 int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbmat, int block_rows, int* row_part, int block_cols, int* col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode = 0);
 
 int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt);
