@@ -1068,6 +1068,18 @@ int count_nnz(CSR& cmat)
     return nnz;
 }
 
+int count_nnz_blocks(VBS& vbmat)
+{
+    int main_block_dim = (vbmat.blocks_fmt == 0) ? vbmat.block_rows : vbmat.block_cols;
+    int nz_blocks = 0;
+    for (int ib = 0; ib < main_block_dim; ib++)
+    {
+        nz_blocks += vbmat.nzcount[ib];
+    }
+    return nz_blocks;
+}
+
+
 void read_mtx_format(CSR& cmat, std::string infilename, int cmat_fmt) {
     std::ifstream file(infilename);
     int rows, cols, num_lines;
@@ -1432,9 +1444,11 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     int* angle_main_part = new int[angle_main_grps];
 
     grp_to_partition(angle_grp, main_dim, angle_main_part);
+    
 
     CSR cmat_cpy;
     copy(cmat, cmat_cpy);
+
 
     permute_CSR(cmat_cpy, angle_perm, cmat_cpy.fmt); //permute the tmp CSR
 
@@ -1463,7 +1477,6 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
         angle_main_grps, angle_main_part,
         col_blocks, col_part,
         vbmat_blocks_fmt, vbmat_entries_fmt);
-
 
     //cleaning
     cleanCSR(cmat_cpy);
