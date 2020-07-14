@@ -394,7 +394,8 @@ int main(int argc, char* argv[]) {
 
 
     VBS vbmat_A_angle;
-    if (algo == 4 or algo == -1)
+    //if (algo == 4 or algo == -1)
+    if (0) //TODO fix angle_hash_algorithm
     {
         //create a VBS which is permuted with the asymmetric angle method
 
