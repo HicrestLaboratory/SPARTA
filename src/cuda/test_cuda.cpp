@@ -317,6 +317,9 @@ int main(int argc, char* argv[]) {
     if (verbose > 0) cout << "INPUT ACQUIRED." << endl;
     if (verbose > 1) matprint(cmat_A);
 
+    A_rows = cmat_A.rows;
+    A_cols = cmat_A.cols;
+
     //scramble the original matrix
     if (scramble)
     {
@@ -336,11 +339,11 @@ int main(int argc, char* argv[]) {
     string output_values;
 
 
-    float A_density = ((float) count_nnz(cmat_A))/(A_rows*A_cols);
+    float A_density = ((float) count_nnz(cmat_A))/(cmat_A.rows*cmat_A.cols);
 
     output_couple(output_names, output_values, "input_type", input_type);
-    output_couple(output_names, output_values, "A_rows", A_rows);
-    output_couple(output_names, output_values, "A_cols", A_cols);
+    output_couple(output_names, output_values, "A_rows", cmat_A.rows);
+    output_couple(output_names, output_values, "A_cols", cmat_A.cols);
     output_couple(output_names, output_values, "A_entries_density", A_density);
     output_couple(output_names, output_values, "A_block_density", block_density);
     output_couple(output_names, output_values, "A_block_size", block_size);
@@ -351,13 +354,13 @@ int main(int argc, char* argv[]) {
 
     int vbmat_blocks_fmt = 1;
     int vbmat_entries_fmt = 1; //cuda needs column-major matrices
-    int block_rows = A_rows / block_size;
-    int block_cols = A_cols / block_size;
+    int block_rows = cmat_A.rows / block_size;
+    int block_cols = cmat_A.cols / block_size;
 
     A_row_part = new int[block_rows + 1]; //partitions have one element more for the rightmost border.
     A_col_part = new int[block_cols + 1];
-    linspan(A_row_part, 0, A_rows + 1, block_size); //row and column partitions
-    linspan(A_col_part, 0, A_cols + 1, block_size);
+    linspan(A_row_part, 0, cmat_A.rows + 1, block_size); //row and column partitions
+    linspan(A_col_part, 0, cmat_A.cols + 1, block_size);
 
     //Create a VBS with fixed block dimension (see input)
     VBS vbmat_A;
