@@ -254,7 +254,7 @@ int main(int argc, char* argv[]) {
             GraphMap snap_graph;
             read_snap_format(snap_graph, input_source);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
             MakeProper(snap_graph);
-            convert_to_CSR(snap_graph, cmat_A, int cmat_A_fmt);
+            convert_to_CSR(snap_graph, cmat_A, cmat_A_fmt);
 
 
             cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;

@@ -138,5 +138,7 @@ void MakeProper(GraphMap& gmap);
 
 void write_snap_format(GraphMap& gmap, std::string filename);
 
+void read_snap_format(GraphMap& gmap, std::string filename);
+
 void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt);
 
