@@ -5,7 +5,8 @@
 
 #include <cmath> // std::abs
 #include <string>
-
+#include <map>
+#include <set>
 
 #include <random>
 #include <vector>
@@ -1717,13 +1718,13 @@ void read_snap_format(GraphMap& gmap, string filename)
 
     gmap.clear();
 
-    ifstream infile;
+    std::ifstream infile;
 
     //TODO handle reading error
     infile.open(filename);
-    string temp = "-1";
+    std::string temp = "-1";
     int current_node = -1, child;
-    set<int> emptyset;
+    std::set<int> emptyset;
 
     // Ignore comments headers
     while (infile.peek() == '%') infile.ignore(2048, '\n');
@@ -1797,10 +1798,10 @@ void MakeUndirected(GraphMap& gmap) {
 void MakeProper(GraphMap& gmap) {
     //rename graph nodes so that they are consecutive integers 
     //Quite costly. Probably worth checking with isProper first
-    map<int, int> new_name;
+    std::map<int, int> new_name;
     int count = -1;
     int name = -1;
-    set<int> tempset;
+    std::set<int> tempset;
 
     //find correct names
     for (auto parent : gmap)
@@ -1808,7 +1809,7 @@ void MakeProper(GraphMap& gmap) {
         count++;
         name = parent.first;
         new_name[name] = count;
-        cout << "name: " << name << " count: " << count << endl;
+        std::cout << "name: " << name << " count: " << count << std::endl;
     }
 
     //change target names
@@ -1818,7 +1819,7 @@ void MakeProper(GraphMap& gmap) {
         tempset.clear();
         for (auto child : parent.second) {
             tempset.insert(new_name[child]);
-            cout << "child: " << child << " newname: " << new_name[child] << endl;
+            std::cout << "child: " << child << " newname: " << new_name[child] << std::endl;
         }
         gmap[parent.first] = tempset;
     }
@@ -1834,7 +1835,7 @@ void MakeProper(GraphMap& gmap) {
 }
 
 void write_snap_format(GraphMap& gmap, string filename) {
-    ofstream outfile;
+    std::ofstream outfile;
     outfile.open(filename);
     int name;
 
@@ -1842,7 +1843,7 @@ void write_snap_format(GraphMap& gmap, string filename) {
         name = parent.first;
 
         for (auto child : parent.second) {
-            outfile << name << " " << child << endl;
+            outfile << name << " " << child << std::endl;
         }
 
     }
@@ -1864,7 +1865,7 @@ void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt) {
     for (auto node : gmap) {
 
         int parent = node.first; //parent node
-        set<int> tempset = node.second; //adiacency list for the node.
+        std::set<int> tempset = node.second; //adiacency list for the node.
         int nzs = tempset.size();
         cmat.nzcount[parent] = nzs;
 
