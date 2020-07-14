@@ -388,16 +388,24 @@ int main(int argc, char* argv[]) {
 
 
     VBS vbmat_A_angle;
-    if (algo == 4 or algo == -1)
+    if (0) //TODO fix angle_hash_method
     {
         //create a VBS which is permuted with the asymmetric angle method
 
-        angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
+        int* angle_hash_grouping = new int[A_rows];
+        angle_hash_method(cmat_A, eps, A_col_part, block_cols, angle_hash_grouping, 0);
+
+        int* angle_hash_perm = new int[A_rows];
+        sort_permutation(angle_hash_perm, angle_hash_grouping, A_rows);
 
         if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
         if (verbose > 1)    matprint(vbmat_A_angle);
 
         //report on the block structure of vbmat_A_angle
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
         float VBS_effective_density = ((float)vbmat_A_angle.nztot) / (A_rows * A_cols);
 
 

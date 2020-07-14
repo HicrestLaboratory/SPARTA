@@ -1415,7 +1415,7 @@ int norm2(int* arr, int len)
 }
 
 
-int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt, int mode)
+int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB, int* grouping, int mode)
 {
     //create a VBS reordering the main (uncompressed) dimension of a CSR matrix according to the angle+hash algorithm
     //do not change the original array
@@ -1424,66 +1424,15 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
     int cols = cmat.cols;
     int main_dim = (cmat.fmt == 0) ? rows : cols;
 
-
     int* hash_perm = new int[main_dim];
     int* hash_grp = new int[main_dim];
 
     hash_permute(cmat, compressed_dim_partition, hash_perm, hash_grp, mode);
-    
-    int* angle_perm = new int[main_dim];
-    int* angle_grp = new int[main_dim];
-
-    angle_method(cmat, eps, compressed_dim_partition, nB, hash_perm, hash_grp, angle_grp, mode);
-
-    sort_permutation(angle_perm, angle_grp, main_dim); //find a permutation that sorts groups
-
-
-    int angle_main_grps;
-    angle_main_grps = count_groups(angle_grp, main_dim);
-
-    int* angle_main_part = new int[angle_main_grps];
-
-    grp_to_partition(angle_grp, main_dim, angle_main_part);
-    
-
-    CSR cmat_cpy;
-    copy(cmat, cmat_cpy);
-
-
-    permute_CSR(cmat_cpy, angle_perm, cmat_cpy.fmt); //permute the tmp CSR
-
-    int* row_part;
-    int row_blocks;
-    int* col_part;
-    int col_blocks;
-
-    if (cmat.fmt == 0)
-    {
-        row_part = angle_main_part;
-        row_blocks = angle_main_grps;
-        col_part = compressed_dim_partition;
-        col_blocks = nB;
-    }
-    else
-    {
-        col_part = angle_main_part;
-        col_blocks = angle_main_grps;
-        row_part = compressed_dim_partition;
-        row_blocks = nB;
-    }
-
-    convert_to_VBS(cmat_cpy,
-        vbmat,
-        angle_main_grps, angle_main_part,
-        col_blocks, col_part,
-        vbmat_blocks_fmt, vbmat_entries_fmt);
+    angle_method(cmat, eps, compressed_dim_partition, nB, hash_perm, hash_grp, grouping, mode);
 
     //cleaning
-    cleanCSR(cmat_cpy);
     delete[] hash_perm;
     delete[] hash_grp;
-    delete[] angle_perm;
-    delete[] angle_grp;
 }
 
 

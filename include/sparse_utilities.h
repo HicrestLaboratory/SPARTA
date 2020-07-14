@@ -122,6 +122,6 @@ int scalar_product(int* pat_0, int len_0, int* pat_1);
 
 int norm2(int* arr, int len);
 
-int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt, int mode);
+int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB, int* grouping, int mode);
 
 int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB, int* in_perm, int* in_group, int* out_group, int mode);
