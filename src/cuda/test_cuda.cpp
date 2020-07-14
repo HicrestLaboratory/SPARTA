@@ -589,7 +589,8 @@ int main(int argc, char* argv[]) {
     //--------------------------------------------
     //      VBS x dense cublas multiplication (permuted with angle algorithm)
     //--------------------------------------------
-    if ((algo == 4) or (algo == -1))
+    //if ((algo == 4) or (algo == -1))
+    if (0) //todo fix
     {
 
         DataT* mat_Cblock_angle = new DataT[C_rows * C_cols];
