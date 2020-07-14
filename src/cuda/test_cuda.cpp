@@ -302,7 +302,6 @@ int main(int argc, char* argv[]) {
                 << " Density IN blocks: " << density << "\n"
                 << endl;
         }
-        //TODO optional: scramble the matrix row to see if the algo can reorder them.
 
     }
 

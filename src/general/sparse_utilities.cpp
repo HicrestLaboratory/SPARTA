@@ -305,7 +305,6 @@ int grp_to_partition(int* grp, int grp_len, int* partition)
     partition[group] = grp_len;
 
     delete[] perm;
-    return group;
 }
 
 
@@ -1437,11 +1436,10 @@ int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int n
 
     sort_permutation(angle_perm, angle_grp, main_dim); //find a permutation that sorts groups
 
-
     int angle_main_grps;
     angle_main_grps = count_groups(angle_grp, main_dim);
 
-    int* angle_main_part = new int[angle_main_grps];
+    int* angle_main_part = new int[angle_main_grps + 1];
 
     grp_to_partition(angle_grp, main_dim, angle_main_part);
     
