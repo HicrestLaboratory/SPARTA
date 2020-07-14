@@ -9,12 +9,16 @@
 
 #include <random>
 #include <vector>
+#include <map>
+#include <set>
 #include <algorithm>    // std::random_shuffle
 
 #include "sparse_utilities.h"
 
 typedef std::vector<int> svi;
 typedef std::vector<DataT> svd;
+typedef std::map<int, set<int> > GraphMap;
+
 
 // Matrix utilities
 
@@ -1694,5 +1698,185 @@ int angle_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB,int
     delete[] this_pattern;
     delete[] that_pattern;
 
+
+}
+
+
+void read_snap_format(GraphMap& gmap, string filename)
+{
+    /*		Read from edgelist to a graphmap
+     *		TODO Error handling
+     *----------------------------------------------------------------------------
+     * on entry:
+     * =========
+     * filename: the file were the edgelist is stored
+     *----------------------------------------------------------------------------
+     * on return:
+     * ==========
+     * gmap   = the edgelist now into GraphMap format: map<int, set<int>>
+     *----------------------------------------------------------------------------
+     */
+
+    gmap.clear();
+
+    ifstream infile;
+
+    //TODO handle reading error
+    infile.open(filename);
+    string temp = "-1";
+    int current_node = -1, child;
+    set<int> emptyset;
+
+    // Ignore comments headers
+    while (infile.peek() == '%') infile.ignore(2048, '\n');
+
+    //TODO: check import success
+    //read the source node (row) of a new line
+    while (getline(infile, temp, ' ')) {
+        current_node = stoi(temp);
+
+        if (gmap.count(current_node) == 0) { //new source node encountered
+            gmap[current_node] = emptyset;
+        }
+
+        //get target node (column)
+        getline(infile, temp);
+        child = stoi(temp);
+        gmap[current_node].insert(child);
+    }
+}
+
+//check if a graphmap is well-numbered, complete and (optional) symmetric
+int isProper(const GraphMap& gmap, bool mirroring) 
+{
+    //returns:
+    //0 : everything ok
+    //1 : there is a jump in node numeration
+    //2 : inexistent children
+    //3 : asymmetric link  (only if mirroring is on)
+
+    int check = 0;
+    int last_node = -1;
+
+    for (auto const& x : gmap)
+    {
+        //check if there is a jump
+        if (x.first > last_node + 1) { return 1; }
+        last_node = x.first;
+
+        //check node children
+        for (auto const& elem : x.second)
+        {
+            //check if the children exists in the graph
+            auto child = gmap.find(elem); //search result
+            if (child == gmap.end()) {
+                //inexistent children
+                return 2;
+            }
+            //check for asymmetric links (only if mirroring is on)
+            else if (mirroring) {
+                if ((child->second).find(x.first) == (child->second).end()) {
+                    return 3;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+void MakeUndirected(GraphMap& gmap) {
+    //Make a graph undirected
+
+    for (auto x : gmap)
+    {
+        //check node children
+        for (auto child : x.second) {
+            (gmap[child]).insert(x.first);
+        }
+    }
+}
+
+void MakeProper(GraphMap& gmap) {
+    //rename graph nodes so that they are consecutive integers 
+    //Quite costly. Probably worth checking with isProper first
+    map<int, int> new_name;
+    int count = -1;
+    int name = -1;
+    set<int> tempset;
+
+    //find correct names
+    for (auto parent : gmap)
+    {
+        count++;
+        name = parent.first;
+        new_name[name] = count;
+        cout << "name: " << name << " count: " << count << endl;
+    }
+
+    //change target names
+    for (auto parent : gmap)
+    {
+
+        tempset.clear();
+        for (auto child : parent.second) {
+            tempset.insert(new_name[child]);
+            cout << "child: " << child << " newname: " << new_name[child] << endl;
+        }
+        gmap[parent.first] = tempset;
+    }
+
+    //change source names
+    for (auto n : new_name)
+    {
+        if (n.first != n.second) {
+            gmap[n.second] = gmap[n.first];
+            gmap.erase(n.first);
+        }
+    }
+}
+
+void write_snap_format(GraphMap& gmap, string filename) {
+    ofstream outfile;
+    outfile.open(filename);
+    int name;
+
+    for (auto parent : gmap) {
+        name = parent.first;
+
+        for (auto child : parent.second) {
+            outfile << name << " " << child << endl;
+        }
+
+    }
+    outfile.close();
+}
+
+void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt) {
+    
+    int n = gmap.size();
+
+    cmat.fmt = cmat_fmt;
+    cmat.rows = n;
+    cmat.cols = n;
+    cmat.nzcount = new int[n];
+    cmat.ja = new int* [n];
+    cmat.ma = new DataT * [n];
+
+    //build the appropriate vectors from Mat;
+    for (auto node : gmap) {
+
+        int parent = node.first; //parent node
+        set<int> tempset = node.second; //adiacency list for the node.
+        int nzs = tempset.size();
+        cmat.nzcount[parent] = nzs;
+
+        cmat.ja[i] = new int [nzs];
+        cmat.ma[i] = new DataT [nzs];
+
+        std::copy(tempset.begin(), tempset.end(), cmat.ja[i]);
+
+        vector<DataT> temp_vec(tempset.size(), 1.);
+        std::copy(temp_vec.begin(), temp_vec.end(), cmat.ma[i]); //entries = 1s. GraphMap are unweighted (for now).
+    }
 
 }

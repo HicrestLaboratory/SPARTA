@@ -9,6 +9,8 @@
 // array: A B C D E
 // perm: 
 
+typedef std::map<int, set<int> > GraphMap;
+
 template <class myType>
 int permute(myType* arr, int* perm, int n) {
 	int i = 0;
@@ -125,3 +127,14 @@ int norm2(int* arr, int len);
 int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt, int mode);
 
 int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB, int* in_perm, int* in_group, int* out_group, int mode);
+
+int isProper(const GraphMap& gmap, bool mirroring);
+
+void MakeUndirected(GraphMap& gmap);
+
+void MakeProper(GraphMap& gmap);
+
+void write_snap_format(GraphMap& gmap, string filename);
+
+void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt);
+

@@ -246,19 +246,22 @@ int main(int argc, char* argv[]) {
     //______________________________________
 
 
-    /*
-    //NOT SUPPORTED
+    //TEST
     //INPUT EXAMPLE 2: read graph in edgelist format into CSR
         if (input_type == 2){
             if (input_source.empty()) input_source = "testgraph.txt";
 
-            read_snap_format(spmat, input_source);         //Read a CSR matrix from a .txt edgelist (snap format)
+            GraphMap snap_graph;
+            read_snap_format(snap_graph, input_source);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
+            MakeProper(snap_graph);
+            convert_to_CSR(snap_graph, cmat_A, int cmat_A_fmt);
+
+
             cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
 
 
         }
      //______________________________________
-     */
 
 
      //INPUT EXAMPLE 3: read from MTX format

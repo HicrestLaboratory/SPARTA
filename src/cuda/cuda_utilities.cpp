@@ -75,10 +75,12 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lea
         B_rows, B_cols, sizeof(float), B, B_lead_dim, d_B, B_rows));
 
 
+
     //initialize cuda events
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
+
     cudaEventRecord(start, 0);
 
     //creates streams. Each block rows is assigned a different stream.
@@ -87,7 +89,6 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lea
     {
         cudaStreamCreate(&(streams[ib]));
     }
-	
 	
     //loop through all blocks
     for(int jb = 0; jb < vbmatA.block_cols; jb++ )      //loop horizontally through block columns
@@ -124,8 +125,9 @@ void cublas_blockmat_multiply(const VBS &vbmatA, float *B, int B_cols, int B_lea
     }
 
     //record the elapsed time onto dt
-    cudaDeviceSynchronize();
+//    cudaDeviceSynchronize();
     cudaEventRecord(stop, 0);
+
     cudaEventSynchronize(stop);
     cudaEventElapsedTime(&dt, start, stop);
     cudaEventDestroy(start);
