@@ -79,27 +79,27 @@ int main(int argc, char* argv[]) {
     int verbose = 3;
 
     int input_type = 4;
-    int A_rows = 12;             //rows in the square input matrix;
+    int A_rows = 12;            //rows in the square input matrix;
     int A_cols = 8;
-    int mat_A_fmt = 1;        //cuda needs column-major matrices
-    int block_size = 4;     //block size for variable block matrix. Rows and columns must be evenly divisible by this;
-    float density = 0.5;   //density of the input matrix;
-    float block_density = 0.5; //density inside the blocks;
+    int mat_A_fmt = 1;          //cuda needs column-major matrices
+    int block_size = 4;         //block size for variable block matrix. Rows and columns must be evenly divisible by this;
+    float density = 0.5;        //density of the input matrix;
+    float block_density = 0.5;  //density inside the blocks;
     string input_source;
-    int scramble = 0; //scramble the input matrix?
+    int scramble = 0;           //scramble the input matrix?
 
-    int B_cols = 5;    //number of columns in the output matrix;
-    float B_density = 1.; //density of the multiplication matrix
+    int B_cols = 5;             //number of columns in the output matrix;
+    float B_density = 1.;       //density of the multiplication matrix
 
-    float eps = 0.5;        //this value sets how different two rows in the same block can be.
-                            //eps = 1 means only rows with equal structure are merged into a block
-                            //eps = 0 means all rows are merged into a single block
+    float eps = 0.5;            //this value sets how different two rows in the same block can be.
+                                //eps = 1 means only rows with equal structure are merged into a block
+                                //eps = 0 means all rows are merged into a single block
     int seed = 123;
-    float precision = 0.0001;        //precision for float equality check
+    float precision = 0.0001;   //precision for float equality check
 
-    int warmup = 0;         //number of warmup experiments
-    int experiment_reps = 5; //number of non-warmup repetitions
-    int algo = -1;           //algorithm choice (-1: all)
+    int warmup = 0;             //number of warmup experiments
+    int experiment_reps = 5;    //number of non-warmup repetitions
+    int algo = -1;              //algorithm choice (-1: all)
     int correct_check = 0;
 
     int* A_row_part;
@@ -234,10 +234,7 @@ int main(int argc, char* argv[]) {
         convert_to_CSR(rand_mat, A_rows, A_cols, mat_A_fmt, cmat_A, cmat_A_fmt);
         delete[] rand_mat;
 
-        if (verbose > 0)
-        {
-            cout << "CREATED A RANDOM CSR with density = " << density << endl;
-        }
+        if (verbose > 0) cout << "CREATED A RANDOM CSR with density = " << density << endl;
     }
     //______________________________________
 
@@ -252,8 +249,7 @@ int main(int argc, char* argv[]) {
             MakeProper(snap_graph);
             convert_to_CSR(snap_graph, cmat_A, cmat_A_fmt);
 
-
-            cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
+            if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
 
 
         }
@@ -267,10 +263,8 @@ int main(int argc, char* argv[]) {
         if (input_source.empty()) input_source = "testmat.mtx";
         read_mtx_format(cmat_A, input_source, cmat_A_fmt); //read into CSR
 
-        if (verbose > 0)
-        {
-            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
-        }
+        if (verbose > 0)            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
+
     }
 
 
@@ -313,6 +307,7 @@ int main(int argc, char* argv[]) {
     if (verbose > 0) cout << "INPUT ACQUIRED." << endl;
     if (verbose > 1) matprint(cmat_A);
 
+    //update rows and cols count to input values
     A_rows = cmat_A.rows;
     A_cols = cmat_A.cols;
 
@@ -340,8 +335,8 @@ int main(int argc, char* argv[]) {
     output_couple(output_names, output_values, "input_type", input_type);
     output_couple(output_names, output_values, "A_rows", cmat_A.rows);
     output_couple(output_names, output_values, "A_cols", cmat_A.cols);
-    output_couple(output_names, output_values, "A_entries_density", A_density);
-    output_couple(output_names, output_values, "A_block_density", block_density);
+    output_couple(output_names, output_values, "A_total_density", A_density);
+    output_couple(output_names, output_values, "A_blocks_density", block_density);
     output_couple(output_names, output_values, "A_block_size", block_size);
 
     output_couple(output_names, output_values, "B_cols", B_cols);
@@ -457,7 +452,7 @@ int main(int argc, char* argv[]) {
     //TODO smart pointers for matrices
 
     DataT* mat_B = new DataT[B_rows * B_cols]{ 0 };
-    random_mat(mat_B, B_rows, B_cols, B_density);
+    random_mat(mat_B, B_rows, B_cols, B_density); // creates a random DataT matrix filled with 1.000 at a fixed density
 
     if (verbose > 0)        std::cout << "Random matrix B created:" << std::endl;
     if (verbose > 1)        matprint(mat_B, B_rows, B_cols, B_rows, mat_B_fmt);
