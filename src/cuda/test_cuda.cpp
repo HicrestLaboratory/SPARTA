@@ -120,10 +120,6 @@ int main(int argc, char* argv[]) {
             //  2: SNAP Edgelist
             //  3: MTX Format
             //  4: Random Variable Block matrix
-            if ((input_type != 1) and (input_type != 4) and (input_type != 3)) {
-                input_type = 4;
-                cout << "WARNING: CURRENTLY SUPPORTS ONLY i = 1,3,4. Using 4 (Random CSR)" << endl;
-            }
             break;
 
         case 'a': //algorithm selection:
