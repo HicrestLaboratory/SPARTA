@@ -314,6 +314,9 @@ int main(int argc, char* argv[]) {
     //spmat must hold a proper CSR matrix at this point
     //******************************************
 
+    if (verbose > 0) cout << "INPUT ACQUIRED." << endl;
+    if (verbose > 1) matprint(cmat_A);
+
     //scramble the original matrix
     if (scramble)
     {
@@ -356,8 +359,8 @@ int main(int argc, char* argv[]) {
     linspan(A_row_part, 0, A_rows + 1, block_size); //row and column partitions
     linspan(A_col_part, 0, A_cols + 1, block_size);
 
-    VBS vbmat_A;
     //Create a VBS with fixed block dimension (see input)
+    VBS vbmat_A;
     if (algo == 2 or algo == -1)
     {
 
@@ -381,10 +384,8 @@ int main(int argc, char* argv[]) {
     //---------------------------------------------------
 
 
-
     //Create a VBS with same structure as vbmat_A but which treats zero blocks as full blocks. Used for comparison.
     VBS vbmat_A_full;
-
     if (algo == 3 or algo == -1)
     {
         int no_zero_mode = 1;
@@ -400,11 +401,11 @@ int main(int argc, char* argv[]) {
     //---------------------------------------------------
 
 
+    //create a VBS which is permuted with the asymmetric angle method
     VBS vbmat_A_angle;
     //if (algo == 4 or algo == -1)
     if (0) //TODO fix angle_hash_algorithm
     {
-        //create a VBS which is permuted with the asymmetric angle method
 
         angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
 
