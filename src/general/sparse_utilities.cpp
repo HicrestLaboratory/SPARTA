@@ -1809,7 +1809,6 @@ void MakeProper(GraphMap& gmap) {
         count++;
         name = parent.first;
         new_name[name] = count;
-        std::cout << "name: " << name << " count: " << count << std::endl;
     }
 
     //change target names
@@ -1819,7 +1818,6 @@ void MakeProper(GraphMap& gmap) {
         tempset.clear();
         for (auto child : parent.second) {
             tempset.insert(new_name[child]);
-            std::cout << "child: " << child << " newname: " << new_name[child] << std::endl;
         }
         gmap[parent.first] = tempset;
     }
