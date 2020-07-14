@@ -1701,7 +1701,7 @@ int angle_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB,int
 }
 
 
-void read_snap_format(GraphMap& gmap, string filename)
+void read_snap_format(GraphMap& gmap, std::string filename)
 {
     /*		Read from edgelist to a graphmap
      *		TODO Error handling
@@ -1834,7 +1834,7 @@ void MakeProper(GraphMap& gmap) {
     }
 }
 
-void write_snap_format(GraphMap& gmap, string filename) {
+void write_snap_format(GraphMap& gmap, std::string filename) {
     std::ofstream outfile;
     outfile.open(filename);
     int name;
@@ -1869,8 +1869,8 @@ void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt) {
         int nzs = tempset.size();
         cmat.nzcount[parent] = nzs;
 
-        cmat.ja[i] = new int [nzs];
-        cmat.ma[i] = new DataT [nzs];
+        cmat.ja[parent] = new int [nzs];
+        cmat.ma[parent] = new DataT [nzs];
 
         std::copy(tempset.begin(), tempset.end(), cmat.ja[i]);
 
