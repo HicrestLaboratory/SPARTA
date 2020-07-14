@@ -1872,7 +1872,7 @@ void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt) {
         cmat.ja[parent] = new int [nzs];
         cmat.ma[parent] = new DataT [nzs];
 
-        std::copy(tempset.begin(), tempset.end(), cmat.ja[i]);
+        std::copy(tempset.begin(), tempset.end(), cmat.ja[parent]);
 
         std::vector<DataT> temp_vec(tempset.size(), 1.);
         std::copy(temp_vec.begin(), temp_vec.end(), cmat.ma[i]); //entries = 1s. GraphMap are unweighted (for now).
