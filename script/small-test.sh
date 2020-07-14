@@ -18,7 +18,7 @@ for m in ${Mshapes[@]}; do
       for p in ${Pvalue[@]}; do
         for b in ${Bvalue[@]}; do
           for q in ${Qvalue[@]}; do
-            ./cuda_test $OPTS -m $m -n $n -k $k -p $p -b $b -q $q sleep 0.5;
+            ./cuda_test $OPTS -m $m -n $n -k $k -p $p -b $b -q $q; sleep 0.5;
           done
         done
       done
