@@ -246,19 +246,22 @@ int main(int argc, char* argv[]) {
     //______________________________________
 
 
-    /*
-    //NOT SUPPORTED
+    //TEST
     //INPUT EXAMPLE 2: read graph in edgelist format into CSR
         if (input_type == 2){
             if (input_source.empty()) input_source = "testgraph.txt";
 
-            read_snap_format(spmat, input_source);         //Read a CSR matrix from a .txt edgelist (snap format)
+            GraphMap snap_graph;
+            read_snap_format(snap_graph, input_source);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
+            MakeProper(snap_graph);
+            convert_to_CSR(snap_graph, cmat_A, cmat_A_fmt);
+
+
             cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
 
 
         }
      //______________________________________
-     */
 
 
      //INPUT EXAMPLE 3: read from MTX format
@@ -311,6 +314,9 @@ int main(int argc, char* argv[]) {
     //spmat must hold a proper CSR matrix at this point
     //******************************************
 
+    if (verbose > 0) cout << "INPUT ACQUIRED." << endl;
+    if (verbose > 1) matprint(cmat_A);
+
     //scramble the original matrix
     if (scramble)
     {
@@ -343,61 +349,63 @@ int main(int argc, char* argv[]) {
     output_couple(output_names, output_values, "B_density", B_density);
 
 
-    //Create a VBS with fixed block dimension (see input)
     int vbmat_blocks_fmt = 1;
     int vbmat_entries_fmt = 1; //cuda needs column-major matrices
-    VBS vbmat_A;
-
-
     int block_rows = A_rows / block_size;
     int block_cols = A_cols / block_size;
 
-
     A_row_part = new int[block_rows + 1]; //partitions have one element more for the rightmost border.
     A_col_part = new int[block_cols + 1];
-
-
     linspan(A_row_part, 0, A_rows + 1, block_size); //row and column partitions
     linspan(A_col_part, 0, A_cols + 1, block_size);
 
-
-    if ((A_rows % block_size != 0) or (A_cols % block_size != 0))
+    //Create a VBS with fixed block dimension (see input)
+    VBS vbmat_A;
+    if (algo == 2 or algo == -1)
     {
-        std::cout << "WARNING: The row or column dimension of the input matrix is not multiple of the block size " << std::endl;
+
+
+
+        if ((A_rows % block_size != 0) or (A_cols % block_size != 0))
+        {
+            std::cout << "WARNING: The row or column dimension of the input matrix is not multiple of the block size " << std::endl;
+        }
+
+
+        convert_to_VBS(cmat_A,
+            vbmat_A,
+            block_rows, A_row_part,
+            block_cols, A_col_part,
+            vbmat_blocks_fmt, vbmat_entries_fmt);
+
+        if (verbose > 0) cout << "VBS matrix created." << endl;
+        if (verbose > 1) matprint(vbmat_A);
     }
-    
-
-    convert_to_VBS(cmat_A,
-        vbmat_A,
-        block_rows, A_row_part,
-        block_cols, A_col_part,
-        vbmat_blocks_fmt, vbmat_entries_fmt);
-
-    if (verbose > 0) cout << "VBS matrix created." << endl;
-    if (verbose > 1) matprint(vbmat_A);
     //---------------------------------------------------
-
 
 
     //Create a VBS with same structure as vbmat_A but which treats zero blocks as full blocks. Used for comparison.
     VBS vbmat_A_full;
-    int no_zero_mode = 1;
-    convert_to_VBS(cmat_A,
-        vbmat_A_full,
-        block_rows, A_row_part,
-        block_cols, A_col_part,
-        vbmat_blocks_fmt, vbmat_entries_fmt, no_zero_mode);
+    if (algo == 3 or algo == -1)
+    {
+        int no_zero_mode = 1;
+        convert_to_VBS(cmat_A,
+            vbmat_A_full,
+            block_rows, A_row_part,
+            block_cols, A_col_part,
+            vbmat_blocks_fmt, vbmat_entries_fmt, no_zero_mode);
 
-    if (verbose > 0)    cout << "VBS matrix (no zero blocks mode ON) created:" << endl;
-    if (verbose > 1)    matprint(vbmat_A_full);
+        if (verbose > 0)    cout << "VBS matrix (no zero blocks mode ON) created:" << endl;
+        if (verbose > 1)    matprint(vbmat_A_full);
+    }
     //---------------------------------------------------
 
 
+    //create a VBS which is permuted with the asymmetric angle method
     VBS vbmat_A_angle;
     //if (algo == 4 or algo == -1)
     if (0) //TODO fix angle_hash_algorithm
     {
-        //create a VBS which is permuted with the asymmetric angle method
 
         angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
 
@@ -418,6 +426,7 @@ int main(int argc, char* argv[]) {
         output_couple(output_names, output_values, "VBS_AAM_min_block_H", min_block_H);
         output_couple(output_names, output_values, "VBS_AAM_max_block_H", max_block_H);
     }
+
     //*******************************************
     //         MULTIPLICATION PHASE
     //___________________________________________
@@ -681,11 +690,10 @@ int main(int argc, char* argv[]) {
     }
 
     delete[] mat_B;
-    cleanVBS(vbmat_A_full);
+    if (algo == 2 or algo == -1) cleanCSR(cmat_A);
+    if (algo == 3 or algo == -1) cleanVBS(vbmat_A_full);
 
     //if (algo == 4 or algo == -1) cleanVBS(vbmat_A_angle); //todo fix
-    cleanCSR(cmat_A);
-
 
 }
 
