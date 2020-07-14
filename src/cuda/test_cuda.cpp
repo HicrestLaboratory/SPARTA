@@ -404,6 +404,8 @@ int main(int argc, char* argv[]) {
         if (verbose > 1)    matprint(vbmat_A_angle);
 
         //report on the block structure of vbmat_A_angle
+
+        /*
         float VBS_effective_density = ((float)vbmat_A_angle.nztot) / (A_rows * A_cols);
 
 
@@ -415,6 +417,7 @@ int main(int argc, char* argv[]) {
         output_couple(output_names, output_values, "VBS_AAM_nz_blocks", count_nnz_blocks(vbmat_A_angle));
         output_couple(output_names, output_values, "VBS_AAM_min_block_H", min_block_H);
         output_couple(output_names, output_values, "VBS_AAM_max_block_H", max_block_H);
+        */
     }
     //*******************************************
     //         MULTIPLICATION PHASE
