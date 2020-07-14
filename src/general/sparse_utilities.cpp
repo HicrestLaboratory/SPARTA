@@ -9,15 +9,13 @@
 
 #include <random>
 #include <vector>
-#include <map>
-#include <set>
 #include <algorithm>    // std::random_shuffle
 
 #include "sparse_utilities.h"
 
 typedef std::vector<int> svi;
 typedef std::vector<DataT> svd;
-typedef std::map<int, set<int> > GraphMap;
+//typedef std::map<int, std::set<int> > GraphMap; definition moved to sparse_utilities.h
 
 
 // Matrix utilities

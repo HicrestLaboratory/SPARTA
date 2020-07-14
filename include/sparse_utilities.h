@@ -11,7 +11,7 @@
 // array: A B C D E
 // perm: 
 
-typedef std::map<int, set<int> > GraphMap;
+typedef std::map<int, std::set<int> > GraphMap;
 
 template <class myType>
 int permute(myType* arr, int* perm, int n) {
@@ -136,7 +136,7 @@ void MakeUndirected(GraphMap& gmap);
 
 void MakeProper(GraphMap& gmap);
 
-void write_snap_format(GraphMap& gmap, string filename);
+void write_snap_format(GraphMap& gmap, std::string filename);
 
 void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt);
 
