@@ -1745,6 +1745,57 @@ void read_snap_format(GraphMap& gmap, std::string filename)
     }
 }
 
+void read_snap_format(GraphMap& gmap, std::string filename, std::string delimiter)
+{
+    /*		Read from edgelist to a graphmap
+     *		TODO Error handling
+     *----------------------------------------------------------------------------
+     * on entry:
+     * =========
+     * filename: the file were the edgelist is stored
+     *----------------------------------------------------------------------------
+     * on return:
+     * ==========
+     * gmap   = the edgelist now into GraphMap format: map<int, set<int>>
+     *----------------------------------------------------------------------------
+     */
+
+    gmap.clear();
+
+    std::ifstream infile;
+
+    //TODO handle reading error
+    infile.open(filename);
+    std::string temp = "-1";
+    int current_node = -1, child;
+    std::set<int> emptyset;
+
+    // Ignore comments headers
+    while (infile.peek() == '%') infile.ignore(2048, '\n');
+
+    //TODO: check import success
+    //read the source node (row) of a new line
+    while (getline(infile, temp)) {
+
+        int del_pos = temp.find(delimiter);
+        int del_size = delimiter.size();
+
+        std::string first_node_string = temp.substr(0, del_pos); //retrieve the part of the string before the delimiter
+        current_node = stoi(first_node_string);
+
+        if (gmap.count(current_node) == 0) { //new source node encountered
+            gmap[current_node] = emptyset;
+        }
+
+        //get target node (column)
+        std::string second_node_string = temp.substr(del_pos + del_size); //retrieve the part of the string after the delimiter
+        child = stoi(second_node_string);
+        gmap[current_node].insert(child);
+    }
+}
+
+
+
 //check if a graphmap is well-numbered, complete and (optional) symmetric
 int isProper(const GraphMap& gmap, bool mirroring) 
 {

@@ -244,8 +244,9 @@ int main(int argc, char* argv[]) {
         if (input_type == 2){
             if (input_source.empty()) input_source = "testgraph.txt";
 
+            string delimiter = "--";
             GraphMap snap_graph;
-            read_snap_format(snap_graph, input_source);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
+            read_snap_format(snap_graph, input_source,delimiter);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
             MakeProper(snap_graph);
             convert_to_CSR(snap_graph, cmat_A, cmat_A_fmt);
 
