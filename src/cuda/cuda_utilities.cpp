@@ -138,8 +138,8 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
                     d_C_block, cuda_type,                           // blockC device pointer, blockC type
                     C_rows,
                     cuda_type,                                      // compute_type
-                    cuda_algo                                       // cuda algorithm choice 
-                ));                                       
+                    cuda_algo)
+            );                                       
             vbmat_idx += rows_in_block * cols_in_block;
 	    }
 
