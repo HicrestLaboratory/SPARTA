@@ -1,4 +1,4 @@
-// Utilities and system includes
+//CUDA Utilities and system includes
 #include <assert.h>
 #include <helper_string.h>  // helper for shared functions common to CUDA Samples
 
@@ -7,15 +7,16 @@
 #include <cublas_v2.h>
 #include <cusparse_v2.h>
 
-
 // CUDA and CUBLAS functions
 #include <helper_functions.h>
 #include <helper_cuda.h>
 
+//others
 #include<stdio.h>
 #include <iostream>
+#include <typeinfo>
 
-
+//includes from SPARTA
 #include "cuda_utilities.h"
 #include "comp_mats.h"
 #include "sparse_utilities.h"
@@ -145,7 +146,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
                     cuda_type,                                      // blockB datatype
                     &beta,
                     d_C_block, cuda_type,                           // blockC device pointer, blockC type
-                    C_rows
+                    C_rows,
                     cuda_type,                                      // compute_type
                     cuda_algo                                       // cuda algorithm choice 
                 ));                                       
