@@ -1,5 +1,5 @@
 #pragma once
-typedef int DataT; //precision for matrix entries
+typedef float DataT; //precision for matrix entries
 
 
 struct CSR {
