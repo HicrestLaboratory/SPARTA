@@ -69,11 +69,6 @@ int output_couple(string& names, string& values, string name, myType value)
 
 int main(int argc, char* argv[]) {
 
-
-    if (typeid(DataT) != typeid(float)) {
-        cout << "WARNING: only float supported for CUDA. Change DataT to float in sparse_utilities.h" << endl;
-        return 1;
-    }
     opterr = 0;
 
     int verbose = 3;
@@ -133,9 +128,9 @@ int main(int argc, char* argv[]) {
                   */
             algo = stoi(optarg);
             break;
-
+        
         case 'b': //block density
-//has only effect for example 4
+            //has only effect for example 4
             block_density = stof(optarg);
             if (block_density < 0 or block_density > 1) {
                 fprintf(stderr, "Option -b tried to set block density outside of [0,1]");
@@ -633,48 +628,53 @@ int main(int argc, char* argv[]) {
     //      CSR x Dense cusparse multiplication
     //--------------------------------------------
     if ((algo == 5) or (algo == -1))
-    {
+        if (typeid(DataT) != typeid(float))
+        {
+            if (verbose > 0)         cout << "WARNING: only float supported for CUSPARSE. DataT can be changed in sparse_utilities.h" << endl;
+        }
+        else
+        {
 
-        DataT* mat_C_csrmm = new DataT[C_rows * C_cols];
-        int mat_C_csrmm_fmt = 1;
+            DataT* mat_C_csrmm = new DataT[C_rows * C_cols];
+            int mat_C_csrmm_fmt = 1;
 
-        //prepare the cusparse CSR format
-        int nnz = count_nnz(cmat_A);
-        int* csrRowPtr = new int[cmat_A.rows + 1];
-        int* csrColInd = new int[nnz];
-        float* csrVal = new float[nnz];
-        prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
+            //prepare the cusparse CSR format
+            int nnz = count_nnz(cmat_A);
+            int* csrRowPtr = new int[cmat_A.rows + 1];
+            int* csrColInd = new int[nnz];
+            float* csrVal = new float[nnz];
+            prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
         
-        algo_times.clear();
-        for (int i = -warmup; i < experiment_reps; i++)
-        {
-            cusparse_gemm_custom(cmat_A.rows, cmat_A.cols, nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f, dt);
-            if (i >= 0) algo_times.push_back(dt);
+            algo_times.clear();
+            for (int i = -warmup; i < experiment_reps; i++)
+            {
+                cusparse_gemm_custom(cmat_A.rows, cmat_A.cols, nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f, dt);
+                if (i >= 0) algo_times.push_back(dt);
+            }
+
+            mean_time = mean(algo_times);
+            std_time = std_dev(algo_times);
+            output_couple(output_names, output_values, "cusparse_spmm_mean(ms)", mean_time);
+            output_couple(output_names, output_values, "cusparse_spmm_std", std_time);
+
+
+            if (verbose > 0)
+            {
+                cout << "CSR-Dense cusparse multiplication. Time taken: " << mean_time << endl;
+            }
+            if (verbose > 1)
+            {
+
+                cout << "CSR-dense cusparse:" << endl;
+                matprint(mat_C_csrmm, C_rows, C_cols, C_rows, 1);
+            }
+
+            delete[] mat_C_csrmm;
+            delete[] csrColInd;
+            delete[] csrRowPtr;
+            delete[] csrVal;
+
         }
-
-        mean_time = mean(algo_times);
-        std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "cusparse_spmm_mean(ms)", mean_time);
-        output_couple(output_names, output_values, "cusparse_spmm_std", std_time);
-
-
-        if (verbose > 0)
-        {
-            cout << "CSR-Dense cusparse multiplication. Time taken: " << mean_time << endl;
-        }
-        if (verbose > 1)
-        {
-
-            cout << "CSR-dense cusparse:" << endl;
-            matprint(mat_C_csrmm, C_rows, C_cols, C_rows, 1);
-        }
-
-        delete[] mat_C_csrmm;
-        delete[] csrColInd;
-        delete[] csrRowPtr;
-        delete[] csrVal;
-
-    }
 
 
     //cleaning
