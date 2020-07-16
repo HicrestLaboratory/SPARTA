@@ -242,9 +242,9 @@ int main(int argc, char* argv[]) {
     //TEST
     //INPUT EXAMPLE 2: read graph in edgelist format into CSR
         if (input_type == 2){
-            if (input_source.empty()) input_source = "testgraph.txt";
+            if (input_source.empty()) input_source = "testgraph1.txt";
 
-            string delimiter = "--";
+            string delimiter = " "; 
             GraphMap snap_graph;
             read_snap_format(snap_graph, input_source,delimiter);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
             MakeProper(snap_graph);
@@ -279,6 +279,8 @@ int main(int argc, char* argv[]) {
         //A_rows and density have been previously set by options. Default: n = 20, density = 0.5;
 
         DataT* rand_block_mat = new DataT [A_rows * A_cols];
+        
+        //TODO do not start by array but create directly the CSR?
 
         random_sparse_blocks_mat(rand_block_mat, A_rows, A_cols, mat_A_fmt, block_size, block_density, density);
 
@@ -331,12 +333,12 @@ int main(int argc, char* argv[]) {
     string output_values;
 
 
-    float A_density = ((float) count_nnz(cmat_A))/(cmat_A.rows*cmat_A.cols);
+    int A_nnz = count_nnz(cmat_A);
 
     output_couple(output_names, output_values, "input_type", input_type);
     output_couple(output_names, output_values, "A_rows", cmat_A.rows);
     output_couple(output_names, output_values, "A_cols", cmat_A.cols);
-    output_couple(output_names, output_values, "A_total_density", A_density);
+    output_couple(output_names, output_values, "A_total_nonzeros", A_nnz);
     output_couple(output_names, output_values, "A_blocks_density", block_density);
     output_couple(output_names, output_values, "A_block_size", block_size);
 

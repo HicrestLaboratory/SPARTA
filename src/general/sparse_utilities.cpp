@@ -1794,8 +1794,6 @@ void read_snap_format(GraphMap& gmap, std::string filename, std::string delimite
     }
 }
 
-
-
 //check if a graphmap is well-numbered, complete and (optional) symmetric
 int isProper(const GraphMap& gmap, bool mirroring) 
 {

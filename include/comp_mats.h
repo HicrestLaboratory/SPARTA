@@ -50,8 +50,8 @@ struct VBS {
     int* nzcount;	        /* number of nonzero blocks in each block-row (-column) */
     int nztot;              /* total number of nonzero element in mab*/
     int* jab;              /* block-columns (-rows) indices of nonzero blocks      */
-    int* row_part;              /*cumulative number of row up to start of row partition element i (last element row_part[rows] is total number of rows)*/ 
-    int* col_part;              /*cumulative number of row up to start of col partition element i (last element col_part[cols] is total number of cols) */
+    int* col_part;              /*cumulative number of row up to start of col partition element i (last element col_part[block_cols] is total number of cols) */
+    int* row_part;              /*cumulative number of row up to start of row partition element i (last element row_part[block_rows] is total number of rows)*/
 
     DataT* mab;             /* array containing all entries, block by block	        */
     int entries_fmt;         /* storage format inside blocks:
