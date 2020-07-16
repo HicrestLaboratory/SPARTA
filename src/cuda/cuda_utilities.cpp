@@ -30,19 +30,9 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
 
 
     cudaDataType_t cuda_type;
-    switch (typeid(DataT))
-    {
-        case typeid(float) :
-            cuda_type = CUDA_R_32F;
-            break;
-
-        case typeid(double) :
-            cuda_type = CUDA_R_64F;
-            break;
-
-        case typeid(int) :
-            cuda_type = CUDA_R_8I;
-    }
+    if (typeid(DataT) == typeid(float))    cuda_type = CUDA_R_32F;
+    else if (typeid(DataT) == typeid(double))   cuda_type = CUDA_R_64F;
+    else if (typeid(DataT) == typeid(int))  cuda_type = CUDA_R_8I;
 
     cublasGemmAlgo_t cuda_algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP;
 
@@ -198,20 +188,9 @@ int cublas_gemm_custom(const DataT *A, unsigned int A_rows, unsigned int A_cols,
 {
 
     cudaDataType_t cuda_type;
-    switch (typeid(DataT))
-    {
-        case typeid(float) :
-            cuda_type = CUDA_R_32F;
-            break;
-
-        case typeid(double) :
-            cuda_type = CUDA_R_64F;
-            break;
-
-        case typeid(int) :
-            cuda_type = CUDA_R_8I;
-            break;
-    }
+    if (typeid(DataT) == typeid(float))    cuda_type = CUDA_R_32F;
+    else if (typeid(DataT) == typeid(double))   cuda_type = CUDA_R_64F;
+    else if (typeid(DataT) == typeid(int))  cuda_type = CUDA_R_8I;
 
     cublasGemmAlgo_t cuda_algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP;
 
