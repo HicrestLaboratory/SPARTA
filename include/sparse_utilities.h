@@ -35,7 +35,7 @@ int permute(myType* arr, int* perm, int n) {
 		//end cycle and procede to next element
 		if (next_row != start_i) return 1; //PERM IS NOT A PROPER PERMUTATION
 		arr[cur_row] = temp;
-		while (perm[i] < 0) i++;
+		while ((i < n) and (perm[i] < 0)) i++;
 	}
 
 	//reconstruct perm (remove flags)
