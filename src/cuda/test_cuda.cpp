@@ -395,8 +395,7 @@ int main(int argc, char* argv[]) {
 
     //create a VBS which is permuted with the asymmetric angle method
     VBS vbmat_A_angle;
-    //if (algo == 4 or algo == -1)
-    if (0) //TODO fix angle_hash_algorithm
+    if (algo == 4 or algo == -1)
     {
 
         angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
@@ -590,8 +589,7 @@ int main(int argc, char* argv[]) {
     //--------------------------------------------
     //      VBS x dense cublas multiplication (permuted with angle algorithm)
     //--------------------------------------------
-    //if ((algo == 4) or (algo == -1))
-    if (0) //todo fix
+    if ((algo == 4) or (algo == -1))
     {
 
         DataT* mat_Cblock_angle = new DataT[C_rows * C_cols];
@@ -689,12 +687,8 @@ int main(int argc, char* argv[]) {
     delete[] mat_B;
     if (algo == 2 or algo == -1) cleanCSR(cmat_A);
     if (algo == 3 or algo == -1) cleanVBS(vbmat_A_full);
-
-    //if (algo == 4 or algo == -1) cleanVBS(vbmat_A_angle); //todo fix
+    if (algo == 4 or algo == -1) cleanVBS(vbmat_A_angle);
 
 }
-
-//TODO CSR-dense cusparse multiplication
-
  
  
