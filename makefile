@@ -97,7 +97,7 @@ $(MKL_OBJ_DIR)/%.o : $(MKL_SRC_DIR)/%.cpp
 
 $(MKL_APP_DIR)/$(MKL_TARGET) : $(MKL_OBJECTS)
 	@mkdir -p $(@D)
-	$(CXX) $(MKL_CXXFLAGS) $(MKL_INCLUDE) $(MKL_LDFLAGS) -o $(MKL_APP_DIR)/$(MKL_TARGET) $<
+	$(CXX) $(MKL_CXXFLAGS) $(MKL_INCLUDE) $(MKL_LDFLAGS) -o $@ $<
 
 
 
@@ -106,11 +106,11 @@ $(CUDA_OBJ_DIR)/%.o : $(CUDA_SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
 	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LIBRARY) -o $@ -c $<
 
-$(CUDA_OBJ_DIR)/%.o : $(CUDA_OBJECTS) $(CUDA_TEST_DIR)/%.cpp
+$(CUDA_OBJ_DIR)/%.o : $(CUDA_TEST_DIR)/%.cpp
 	@mkdir -p $(@D)
 	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LIBRARY) -o $@ -c $<
 
-$(CUDA_APP_DIR)/% : $(CUDA_OBJ_DIR)/%.o
+$(CUDA_APP_DIR)/% : $(CUDA_OBJ_DIR)/%.o $(CUDA_OBJECTS)
 	@mkdir -p $(@D)
 	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LDFLAGS) -o $@ $<
 
