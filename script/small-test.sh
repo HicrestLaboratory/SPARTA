@@ -1,15 +1,16 @@
 #!/bin/bash
 
-OPTS="-w 1 -r 10 -v -1 -i 4"
+OPTS="-w 1 -r 3 -v -1 -i 4"
 
+Output_file="test_small_cublas_results.txt"
 
-Mshapes=(1024 4096);
-Nshapes=(1024 4096);
-Kshapes=(1024 4096);
+Mshapes=(1024 2048);
+Nshapes=(1024 2048);
+Kshapes=(1024 2048);
 
-Pvalue=(256 512);
-Bvalue=(0.1 0.5 0.9);
-Qvalue=(0.05 0.1 0.4 0.8);
+Pvalue=(128 512)
+Bvalue=(0.1 0.5 1);
+Qvalue=(0.1 0.5 1.0);
 
 for m in ${Mshapes[@]}; do
   for k in ${Kshapes[@]}; do
@@ -18,14 +19,10 @@ for m in ${Mshapes[@]}; do
       for p in ${Pvalue[@]}; do
         for b in ${Bvalue[@]}; do
           for q in ${Qvalue[@]}; do
-            ./cuda_test $OPTS -m $m -n $n -k $k -p $p -b $b -q $q; sleep 0.5;
+            ./programs/cuda/test_cublas_VBS $OPTS -m $m -n $n -k $k -p $p -b $b -q $q; sleep 0.5; >> ${Output_file}
           done
         done
       done
     done
   done
 done
-
-
-
-

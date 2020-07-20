@@ -27,14 +27,16 @@ SPARTA
 * include
 * obj
 * programs 
-* src   
+* src
+* test   
 
 each folder contains 
 * general: files needed by all versions
 * cuda: files needed by the cuda version
 * mkl: files needed by the mkl version
 
-running `make cuda_test` or `make mkl_test` (currently not supported) will create a test executable of the cuda version or the mkl version respectively. The executable will be placed in programs/cuda or programs/mkl. You can run it with different command line arguments to test different features.  
+running `make test_cublas_VBS` will create a test executable of the cuda test. The executable will be placed in programs/cuda. You can run it with different command line arguments to test different features.  
+run the scripts in scripts to run and save some experiments.
 
 Options for the cuda_test:
 
