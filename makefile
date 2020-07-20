@@ -106,11 +106,11 @@ $(CUDA_OBJ_DIR)/%.o : $(CUDA_SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
 	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LIBRARY) -o $@ -c $<
 
-$(CUDA_OBJ_DIR)/%.o : $(CUDA_TEST_DIR)/%.cpp
+$(CUDA_OBJ_DIR)/%.o : $(CUDA_OBJECTS) $(CUDA_TEST_DIR)/%.cpp
 	@mkdir -p $(@D)
 	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LIBRARY) -o $@ -c $<
 
-$(CUDA_APP_DIR)/% : $(CUDA_OBJ_DIR)/%.o $(CUDA_OBJECTS)
+$(CUDA_APP_DIR)/% : $(CUDA_OBJ_DIR)/%.o
 	@mkdir -p $(@D)
 	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LDFLAGS) -o $@ $<
 
