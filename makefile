@@ -110,7 +110,7 @@ $(CUDA_OBJ_DIR)/%.o : $(CUDA_TEST_DIR)/%.cpp
 	@mkdir -p $(@D)
 	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LIBRARY) -o $@ -c $<
 
-$(CUDA_APP_DIR)/% : $(CUDA_OBJ_DIR)/%.o $(CUDA_OBJECTS)
+$(CUDA_APP_DIR)/% : $(CUDA_OBJECTS)
 	@mkdir -p $(@D)
 	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LDFLAGS) -o $@ $<
 
