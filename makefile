@@ -112,6 +112,7 @@ $(CUDA_OBJ_DIR)/%.o : $(CUDA_TEST_DIR)/%.cpp
 
 $(CUDA_APP_DIR)/% : $(CUDA_OBJECTS)
 	@mkdir -p $(@D)
+	$(warning $(CUDA_OBJECTS) is $(CUDA_OBJECTS))
 	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LDFLAGS) -o $@ $<
 
 .PHONY: all build clean general build_cuda
