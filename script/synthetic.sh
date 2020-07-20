@@ -19,7 +19,7 @@ for m in ${Mshapes[@]}; do
       for p in ${Pvalue[@]}; do
         for b in ${Bvalue[@]}; do
           for q in ${Qvalue[@]}; do
-            ./programs/test_cublas_VBS $OPTS -m $m -n $n -k $k -p $p -b $b -q $q; sleep 0.5; >> ${Output_file}
+            .../programs/test_cublas_VBS $OPTS -m $m -n $n -k $k -p $p -b $b -q $q; sleep 0.5; >> ${Output_file}
           done
         done
       done
