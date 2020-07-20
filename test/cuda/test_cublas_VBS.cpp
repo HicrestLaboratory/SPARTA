@@ -299,7 +299,7 @@ int main(int argc, char* argv[]) {
     //___________________________________________
     //*******************************************
     //		END OF INPUT
-    //spmat must hold a proper CSR matrix at this point
+    //cmat must hold a proper CSR matrix at this point
     //******************************************
 
     if (verbose > 0) cout << "INPUT ACQUIRED." << endl;
