@@ -411,7 +411,7 @@ int main(int argc, char* argv[]) {
         angle_hash_method(cmat_A_scrambled, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
 
         cleanCSR(cmat_A_scrambled);
-        delete[] random_permutation;
+        delete[] pre_algo_permutation;
 
         if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
         if (verbose > 1)    matprint(vbmat_A_angle);
