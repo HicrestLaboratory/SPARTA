@@ -86,7 +86,7 @@ $(GEN_OBJ_DIR)/%.o : $(GEN_SRC_DIR)/%.cpp
 
 $(GEN_APP_DIR)/% : $(GEN_OBJ_DIR)/%.o $(GEN_OBJECTS)
 	@mkdir -p $(@D)
-	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ $(inputs)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ $?
 
 
 
@@ -110,7 +110,7 @@ $(CUDA_OBJ_DIR)/%.o : $(CUDA_TEST_DIR)/%.cpp
 $(CUDA_APP_DIR)/% : $(CUDA_OBJ_DIR)/%.o $(CUDA_OBJECTS)
 	$(warning CUDA_OBJECTS is $(CUDA_OBJECTS))
 	@mkdir -p $(@D)
-	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LDFLAGS) -o $@ $(inputs)
+	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LDFLAGS) -o $@ $?
 
 
 .PHONY: all build clean general build_cuda
