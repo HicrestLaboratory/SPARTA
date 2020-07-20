@@ -18,7 +18,6 @@ MKL_LDFLAGS  = -lmkl_rt -lpthread -lm -ldl
 
 
 #cuda------------------------------------------
-CUDA_TARGET = cuda_test
 CUDA_PATH ?= /usr/local/cuda-10.0
 #CUDA_LDFLAGS = --dynamic-linker=/lib/ld-linux-armhf.so.3
 #CUDA_LDFLAGS += $(addprefix -Xlinker ,$(CUDA_LDFLAGS))
@@ -51,6 +50,7 @@ CUDA_LDFLAGS = -lcublas -lcusparse -lcudart
 OBJ_DIR = ./obj
 APP_DIR = ./programs
 SRC_DIR = ./src
+TEST_DIR = ./test
 
 GEN_OBJ_DIR = $(OBJ_DIR)/general
 GEN_APP_DIR = $(APP_DIR)/general
@@ -71,17 +71,25 @@ MKL_OBJECTS = $(GEN_OBJECTS) $(MKL_SRC:$(MKL_SRC_DIR)/%.cpp=$(MKL_OBJ_DIR)/%.o)
 CUDA_OBJ_DIR = $(OBJ_DIR)/cuda
 CUDA_APP_DIR =$(APP_DIR)/cuda
 CUDA_SRC_DIR = $(SRC_DIR)/cuda
+CUDA_TEST_DIR = $(TEST_DIR)/cuda
 
 CUDA_SRC = $(wildcard $(CUDA_SRC_DIR)/*.cpp)
 CUDA_OBJECTS := $(GEN_OBJECTS) $(CUDA_SRC: $(CUDA_SRC_DIR)/%.cpp=$(CUDA_OBJ_DIR)/%.o)
 
 
-all:  mkl_test cuda_test 
+all: test_cublas_VBS test_AHA
 
 
 $(GEN_OBJ_DIR)/%.o : $(GEN_SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
-	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<	
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<
+
+$(GEN_APP_DIR)/% : $(GEN_OBJ_DIR)/%.o $(GEN_OBJECTS)
+	@mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ $<
+
+
+
 
 $(MKL_OBJ_DIR)/%.o : $(MKL_SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
@@ -89,41 +97,45 @@ $(MKL_OBJ_DIR)/%.o : $(MKL_SRC_DIR)/%.cpp
 
 $(MKL_APP_DIR)/$(MKL_TARGET) : $(MKL_OBJECTS)
 	@mkdir -p $(@D)
-	$(CXX) $(MKL_CXXFLAGS) $(MKL_INCLUDE) $(MKL_LDFLAGS) -o $(MKL_APP_DIR)/$(MKL_TARGET) $(MKL_OBJECTS)
+	$(CXX) $(MKL_CXXFLAGS) $(MKL_INCLUDE) $(MKL_LDFLAGS) -o $(MKL_APP_DIR)/$(MKL_TARGET) $<
+
+
+
 
 $(CUDA_OBJ_DIR)/%.o : $(CUDA_SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
 	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LIBRARY) -o $@ -c $<
 
-$(CUDA_APP_DIR)/$(CUDA_TARGET) : $(CUDA_OBJECTS)
+$(CUDA_OBJ_DIR)/%.o : $(CUDA_TEST_DIR)/%.cpp
 	@mkdir -p $(@D)
-	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LDFLAGS) -o $(CUDA_APP_DIR)/$(CUDA_TARGET) $(CUDA_OBJECTS)
+	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LIBRARY) -o $@ -c $<
 
+$(CUDA_APP_DIR)/% : $(CUDA_OBJ_DIR)/%.o $(CUDA_OBJECTS)
+	@mkdir -p $(@D)
+	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LDFLAGS) -o $@ $<
 
-.PHONY: all build clean general mkl_build cuda_build
+.PHONY: all build clean general build_cuda
 
-build: 
+build: build_general build_cuda
+
+build_general: 
 	@mkdir -p $(APP_DIR)
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(GEN_APP_DIR)
 	@mkdir -p $(GEN_OBJ_DIR)
 
-mkl_build: build $(MKL_APP_DIR)/$(MKL_TARGET)
-	@mkdir -p $(MKL_APP_DIR)
-	@mkdir -p $(MKL_OBJ_DIR)
-
-cuda_build: build $(CUDA_APP_DIR)/$(CUDA_TARGET)
+build_cuda: build_general
 	@mkdir -p $(CUDA_APP_DIR)
 	@mkdir -p $(CUDA_OBJ_DIR)
-
-general: build $(GEN_OBJECTS)
-
-mkl_test: $(MKL_APP_DIR)/$(MKL_TARGET)
-	./$(MKL_APP_DIR)/$(MKL_TARGET)
-
-cuda_test: $(CUDA_APP_DIR)/$(CUDA_TARGET)
-	./$(CUDA_APP_DIR)/$(CUDA_TARGET)
 
 clean:
 	-@rm -rvf $(OBJ_DIR)/*
 	-@rm -rvf $(APP_DIR)/*
+
+#------------------TESTS--------------------
+
+test_cublas_VBS : build_cuda $(CUDA_APP_DIR)/test_cublas_VBS
+
+test_AHA : build_general $(GEN_APP_DIR)/test_AHA 
+
+
