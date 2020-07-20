@@ -294,12 +294,14 @@ int main(int argc, char* argv[]) {
                 << endl;
         }
 
+
+
     }
 
     //___________________________________________
     //*******************************************
     //		END OF INPUT
-    //spmat must hold a proper CSR matrix at this point
+    //cmat must hold a proper CSR matrix at this point
     //******************************************
 
     if (verbose > 0) cout << "INPUT ACQUIRED." << endl;
@@ -348,7 +350,7 @@ int main(int argc, char* argv[]) {
 
     A_row_part = new int[block_rows + 1]; //partitions have one element more for the rightmost border.
     A_col_part = new int[block_cols + 1];
-    linspan(A_row_part, 0, cmat_A.rows + 1, block_size); //row and column partitions
+    linspan(A_row_part, 0, cmat_A.rows + 1, block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
     linspan(A_col_part, 0, cmat_A.cols + 1, block_size);
 
     //Create a VBS with fixed block dimension (see input)
@@ -398,20 +400,30 @@ int main(int argc, char* argv[]) {
     if (algo == 4 or algo == -1)
     {
 
-        angle_hash_method(cmat_A, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
+        CSR cmat_A_scrambled;
+        copy(cmat_A, cmat_A_scrambled);
+
+        if (verbose > 0) cout << "input matrix rows scrambled" << endl;
+        int* pre_algo_permutation = new int[A_rows];
+        randperm(pre_algo_permutation, A_rows);
+        permute_CSR(cmat_A_scrambled, pre_algo_permutation, 0);
+
+        angle_hash_method(cmat_A_scrambled, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
+
+        cleanCSR(cmat_A_scrambled);
+        delete[] pre_algo_permutation;
 
         if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
         if (verbose > 1)    matprint(vbmat_A_angle);
 
         //report on the block structure of vbmat_A_angle
 
-        float VBS_effective_density = ((float)vbmat_A_angle.nztot) / (A_rows * A_cols);
-
+        int VBS_nztot = vbmat_A_angle.nztot;
 
         int min_block_H = *(std::min_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows));
         int max_block_H = *(std::max_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows));
 
-        output_couple(output_names, output_values, "VBS_AAM_effective_density", VBS_effective_density);
+        output_couple(output_names, output_values, "VBS_AAM_nonzeros", VBS_nztot);
         output_couple(output_names, output_values, "VBS_AAM_block_rows", vbmat_A_angle.block_rows);
         output_couple(output_names, output_values, "VBS_AAM_nz_blocks", count_nnz_blocks(vbmat_A_angle));
         output_couple(output_names, output_values, "VBS_AAM_min_block_H", min_block_H);
