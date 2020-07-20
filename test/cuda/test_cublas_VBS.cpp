@@ -405,7 +405,7 @@ int main(int argc, char* argv[]) {
 
         //report on the block structure of vbmat_A_angle
 
-        int VBS_nztot = vbmat_A_angle.nztot);
+        int VBS_nztot = vbmat_A_angle.nztot;
 
         int min_block_H = *(std::min_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows));
         int max_block_H = *(std::max_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows));
