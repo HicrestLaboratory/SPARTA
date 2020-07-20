@@ -74,7 +74,7 @@ CUDA_SRC_DIR = $(SRC_DIR)/cuda
 CUDA_TEST_DIR = $(TEST_DIR)/cuda
 
 CUDA_SRC = $(wildcard $(CUDA_SRC_DIR)/*.cpp)
-CUDA_OBJECTS := $(GEN_OBJECTS) $(CUDA_SRC: $(CUDA_SRC_DIR)/%.cpp=$(CUDA_OBJ_DIR)/%.o)
+CUDA_OBJECTS := $(CUDA_SRC: $(CUDA_SRC_DIR)/%.cpp=$(CUDA_OBJ_DIR)/%.o) $(GEN_OBJECTS)
 
 
 all: test_cublas_VBS test_AHA
