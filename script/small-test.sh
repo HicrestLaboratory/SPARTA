@@ -4,7 +4,7 @@ OPTS="-w 1 -r 3 -v -1 -i 4"
 
 Output_file="test_small_cublas_results.txt"
 
-: > ${Output_file}
+echo "MIAO" > ${Output_file}
 
 Mshapes=(1024 2048);
 Nshapes=(1024 2048);
