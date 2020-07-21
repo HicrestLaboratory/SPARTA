@@ -275,7 +275,7 @@ int main(int argc, char* argv[]) {
 
         DataT* rand_block_mat = new DataT [A_rows * A_cols];
         
-        //TODO do not start by array but create directly the CSR?
+        //TODO do not start with array but create directly the CSR?
 
         random_sparse_blocks_mat(rand_block_mat, A_rows, A_cols, mat_A_fmt, block_size, block_density, density);
 

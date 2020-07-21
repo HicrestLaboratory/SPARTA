@@ -81,7 +81,7 @@ Options for the cuda_test:
       
 ## RoadMAP
 * Supporting Nvidia architecture (DONE!)
-* New algorithm for Matrix reordering and compression to support no-coherent blocks (DONE!)
+* New algorithm for Matrix reordering and compression to support non-coherent blocks (DONE!)
 * New algorithm for sparse-sparse multiplication
 * Bring back support for MKL
 
