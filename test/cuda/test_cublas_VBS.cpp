@@ -350,8 +350,8 @@ int main(int argc, char* argv[]) {
 
     A_row_part = new int[block_rows + 1]; //partitions have one element more for the rightmost border.
     A_col_part = new int[block_cols + 1];
-    linspan(A_row_part, 0, cmat_A.rows + 1, block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
-    linspan(A_col_part, 0, cmat_A.cols + 1, block_size);
+    partition(A_row_part, 0, cmat_A.rows, block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
+    partition(A_col_part, 0, cmat_A.cols, block_size);
 
     //Create a VBS with fixed block dimension (see input)
     VBS vbmat_A;

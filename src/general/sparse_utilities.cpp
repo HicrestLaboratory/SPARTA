@@ -110,8 +110,7 @@ int equal(int rows, int cols, DataT* A, int lead_A, int fmt_A, DataT* B, int lea
 }
 
 
-///TODO
-// make version with arbitrary secondary dimension partition, instead of fixed block side
+///TODO: make version with arbitrary secondary dimension partition, instead of fixed block side
 int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_size, float block_sparsity, float block_entries_sparsity) 
 {
 
@@ -121,7 +120,7 @@ int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_
         return 1;
     }
 
-    int n_blocks = rows * cols / (block_size * block_size);     //total number of blocks
+    int n_blocks = (int)rows * cols / (block_size * block_size);     //total number of blocks
     int nzblocks = (int)(block_sparsity * n_blocks);              //total number of nonzero blocks
 
     std::fill(mat, mat + rows * cols, 0);
@@ -150,6 +149,96 @@ int random_sparse_blocks_mat(DataT *mat, int rows, int cols, int fmt, int block_
     }
 
 
+}
+
+
+//NOT TESTED YET
+int random_sparse_blocks_mat(VBS& vbmat, int rows, int cols, int blocks_fmt, int entries_fmt, int row_block_size, int col_block_size, float block_density, float entries_density)
+{
+    /*
+    IN: 
+        rows
+        cols
+        blocks_fmt : the storage format of block-rows and block-columns
+        entries_fmt: the storage format INSIDE blocks
+        block_density : the % of nonzero blocks
+        entries_density: the % of nonzero entries in each block
+        row_block_size: the height of blocks;
+        col_block_size: the lenght of blocks;
+
+
+    OUT: 
+        vbmat : the VBS matrix, now filled.
+    */
+
+    if ((rows % row_block_size != 0) or (cols % col_block_size != 0))
+    {
+        //TODO exception
+        std::cout << "ERROR: matrix dimension must be a multiple of block size" << std::endl;
+        return 1;
+    }
+
+    int block_rows = std::ceil((float)rows / row_block_size);
+    int block_cols = std::ceil((float)cols / col_block_size);
+    int size_of_block = row_block_size * col_block_size;
+
+
+    int* row_part = new int[block_rows + 1];
+    int* col_part = new int[block_cols + 1];
+    partition(row_part, 0, block_rows, row_block_size); //row and block partition for creating the VBS
+    partition(col_part, 0, block_cols, col_block_size);
+
+
+    //DETERMINE THE NZ BLOCK STRUCTURE
+    //(this could be probably made to use less memory by extracting indices instead of permuting the vector)
+    int nz_blocks = (int)(block_density * block_rows * block_cols);
+    svi blocks = svi(n_blocks, 0);              //will store 0 unless a block is nonzero;
+    std::fill(blocks.begin(), blocks.begin() + nzblocks, 1);    //make nzblocks blocks nonzero;
+    std::random_shuffle(blocks.begin(), blocks.end());          //put the nonzero blocks in random positions
+
+    int main_dim = (blocks_fmt == 0)? block_rows : block_cols;
+    int compressed_dim = (blocks_fmt == 0) ? block_cols : block_rows;
+    int nz_tot = nz_blocks * size_of_block;
+
+    init_VBS(vbmat, nz_tot, nz_blocks, block_rows, row_part, block_cols, col_part, blocks_fmt, entries_fmt);
+
+    std::fill(vbmat.mab, vbmat.mab + vbmat.nztot, 1); //fill the blocks with ones
+
+    //saves the indices of nonzero blocks into jab; saves the number of nz blocks per row (or col) into vbmat.nzcount;
+    int b = 0;
+    for (i = 0; i < main_dim; i++)
+    {
+        int nzcount = 0;
+        for (j = 0; j < compressed_dim; j++)
+        {
+            if (blocks[b] != 0)
+            {
+                vbmat.jab[b] == i;
+                nzcount += 1;
+            }
+            b++;
+        }
+        vbmat.nzcount[i] = nzcount;
+    }
+
+}
+
+//NOT TESTED YET
+int init_VBS(VBS& vbmat, int nz_tot, int nz_blocks, int block_rows, int* row_part, int block_cols, int* col_part, int blocks_fmt, int entries_fmt)
+{
+    int main_dim = (blocks_fmt == 0) ? block_rows : block_cols;
+    int compressed_dim = (blocks_fmt == 0) ? block_cols : block_rows;
+
+    vbmat.nztot = nz_tot;
+    vbmat.entries_fmt = entries_fmt;
+    vbmat.blocks_fmt = blocks_fmt;
+
+    vbmat.block_rows = block_rows;
+    vbmat.block_cols = block_cols;
+
+    vbmat.nzcount = new int[main_dim];
+    vbmat.mab = new DataT[vbmat.nztot];
+    vbmat.jab = new int[nz_blocks];
 }
 
 int matprint(DataT* mat, int rows, int cols, int lead_dim, int fmt)
@@ -223,7 +312,7 @@ returns the permutation that would sort arrary arr
     );
 }
 
-int linspan(int* arr, int start, int end, int step)
+int partition(int* arr, int start, int end, int step)
 {
     if (step <= 0)
     {
@@ -231,11 +320,14 @@ int linspan(int* arr, int start, int end, int step)
         return(0);
     }
     int val = start;
-    for (int i = 0; val < end; i++)
+    int i = 0;
+    while (val < end)
     {
         arr[i] = val;
         val += step;
+        i++;
     }
+    val[i] = end;
 }
 
 int randperm(int* arr, int len)
@@ -688,6 +780,12 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, in
     delete[] mat;
 
     return 0;
+}
+
+//NOT TESTED YET
+int convert_to_VBS_2(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int* colpart, int vbmat_block_fmt, int vbmat_entries_fmt, int no_zero_mode)
+{
+
 }
 
 int matprint(const VBS& vbmat)
