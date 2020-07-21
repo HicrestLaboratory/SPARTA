@@ -20,7 +20,6 @@ for m in ${Mshapes[@]}; do
         for b in ${Bvalue[@]}; do
           for q in ${Qvalue[@]}; do
             	./programs/cuda/test_cublas_VBS $OPTS -m $m -n $n -k $k -p $p -b $b -q $q >> "test_complete_cublas_results.txt"
-		sleep 0.5;
           done
         done
       done
