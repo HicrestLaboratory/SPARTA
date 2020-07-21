@@ -35,8 +35,8 @@ each folder contains
 * cuda: files needed by the cuda version
 * mkl: files needed by the mkl version
 
-running `make test_cublas_VBS` will create a test executable of the cuda test. The executable will be placed in programs/cuda. You can run it with different command line arguments to test different features.  
-run the scripts in scripts to run and save some experiments.
+use `make test_cublas_VBS` to create a test executable of the cuda test. The executable will be placed in programs/cuda. You can run it with different command line arguments to test different features.  
+use 'source ./scripts/synthetic.sh' from the main folder to run and save some experiments. The experiments will be saved in 
 
 Options for the cuda_test:
 
