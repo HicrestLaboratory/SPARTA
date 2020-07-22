@@ -14,6 +14,7 @@
 
 #include "sparse_utilities.h"
 
+typedef long long int llint; 
 typedef std::vector<int> svi;
 typedef std::vector<DataT> svd;
 //typedef std::map<int, std::set<int> > GraphMap; definition moved to sparse_utilities.h
@@ -200,12 +201,17 @@ int random_sparse_blocks_mat(VBS& vbmat, int rows, int cols, int blocks_fmt, int
     int compressed_dim = (blocks_fmt == 0) ? block_cols : block_rows;
     int nz_tot = nz_blocks * size_of_block;
 
-    init_VBS(vbmat, nz_tot, nz_blocks, block_rows, row_part, block_cols, col_part, blocks_fmt, entries_fmt);
+    init_VBS(vbmat, block_rows, row_part, block_cols, col_part, blocks_fmt, entries_fmt);
 
-    std::fill(vbmat.mab, vbmat.mab + vbmat.nztot, 1); //fill the blocks with ones
-
+    vbmat.nztot = nz_tot;
+    vbmat.mab = new DataT[nz_tot];
+    vbmat.jab = new int[nz_blocks];
+    
+    
+    int nz_in_block = sted::ceil(entries_density * size_of_block);
     //saves the indices of nonzero blocks into jab; saves the number of nz blocks per row (or col) into vbmat.nzcount;
     int b = 0;
+    DataT* mab_idx = vbmat.mab; //the mab array will is filled up to this pointer
     for (i = 0; i < main_dim; i++)
     {
         int nzcount = 0;
@@ -213,32 +219,17 @@ int random_sparse_blocks_mat(VBS& vbmat, int rows, int cols, int blocks_fmt, int
         {
             if (blocks[b] != 0)
             {
-                vbmat.jab[b] == i;
-                nzcount += 1;
+                std::fill(mab_idx, mab_idx + nz_in_block, 1); //fill part of the block with ones
+                std::random_shuffle(mab_idx, mab_idx + size_of_block); //shuffle the block
+                vbmat.jab[b] == i; //save the index of the block in jab
+                nzcount += 1; //keep the count of nonzero blocks
+                mab_idx += size_of_block; // jump to next block on mab 
             }
             b++;
         }
         vbmat.nzcount[i] = nzcount;
     }
 
-}
-
-//NOT TESTED YET
-int init_VBS(VBS& vbmat, int nz_tot, int nz_blocks, int block_rows, int* row_part, int block_cols, int* col_part, int blocks_fmt, int entries_fmt)
-{
-    int main_dim = (blocks_fmt == 0) ? block_rows : block_cols;
-    int compressed_dim = (blocks_fmt == 0) ? block_cols : block_rows;
-
-    vbmat.nztot = nz_tot;
-    vbmat.entries_fmt = entries_fmt;
-    vbmat.blocks_fmt = blocks_fmt;
-
-    vbmat.block_rows = block_rows;
-    vbmat.block_cols = block_cols;
-
-    vbmat.nzcount = new int[main_dim];
-    vbmat.mab = new DataT[vbmat.nztot];
-    vbmat.jab = new int[nz_blocks];
 }
 
 int matprint(DataT* mat, int rows, int cols, int lead_dim, int fmt)
@@ -419,6 +410,30 @@ int cleanVBS(VBS& vbmat)
     if (vbmat.col_part) delete[] vbmat.col_part;
 
     return 0;
+}
+
+
+//NEW
+//NOT TESTED YET
+int init_VBS(VBS& vbmat, int block_rows, int* row_part, int block_cols, int* col_part, int blocks_fmt, int entries_fmt)
+{
+    int main_dim = (blocks_fmt == 0) ? block_rows : block_cols;
+    int compressed_dim = (blocks_fmt == 0) ? block_cols : block_rows;
+
+    vbmat.nztot = nz_tot;
+    vbmat.entries_fmt = entries_fmt;
+    vbmat.blocks_fmt = blocks_fmt;
+
+    vbmat.block_rows = block_rows;
+    vbmat.block_cols = block_cols;
+    
+    vbmat.row_part = new int[block_rows + 1];
+    std::copy(row_part, row_part + block_rows + 1, vbmat.row_part);
+    
+    vbmat.col_part = new int[block_cols + 1];
+    std::copy(col_part, col_part + block_cols + 1, vbmat.col_part);
+
+    vbmat.nzcount = new int[main_dim];
 }
 
 int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbmat, int block_rows, int* row_part, int block_cols, int *col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode)
@@ -670,101 +685,6 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
 }
 
-//TODO: fix
-/*
-int extract_shapes(const VBS& vbmat, svi &heights, svi &lengths)
-{
-    //input:
-    //  vmat: a VBS matrix
-
-    //output variables
-    heights.clear();
-    lengths.clear();
-    //determine out_mat dimensions-------------------------
-
-    int rows = vbmat.row_part[vbmat.block_rows];
-    int cols = vbmat.col_part[vbmat.block_cols];
-    int mat_leading_dim = out_mat_fmt == 0 ? out_mat_cols : out_mat_rows;
-    //-----------------------------------------------------
-
-    int main_pos, main_block_dim, second_pos, second_block_dim;
-    int row, col, row_block_dim, col_block_dim;
-
-    int mat_idx = 0; //keeps writing position for mat
-    int vbmat_idx = 0; //keeps reading position for vbmat 
-
-    int vbmat_main_dim, vbmat_compressed_dim;
-    int* b_main_ptr, * b_second_ptr;
-
-    if (vbmat.blocks_fmt == 0)
-    {
-        //if Compressed Sparse Row
-        vbmat_main_dim = vbmat.block_rows;
-        vbmat_compressed_dim = vbmat.block_cols;
-
-        // assign row and column pointers respectively
-        // to counters for main and compressed dimension
-        b_main_ptr = vbmat.row_part;
-        b_second_ptr = vbmat.col_part;
-
-    }
-    else
-    {
-        //if Compressed Sparse Columns
-        vbmat_main_dim = vbmat.block_cols;
-        vbmat_compressed_dim = vbmat.block_rows;
-
-        // assign column and row pointers respectively
-        // to counters for main and compressed dimension
-        b_main_ptr = vbmat.col_part;
-        b_second_ptr = vbmat.row_part;
-    }
-
-    int* jab = vbmat.jab;
-
-    int nz_tot = 0; //counter for total nonzero blocks
-    //COPY VALUES from vbmat to mat ------------------------------------------------------
-    for (int i = 0; i < vbmat_main_dim; i++)
-    {
-        main_pos = b_main_ptr[i];
-        main_block_dim = b_main_ptr[i + 1] - main_pos;
-
-        for (int nzs = 0; nzs < vbmat.nzcount[i]; nzs++) //iterate for all nonzero block in row i
-        {
-            int j = jab[nz_tot]; //column of current non-zero block
-            nz_tot += 1; //count one nonzero block
-
-            second_pos = b_second_ptr[j];
-            second_block_dim = b_second_ptr[j + 1] - second_pos;
-
-            if (vbmat.blocks_fmt == 0)
-            {
-                row = main_pos;
-                col = second_pos;
-                row_block_dim = main_block_dim;
-                col_block_dim = second_block_dim;
-            }
-            else
-            {
-                row = second_pos;
-                col = main_pos;
-                row_block_dim = second_block_dim;
-                col_block_dim = main_block_dim;
-            }
-
-            vbmat_idx += row_block_dim * col_block_dim; //update vbmat.mab reading index
-            heights.push_back(row_block_dim);
-            lengths.push_back(col_block_dim);
-
-        }
-    }
-    //------------------------------------------------------------------------------------
-
-    return 0;
-
-}
-*/
-
 int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int* colpart, int vbmat_block_fmt, int vbmat_entries_fmt, int no_zero_mode)
 {
     //WARNING: this does the additional step of converting to and from uncompressed array. 
@@ -783,8 +703,23 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, in
 }
 
 //NOT TESTED YET
-int convert_to_VBS_2(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int* colpart, int vbmat_block_fmt, int vbmat_entries_fmt, int no_zero_mode)
+//TO BE FINISHED
+int convert_to_VBS_direct(const CSR& cmat, VBS& vbmat, int block_rows, int* row_part, int block_cols, int* col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode)
 {
+    //convert from CSR to VBS
+
+    int nz_tot = count_nnz(cmat);
+    
+    cmat_main_dim = (cmat.fmt == 0)? cmat.rows : cmat.cols;
+    vbmat_main_dim = (vbmat_blocks_fmt == 0) ? block_rows : block_cols;
+
+    init_VBS(vbmat, block_rows, row_part, block_cols, col_part, vbmat_blocks_fmt, vbmat_entries_fmt);
+
+    for (int i = 0; i < cmat_main_dim; i++)
+    {
+
+    }
+    init_VBS(vbmat, nz_tot, nz_blocks, block_rows, row_part, block_cols, col_part, vbmat_blocks_fmt, vbmat_entries_fmt);
 
 }
 
