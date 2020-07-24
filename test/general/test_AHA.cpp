@@ -243,7 +243,10 @@ int main(int argc, char* argv[]) {
                 if (mat_rows % input_block_size or mat_cols % input_block_size)
                 {
                     //TODO exception
-                    std::cout << "ERROR: matrix dimension must be a multiple of block size" << std::endl;
+                    std::cout << "ERROR when creating a random-sparse-blocks matrix: \n matrix dimensions (currently" 
+                        << mat_rows << " x " << mat_cols 
+                        << " must be a multiple of block size (" << input_block_size << ")"
+                        << std::endl;
                     return 1;
                 }
 
