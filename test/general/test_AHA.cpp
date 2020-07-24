@@ -342,10 +342,8 @@ int main(int argc, char* argv[]) {
             if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
             if (verbose > 1)    matprint(vbmat_algo);
 
-            //report on the block structure of vbmat_algo
 
-            int VBS_nztot = vbmat_algo.nztot;
-
+            //size of minimum and mazimum height of blocks
             int max_block_H = 0;
             int min_block_H = INT_MAX;
             for (int i = 0; i < vbmat_algo.block_rows; i++) //modifies
@@ -356,7 +354,7 @@ int main(int argc, char* argv[]) {
             }
  
             //accumulate results in vectors
-            total_area_vec.push_back(VBS_nztot);
+            total_area_vec.push_back(vbmat_algo.nztot);
             block_rows_vec.push_back(vbmat_algo.block_rows);
             nz_blocks_vec.push_back(count_nnz_blocks(vbmat_algo));
             min_block_vec.push_back(min_block_H);
