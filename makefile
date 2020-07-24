@@ -55,6 +55,7 @@ TEST_DIR = ./test
 GEN_OBJ_DIR = $(OBJ_DIR)/general
 GEN_APP_DIR = $(APP_DIR)/general
 GEN_SRC_DIR = $(SRC_DIR)/general
+GEN_TEST_DIR = $(TEST_DIR)/general
 
 GEN_SRC = $(wildcard $(GEN_SRC_DIR)/*.cpp)
 GEN_OBJECTS = $(GEN_SRC:$(GEN_SRC_DIR)/%.cpp=$(GEN_OBJ_DIR)/%.o)
@@ -84,6 +85,10 @@ $(GEN_OBJ_DIR)/%.o : $(GEN_SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<
 
+$(GEN_OBJ_DIR)/%.o : $(GEN_TEST_DIR)/%.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<
+
 $(GEN_APP_DIR)/% : $(GEN_OBJ_DIR)/%.o $(GEN_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ $?
@@ -98,6 +103,7 @@ $(MKL_OBJ_DIR)/%.o : $(MKL_SRC_DIR)/%.cpp
 $(MKL_APP_DIR)/$(MKL_TARGET) : $(MKL_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(MKL_CXXFLAGS) $(MKL_INCLUDE) $(MKL_LDFLAGS) -o $@ $<
+
 
 $(CUDA_OBJ_DIR)/%.o : $(CUDA_SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
