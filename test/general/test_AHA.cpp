@@ -21,7 +21,7 @@ typedef std::vector<float> vec_d;
 typedef std::vector<string> vec_str;
 typedef std::vector<int> vec_i;
 
-float mean(vec_d v)
+float mean(vec_i v)
 {
     //mean of a vector
     float m = 0.;
@@ -33,7 +33,7 @@ float mean(vec_d v)
     return m;
 }
 
-float std_dev(vec_d v)
+float std_dev(vec_i v)
 {
     //std of a vector
     float m = mean(v);
