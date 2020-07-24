@@ -346,13 +346,15 @@ int main(int argc, char* argv[]) {
 
             int VBS_nztot = vbmat_algo.nztot;
 
-            for (int i = 0; i < vbmat_algo.block_rows; i++)
+            int max_block_H = 0;
+            int min_block_H = INT_MAX;
+            for (int i = 0; i < vbmat_algo.block_rows; i++) //modifies
             {
-                row_part[i] = row_part[i + 1] - row_part[i];
+                int b_size = vbmat_algo.row_part[i + 1] - vbmat_algo.row_part[i];
+                if (b_size > max_block_H) max_block_H = b_size;
+                if (b_size < min_block_H) min_block_H = b_size;
             }
-            int min_block_H = *(std::min_element(vbmat_algo.row_part, vbmat_algo.row_part + vbmat_algo.block_rows));
-            int max_block_H = *(std::max_element(vbmat_algo.row_part, vbmat_algo.row_part + vbmat_algo.block_rows));
-
+ 
             //accumulate results in vectors
             total_area_vec.push_back(VBS_nztot);
             block_rows_vec.push_back(vbmat_algo.block_rows);
