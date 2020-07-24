@@ -345,7 +345,7 @@ int main(int argc, char* argv[]) {
 
             //size of minimum and mazimum height of blocks
             int max_block_H = 0;
-            int min_block_H = INT_MAX;
+            int min_block_H = mat_rows;
             for (int i = 0; i < vbmat_algo.block_rows; i++) //modifies
             {
                 int b_size = vbmat_algo.row_part[i + 1] - vbmat_algo.row_part[i];
