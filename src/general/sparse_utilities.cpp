@@ -182,7 +182,7 @@ int random_sparse_blocks_mat(VBS& vbmat, int rows, int cols, int blocks_fmt, int
     int block_rows = std::ceil((float)rows / row_block_size);
     int block_cols = std::ceil((float)cols / col_block_size);
     int size_of_block = row_block_size * col_block_size;
-
+    int n_blocks = block_rows * block_cols;
 
     int* row_part = new int[block_rows + 1];
     int* col_part = new int[block_cols + 1];
@@ -194,7 +194,7 @@ int random_sparse_blocks_mat(VBS& vbmat, int rows, int cols, int blocks_fmt, int
     //(this could be probably made to use less memory by extracting indices instead of permuting the vector)
     int nz_blocks = (int)(block_density * block_rows * block_cols);
     svi blocks = svi(n_blocks, 0);              //will store 0 unless a block is nonzero;
-    std::fill(blocks.begin(), blocks.begin() + nzblocks, 1);    //make nzblocks blocks nonzero;
+    std::fill(blocks.begin(), blocks.begin() + nz_blocks, 1);    //make nzblocks blocks nonzero;
     std::random_shuffle(blocks.begin(), blocks.end());          //put the nonzero blocks in random positions
 
     int main_dim = (blocks_fmt == 0)? block_rows : block_cols;
@@ -208,14 +208,14 @@ int random_sparse_blocks_mat(VBS& vbmat, int rows, int cols, int blocks_fmt, int
     vbmat.jab = new int[nz_blocks];
     
     
-    int nz_in_block = sted::ceil(entries_density * size_of_block);
+    int nz_in_block = std::ceil(entries_density * size_of_block);
     //saves the indices of nonzero blocks into jab; saves the number of nz blocks per row (or col) into vbmat.nzcount;
     int b = 0;
     DataT* mab_idx = vbmat.mab; //the mab array will is filled up to this pointer
-    for (i = 0; i < main_dim; i++)
+    for (int i = 0; i < main_dim; i++)
     {
         int nzcount = 0;
-        for (j = 0; j < compressed_dim; j++)
+        for (int j = 0; j < compressed_dim; j++)
         {
             if (blocks[b] != 0)
             {
@@ -318,7 +318,7 @@ int partition(int* arr, int start, int end, int step)
         val += step;
         i++;
     }
-    val[i] = end;
+    arr[i] = end;
 }
 
 int randperm(int* arr, int len)
@@ -420,7 +420,6 @@ int init_VBS(VBS& vbmat, int block_rows, int* row_part, int block_cols, int* col
     int main_dim = (blocks_fmt == 0) ? block_rows : block_cols;
     int compressed_dim = (blocks_fmt == 0) ? block_cols : block_rows;
 
-    vbmat.nztot = nz_tot;
     vbmat.entries_fmt = entries_fmt;
     vbmat.blocks_fmt = blocks_fmt;
 
@@ -704,6 +703,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, in
 
 //NOT TESTED YET
 //TO BE FINISHED
+/*
 int convert_to_VBS_direct(const CSR& cmat, VBS& vbmat, int block_rows, int* row_part, int block_cols, int* col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode)
 {
     //convert from CSR to VBS
@@ -722,6 +722,7 @@ int convert_to_VBS_direct(const CSR& cmat, VBS& vbmat, int block_rows, int* row_
     init_VBS(vbmat, nz_tot, nz_blocks, block_rows, row_part, block_cols, col_part, vbmat_blocks_fmt, vbmat_entries_fmt);
 
 }
+*/
 
 int matprint(const VBS& vbmat)
 {
