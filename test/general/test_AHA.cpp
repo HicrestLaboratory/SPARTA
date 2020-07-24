@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
     //terminal options loop
     int opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "b:e:f:i:m:n:p:P:q:r:S:s:v")) != -1)
+    while ((c = getopt(argc, argv, "b:e:f:i:m:n:p:P:q:r:S:s:v:")) != -1)
         switch (c)
         {
         case 'i':// select input example
@@ -162,15 +162,15 @@ int main(int argc, char* argv[]) {
             scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
             scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
             break;
+        
+        case 'v': //verbose
+            verbose = stoi(optarg);
+            break;
 
         case 'S': //random seed; use -1 for random seeding.
             seed = stoi(optarg);
             if (seed == -1) seed = time(NULL);
             srand(seed);
-            break;
-
-        case 'v': //verbose
-            verbose = stoi(optarg);
             break;
 
         case '?':
