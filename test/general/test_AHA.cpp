@@ -346,6 +346,10 @@ int main(int argc, char* argv[]) {
 
             int VBS_nztot = vbmat_algo.nztot;
 
+            for (int i = 0; i < vbmat_algo.block_rows; i++)
+            {
+                row_part[i] = row_part[i + 1] - row_part[i];
+            }
             int min_block_H = *(std::min_element(vbmat_algo.row_part, vbmat_algo.row_part + vbmat_algo.block_rows));
             int max_block_H = *(std::max_element(vbmat_algo.row_part, vbmat_algo.row_part + vbmat_algo.block_rows));
 
