@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
     //terminal options loop
     int opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "b:e:f:i:m:n:p:P:q:r:S:s")) != -1)
+    while ((c = getopt(argc, argv, "b:e:f:i:m:n:p:P:q:r:S:s:v")) != -1)
         switch (c)
         {
         case 'i':// select input example
@@ -194,7 +194,6 @@ int main(int argc, char* argv[]) {
         if (input_type == 1) {
             DataT* rand_mat = new DataT[mat_cols * mat_rows];
             random_mat(rand_mat, mat_rows, mat_cols, input_entries_density); //generate random mat //todo: generate directly the CSR
-
             convert_to_CSR(rand_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
             delete[] rand_mat;
 
