@@ -239,6 +239,14 @@ int main(int argc, char* argv[]) {
                 //TODO do not start by array but create directly the CSR?
                 //TODO arbitrary partition
 
+
+                if (rows % input_block_size or cols % input_block_size)
+                {
+                    //TODO exception
+                    std::cout << "ERROR: matrix dimension must be a multiple of block size" << std::endl;
+                    return 1;
+                }
+
                 random_sparse_blocks_mat(rand_block_mat, mat_rows, mat_cols, mat_fmt, input_block_size, input_block_density, input_entries_density);
 
                 convert_to_CSR(rand_block_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
