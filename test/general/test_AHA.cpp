@@ -320,7 +320,7 @@ int main(int argc, char* argv[]) {
 
             int vbmat_blocks_fmt = 1;
             int vbmat_entries_fmt = 1;
-            int algo_block_cols = std::ceil((float)cols / algo_block_size);
+            int algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
 
 
             int* algo_col_part = new int[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
