@@ -1,7 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <unistd.h> //getopt, optarg
 #include <ctime>
+#include <cmath>
+#include <algorithm> //min_element, max_element
+
+
 
 
 #include <vector>
@@ -72,11 +77,11 @@ int main(int argc, char* argv[]) {
     //algorithm and experiments parameters
     float eps;
     int generate_new_random = 0;
-    int verbose = 1;
 
     int input_type = 4;
     int algo_block_size = 6;
-    int experiment_rep = 5;
+    int experiment_reps= 5;
+    int scramble;
     int scramble_rows = 1;
     int scramble_cols = 0;
 
@@ -97,8 +102,8 @@ int main(int argc, char* argv[]) {
 
         case 'b': //density of blocks (% of nonzero blocks)
             //has only effect for example 4
-            block_density = stof(optarg);
-            if (block_density < 0 or block_density > 1) {
+            input_block_density = stof(optarg);
+            if (input_block_density < 0 or input_block_density > 1) {
                 fprintf(stderr, "Option -b tried to set block density outside of [0,1]");
                 return 1;
             }
@@ -106,9 +111,9 @@ int main(int argc, char* argv[]) {
 
         case 'q': //density of entries. if i = 4, this is the density INSIDE each block.
             //has only effect for example 1 and 4
-            density = stof(optarg);
-            if (density < 0 or density > 1) {
-                fprintf(stderr, "Option -k tried to set density outside of [0,1]");
+            input_entries_density = stof(optarg);
+            if (input_entries_density < 0 or density > 1) {
+                fprintf(stderr, "Option -k tried to set entries density outside of [0,1]");
                 return 1;
             }
             break;
@@ -153,7 +158,7 @@ int main(int argc, char* argv[]) {
                     //                          1: SCRAMBLE the rows 
                     //                          2: SCRAMBLE the columns
                     //                          3: SCRAMBLE both rows and columsn
-            int scramble = stoi(optarg);
+            scramble = stoi(optarg);
             scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
             scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
             break;
@@ -193,7 +198,7 @@ int main(int argc, char* argv[]) {
             convert_to_CSR(rand_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
             delete[] rand_mat;
 
-            if (verbose > 0) cout << "CREATED A RANDOM CSR with density = " << density << endl;
+            if (verbose > 0) cout << "CREATED A RANDOM CSR with density = " << entries_density << endl;
         }
         //______________________________________
 
@@ -285,8 +290,13 @@ int main(int argc, char* argv[]) {
         output_couple(output_names, output_values, "input_entries_density", input_entries_density);
         output_couple(output_names, output_values, "input_block_size", input_block_size);
 
-
-        for (int current_repetition = 0; current_repetition < experiment_rep; current_repetition++)
+        VBS vbmat_algo;
+        vec_i total_area_vec;
+        vec_i block_rows_vec;
+        vec_i nz_blocks_vec;
+        vec_i min_block_vec;
+        vec_i max_block_vec;
+        for (int current_repetition = 0; current_repetition < experiment_reps; current_repetition++)
         {
             //scramble the original matrix
             if (scramble_rows)
@@ -310,29 +320,58 @@ int main(int argc, char* argv[]) {
 
             int vbmat_blocks_fmt = 1;
             int vbmat_entries_fmt = 1;
-            int algo_block_cols = cmat_A.cols / algo_block_size;
+            int algo_block_cols = std::ceil((float)cols * / col_block_size);
+
 
             int* algo_col_part = new int[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
-            partition(algo_col_part, 0, cmat_A.cols, algo_block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
+            partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
 
-            VBS vbmat_algo;
+            angle_hash_method(input_cmat, eps, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
 
-            angle_hash_method(input_cmat, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
-
+            delete[] algo_col_part;
             if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
-            if (verbose > 1)    matprint(vbmat_A_angle);
+            if (verbose > 1)    matprint(vbmat_algo);
 
-            //report on the block structure of vbmat_A_angle
+            //report on the block structure of vbmat_algo
 
             int VBS_nztot = vbmat_algo.nztot;
 
             int min_block_H = *(std::min_element(vbmat_algo.row_part, vbmat_algo.row_part + vbmat_algo.block_rows));
             int max_block_H = *(std::max_element(vbmat_algo.row_part, vbmat_algo.row_part + vbmat_algo.block_rows));
 
-            output_couple(output_names, output_values, "VBS_AAM_nonzeros", VBS_nztot);
-            output_couple(output_names, output_values, "VBS_AAM_block_rows", vbmat_algo.block_rows);
-            output_couple(output_names, output_values, "VBS_AAM_nz_blocks", count_nnz_blocks(vbmat_algo));
-            output_couple(output_names, output_values, "VBS_AAM_min_block_H", min_block_H);
-            output_couple(output_names, output_values, "VBS_AAM_max_block_H", max_block_H);
+            //accumulate results in vectors
+            total_area_vec.push_back(VBS_nztot);
+            block_rows_vec.push_back(vbmat_algo.block_rows);
+            nz_blocks_vec.push_back(count_nnz_blocks(vbmat_algo));
+            min_block_vec.push_back(min_block_H);
+            max_block_vec.push_back(max_block_H);
+
+            cleanVBS(vbmat_algo);
         }
+        cleanCSR(input_cmat);
+
+        output_couple(output_names, output_values, "VBS_total_nonzeros", mean(total_area_vec));
+        output_couple(output_names, output_values, "VBS_total_nonzeros_error", std_dev(total_area_vec));
+
+        output_couple(output_names, output_values, "VBS_block_rows", mean(block_rows_vec));
+        output_couple(output_names, output_values, "VBS_block_rows_error", std_dev(block_rows_vec));
+
+        output_couple(output_names, output_values, "VBS_nz_blocks", mean(nz_blocks_vec);
+        output_couple(output_names, output_values, "VBS_nz_blocks_error", std_dev(nz_blocks_vec);
+
+        output_couple(output_names, output_values, "VBS_min_block_H", mean(min_block_vec);
+        output_couple(output_names, output_values, "VBS_min_block_H_error", std_dev(min_block_vec);
+
+        output_couple(output_names, output_values, "VBS_max_block_H", mean(max_block_vec);
+        output_couple(output_names, output_values, "VBS_max_block_H_error", std_dev(max_block_vec);
+
+
+
+        //OUTPUT PHASE
+        if ((verbose == -1) or (verbose > 1))
+        {
+            cout << output_names << endl;
+            cout << output_values << endl;
+        }
+
 }
