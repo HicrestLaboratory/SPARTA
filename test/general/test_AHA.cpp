@@ -240,7 +240,7 @@ int main(int argc, char* argv[]) {
                 //TODO arbitrary partition
 
 
-                if (rows % input_block_size or cols % input_block_size)
+                if (mat_rows % input_block_size or mat_cols % input_block_size)
                 {
                     //TODO exception
                     std::cout << "ERROR: matrix dimension must be a multiple of block size" << std::endl;
