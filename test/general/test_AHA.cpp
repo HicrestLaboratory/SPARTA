@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
         case 'q': //density of entries. if i = 4, this is the density INSIDE each block.
             //has only effect for example 1 and 4
             input_entries_density = stof(optarg);
-            if (input_entries_density < 0 or density > 1) {
+            if (input_entries_density < 0 or input_entries_density > 1) {
                 fprintf(stderr, "Option -k tried to set entries density outside of [0,1]");
                 return 1;
             }
@@ -198,7 +198,7 @@ int main(int argc, char* argv[]) {
             convert_to_CSR(rand_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
             delete[] rand_mat;
 
-            if (verbose > 0) cout << "CREATED A RANDOM CSR with density = " << entries_density << endl;
+            if (verbose > 0) cout << "CREATED A RANDOM CSR with density = " << input_entries_density << endl;
         }
         //______________________________________
 
@@ -320,7 +320,7 @@ int main(int argc, char* argv[]) {
 
             int vbmat_blocks_fmt = 1;
             int vbmat_entries_fmt = 1;
-            int algo_block_cols = std::ceil((float)cols * / col_block_size);
+            int algo_block_cols = std::ceil((float)cols / algo_block_size);
 
 
             int* algo_col_part = new int[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
@@ -356,14 +356,14 @@ int main(int argc, char* argv[]) {
         output_couple(output_names, output_values, "VBS_block_rows", mean(block_rows_vec));
         output_couple(output_names, output_values, "VBS_block_rows_error", std_dev(block_rows_vec));
 
-        output_couple(output_names, output_values, "VBS_nz_blocks", mean(nz_blocks_vec);
-        output_couple(output_names, output_values, "VBS_nz_blocks_error", std_dev(nz_blocks_vec);
+        output_couple(output_names, output_values, "VBS_nz_blocks", mean(nz_blocks_vec));
+        output_couple(output_names, output_values, "VBS_nz_blocks_error", std_dev(nz_blocks_vec));
 
-        output_couple(output_names, output_values, "VBS_min_block_H", mean(min_block_vec);
-        output_couple(output_names, output_values, "VBS_min_block_H_error", std_dev(min_block_vec);
+        output_couple(output_names, output_values, "VBS_min_block_H", mean(min_block_vec));
+        output_couple(output_names, output_values, "VBS_min_block_H_error", std_dev(min_block_vec));
 
-        output_couple(output_names, output_values, "VBS_max_block_H", mean(max_block_vec);
-        output_couple(output_names, output_values, "VBS_max_block_H_error", std_dev(max_block_vec);
+        output_couple(output_names, output_values, "VBS_max_block_H", mean(max_block_vec));
+        output_couple(output_names, output_values, "VBS_max_block_H_error", std_dev(max_block_vec));
 
 
 
