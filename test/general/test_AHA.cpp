@@ -72,10 +72,14 @@ int main(int argc, char* argv[]) {
     //algorithm and experiments parameters
     float eps;
     int generate_new_random = 0;
+    int verbose = 1;
 
+    int input_type = 4;
     int algo_block_size = 6;
     int experiment_rep = 5;
-    int scramble = 1; //scramble the input matrix?
+    int scramble_rows = 1;
+    int scramble_cols = 0;
+
 
     //terminal options loop
     int opterr = 0;
@@ -146,8 +150,12 @@ int main(int argc, char* argv[]) {
             break;
 
         case 's': //scramble the input matrix?  0: NO SCRAMBLE
-                    //                          1: SCRAMBLE the rows randomly 
-            scramble = stoi(optarg);
+                    //                          1: SCRAMBLE the rows 
+                    //                          2: SCRAMBLE the columns
+                    //                          3: SCRAMBLE both rows and columsn
+            int scramble = stoi(optarg);
+            scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
+            scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
             break;
 
         case 'S': //random seed; use -1 for random seeding.
@@ -176,42 +184,33 @@ int main(int argc, char* argv[]) {
     CSR input_cmat; //this will hold the CSR matrix
     int input_cmat_fmt = 0;
 
-    for (int current_repetition = 0; current_repetition < experiment_rep; current_repetition++)
-    {
         //INPUT EXAMPLE 1: RANDOM CSR
         //create a random sparse matrix
         if (input_type == 1) {
-            if ((current_repetition == 0) or (generate_new_random == 1))
-            {
-                DataT* rand_mat = new DataT[mat_cols * mat_rows];
-                random_mat(rand_mat, mat_rows, mat_cols, input_entries_density); //generate random mat //todo: generate directly the CSR
+            DataT* rand_mat = new DataT[mat_cols * mat_rows];
+            random_mat(rand_mat, mat_rows, mat_cols, input_entries_density); //generate random mat //todo: generate directly the CSR
 
-                convert_to_CSR(rand_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
-                delete[] rand_mat;
+            convert_to_CSR(rand_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
+            delete[] rand_mat;
 
-                if (verbose > 0) cout << "CREATED A RANDOM CSR with density = " << density << endl;
-
-            }
+            if (verbose > 0) cout << "CREATED A RANDOM CSR with density = " << density << endl;
         }
         //______________________________________
 
 
         //TEST
         //INPUT EXAMPLE 2: read graph in edgelist format into CSR
-        if (input_type == 2) {
-            if (current_repetition == 0)
-            {
-                if (input_source.empty()) input_source = "testgraph1.txt";
+        if (input_type == 2) 
+        {
+            if (input_source.empty()) input_source = "testgraph1.txt";
 
-                string delimiter = " ";
-                GraphMap snap_graph;
-                read_snap_format(snap_graph, input_source, delimiter);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
-                MakeProper(snap_graph);
-                convert_to_CSR(snap_graph, input_cmat, input_cmat_fmt);
+            string delimiter = " ";
+            GraphMap snap_graph;
+            read_snap_format(snap_graph, input_source, delimiter);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
+            MakeProper(snap_graph);
+            convert_to_CSR(snap_graph, input_cmat, input_cmat_fmt);
 
-                if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
-            }
-
+            if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
         }
         //______________________________________
 
@@ -219,23 +218,19 @@ int main(int argc, char* argv[]) {
         //INPUT EXAMPLE 3: read from MTX format
         if (input_type == 3)
         {
-            if (current_repetition == 0)
-            {
-                //read from mtx
-                if (input_source.empty()) input_source = "testmat.mtx";
-                read_mtx_format(input_cmat, input_source, input_cmat_fmt); //read into CSR
+            //read from mtx
+            if (input_source.empty()) input_source = "testmat.mtx";
+            read_mtx_format(input_cmat, input_source, input_cmat_fmt); //read into CSR
 
-                if (verbose > 0)            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
-            }
+            if (verbose > 0)            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
         }
         //______________________________________
 
 
         //INPUT EXAMPLE 4: create a random matrix with block structure
-        if (input_type == 4) {
-            if ((current_repetition == 0) or (generate_new_random == 1))
-            {
-                DataT* rand_block_mat = new DataT[A_rows * A_cols];
+        if (input_type == 4) 
+        {
+                DataT* rand_block_mat = new DataT[mat_rows * mat_cols];
 
                 //TODO do not start by array but create directly the CSR?
                 //TODO arbitrary partition
@@ -256,7 +251,6 @@ int main(int argc, char* argv[]) {
                         << " Density IN blocks: " << input_entries_density << "\n"
                         << endl;
                 }
-            }
         }
         //___________________________________________
 
@@ -267,23 +261,78 @@ int main(int argc, char* argv[]) {
         //******************************************
 
         if (verbose > 0) cout << "INPUT ACQUIRED." << endl;
-        if (verbose > 1) matprint(cmat_A);
+        if (verbose > 1) matprint(input_cmat);
 
         //update rows and cols count to input values
         mat_rows = input_cmat.rows;
         mat_cols = input_cmat.cols;
 
-        //scramble the original matrix
-        if (scramble)
+        //*******************************************
+        //	 CREATES (several) VBS from the CSR, EXTRACT FEATURES
+        //******************************************
+
+        string output_names;
+        string output_values;
+
+
+        int mat_nnz = count_nnz(input_cmat);
+
+        output_couple(output_names, output_values, "input_type", input_type);
+        output_couple(output_names, output_values, "rows", input_cmat.rows);
+        output_couple(output_names, output_values, "cols", input_cmat.cols);
+        output_couple(output_names, output_values, "total_nonzeros", mat_nnz);
+        output_couple(output_names, output_values, "input_blocks_density", input_block_density);
+        output_couple(output_names, output_values, "input_entries_density", input_entries_density);
+        output_couple(output_names, output_values, "input_block_size", input_block_size);
+
+
+        for (int current_repetition = 0; current_repetition < experiment_rep; current_repetition++)
         {
+            //scramble the original matrix
+            if (scramble_rows)
+            {
 
-            if (verbose > 0) cout << "input matrix rows scrambled" << endl;
-            int* random_permutation = new int[mat_rows];
-            randperm(random_permutation, A_rows);
-            permute_CSR(input_cmat, random_permutation, 0);
-            delete[] random_permutation;
+                if (verbose > 0) cout << "input matrix rows scrambled" << endl;
+                int* random_rows_permutation = new int[mat_rows];
+                randperm(random_rows_permutation, mat_rows);
+                permute_CSR(input_cmat, random_rows_permutation, 0);
+                delete[] random_rows_permutation;
+            }
+            if (scramble_cols)
+            {
+
+                if (verbose > 0) cout << "input matrix cols scrambled" << endl;
+                int* random_cols_permutation = new int[mat_cols];
+                randperm(random_cols_permutation, mat_cols);
+                permute_CSR(input_cmat, random_cols_permutation, 1);
+                delete[] random_cols_permutation;
+            }
+
+            int vbmat_blocks_fmt = 1;
+            int vbmat_entries_fmt = 1;
+            int algo_block_cols = cmat_A.cols / algo_block_size;
+
+            int* algo_col_part = new int[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
+            partition(algo_col_part, 0, cmat_A.cols, algo_block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
+
+            VBS vbmat_algo;
+
+            angle_hash_method(input_cmat, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
+
+            if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
+            if (verbose > 1)    matprint(vbmat_A_angle);
+
+            //report on the block structure of vbmat_A_angle
+
+            int VBS_nztot = vbmat_algo.nztot;
+
+            int min_block_H = *(std::min_element(vbmat_algo.row_part, vbmat_algo.row_part + vbmat_algo.block_rows));
+            int max_block_H = *(std::max_element(vbmat_algo.row_part, vbmat_algo.row_part + vbmat_algo.block_rows));
+
+            output_couple(output_names, output_values, "VBS_AAM_nonzeros", VBS_nztot);
+            output_couple(output_names, output_values, "VBS_AAM_block_rows", vbmat_algo.block_rows);
+            output_couple(output_names, output_values, "VBS_AAM_nz_blocks", count_nnz_blocks(vbmat_algo));
+            output_couple(output_names, output_values, "VBS_AAM_min_block_H", min_block_H);
+            output_couple(output_names, output_values, "VBS_AAM_max_block_H", max_block_H);
         }
-
-
-    }
 }

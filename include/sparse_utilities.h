@@ -60,6 +60,8 @@ int equal(int rows, int cols, DataT* A, int lead_A, int fmt_A, DataT* B, int lea
 
 int random_sparse_blocks_mat(DataT* mat, int rows, int cols, int fmt, int block_size, float block_sparsity, float block_entries_sparsity);
 
+int random_sparse_blocks_mat(VBS& vbmat, int rows, int cols, int blocks_fmt, int entries_fmt, int row_block_size, int col_block_size, float block_density, float entries_density);
+
 int matprint(DataT* mat, int rows, int cols, int lead_dim, int fmt);
 
 int matprint(DataT* mat, int rows, int* row_part, int row_blocks, int cols, int* col_part, int col_blocks, int lead_dim, int fmt);

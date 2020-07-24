@@ -337,6 +337,7 @@ int main(int argc, char* argv[]) {
     output_couple(output_names, output_values, "A_cols", cmat_A.cols);
     output_couple(output_names, output_values, "A_total_nonzeros", A_nnz);
     output_couple(output_names, output_values, "A_blocks_density", block_density);
+    output_couple(output_names, output_values, "A_entries_density", density);
     output_couple(output_names, output_values, "A_block_size", block_size);
 
     output_couple(output_names, output_values, "B_cols", B_cols);
