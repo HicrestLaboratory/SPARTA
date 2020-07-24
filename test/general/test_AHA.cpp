@@ -69,8 +69,8 @@ int main(int argc, char* argv[]) {
     string input_source;
     int seed = 123;
     int input_block_size = 4;
-    int input_block_density = 0.5;
-    int input_entries_density = 0.5;
+    float input_block_density = 0.5;
+    float input_entries_density = 0.5;
     int* A_row_part;
     int* A_col_part;
 
