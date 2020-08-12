@@ -17,7 +17,7 @@ for m in ${m_shapes[@]}; do
   for n in ${n_shapes[@]}; do
     for e in ${e_value[@]}; do
       for p in ${p_value[@]}; do
-	for p in ${P_value[@]}; do
+	for P in ${P_value[@]}; do
           for b in ${b_value[@]}; do
             for q in ${q_value[@]}; do
               ./programs/general/test_AHA $OPTS -m $m -n $n -e $e -p $p -P $P -b $b -q $q >> "test_reordering.txt"
