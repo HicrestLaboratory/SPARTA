@@ -1,7 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <unistd.h> //getopt, optarg
 #include <ctime>
+#include <cmath>
+#include <algorithm> //min_element, max_element
+
+
 
 
 #include <vector>
@@ -16,7 +21,7 @@ typedef std::vector<float> vec_d;
 typedef std::vector<string> vec_str;
 typedef std::vector<int> vec_i;
 
-float mean(vec_d v)
+float mean(vec_i v)
 {
     //mean of a vector
     float m = 0.;
@@ -28,7 +33,7 @@ float mean(vec_d v)
     return m;
 }
 
-float std_dev(vec_d v)
+float std_dev(vec_i v)
 {
     //std of a vector
     float m = mean(v);
@@ -64,8 +69,8 @@ int main(int argc, char* argv[]) {
     string input_source;
     int seed = 123;
     int input_block_size = 4;
-    int input_block_density = 0.5;
-    int input_entries_density = 0.5;
+    float input_block_density = 0.5;
+    float input_entries_density = 0.5;
     int* A_row_part;
     int* A_col_part;
 
@@ -73,14 +78,18 @@ int main(int argc, char* argv[]) {
     float eps;
     int generate_new_random = 0;
 
+    int input_type = 4;
     int algo_block_size = 6;
-    int experiment_rep = 5;
-    int scramble = 1; //scramble the input matrix?
+    int experiment_reps= 5;
+    int scramble;
+    int scramble_rows = 1;
+    int scramble_cols = 0;
+
 
     //terminal options loop
     int opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "b:e:f:i:m:n:p:P:q:r:S:s")) != -1)
+    while ((c = getopt(argc, argv, "b:e:f:i:m:n:p:P:q:r:S:s:v:")) != -1)
         switch (c)
         {
         case 'i':// select input example
@@ -93,8 +102,8 @@ int main(int argc, char* argv[]) {
 
         case 'b': //density of blocks (% of nonzero blocks)
             //has only effect for example 4
-            block_density = stof(optarg);
-            if (block_density < 0 or block_density > 1) {
+            input_block_density = stof(optarg);
+            if (input_block_density < 0 or input_block_density > 1) {
                 fprintf(stderr, "Option -b tried to set block density outside of [0,1]");
                 return 1;
             }
@@ -102,9 +111,9 @@ int main(int argc, char* argv[]) {
 
         case 'q': //density of entries. if i = 4, this is the density INSIDE each block.
             //has only effect for example 1 and 4
-            density = stof(optarg);
-            if (density < 0 or density > 1) {
-                fprintf(stderr, "Option -k tried to set density outside of [0,1]");
+            input_entries_density = stof(optarg);
+            if (input_entries_density < 0 or input_entries_density > 1) {
+                fprintf(stderr, "Option -k tried to set entries density outside of [0,1]");
                 return 1;
             }
             break;
@@ -146,18 +155,22 @@ int main(int argc, char* argv[]) {
             break;
 
         case 's': //scramble the input matrix?  0: NO SCRAMBLE
-                    //                          1: SCRAMBLE the rows randomly 
+                    //                          1: SCRAMBLE the rows 
+                    //                          2: SCRAMBLE the columns
+                    //                          3: SCRAMBLE both rows and columsn
             scramble = stoi(optarg);
+            scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
+            scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
+            break;
+        
+        case 'v': //verbose
+            verbose = stoi(optarg);
             break;
 
         case 'S': //random seed; use -1 for random seeding.
             seed = stoi(optarg);
             if (seed == -1) seed = time(NULL);
             srand(seed);
-            break;
-
-        case 'v': //verbose
-            verbose = stoi(optarg);
             break;
 
         case '?':
@@ -176,42 +189,32 @@ int main(int argc, char* argv[]) {
     CSR input_cmat; //this will hold the CSR matrix
     int input_cmat_fmt = 0;
 
-    for (int current_repetition = 0; current_repetition < experiment_rep; current_repetition++)
-    {
         //INPUT EXAMPLE 1: RANDOM CSR
         //create a random sparse matrix
         if (input_type == 1) {
-            if ((current_repetition == 0) or (generate_new_random == 1))
-            {
-                DataT* rand_mat = new DataT[mat_cols * mat_rows];
-                random_mat(rand_mat, mat_rows, mat_cols, input_entries_density); //generate random mat //todo: generate directly the CSR
+            DataT* rand_mat = new DataT[mat_cols * mat_rows];
+            random_mat(rand_mat, mat_rows, mat_cols, input_entries_density); //generate random mat //todo: generate directly the CSR
+            convert_to_CSR(rand_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
+            delete[] rand_mat;
 
-                convert_to_CSR(rand_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
-                delete[] rand_mat;
-
-                if (verbose > 0) cout << "CREATED A RANDOM CSR with density = " << density << endl;
-
-            }
+            if (verbose > 0) cout << "CREATED A RANDOM CSR with density = " << input_entries_density << endl;
         }
         //______________________________________
 
 
         //TEST
         //INPUT EXAMPLE 2: read graph in edgelist format into CSR
-        if (input_type == 2) {
-            if (current_repetition == 0)
-            {
-                if (input_source.empty()) input_source = "testgraph1.txt";
+        if (input_type == 2) 
+        {
+            if (input_source.empty()) input_source = "testgraph1.txt";
 
-                string delimiter = " ";
-                GraphMap snap_graph;
-                read_snap_format(snap_graph, input_source, delimiter);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
-                MakeProper(snap_graph);
-                convert_to_CSR(snap_graph, input_cmat, input_cmat_fmt);
+            string delimiter = " ";
+            GraphMap snap_graph;
+            read_snap_format(snap_graph, input_source, delimiter);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
+            MakeProper(snap_graph);
+            convert_to_CSR(snap_graph, input_cmat, input_cmat_fmt);
 
-                if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
-            }
-
+            if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
         }
         //______________________________________
 
@@ -219,26 +222,33 @@ int main(int argc, char* argv[]) {
         //INPUT EXAMPLE 3: read from MTX format
         if (input_type == 3)
         {
-            if (current_repetition == 0)
-            {
-                //read from mtx
-                if (input_source.empty()) input_source = "testmat.mtx";
-                read_mtx_format(input_cmat, input_source, input_cmat_fmt); //read into CSR
+            //read from mtx
+            if (input_source.empty()) input_source = "testmat.mtx";
+            read_mtx_format(input_cmat, input_source, input_cmat_fmt); //read into CSR
 
-                if (verbose > 0)            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
-            }
+            if (verbose > 0)            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
         }
         //______________________________________
 
 
         //INPUT EXAMPLE 4: create a random matrix with block structure
-        if (input_type == 4) {
-            if ((current_repetition == 0) or (generate_new_random == 1))
-            {
-                DataT* rand_block_mat = new DataT[A_rows * A_cols];
+        if (input_type == 4) 
+        {
+                DataT* rand_block_mat = new DataT[mat_rows * mat_cols];
 
                 //TODO do not start by array but create directly the CSR?
                 //TODO arbitrary partition
+
+
+                if (mat_rows % input_block_size or mat_cols % input_block_size)
+                {
+                    //TODO exception
+                    std::cout << "ERROR when creating a random-sparse-blocks matrix: \n matrix dimensions (currently" 
+                        << mat_rows << " x " << mat_cols 
+                        << " must be a multiple of block size (" << input_block_size << ")"
+                        << std::endl;
+                    return 1;
+                }
 
                 random_sparse_blocks_mat(rand_block_mat, mat_rows, mat_cols, mat_fmt, input_block_size, input_block_density, input_entries_density);
 
@@ -256,7 +266,6 @@ int main(int argc, char* argv[]) {
                         << " Density IN blocks: " << input_entries_density << "\n"
                         << endl;
                 }
-            }
         }
         //___________________________________________
 
@@ -267,23 +276,116 @@ int main(int argc, char* argv[]) {
         //******************************************
 
         if (verbose > 0) cout << "INPUT ACQUIRED." << endl;
-        if (verbose > 1) matprint(cmat_A);
+        if (verbose > 1) matprint(input_cmat);
 
         //update rows and cols count to input values
         mat_rows = input_cmat.rows;
         mat_cols = input_cmat.cols;
 
-        //scramble the original matrix
-        if (scramble)
-        {
+        //*******************************************
+        //	 CREATES (several) VBS from the CSR, EXTRACT FEATURES
+        //******************************************
 
-            if (verbose > 0) cout << "input matrix rows scrambled" << endl;
-            int* random_permutation = new int[mat_rows];
-            randperm(random_permutation, A_rows);
-            permute_CSR(input_cmat, random_permutation, 0);
-            delete[] random_permutation;
+        string output_names;
+        string output_values;
+
+
+        int mat_nnz = count_nnz(input_cmat);
+
+        output_couple(output_names, output_values, "input_type", input_type);
+        output_couple(output_names, output_values, "rows", input_cmat.rows);
+        output_couple(output_names, output_values, "cols", input_cmat.cols);
+        output_couple(output_names, output_values, "total_nonzeros", mat_nnz);
+        output_couple(output_names, output_values, "input_blocks_density", input_block_density);
+        output_couple(output_names, output_values, "input_entries_density", input_entries_density);
+        output_couple(output_names, output_values, "input_block_size", input_block_size);
+
+        VBS vbmat_algo;
+        vec_i total_area_vec;
+        vec_i block_rows_vec;
+        vec_i nz_blocks_vec;
+        vec_i min_block_vec;
+        vec_i max_block_vec;
+        for (int current_repetition = 0; current_repetition < experiment_reps; current_repetition++)
+        {
+            //scramble the original matrix
+            if (scramble_rows)
+            {
+
+                if (verbose > 0) cout << "input matrix rows scrambled" << endl;
+                int* random_rows_permutation = new int[mat_rows];
+                randperm(random_rows_permutation, mat_rows);
+                permute_CSR(input_cmat, random_rows_permutation, 0);
+                delete[] random_rows_permutation;
+            }
+            if (scramble_cols)
+            {
+
+                if (verbose > 0) cout << "input matrix cols scrambled" << endl;
+                int* random_cols_permutation = new int[mat_cols];
+                randperm(random_cols_permutation, mat_cols);
+                permute_CSR(input_cmat, random_cols_permutation, 1);
+                delete[] random_cols_permutation;
+            }
+
+            int vbmat_blocks_fmt = 1;
+            int vbmat_entries_fmt = 1;
+            int algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
+
+
+            int* algo_col_part = new int[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
+            partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
+
+            angle_hash_method(input_cmat, eps, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
+
+            delete[] algo_col_part;
+            if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
+            if (verbose > 1)    matprint(vbmat_algo);
+
+
+            //size of minimum and mazimum height of blocks
+            int max_block_H = 0;
+            int min_block_H = mat_rows;
+            for (int i = 0; i < vbmat_algo.block_rows; i++) //modifies
+            {
+                int b_size = vbmat_algo.row_part[i + 1] - vbmat_algo.row_part[i];
+                if (b_size > max_block_H) max_block_H = b_size;
+                if (b_size < min_block_H) min_block_H = b_size;
+            }
+ 
+            //accumulate results in vectors
+            total_area_vec.push_back(vbmat_algo.nztot);
+            block_rows_vec.push_back(vbmat_algo.block_rows);
+            nz_blocks_vec.push_back(count_nnz_blocks(vbmat_algo));
+            min_block_vec.push_back(min_block_H);
+            max_block_vec.push_back(max_block_H);
+
+            cleanVBS(vbmat_algo);
+        }
+        cleanCSR(input_cmat);
+
+        output_couple(output_names, output_values, "VBS_total_nonzeros", mean(total_area_vec));
+        output_couple(output_names, output_values, "VBS_total_nonzeros_error", std_dev(total_area_vec));
+
+        output_couple(output_names, output_values, "VBS_block_rows", mean(block_rows_vec));
+        output_couple(output_names, output_values, "VBS_block_rows_error", std_dev(block_rows_vec));
+
+        output_couple(output_names, output_values, "VBS_nz_blocks", mean(nz_blocks_vec));
+        output_couple(output_names, output_values, "VBS_nz_blocks_error", std_dev(nz_blocks_vec));
+
+        output_couple(output_names, output_values, "VBS_min_block_H", mean(min_block_vec));
+        output_couple(output_names, output_values, "VBS_min_block_H_error", std_dev(min_block_vec));
+
+        output_couple(output_names, output_values, "VBS_max_block_H", mean(max_block_vec));
+        output_couple(output_names, output_values, "VBS_max_block_H_error", std_dev(max_block_vec));
+
+
+
+        //OUTPUT PHASE
+        if ((verbose == -1) or (verbose > 1))
+        {
+            cout << output_names << endl;
+            cout << output_values << endl;
         }
 
-
-    }
 }

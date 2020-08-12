@@ -337,6 +337,7 @@ int main(int argc, char* argv[]) {
     output_couple(output_names, output_values, "A_cols", cmat_A.cols);
     output_couple(output_names, output_values, "A_total_nonzeros", A_nnz);
     output_couple(output_names, output_values, "A_blocks_density", block_density);
+    output_couple(output_names, output_values, "A_entries_density", density);
     output_couple(output_names, output_values, "A_block_size", block_size);
 
     output_couple(output_names, output_values, "B_cols", B_cols);
@@ -350,8 +351,8 @@ int main(int argc, char* argv[]) {
 
     A_row_part = new int[block_rows + 1]; //partitions have one element more for the rightmost border.
     A_col_part = new int[block_cols + 1];
-    linspan(A_row_part, 0, cmat_A.rows + 1, block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
-    linspan(A_col_part, 0, cmat_A.cols + 1, block_size);
+    partition(A_row_part, 0, cmat_A.rows, block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
+    partition(A_col_part, 0, cmat_A.cols, block_size);
 
     //Create a VBS with fixed block dimension (see input)
     VBS vbmat_A;

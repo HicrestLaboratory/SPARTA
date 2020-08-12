@@ -60,6 +60,8 @@ int equal(int rows, int cols, DataT* A, int lead_A, int fmt_A, DataT* B, int lea
 
 int random_sparse_blocks_mat(DataT* mat, int rows, int cols, int fmt, int block_size, float block_sparsity, float block_entries_sparsity);
 
+int random_sparse_blocks_mat(VBS& vbmat, int rows, int cols, int blocks_fmt, int entries_fmt, int row_block_size, int col_block_size, float block_density, float entries_density);
+
 int matprint(DataT* mat, int rows, int cols, int lead_dim, int fmt);
 
 int matprint(DataT* mat, int rows, int* row_part, int row_blocks, int cols, int* col_part, int col_blocks, int lead_dim, int fmt);
@@ -68,7 +70,7 @@ int arr_print(int* arr, int len);
 
 int sort_permutation(int* perm, int* arr, int n);
 
-int linspan(int* arr, int start, int end, int step);
+int partition(int* arr, int start, int end, int step);
 
 int randperm(int* arr, int len);
 
@@ -79,6 +81,8 @@ int count_groups(int* grp, int grp_len);
 int grp_to_partition(int* grp, int grp_len, int* partition);
 
 int cleanVBS(VBS& vbmat);
+
+int init_VBS(VBS& vbmat, int block_rows, int* row_part, int block_cols, int* col_part, int blocks_fmt, int entries_fmt);
 
 int count_nnz_blocks(VBS& vbmat);
 
