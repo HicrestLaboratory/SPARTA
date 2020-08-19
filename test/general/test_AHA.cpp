@@ -299,6 +299,10 @@ int main(int argc, char* argv[]) {
         output_couple(output_names, output_values, "input_blocks_density", input_block_density);
         output_couple(output_names, output_values, "input_entries_density", input_entries_density);
         output_couple(output_names, output_values, "input_block_size", input_block_size);
+        output_couple(output_names, output_values, "algo_block_size", algo_block_size);
+        output_couple(output_names, output_values, "epsilon", eps);
+
+
 
         VBS vbmat_algo;
         vec_i total_area_vec;
