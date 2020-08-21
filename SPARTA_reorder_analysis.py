@@ -4,11 +4,17 @@ Created on Wed Aug 19 12:42:17 2020
 
 @author: Paolo
 """
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 
 
-
+saving_path = "images/reorder_experiment";
+try:
+    os.mkdir(saving_path)
+except:
+    print("overwriting images");
+    
 datasetName = "test_reordering.txt"
 experiments = {};
 
@@ -78,7 +84,7 @@ for eps in i_vals:
         axes.set_xlim(0,1);
 
     plt.legend(title = "algorithm block size");
-    plt.show();
+    plt.savefig(saving_path + '/density_vs_fillin_varying_blocksize_eps' + str(eps) + '.jpg', format = 'jpg', dpi=1000)
 
 
 plt.figure();
@@ -98,76 +104,88 @@ plt.xlabel("density inside blocks");
 plt.ylabel("fill-in ratio \n (higher is better)");
 plt.title(title)
 plt.legend(title = "epsilon");
-plt.show();
+plt.savefig(saving_path + '/density_vs_fillin_varying_epsilon.jpg', format = 'jpg', dpi=1000)
+
+
+
 
 input_block_size = 64;
-input_entries_density = 0.7;
-input_block_density = 0.2;
+input_entries_density = 0.8 ;
+ibd = [0.1, 0.2, 0.4]
 algo_block_size = 35;
+
+#    "\n input density of nonzero blocks = " + str(input_block_density) +\
 
 title = "algorithm block size = " + str(algo_block_size) +\
     "\n input block size = " + str(input_block_size) +\
-    "\n input density of nonzero blocks = " + str(input_block_density) +\
     "\n input density inside blocks = " + str(input_entries_density);
 
-
-exp2 = {};
-for i in range(n_exp):
-    if experiments["total_nonzeros"][i] != 0 and\
-    experiments["input_blocks_density"][i] == input_block_density and\
-    experiments["input_block_size"][i] == input_block_size and\
-    experiments["input_entries_density"][i] == input_entries_density and\
-    experiments["algo_block_size"][i] == algo_block_size:
-        epsilon = experiments["epsilon"][i];
-        if epsilon not in exp2:
-            exp2[epsilon] = [];
-        rows = experiments["rows"][i];
-        block_rows = experiments["VBS_block_rows"][i];
-        compression_rate = rows/block_rows;
-        exp2[epsilon].append(compression_rate);
-
-for eps in exp2:
-    exp2[eps] = np.mean(exp2[eps]);
-
-lists = sorted(exp2.items());
-x,y = zip(*lists);    
-
 plt.figure();
+for input_block_density in ibd:
+    exp2 = {};
+    for i in range(n_exp):
+        if experiments["total_nonzeros"][i] != 0 and\
+        experiments["input_blocks_density"][i] == input_block_density and\
+        experiments["input_block_size"][i] == input_block_size and\
+        experiments["input_entries_density"][i] == input_entries_density and\
+        experiments["algo_block_size"][i] == algo_block_size:
+            epsilon = experiments["epsilon"][i];
+            if epsilon not in exp2:
+                exp2[epsilon] = [];
+            rows = experiments["rows"][i];
+            block_rows = experiments["VBS_block_rows"][i];
+            compression_rate = rows/block_rows;
+            exp2[epsilon].append(compression_rate);
+    
+    for eps in exp2:
+        exp2[eps] = np.mean(exp2[eps]);
+    
+    lists = sorted(exp2.items());
+    x,y = zip(*lists);    
+    
+    plt.plot(x,y, label = input_block_density);
+    
 plt.xlabel("epsilon");
 plt.ylabel("vertex compression ratio \n (higher is better)");
-plt.plot(x,y);
 plt.title(title);
-plt.show()
-    
-exp2 = {};
-for i in range(n_exp):
-    if experiments["total_nonzeros"][i] != 0 and\
-    experiments["input_blocks_density"][i] == input_block_density and\
-    experiments["input_block_size"][i] == input_block_size and\
-    experiments["input_entries_density"][i] == input_entries_density and\
-    experiments["algo_block_size"][i] == algo_block_size:
-        epsilon = experiments["epsilon"][i];
-        if epsilon not in exp2:
-            exp2[epsilon] = [];
-        rows = experiments["rows"][i];
-        nz = experiments["total_nonzeros"][i];
-        algo_nz = experiments["VBS_total_nonzeros"][i];
+plt.legend(title = "nonzero block density")
+plt.savefig(saving_path + '/epsilon_vs_comp_ratio' + '.jpg', format = 'jpg', dpi=1000)
 
-        fill_in = (nz/algo_nz);
-        exp2[epsilon].append(fill_in);
 
-for eps in exp2:
-    exp2[eps] = np.mean(exp2[eps]);
 
-lists = sorted(exp2.items());
-x,y = zip(*lists);    
 
 plt.figure();
-plt.xlabel("epsilon");
-plt.ylabel("output fill in ratio \n (higher is better)");
-plt.plot(x,y);
+for input_block_density in ibd:
+    exp2 = {};
+    for i in range(n_exp):
+        if experiments["total_nonzeros"][i] != 0 and\
+        experiments["input_blocks_density"][i] == input_block_density and\
+        experiments["input_block_size"][i] == input_block_size and\
+        experiments["input_entries_density"][i] == input_entries_density and\
+        experiments["algo_block_size"][i] == algo_block_size:
+            epsilon = experiments["epsilon"][i];
+            if epsilon not in exp2:
+                exp2[epsilon] = [];
+            rows = experiments["rows"][i];
+            nz = experiments["total_nonzeros"][i];
+            algo_nz = experiments["VBS_total_nonzeros"][i];
+    
+            fill_in = (nz/algo_nz);
+            exp2[epsilon].append(fill_in);
+    
+    for eps in exp2:
+        exp2[eps] = np.mean(exp2[eps]);
+    
+    lists = sorted(exp2.items());
+    x,y = zip(*lists);    
+    
+    plt.xlabel("epsilon");
+    plt.ylabel("output fill in ratio \n (higher is better)");
+    plt.plot(x,y, label = input_block_density);
+plt.legend(title = "nonzero block density");
 plt.title(title);
-plt.show()
+plt.savefig(saving_path + '/epsilon_vs_fillin' + '.jpg', format = 'jpg', dpi=1000)
+
 
 
 
