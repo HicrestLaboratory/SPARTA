@@ -83,8 +83,10 @@ for eps in i_vals:
         axes.set_ylim(0,1);
         axes.set_xlim(0,1);
 
+    plt.tight_layout()
     plt.legend(title = "algorithm block size");
-    plt.savefig(saving_path + '/density_vs_fillin_varying_blocksize_eps' + str(eps) + '.jpg', format = 'jpg', dpi=1000)
+    plt.savefig(saving_path + '/density_vs_fillin_varying_blocksize_eps' + str(eps) + '.eps', format = 'eps', dpi=1000, bbox_inches = "tight")
+    plt.savefig(saving_path + '/density_vs_fillin_varying_blocksize_eps' + str(eps) + '.jpg', format = 'jpg', dpi=1000, bbox_inches = "tight")
 
 
 plt.figure();
@@ -100,11 +102,13 @@ for eps in i_vals:
         vbs_nz = experiments["VBS_total_nonzeros"][i];
         efficiency.append(nz/vbs_nz);
     plt.scatter(npslice("input_entries_density",eps,algo_bs),efficiency, label = str(eps));
+plt.tight_layout()
 plt.xlabel("density inside blocks");
 plt.ylabel("fill-in ratio \n (higher is better)");
 plt.title(title)
 plt.legend(title = "epsilon");
-plt.savefig(saving_path + '/density_vs_fillin_varying_epsilon.jpg', format = 'jpg', dpi=1000)
+plt.savefig(saving_path + '/density_vs_fillin_varying_epsilon.eps', format = 'eps', dpi=1000, bbox_inches = "tight")
+plt.savefig(saving_path + '/density_vs_fillin_varying_epsilon.jpg', format = 'jpg', dpi=1000, bbox_inches = "tight")
 
 
 
@@ -144,12 +148,14 @@ for input_block_density in ibd:
     x,y = zip(*lists);    
     
     plt.plot(x,y, label = input_block_density);
-    
+ 
+plt.tight_layout()
 plt.xlabel("epsilon");
 plt.ylabel("vertex compression ratio \n (higher is better)");
 plt.title(title);
 plt.legend(title = "nonzero block density")
-plt.savefig(saving_path + '/epsilon_vs_comp_ratio' + '.jpg', format = 'jpg', dpi=1000)
+plt.savefig(saving_path + '/epsilon_vs_comp_ratio' + '.eps', format = 'eps', dpi=1000, bbox_inches = "tight")
+plt.savefig(saving_path + '/epsilon_vs_comp_ratio' + '.jpg', format = 'jpg', dpi=1000, bbox_inches = "tight")
 
 
 
@@ -182,9 +188,11 @@ for input_block_density in ibd:
     plt.xlabel("epsilon");
     plt.ylabel("output fill in ratio \n (higher is better)");
     plt.plot(x,y, label = input_block_density);
+plt.tight_layout()
 plt.legend(title = "nonzero block density");
 plt.title(title);
-plt.savefig(saving_path + '/epsilon_vs_fillin' + '.jpg', format = 'jpg', dpi=1000)
+plt.savefig(saving_path + '/epsilon_vs_fillin' + '.eps', format = 'eps', dpi=1000, bbox_inches = "tight")
+plt.savefig(saving_path + '/epsilon_vs_fillin' + '.jpg', format = 'jpg', dpi=1000, bbox_inches = "tight")
 
 
 
