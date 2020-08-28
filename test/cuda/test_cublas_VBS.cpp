@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
                          1: gemm
                          2: VBS
                          3: VBS - no zeros
-                         4: VBS - AHS
+                         4: VBS - AH ******DEACTIVATED*******
                          5: cusparse
                   
                   */
@@ -397,8 +397,10 @@ int main(int argc, char* argv[]) {
 
 
     //create a VBS which is permuted with the asymmetric angle method
+
+
     VBS vbmat_A_angle;
-    if (algo == 4 or algo == -1)
+    if (algo == 4)
     {
 
         CSR cmat_A_scrambled;
@@ -602,7 +604,7 @@ int main(int argc, char* argv[]) {
     //--------------------------------------------
     //      VBS x dense cublas multiplication (permuted with angle algorithm)
     //--------------------------------------------
-    if ((algo == 4) or (algo == -1))
+    if ((algo == 4)) 
     {
 
         DataT* mat_Cblock_angle = new DataT[C_rows * C_cols];
@@ -700,7 +702,7 @@ int main(int argc, char* argv[]) {
     delete[] mat_B;
     if (algo == 2 or algo == -1) cleanCSR(cmat_A);
     if (algo == 3 or algo == -1) cleanVBS(vbmat_A_full);
-    if (algo == 4 or algo == -1) cleanVBS(vbmat_A_angle);
+    if (algo == 4) cleanVBS(vbmat_A_angle);
 
 }
  

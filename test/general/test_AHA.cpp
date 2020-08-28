@@ -332,16 +332,17 @@ int main(int argc, char* argv[]) {
                 delete[] random_cols_permutation;
             }
 
+
+
             int vbmat_blocks_fmt = 1;
             int vbmat_entries_fmt = 1;
             int algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
 
 
+            //run the reordering and blocking algorithm
             int* algo_col_part = new int[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
             partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
-
             angle_hash_method(input_cmat, eps, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
-
             delete[] algo_col_part;
             if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
             if (verbose > 1)    matprint(vbmat_algo);
@@ -357,6 +358,7 @@ int main(int argc, char* argv[]) {
                 if (b_size < min_block_H) min_block_H = b_size;
             }
  
+
             //accumulate results in vectors
             total_area_vec.push_back(vbmat_algo.nztot);
             block_rows_vec.push_back(vbmat_algo.block_rows);
