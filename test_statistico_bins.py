@@ -96,8 +96,7 @@ for s in sparsities:
                     break;
         y.append(full_count/block_n);
         
-        yt = ((block_n - 1)/block_n)**(l*s)
-        yt = 1 - yt;
+        yt = 1- ((block_n - 1)/block_n)**(l*s)
         y_theory.append(yt);
         
     

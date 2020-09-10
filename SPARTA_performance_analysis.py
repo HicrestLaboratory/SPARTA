@@ -40,6 +40,46 @@ def clean_data(check):
 def is_valid(i):
     if experiments["A_total_nonzeros"][i] != 0.:
         return True;
+    
+def mat_size(i):
+    return experiments["A_cols"][i]*experiments["A_rows"][i];
+
+def mat_sparsity(i):
+    return experiments["A_total_nonzeros"][i]/mat_size(i)
+    
+def plot_best_scatter(x_field_func, y_field_func, method, fixed):
+    point_list = {};
+    x_list = [];
+    y_list = [];
+    val_list = [];
+    methods = ["VBSmm_mean(ms)", "gemm_mean(ms)", "cusparse_spmm_mean(ms)"];
+    for i in range(n_exp):
+        skip = False; 
+        for fixed_field, condition in fixed.items():
+            if not check_fixed_condition(experiments[fixed_field][i], condition):
+                skip = True;
+        if skip:
+            continue;
+        x = x_field_function(i);
+        y = y_field_function(i);
+        if (x,y) not in point_list:
+            point_list[(x,y)] = []
+
+        min_met = min([experiments[met][i] for met in methods]);
+        if min_met == experiments[method][i]:
+            point_list[(x,y)].append(1);
+        else:
+            point_list[(x,y)].append(0);
+            
+    for k1,k2 in point_list.keys():
+        avg = np.mean(point_list[(k1,k2)])
+        if avg > 0.5:
+            x_list.append(k1);
+            y_list.append(k2);
+            val_list.append(avg);
+    plt.scatter(x_list, y_list, label = method);
+    print(len(x_list));
+    return 1
 
 def plot_times_vs_other(x_field_function, time_field_function, time_std_field, fixed, label = None, draw_std_error = False):
     y_lists = {};
@@ -105,9 +145,9 @@ def plot_times_vs_other(x_field_function, time_field_function, time_std_field, f
  
  
  
-save = False;
+save = True;
 if save:
-    saving_path = "images/performance_experiment";
+    saving_path = "images/performance_experiment_v2";
     try:
         os.mkdir(saving_path)
     except:
@@ -124,6 +164,11 @@ field_names = "input_type A_rows A_cols A_total_nonzeros A_blocks_density A_bloc
     
 datasetName = "test_complete_cublas_results.txt"
 experiments = {};
+
+expanded_names = {"A_rows" : "M", "A_cols": "K", "B_cols": "N", \
+                  "A_total_nonzeros" : "total nonzeros in A", "A_blocks_density" : "percentage of nonzero blocks", \
+                  "A_block_size": "block size", "A_in_block_density" : "in-block density"};
+
 
 with open(datasetName, 'r') as f:
     fields = f.readline();
@@ -187,7 +232,7 @@ if dothis:
     x_field_function = lambda i: experiments[x_field][i]
     #x_field_function = relative_block_size;
     
-    y_field_function = lambda i: experiments["VBSmm_mean(ms)"][i]/experiments["cusparse_spmm_mean(ms)"][i];
+    y_field_function = lambda i: experiments["cusparse_spmm_mean(ms)"][i]/experiments["VBSmm_mean(ms)"][i];
     
     
     #fixed = {"A_cols"  : 2048, "A_rows" : 2048, "B_cols" : 1024, "A_block_size" : 128, "A_in_block_density" : [0.5,0.6]};
@@ -204,11 +249,11 @@ if dothis:
         plot_times_vs_other(x_field_function, y_field_function, y_std_field, fixed, label = block_size);    
     
     plt.tight_layout()
-    plt.xlabel(x_field);
-    plt.ylabel("VBS time / cusparse time \n (smaller is better)");
+    plt.xlabel(expanded_names[x_field]);
+    plt.ylabel("VBS speedup vs cusparse \n (higher is better)");
     
-    plt.ylim([0,2]);
-    plt.xlim([0,0.3]);
+    #plt.ylim([0,2]);
+    #plt.xlim([0,0.3]);
     plt.legend(title = "Block size")
     plt.title(title);
     if save: 
@@ -231,7 +276,7 @@ if dothis:
     x_field_function = lambda i: experiments[x_field][i]
     #x_field_function = relative_block_size;
     
-    y_field_function = lambda i: experiments["VBSmm_mean(ms)"][i]/experiments["cusparse_spmm_mean(ms)"][i];
+    y_field_function = lambda i: experiments["cusparse_spmm_mean(ms)"][i]/experiments["VBSmm_mean(ms)"][i];
     
     
     #fixed = {"A_cols"  : 2048, "A_rows" : 2048, "B_cols" : 1024, "A_block_size" : 128, "A_in_block_density" : [0.5,0.6]};
@@ -249,11 +294,11 @@ if dothis:
         plot_times_vs_other(x_field_function, y_field_function, y_std_field, fixed, label = B_cols);    
     
     plt.tight_layout()
-    plt.xlabel(x_field);
-    plt.ylabel("VBS time / cusparse time \n (smaller is better)");
+    plt.xlabel(expanded_names[x_field]);
+    plt.ylabel("VBS speedup vs cusparse \n (higher is better)");
     
-    plt.ylim([0,2]);
-    plt.xlim([0,1]);
+    #plt.ylim([0,2]);
+    #plt.xlim([0,1]);
     plt.legend(title = "Columns in B")
     plt.title(title);
     if save:
@@ -262,6 +307,7 @@ if dothis:
 
 
 
+#VBS vs cusparse, in_block_density. 
 dothis = False
 if dothis:
     x_field = "A_in_block_density";
@@ -272,36 +318,39 @@ if dothis:
     x_field_function = lambda i: experiments[x_field][i]
     #x_field_function = relative_block_size;
     
-    y_field_function = lambda i: experiments["VBSmm_mean(ms)"][i]/experiments["cusparse_spmm_mean(ms)"][i];
+    y_field_function = lambda i: experiments["cusparse_spmm_mean(ms)"][i]/experiments["VBSmm_mean(ms)"][i];
     
     
     #fixed = {"A_cols"  : 2048, "A_rows" : 2048, "B_cols" : 1024, "A_block_size" : 128, "A_in_block_density" : [0.5,0.6]};
     plt.figure();
     A_cols = 4096; 
     A_rows = 4096;
-    B_cols = 4096*4; 
+    B_cols = 4096; 
     block_density = 0.3;
     block_size = 128
     plot_name = "VBS_vs_spmm_A"+ str(A_cols) + "_B_" + str(B_cols) + "Block_size_" + str(block_size) + "_varying_Block_density";
-    title = "\n" + "M,N,K = (" + str(A_rows) + "," + str(A_cols) + "," + str(B_cols) + ")" + " \n Block size = " + str(block_size);
+    title = "\n" + "M,K,N = (" + str(A_rows) + "," + str(A_cols) + "," + str(B_cols) + ")" + " \n Block size = " + str(block_size);
     
-    for block_density in [0.1,0.3,0.5,0.8]:
+    for block_density in [0.1,0.5,0.8]:
         fixed = {"B_cols": B_cols, "A_cols" : A_cols, "A_rows": A_rows, "A_blocks_density": block_density, "A_block_size" : block_size};
         plot_times_vs_other(x_field_function, y_field_function, y_std_field, fixed, label = block_density);    
     
-    plt.tight_layout()
-    plt.xlabel(x_field);
-    plt.ylabel("VBS time / cusparse time \n (smaller is better)");
     
-    plt.ylim([0,1.5]);
-    plt.xlim([0,0.3]);
+    plt.axhline(y=1.0, color='r', linestyle='-', alpha = 0.5)
+
+    plt.tight_layout()
+    plt.xlabel(expanded_names[x_field]);
+    plt.ylabel("VBS speedup vs cusparse \n (higher is better)");
+    
+    #plt.ylim([0,1.5]);
+    #plt.xlim([0,0.3]);
     plt.legend(title = "Percentage of nonzero blocks")
     plt.title(title);
     if save:
         plt.savefig(saving_path + '/' + plot_name  + '.eps', format = 'eps', dpi=1000, bbox_inches = "tight")
         plt.savefig(saving_path + '/' + plot_name  + '.jpg', format = 'jpg', dpi=1000, bbox_inches = "tight")
 
-
+#VBS vs cusparse, in_block_density. ZOOMED 
 dothis = False
 if dothis:
     x_field = "A_in_block_density";
@@ -312,29 +361,32 @@ if dothis:
     x_field_function = lambda i: experiments[x_field][i]
     #x_field_function = relative_block_size;
     
-    y_field_function = lambda i: experiments["VBSmm_mean(ms)"][i]/experiments["cusparse_spmm_mean(ms)"][i];
+    y_field_function = lambda i: experiments["cusparse_spmm_mean(ms)"][i]/experiments["VBSmm_mean(ms)"][i];
     
     
     #fixed = {"A_cols"  : 2048, "A_rows" : 2048, "B_cols" : 1024, "A_block_size" : 128, "A_in_block_density" : [0.5,0.6]};
     plt.figure();
     A_cols = 4096; 
     A_rows = 4096;
-    B_cols = 4096*4; 
+    B_cols = 4096; 
     block_density = 0.3;
     block_size = 128
-    plot_name = "VBS_vs_spmm_A"+ str(A_cols) + "_B_" + str(B_cols) + "Block_size_" + str(block_size) + "_varying_Block_density";
-    title = "\n" + "M,N,K = (" + str(A_rows) + "," + str(A_cols) + "," + str(B_cols) + ")" + " \n Block size = " + str(block_size);
+    plot_name = "VBS_vs_spmm_A"+ str(A_cols) + "_B_" + str(B_cols) + "Block_size_" + str(block_size) + "_varying_Block_density_ZOOMED";
+    title = "\n" + "M,K,N = (" + str(A_rows) + "," + str(A_cols) + "," + str(B_cols) + ")" + " \n Block size = " + str(block_size);
     
-    for block_density in [0.1,0.3,0.5,0.8]:
+    for block_density in [0.1, 0.5,0.8]:
         fixed = {"B_cols": B_cols, "A_cols" : A_cols, "A_rows": A_rows, "A_blocks_density": block_density, "A_block_size" : block_size};
         plot_times_vs_other(x_field_function, y_field_function, y_std_field, fixed, label = block_density);    
+
+
+    plt.xlim([0,0.26]);
+    plt.ylim([0,8]);
     
+    plt.axhline(y=1.0, color='r', linestyle='-',alpha = 0.5)
     plt.tight_layout()
-    plt.xlabel(x_field);
-    plt.ylabel("VBS time / cusparse time \n (smaller is better)");
+    plt.xlabel(expanded_names[x_field]);
+    plt.ylabel("VBS speedup vs cusparse \n (higher is better)");
     
-    plt.ylim([0,1.5]);
-    plt.xlim([0,0.3]);
     plt.legend(title = "Percentage of nonzero blocks")
     plt.title(title);
     if save:
@@ -344,7 +396,7 @@ if dothis:
 
 
 #ABSOLUTE VBS vs cusparse, varying in-block density, fixed blocksize and block density
-dothis = True
+dothis = False
 if dothis:
     x_field = "A_in_block_density";
     algo_name = "cusparse_spmm" 
@@ -352,32 +404,29 @@ if dothis:
     y_std_field = algo_name + "_std";
     
     x_field_function = lambda i: experiments[x_field][i] 
-    #x_field_function = relative_block_size;
-    
-    y_field_function = lambda i: experiments[y_field][i]
-    
+
+    #x_field_function = relative_block_size;    
     
     #fixed = {"A_cols"  : 2048, "A_rows" : 2048, "B_cols" : 1024, "A_block_size" : 128, "A_in_block_density" : [0.5,0.6]};
     plt.figure();
     A_cols = 4096; 
     A_rows = 4096;
     B_cols = 4096*4; 
-    block_density = 0.3;
-    block_size = 128
+    block_density = 0.2
+    block_size = 512
     plot_name = "VBS_vs_spmm_absolute_A"+ str(A_cols) + "_B_" + str(B_cols) + "Block_size_" + str(block_size) + "_varying_in_block_density";
-    title = "\n" + "M,N,K = (" + str(A_rows) + "," + str(A_cols) + "," + str(B_cols) + ")" + " \n Block size = " + str(block_size) + " \n percentage of nonzero blocks: " + str(block_density);
+    title = "\n" + "M,K,N = (" + str(A_rows) + "," + str(A_cols) + "," + str(B_cols) + ")" + " \n Block size = " + str(block_size) + " \n percentage of nonzero blocks: " + str(block_density);
     
     
-    y_fields = ["VBSmm_mean(ms)", "cusparse_spmm_mean(ms)"];
-    for y_field in y_fields:
+    y_fields = ["VBSmm_mean(ms)","gemm_mean(ms)"];
         
-        y_field_function = lambda i: experiments[y_field][i]
+    y_field_function = lambda i: experiments[y_field][i]
 
-        fixed = {"B_cols": B_cols, "A_cols" : A_cols, "A_rows": A_rows, "A_blocks_density": block_density, "A_block_size" : block_size};
-        plot_times_vs_other(x_field_function, y_field_function, y_std_field, fixed, label = y_field);    
+    fixed = {"B_cols": B_cols, "A_cols" : A_cols, "A_rows": A_rows, "A_blocks_density": block_density, "A_block_size" : block_size};
+    plot_times_vs_other(x_field_function, y_field_function, y_std_field, fixed, label = y_field);    
     
     plt.tight_layout()
-    plt.xlabel(x_field);
+    plt.xlabel(expanded_names[x_field]);
     plt.ylabel("time (ms) \n (smaller is better)");
     
 
@@ -387,6 +436,86 @@ if dothis:
         plt.savefig(saving_path + '/' + plot_name  + '.eps', format = 'eps', dpi=1000, bbox_inches = "tight")
         plt.savefig(saving_path + '/' + plot_name  + '.jpg', format = 'jpg', dpi=1000, bbox_inches = "tight")
 
+
+
+#VBS vs GEMM varying columns
+dothis = False
+if dothis:
+    x_field = "A_blocks_density";
+    x_field_function = lambda i: experiments[x_field][i];
+
+    y_field_function = lambda i: experiments["gemm_mean(ms)"][i]/experiments["VBSmm_mean(ms)"][i];
+    
+    plt.figure();
+    A_cols = 4096; 
+    A_rows = 4096;
+    B_cols = 4096*4; 
+    in_block_density = 0.7;
+    block_size = 128
+    plot_name = "VBS_vs_gemm_A"+ str(A_cols) + "_B_" + str(B_cols) + "Block_size_" + str(block_size) + "_varying_Block_density";
+    title = "\n" + "M,K = (" + str(A_rows) + "," + str(A_cols) + ")" + " \n Block size = " + str(block_size);
+    
+    
+    for B_cols in [4096, 4096*2, 4096*4]:
+        fixed = {"B_cols": B_cols, "A_cols" : A_cols, "A_rows": A_rows, "A_block_size" : block_size};
+        plot_times_vs_other(x_field_function, y_field_function, y_std_field, fixed, label = "N =" + str(B_cols));    
+
+    plt.axhline(y=1.0, color='r', linestyle='-', alpha = 0.5)
+    plt.tight_layout()
+    plt.xlabel(expanded_names[x_field]);
+    plt.ylabel("VBS speedup vs cuBLAS GEMM \n (higher is better)");
+    
+    #plt.ylim([0,1.5]);
+    #plt.xlim([0,0.3]);
+    plt.legend()
+    plt.title(title);
+    if save:
+        plt.savefig(saving_path + '/' + plot_name  + '.eps', format = 'eps', dpi=1000, bbox_inches = "tight")
+        plt.savefig(saving_path + '/' + plot_name  + '.jpg', format = 'jpg', dpi=1000, bbox_inches = "tight")
+
+
+dothis = True
+if dothis:
+    y_field = "A_blocks_density";
+    y_field_function = lambda i: experiments[y_field][i];
+    
+    x_field = "A_total_nonzeros";
+    x_field_function = mat_sparsity;
+    
+    plt.figure();
+    A_cols = 4096; 
+    A_rows = 4096;
+    B_cols = 4096*4; 
+    block_size = 256;
+    accessibility = True
+    plot_name = "scatter_performance_plot_" + str(block_size);
+    if accessibility: plot_name += "_access";
+    title = "\n" + "M,K,N = (" + str(A_rows) + "," + str(A_cols) + "," + str(B_cols) +")" + " \n Block size = " + str(block_size);
+
+    fixed = {"B_cols": B_cols, "A_cols" : A_cols, "A_rows": A_rows, "A_block_size" : block_size};
+    plot_best_scatter(x_field_function, y_field_function, "gemm_mean(ms)",fixed);
+    plot_best_scatter(x_field_function, y_field_function, "cusparse_spmm_mean(ms)",fixed);
+    plot_best_scatter(x_field_function, y_field_function, "VBSmm_mean(ms)",fixed);
+
+    
+    #drawing theoretical curve
+    if accessibility: 
+        x_s = np.linspace(0,0.1,100); 
+        y_s = 1 - np.exp(-x_s*block_size)
+        plt.plot(x_s,y_s)
+        plt.fill_between(x_s, 1, y_s, alpha = 0.1, label = "accessible region")
+    
+    plt.tight_layout()
+    plt.ylabel(expanded_names[y_field]);
+    plt.xlabel("density of A");
+    
+    plt.ylim([0,1]);
+    plt.xlim([0,0.1]);
+    plt.legend()
+    plt.title(title);
+    if save:
+        plt.savefig(saving_path + '/' + plot_name  + '.eps', format = 'eps', dpi=1000, bbox_inches = "tight")
+        plt.savefig(saving_path + '/' + plot_name  + '.jpg', format = 'jpg', dpi=1000, bbox_inches = "tight")
 
 
 
