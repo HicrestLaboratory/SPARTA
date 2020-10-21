@@ -1,5 +1,8 @@
 #!/bin/bash
 ​  
 arr=($( ls *))
-for f in arr; do
-	echo f;
+
+for i in $files ; do
+  echo Next: $i
+  let counter=$counter+1
+  echo $counter
