@@ -2,5 +2,5 @@
 
 for f in "data/"*
 do
-  echo $(basename $f)
+  echo $f
 done
