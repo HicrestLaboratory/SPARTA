@@ -1,6 +1,6 @@
 #!/bin/bash
-
-for file in "data/"*
+​  
+for file in "../"*
 do
-  printf "%s\n" "$file" | cut -d"/" -f8
+  echo $(file)
 done
