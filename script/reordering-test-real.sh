@@ -1,9 +1,8 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-DATADIR="$(DIR)/../data"
+echo "The script you are running has basename `basename "$0"`, dirname `dirname "$0"`"
 
-for f in "$(DATADIR)"/*
+for f in "../"*
 do
   echo $(basename $f)
 done
