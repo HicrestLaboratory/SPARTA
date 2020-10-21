@@ -2,5 +2,5 @@
 ​  
 for file in "../"*
 do
-  echo "meow"
+  echo $(file)
 done
