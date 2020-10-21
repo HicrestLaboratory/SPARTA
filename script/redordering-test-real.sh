@@ -1,5 +1,5 @@
 #!/bin/bash
 ​  
-arr=(../data/*)
+arr=($( ls *))
 for f in arr; do
 	echo f;
