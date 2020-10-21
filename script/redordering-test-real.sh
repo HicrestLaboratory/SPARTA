@@ -1,8 +1,6 @@
 #!/bin/bash
 ​  
-arr=($( ls *))
-
-for i in $files ; do
-  echo Next: $i
-  let counter=$counter+1
-  echo $counter
+for file in "../"*
+do
+  printf "%s\n" "$file" | cut -d"/" -f8
+done
