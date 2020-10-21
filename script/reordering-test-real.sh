@@ -2,5 +2,5 @@
 ​  
 for file in "../"*
 do
-  echo $(file)
+  printf "$(file)"
 done
