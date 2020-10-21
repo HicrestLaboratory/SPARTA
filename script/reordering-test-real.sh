@@ -1,8 +1,6 @@
 #!/bin/bash
 
-
-for f in "../"*
+for f in "data/"*
 do
-  echo $(basename "$0")
   echo $(basename $f)
 done
