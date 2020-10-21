@@ -132,6 +132,7 @@ int main(int argc, char* argv[]) {
         case 'f': //select source file
             //has only effect for example 2 and 3;
             input_source = optarg;
+            exp_name = input_source;
             break;
 
         case 'm': //input matrix rows
