@@ -1,6 +1,6 @@
 #!/bin/bash
 ​  
-for file in "../"*
+for f in "../"*
 do
-  printf "$(file)"
+  echo $(basename $f)
 done
