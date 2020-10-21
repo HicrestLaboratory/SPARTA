@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
     int scramble;
     int scramble_rows = 1;
     int scramble_cols = 0;
-
+    string exp_name = "standard"
 
     //terminal options loop
     int opterr = 0;
@@ -92,6 +92,9 @@ int main(int argc, char* argv[]) {
     while ((c = getopt(argc, argv, "b:e:f:i:m:n:p:P:q:r:S:s:v:")) != -1)
         switch (c)
         {
+        case 'N': //name of the experiment
+            exp_name = optarg;
+
         case 'i':// select input example
             input_type = stoi(optarg);
             //  1: Random CSR
@@ -159,8 +162,6 @@ int main(int argc, char* argv[]) {
                     //                          2: SCRAMBLE the columns
                     //                          3: SCRAMBLE both rows and columsn
             scramble = stoi(optarg);
-            scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
-            scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
             break;
         
         case 'v': //verbose
@@ -292,6 +293,7 @@ int main(int argc, char* argv[]) {
 
         int mat_nnz = count_nnz(input_cmat);
 
+        output_couple(output_names, output_values, "exp_name", exp_name);
         output_couple(output_names, output_values, "input_type", input_type);
         output_couple(output_names, output_values, "rows", input_cmat.rows);
         output_couple(output_names, output_values, "cols", input_cmat.cols);
@@ -310,6 +312,9 @@ int main(int argc, char* argv[]) {
         vec_i nz_blocks_vec;
         vec_i min_block_vec;
         vec_i max_block_vec;
+        scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
+        scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
+        output_couple(output_names, output_values, "scramble", scramble);
         for (int current_repetition = 0; current_repetition < experiment_reps; current_repetition++)
         {
             //scramble the original matrix
