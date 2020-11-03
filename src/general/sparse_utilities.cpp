@@ -1813,7 +1813,7 @@ void read_snap_format(GraphMap& gmap, std::string filename, std::string delimite
     std::set<int> emptyset;
 
     // Ignore comments headers
-    while (infile.peek() == '%') infile.ignore(2048, '\n');
+    while (infile.peek() == '#' or infile.peek() == '%') infile.ignore(2048, '\n');
 
     //TODO: check import success
     //read the source node (row) of a new line

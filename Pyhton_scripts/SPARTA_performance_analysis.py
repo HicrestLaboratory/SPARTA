@@ -15,7 +15,6 @@ def check_fixed_condition(val, condition):
     else:
         return val == condition;
 
-
 def add_column(field_name, function):
     experiments[field_name] = [];
     for i in range(n_exp):
@@ -104,8 +103,7 @@ def plot_times_vs_other(x_field_function, time_field_function, time_std_field, f
             y_lists[x] = [];
             y_lists_std[x] = [];
         
-        #convert time and its error to operations/ms
-        total_multiplications = A_total_nonzeros*A_cols*B_cols;
+        #convert time and its error to operations/ms       
         
         #y = total_multiplications/experiments[time_field][i];
         y = time_field_function(i);
@@ -169,7 +167,7 @@ expanded_names = {"A_rows" : "M", "A_cols": "K", "B_cols": "N", \
                   "A_total_nonzeros" : "total nonzeros in A", "A_blocks_density" : "percentage of nonzero blocks", \
                   "A_block_size": "block size", "A_in_block_density" : "in-block density"};
 
-
+loading_conditions = {"A_in_block_density" : [0,0.2], "A_blocks_density" : [0,0.2]}
 with open(datasetName, 'r') as f:
     fields = f.readline();
     fields = fields.split();
@@ -183,8 +181,17 @@ with open(datasetName, 'r') as f:
         line = line.split();
         if (line[0] == "input_type"):
             continue;
-        for elem in zip(fields, line):
-            experiments[elem[0]].append(float(elem[1]));
+        
+        skip = False;
+        #check if sample satisfies loading conditions
+        for field, value in zip(fields, line):
+            if field in loading_conditions:
+                if not check_fixed_condition(float(value), loading_conditions[field]):
+                    skip = True;
+        #only load samples which satisfy condition
+        if not skip:
+            for elem in zip(fields, line):
+                experiments[elem[0]].append(float(elem[1]));
             
 n_exp = len(experiments["input_type"]);
 clean_idxs = clean_data(is_valid);
@@ -483,7 +490,7 @@ if dothis:
     x_field_function = mat_sparsity;
     
     plt.figure();
-    A_cols = 4096; 
+    A_cols = 2048; 
     A_rows = 4096;
     B_cols = 4096*4; 
     block_size = 256;
@@ -509,8 +516,8 @@ if dothis:
     plt.ylabel(expanded_names[y_field]);
     plt.xlabel("density of A");
     
-    plt.ylim([0,1]);
-    plt.xlim([0,0.1]);
+    plt.ylim([0,0.4]);
+    plt.xlim([0,0.01]);
     plt.legend()
     plt.title(title);
     if save:
