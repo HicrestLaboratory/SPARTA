@@ -53,6 +53,7 @@ int output_couple(string& names, string& values, string name, myType value)
     //used to produce output in CSV-like form;
 
     names += name + " ";
+    string to_string = [](string a) {return a; }
     values += to_string(value) + " ";
 }
 
@@ -66,7 +67,7 @@ int main(int argc, char* argv[]) {
     int mat_cols = 8;
     int mat_fmt = 0;
 
-    string input_source;
+    string input_source = "no_input_source";
     int seed = 123;
     int input_block_size = 4;
     float input_block_density = 0.5;
@@ -84,7 +85,7 @@ int main(int argc, char* argv[]) {
     int scramble = 3;
     int scramble_rows = 1;
     int scramble_cols = 0;
-    int exp_id = 99999;
+    string exp_name = "default";
 
     //terminal options loop
     int opterr = 0;
@@ -93,7 +94,7 @@ int main(int argc, char* argv[]) {
         switch (c)
         {
         case 'N': //name of the experiment
-            exp_id = stoi(optarg);
+            exp_name = optarg;
 
         case 'i':// select input example
             input_type = stoi(optarg);
@@ -293,8 +294,9 @@ int main(int argc, char* argv[]) {
 
         int mat_nnz = count_nnz(input_cmat);
 
-        output_couple(output_names, output_values, "exp_name", exp_id);
+        output_couple(output_names, output_values, "exp_name", exp_name);
         output_couple(output_names, output_values, "input_type", input_type);
+        output_couple(output_names, output_values, "input_source", input_source);
         output_couple(output_names, output_values, "rows", input_cmat.rows);
         output_couple(output_names, output_values, "cols", input_cmat.cols);
         output_couple(output_names, output_values, "total_nonzeros", mat_nnz);
