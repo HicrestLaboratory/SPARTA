@@ -53,9 +53,18 @@ int output_couple(string& names, string& values, string name, myType value)
     //used to produce output in CSV-like form;
 
     names += name + " ";
-    auto to_string = [](string a) {return a; };
     values += to_string(value) + " ";
 }
+
+int output_couple(string& names, string& values, string name, string value)
+{
+    //append name to names and value to values; add spaces
+    //used to produce output in CSV-like form;
+
+    names += name + " ";
+    values += value + " ";
+}
+
 
 int main(int argc, char* argv[]) {
 
