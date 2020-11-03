@@ -219,7 +219,7 @@ int main(int argc, char* argv[]) {
         {
             if (input_source.empty()) input_source = "testgraph1.txt";
 
-            string delimiter = " ";
+            string delimiter = "    ";
             GraphMap snap_graph;
             read_snap_format(snap_graph, input_source, delimiter);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
             MakeProper(snap_graph);
