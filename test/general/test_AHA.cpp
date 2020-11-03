@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
     int scramble;
     int scramble_rows = 1;
     int scramble_cols = 0;
-    string exp_name = "standard";
+    string exp_id = 99999;
 
     //terminal options loop
     int opterr = 0;
@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
         switch (c)
         {
         case 'N': //name of the experiment
-            exp_name = optarg;
+            exp_id = optarg;
 
         case 'i':// select input example
             input_type = stoi(optarg);
@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
         case 'f': //select source file
             //has only effect for example 2 and 3;
             input_source = optarg;
-            exp_name = input_source;
+            exp_id = stoi(input_source);
             break;
 
         case 'm': //input matrix rows
@@ -294,7 +294,7 @@ int main(int argc, char* argv[]) {
 
         int mat_nnz = count_nnz(input_cmat);
 
-        output_couple(output_names, output_values, "exp_name", exp_name);
+        output_couple(output_names, output_values, "exp_name", exp_id);
         output_couple(output_names, output_values, "input_type", input_type);
         output_couple(output_names, output_values, "rows", input_cmat.rows);
         output_couple(output_names, output_values, "cols", input_cmat.cols);
