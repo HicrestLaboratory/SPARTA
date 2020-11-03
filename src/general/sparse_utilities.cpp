@@ -1086,14 +1086,14 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
                 ja[j] = idx_perm[ja[j]]; //assign the new names to indices
             }
 
-            std::cout << "testing" << std:endl;
+            std::cout << "testing" << std::endl;
             int* tmp_perm = new int[ja_len] {0};
             sort_permutation(tmp_perm, ja, ja_len); //find correct reorder of column indices.
-            std::cout << "testing" << std:endl;
+            std::cout << "testing" << std::endl;
 
             permute(cmat.ja[i], tmp_perm, ja_len); //sort ja[i]
 
-            std::cout << "testing" << std:endl;
+            std::cout << "testing" << std::endl;
 
             permute(cmat.ma[i], tmp_perm, ja_len); //permute ma[i] with the same permutation;
             delete[] tmp_perm;
