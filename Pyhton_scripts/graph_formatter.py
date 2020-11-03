@@ -17,11 +17,8 @@ while True:
         print(i, doc)
     
     selected_idx = input("Select a file to fix")
-    if selected_idx == "x":
-        exit()
     if not selected_idx.isnumeric():
-        print("wrong selection")
-        continue;
+        exit()
     selected_idx = int(selected_idx);
     selected_doc = documents[selected_idx]
     
