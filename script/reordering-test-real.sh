@@ -2,8 +2,8 @@
 
 OPTS="-i 2 -v -1"
 
-P_value=(5 8 12 16 32 64 128 256);
-e_value=(0.5 0.6 0.8 0.9 0.99);
+P_value=(5 8 12 16 32 64 128 256 300);
+e_value=(0.5 0.6 0.65 0.7 0.75 0.8 );
 s_value=(1 3);
 ​
 : > "real_reordering_results.txt"
