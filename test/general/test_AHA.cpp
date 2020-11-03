@@ -53,7 +53,7 @@ int output_couple(string& names, string& values, string name, myType value)
     //used to produce output in CSV-like form;
 
     names += name + " ";
-    string to_string = [](string a) {return a; }
+    string to_string = [](string a) {return a; };
     values += to_string(value) + " ";
 }
 
