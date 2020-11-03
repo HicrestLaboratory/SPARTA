@@ -56,6 +56,16 @@ int output_couple(string& names, string& values, string name, myType value)
     values += to_string(value) + " ";
 }
 
+int output_couple(string& names, string& values, string name, string value)
+{
+    //append name to names and value to values; add spaces
+    //used to produce output in CSV-like form;
+
+    names += name + " ";
+    values += value + " ";
+}
+
+
 int main(int argc, char* argv[]) {
 
 
@@ -66,7 +76,7 @@ int main(int argc, char* argv[]) {
     int mat_cols = 8;
     int mat_fmt = 0;
 
-    string input_source;
+    string input_source = "no_input_source";
     int seed = 123;
     int input_block_size = 4;
     float input_block_density = 0.5;
@@ -75,16 +85,16 @@ int main(int argc, char* argv[]) {
     int* A_col_part;
 
     //algorithm and experiments parameters
-    float eps;
+    float eps = 0.5;
     int generate_new_random = 0;
 
     int input_type = 4;
-    int algo_block_size = 6;
-    int experiment_reps= 5;
-    int scramble;
+    int algo_block_size = 3;
+    int experiment_reps= 1;
+    int scramble = 3;
     int scramble_rows = 1;
     int scramble_cols = 0;
-    string exp_name = "standard"
+    string exp_name = "default";
 
     //terminal options loop
     int opterr = 0;
@@ -132,7 +142,6 @@ int main(int argc, char* argv[]) {
         case 'f': //select source file
             //has only effect for example 2 and 3;
             input_source = optarg;
-            exp_name = input_source;
             break;
 
         case 'm': //input matrix rows
@@ -296,6 +305,7 @@ int main(int argc, char* argv[]) {
 
         output_couple(output_names, output_values, "exp_name", exp_name);
         output_couple(output_names, output_values, "input_type", input_type);
+        output_couple(output_names, output_values, "input_source", input_source);
         output_couple(output_names, output_values, "rows", input_cmat.rows);
         output_couple(output_names, output_values, "cols", input_cmat.cols);
         output_couple(output_names, output_values, "total_nonzeros", mat_nnz);
@@ -338,6 +348,7 @@ int main(int argc, char* argv[]) {
                 delete[] random_cols_permutation;
             }
 
+            if (verbose > 1) matprint(input_cmat);
 
 
             int vbmat_blocks_fmt = 1;
