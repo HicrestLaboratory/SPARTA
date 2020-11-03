@@ -1078,7 +1078,7 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
         {
             ja = cmat.ja[i];
             int ja_len = cmat.nzcount[i];
-
+            std::cout << "ja len " << ja_len << std::endl;
 
             //change column indices to new values (given by idx_perm)
             for (int j = 0; j < ja_len; j++)

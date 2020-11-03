@@ -332,9 +332,7 @@ int main(int argc, char* argv[]) {
 
                 if (verbose > 0) cout << "input matrix cols scrambled" << endl;
                 int* random_cols_permutation = new int[mat_cols];
-                cout << "test" << endl;
                 randperm(random_cols_permutation, mat_cols);
-                cout << "test" << endl;
                 permute_CSR(input_cmat, random_cols_permutation, 1);
                 delete[] random_cols_permutation;
             }
