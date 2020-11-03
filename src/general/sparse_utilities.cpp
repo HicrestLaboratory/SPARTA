@@ -1078,25 +1078,23 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
         {
             ja = cmat.ja[i];
             int ja_len = cmat.nzcount[i];
-            std::cout << "ja len " << ja_len << std::endl;
-
-            //change column indices to new values (given by idx_perm)
-            for (int j = 0; j < ja_len; j++)
+            if (ja_len > 0)
             {
-                ja[j] = idx_perm[ja[j]]; //assign the new names to indices
+
+                //change column indices to new values (given by idx_perm)
+                for (int j = 0; j < ja_len; j++)
+                {
+                    ja[j] = idx_perm[ja[j]]; //assign the new names to indices
+                }
+
+                int* tmp_perm = new int[ja_len] {0};
+                sort_permutation(tmp_perm, ja, ja_len); //find correct reorder of column indices.
+
+                permute(cmat.ja[i], tmp_perm, ja_len); //sort ja[i]
+
+                permute(cmat.ma[i], tmp_perm, ja_len); //permute ma[i] with the same permutation;
+                delete[] tmp_perm;
             }
-
-            std::cout << "testing1" << std::endl;
-            int* tmp_perm = new int[ja_len] {0};
-            sort_permutation(tmp_perm, ja, ja_len); //find correct reorder of column indices.
-            std::cout << "testing2" << std::endl;
-
-            permute(cmat.ja[i], tmp_perm, ja_len); //sort ja[i]
-
-            std::cout << "testing3" << std::endl;
-
-            permute(cmat.ma[i], tmp_perm, ja_len); //permute ma[i] with the same permutation;
-            delete[] tmp_perm;
         }
 
         delete[] idx_perm;
