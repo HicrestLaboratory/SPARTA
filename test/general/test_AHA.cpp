@@ -337,6 +337,7 @@ int main(int argc, char* argv[]) {
                 delete[] random_cols_permutation;
             }
 
+            if (verbose > 1) matprint(input_cmat);
 
 
             int vbmat_blocks_fmt = 1;
