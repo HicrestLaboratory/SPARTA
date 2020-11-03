@@ -2,7 +2,7 @@
 
 OPTS="-w 1 -r 10 -v -1 -i 4"
 
-: > "test_complete_cublas_results.txt"
+: > "test_complete_cublas_results_v2.txt"
 
 Mshapes=(1024 2048 4096 8192 16384);
 Nshapes=(1024 2048 4096 8192 16384);
