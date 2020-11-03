@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
     int scramble;
     int scramble_rows = 1;
     int scramble_cols = 0;
-    string exp_name = "standard"
+    string exp_name = "standard";
 
     //terminal options loop
     int opterr = 0;
