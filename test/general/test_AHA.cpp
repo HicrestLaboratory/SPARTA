@@ -75,13 +75,13 @@ int main(int argc, char* argv[]) {
     int* A_col_part;
 
     //algorithm and experiments parameters
-    float eps;
+    float eps = 0.5;
     int generate_new_random = 0;
 
     int input_type = 4;
     int algo_block_size = 6;
     int experiment_reps= 5;
-    int scramble;
+    int scramble = 3;
     int scramble_rows = 1;
     int scramble_cols = 0;
     int exp_id = 99999;
