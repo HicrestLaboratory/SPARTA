@@ -1056,17 +1056,21 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
 
         err_check += permute(cmat.ma, perm, main_dim);
 
-        if (err_check != 0) return 1;
+        if (err_check != 0)
+        {
+            std::cout << "an error occurred permuting the matrix" << std::endl;
+            return 1;
+        }
     }
 
     if (permute_second)
     {
 
-        int* idx_perm = new int[second_dim];
+        int* idx_perm = new int[second_dim] {0};
 
         for (int j = 0; j < second_dim; j++)
         {
-            idx_perm[perm[j]] = j;   //this array stores the new names of column idxs ater the permutation (i.e. for permutation 3 1 0 2, it stores 2 1 3 0) 
+            idx_perm[perm[j]] = j;   //this array stores the new names of column idxs after the permutation (i.e. for permutation 3 1 0 2, it stores 2 1 3 0) 
         }
 
         int* ja;
@@ -1082,9 +1086,15 @@ int permute_CSR(CSR& cmat, int* perm, int dim) {
                 ja[j] = idx_perm[ja[j]]; //assign the new names to indices
             }
 
+            std::cout << "testing" << std:endl;
             int* tmp_perm = new int[ja_len] {0};
             sort_permutation(tmp_perm, ja, ja_len); //find correct reorder of column indices.
+            std::cout << "testing" << std:endl;
+
             permute(cmat.ja[i], tmp_perm, ja_len); //sort ja[i]
+
+            std::cout << "testing" << std:endl;
+
             permute(cmat.ma[i], tmp_perm, ja_len); //permute ma[i] with the same permutation;
             delete[] tmp_perm;
         }
