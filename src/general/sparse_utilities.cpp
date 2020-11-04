@@ -658,7 +658,7 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
 
 //TODO make efficient
-int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, intT block_cols, intT* colpart, int vbmat_block_fmt, int vbmat_entries_fmt, int no_zero_mode)
+int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT* col_part, int vbmat_block_fmt, int vbmat_entries_fmt, int no_zero_mode)
 {
     //WARNING: this does the additional step of converting to and from uncompressed array. 
     //TODO: if necessary, make conversion efficient;
@@ -669,7 +669,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, 
     int mat_fmt = 0;
     DataT* mat = new DataT[mat_size]{ 0 };
     convert_to_mat(cmat, mat, mat_fmt);
-    convert_to_VBS(mat, mat_rows, mat_cols, mat_fmt, vbmat, block_rows, rowpart, block_cols, colpart, vbmat_block_fmt, vbmat_entries_fmt, no_zero_mode);
+    convert_to_VBS(mat, mat_rows, mat_cols, mat_fmt, vbmat, block_rows, row_part, block_cols, col_part, vbmat_block_fmt, vbmat_entries_fmt, no_zero_mode);
     delete[] mat;
 
     return 0;
@@ -677,7 +677,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, 
 
 
 //More efficient version: TODO TEST
-int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, intT block_cols, intT* colpart, int vbmat_block_fmt, int vbmat_entries_fmt)
+int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT* col_part, int vbmat_block_fmt, int vbmat_entries_fmt)
 {
 
     intT mat_rows = cmat.rows;
@@ -686,7 +686,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, 
     intT cmat_main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
     intT cmat_second_dim = cmat.fmt == 0 ? cmat.cols : cmat.rows;
 
-    init_VBS(vbmat, block_rows, rowpart, block_cols, colpart, vbmat_block_fmt, vbmat_entries_fmt);
+    init_VBS(vbmat, block_rows, row_part, block_cols, col_part, vbmat_block_fmt, vbmat_entries_fmt);
 
     intT vbmat_main_dim = vbmat_block_fmt == 0 ? block_rows : block_cols;
     intT vbmat_second_dim = vbmat_block_fmt == 0 ? block_cols : block_rows;
@@ -728,12 +728,12 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, 
             intT row = cmat.fmt == 0 ? i : j;
             intT col = cmat.fmt == 0 ? j : i;
             
-            while (row > rowpart[current_block_row])
+            while (row > row_part[current_block_row])
             {
                 current_block_row++;
             }
 
-            while (col > colpart[current_block_col])
+            while (col > col_part[current_block_col])
             {
                 current_block_col++;
             }
@@ -801,12 +801,12 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, 
             intT row = cmat.fmt == 0 ? i : j;
             intT col = cmat.fmt == 0 ? j : i;
 
-            while (row > rowpart[current_block_row])
+            while (row > row_part[current_block_row])
             {
                 current_block_row++;
             }
 
-            while (col > colpart[current_block_col])
+            while (col > col_part[current_block_col])
             {
                 current_block_col++;
             }
