@@ -739,7 +739,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, 
             }
             
             //tag it
-            blocks_bookmark[*current_main_pos][*current_second_pos] = 1;
+            blocks_bookmark[*current_main_pos][*current_second_pos] = -2;
             
         }
 
@@ -753,11 +753,11 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, 
         vbmat.nzcount[ib] = 0;
         for (intT jb = 0; jb < vbmat_second_dim; jb++)
         {
-            block_row = vbmat.fmt == 0 ? ib : jb;
-            block_col = vbmat.fmt == 0 ? jb : ib;
-            if (blocks_bookmark[ib][jb] == 1)
+            intT block_row = vbmat.blocks_fmt == 0 ? ib : jb;
+            intT block_col = vbmat.blocks_fmt == 0 ? jb : ib;
+            if (blocks_bookmark[ib][jb] == -2)
             {
-                blocks_bookmark[total_nz_blocks] = total_area;
+                blocks_bookmark[ib][jb] = total_area;
                 total_area += (row_part[block_row + 1] - row_part[block_row]) * (col_part[block_col + 1] - col_part[block_col]);
                 vbmat.nzcount[ib] += 1;
                 total_nz_blocks += 1;
