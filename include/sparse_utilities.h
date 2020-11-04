@@ -48,7 +48,7 @@ int permute(myType* arr, intT* perm, intT n) {
 }
 
 template <class myType>
-myType IDX(myTipe row, myType col, myType lead_dim, int fmt)
+myType IDX(myType row, myType col, myType lead_dim, int fmt)
 {
 	//finds storing index of a matrix elements given
 	//row: row index
