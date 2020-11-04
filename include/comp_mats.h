@@ -3,6 +3,7 @@ typedef float DataT; //precision for matrix entries
 typedef long int intT;
 typedef unsigned long int long_intT;
 
+
 struct CSR {
     /*--------------------------------------------------------------
     | Compressed sparse row (CSR) matrix format,

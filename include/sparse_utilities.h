@@ -4,19 +4,17 @@
 #include <map>
 #include <set>
 
+typedef std::map<intT, std::set<intT> > GraphMap;
+
+typedef std::vector<intT> svi;
+
+typedef std::vector<DataT> svd;
 
 
 //permutes an array of n elements (original) according to a permutation (perm);
 //es 
 // array: A B C D E
 // perm: 
-
-typedef std::map<intT, std::set<intT> > GraphMap;
-typedef std::vector<intT> svi;
-typedef std::vector<DataT> svd;
-
-
-
 template <class myType>
 int permute(myType* arr, intT* perm, intT n) {
 	intT i = 0;
@@ -49,7 +47,31 @@ int permute(myType* arr, intT* perm, intT n) {
 
 }
 
-intT IDX(intT row, intT col, intT lead_dim, int fmt);
+template <class myType>
+myType IDX(myTipe row, myType col, myType lead_dim, int fmt)
+{
+	//finds storing index of a matrix elements given
+	//row: row index
+	//col: columnn index
+	//lead_dimension: the leading storing dimension
+	//fmt:      0: row major
+	//          1: column major
+
+	if (fmt == 0)
+	{
+		return row * lead_dim + col;
+	}
+	else
+	{
+		return col * lead_dim + row;
+	}
+}
+
+template <class myType>
+myType leading_dim(myType rows, myType cols, int fmt)
+{
+	return (fmt == 0) ? cols : rows;
+}
 
 int is_empty(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt);
 
@@ -57,7 +79,6 @@ int mat_cpy(DataT* in_mat, intT in_rows, intT in_cols, intT in_lead_dim, int in_
 
 int random_mat(DataT* mat, intT rows, intT cols, float sparsity);
 
-intT leading_dim(intT rows, intT cols, int fmt);
 
 int equal(intT rows, intT cols, DataT* A, intT lead_A, int fmt_A, DataT* B, intT lead_B, int fmt_B, DataT eps);
 

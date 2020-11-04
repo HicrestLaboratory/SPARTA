@@ -14,8 +14,8 @@
 
 #include "sparse_utilities.h"
 #include "comp_mats.h"
-typedef long int intT;
 
+typedef long long int intT;
 
 // Matrix utilities
 
