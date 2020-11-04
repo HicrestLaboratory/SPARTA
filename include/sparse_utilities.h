@@ -79,7 +79,6 @@ int mat_cpy(DataT* in_mat, intT in_rows, intT in_cols, intT in_lead_dim, int in_
 
 int random_mat(DataT* mat, intT rows, intT cols, float sparsity);
 
-
 int equal(intT rows, intT cols, DataT* A, intT lead_A, int fmt_A, DataT* B, intT lead_B, int fmt_B, DataT eps);
 
 int random_sparse_blocks_mat(DataT* mat, intT rows, intT cols, int fmt, intT block_size, float block_sparsity, float block_entries_sparsity);
