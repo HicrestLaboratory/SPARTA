@@ -15,28 +15,7 @@
 #include "sparse_utilities.h"
 #include "comp_mats.h"
 
-typedef long long int intT;
-
 // Matrix utilities
-
-intT IDX(intT row, intT col, intT lead_dim, int fmt)
-{
-    //finds storing index of a matrix elements given
-    //row: row index
-    //col: columnn index
-    //lead_dimension: the leading storing dimension
-    //fmt:      0: row major
-    //          1: column major
-
-    if (fmt == 0)
-    {
-        return row * lead_dim + col;
-    }
-    else
-    {
-        return col * lead_dim + row;
-    }
-}
 
 int is_empty(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt) {
     //check if a matrix is empty
@@ -88,11 +67,6 @@ int random_mat(DataT* mat, intT rows, intT cols, float sparsity)
 
 }
 
-intT leading_dim(intT rows, intT cols, int fmt)
-{
-    return (fmt == 0) ? cols : rows;
-}
-
 int equal(intT rows, intT cols, DataT* A, intT lead_A, int fmt_A, DataT* B, intT lead_B, int fmt_B, DataT eps)
 {
     for (intT i = 0; i < rows; i++)
@@ -106,7 +80,6 @@ int equal(intT rows, intT cols, DataT* A, intT lead_A, int fmt_A, DataT* B, intT
     }
     return 1;
 }
-
 
 ///TODO: make version with arbitrary secondary dimension partition, instead of fixed block side
 int random_sparse_blocks_mat(DataT *mat, intT rows, intT cols, int fmt, intT block_size, float block_sparsity, float block_entries_sparsity) 
@@ -750,10 +723,10 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, 
 
         for (intT nzs = 0; nzs < cmat.nzcount[i]; nzs++)
         {
-            inT j = cmat.ja[i][nzs];
+            intT j = cmat.ja[i][nzs];
             //find vbmat block;
-            inT row = cmat.fmt == 0 ? i : j;
-            inT col = cmat.fmt == 0 ? j : i;
+            intT row = cmat.fmt == 0 ? i : j;
+            intT col = cmat.fmt == 0 ? j : i;
             
             while (row > rowpart[current_block_row])
             {
@@ -823,10 +796,10 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, 
 
         for (intT nzs = 0; nzs < cmat.nzcount[i]; nzs++)
         {
-            inT j = cmat.ja[i][nzs];
+            intT j = cmat.ja[i][nzs];
             //find vbmat block;
-            inT row = cmat.fmt == 0 ? i : j;
-            inT col = cmat.fmt == 0 ? j : i;
+            intT row = cmat.fmt == 0 ? i : j;
+            intT col = cmat.fmt == 0 ? j : i;
 
             while (row > rowpart[current_block_row])
             {
