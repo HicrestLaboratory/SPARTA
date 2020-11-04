@@ -13,6 +13,7 @@
 #include <algorithm>    // std::random_shuffle
 
 #include "sparse_utilities.h"
+#include "comp_mats.h"
 
 // Matrix utilities
 
