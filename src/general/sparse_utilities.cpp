@@ -777,8 +777,8 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         vbmat.nzcount[ib] = 0;
         for (intT jb = 0; jb < vbmat_second_dim; jb++)
         {
-            row = vbmat.fmt == 0 ? ib : jb;
-            col = vbmat.fmt == 0 ? jb : ib;
+            intT row = vbmat.blocks_fmt == 0 ? ib : jb;
+            intT col = vbmat.blocks_fmt == 0 ? jb : ib;
             if (blocks_bookmark[ib][jb] != -1)
             {
                 vbmat.jab[total_nz_blocks] = jb;
@@ -814,10 +814,10 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
             //put the value in the correct block at the correct position
 
             intT block_start = blocks_bookmark[*current_main_pos][*current_second_pos];
-            intT block_rows = row_part[block_row + 1] - row_part[block_row];
-            intT block_cols = col_part[block_col + 1] - col_part[block_col];
-            intT relative_row_pos = row_part[current_block_row] - row;
-            intT relative_col_pos = col_part[current_block_col] - col;
+            intT block_rows = row_part[current_block_row + 1] - row_part[current_block_row];
+            intT block_cols = col_part[current_block_row + 1] - col_part[current_block_row];
+            intT relative_row_pos = row - row_part[current_block_row];
+            intT relative_col_pos = col - col_part[current_block_col];
 
             intT block_leading_dim = vbmat.entries_fmt == 0 ? block_rows : block_cols;
             intT block_idx = block_start + IDX(relative_row_pos, relative_col_pos, block_leading_dim, vbmat.entries_fmt);
