@@ -11,18 +11,21 @@
 // array: A B C D E
 // perm: 
 
-typedef std::map<int, std::set<int> > GraphMap;
+typedef std::map<intT, std::set<intT> > GraphMap;
+typedef std::vector<intT> svi;
+typedef std::vector<DataT> svd;
+
+
 
 template <class myType>
-int permute(myType* arr, int* perm, int n) {
-	int i = 0;
+int permute(myType* arr, intT* perm, intT n) {
+	intT i = 0;
 	myType temp;
-	int cur_row, next_row;
-
+	intT cur_row, next_row;
 	//Do the permutations cycle by cycle, until all elements have been permuted.
 	while (i < n) {//LI: all elements up to i appeared in a cycle
 		temp = arr[i];
-		int start_i = i;
+		intT start_i = i;
 		next_row = i;
 
 		//one cycle of permutations
@@ -46,51 +49,49 @@ int permute(myType* arr, int* perm, int n) {
 
 }
 
-int IDX(int row, int col, int lead_dim, int fmt);
+intT IDX(intT row, intT col, intT lead_dim, int fmt);
 
-int is_empty(DataT* mat, int rows, int cols, int lead_dim, int fmt);
+int is_empty(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt);
 
-int mat_cpy(DataT* in_mat, int in_rows, int in_cols, int in_lead_dim, int in_fmt, DataT* out_mat, int out_lead_dim, int out_fmt);
+int mat_cpy(DataT* in_mat, intT in_rows, intT in_cols, intT in_lead_dim, int in_fmt, DataT* out_mat, intT out_lead_dim, int out_fmt);
 
-int random_mat(DataT* mat, int rows, int cols, float sparsity);
+int random_mat(DataT* mat, intT rows, intT cols, float sparsity);
 
-int leading_dim(int rows, int cols, int fmt);
+intT leading_dim(intT rows, intT cols, int fmt);
 
-int equal(int rows, int cols, DataT* A, int lead_A, int fmt_A, DataT* B, int lead_B, int fmt_B, DataT eps);
+int equal(intT rows, intT cols, DataT* A, intT lead_A, int fmt_A, DataT* B, intT lead_B, int fmt_B, DataT eps);
 
-int random_sparse_blocks_mat(DataT* mat, int rows, int cols, int fmt, int block_size, float block_sparsity, float block_entries_sparsity);
+int random_sparse_blocks_mat(DataT* mat, intT rows, intT cols, int fmt, intT block_size, float block_sparsity, float block_entries_sparsity);
 
-int random_sparse_blocks_mat(VBS& vbmat, int rows, int cols, int blocks_fmt, int entries_fmt, int row_block_size, int col_block_size, float block_density, float entries_density);
+int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, int entries_fmt, intT row_block_size, intT col_block_size, float block_density, float entries_density);
 
-int matprint(DataT* mat, int rows, int cols, int lead_dim, int fmt);
+int matprint(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt);
 
-int matprint(DataT* mat, int rows, int* row_part, int row_blocks, int cols, int* col_part, int col_blocks, int lead_dim, int fmt);
+int matprint(DataT* mat, intT rows, intT* row_part, intT row_blocks, intT cols, intT* col_part, intT col_blocks, intT lead_dim, int fmt);
 
-int arr_print(int* arr, int len);
+int arr_print(intT* arr, intT len);
 
-int sort_permutation(int* perm, int* arr, int n);
+int sort_permutation(intT* perm, intT* arr, intT n);
 
-int partition(int* arr, int start, int end, int step);
+int partition(intT* arr, intT start, intT end, intT step);
 
-int randperm(int* arr, int len);
+int randperm(intT* arr, intT len);
 
-int* rand_partition(int* part, int len, int blocks);
+intT* rand_partition(intT* part, intT len, intT blocks);
 
-int count_groups(int* grp, int grp_len);
+intT count_groups(intT* grp, intT grp_len);
 
-int grp_to_partition(int* grp, int grp_len, int* partition);
+int grp_to_partition(intT* grp, intT grp_len, intT* partition);
 
 int cleanVBS(VBS& vbmat);
 
-int init_VBS(VBS& vbmat, int block_rows, int* row_part, int block_cols, int* col_part, int blocks_fmt, int entries_fmt);
+int init_VBS(VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT* col_part, int blocks_fmt, int entries_fmt);
 
-int count_nnz_blocks(VBS& vbmat);
-
-int convert_to_VBS(DataT* mat, int mat_rows, int mat_cols, int mat_fmt, VBS& vbmat, int block_rows, int* row_part, int block_cols, int* col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode = 0);
+int convert_to_VBS(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT* col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode);
 
 int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt);
 
-int convert_to_VBS(const CSR& cmat, VBS& vbmat, int block_rows, int* rowpart, int block_cols, int* colpart, int vbmat_block_fmt, int vbmat_entries_fmt, int no_zero_mode = 0);
+int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, intT block_cols, intT* colpart, int vbmat_block_fmt, int vbmat_entries_fmt, int no_zero_mode);
 
 int matprint(const VBS& vbmat);
 
@@ -98,7 +99,7 @@ int cleanCSR(CSR& cmat);
 
 int convert_to_mat(const CSR& cmat, DataT* out_mat, int out_mat_fmt);
 
-int convert_to_CSR(const DataT* in_mat, int mat_rows, int mat_cols, int mat_fmt, CSR& cmat, int cmat_fmt);
+int convert_to_CSR(const DataT* in_mat, intT mat_rows, intT mat_cols, int mat_fmt, CSR& cmat, int cmat_fmt);
 
 int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt);
 
@@ -108,31 +109,37 @@ int copy(const CSR& in_cmat, CSR& out_cmat);
 
 int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt);
 
-int permute_CSR(CSR& cmat, int* perm, int dim);
+int permute_CSR(CSR& cmat, intT* perm, int dim);
 
-int count_nnz(CSR& cmat);
+intT count_nnz(CSR& cmat);
+
+intT count_nnz_blocks(VBS& vbmat);
 
 void read_mtx_format(CSR& cmat, std::string infilename, int cmat_fmt);
 
-int hash_permute(CSR& cmat, int* comp_dim_partition, int* perm, int* group, int mode);
+int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* group, int mode);
 
-int hash(int* arr, int a_len, int block_size, int mode);
+intT hash(intT* arr, intT a_len, intT block_size, int mode);
 
-int hash(int* arr, int a_len, int* block_partition, int mode);
+intT hash(intT* arr, intT a_len, intT* block_partition, int mode);
 
-int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int block_size, int mode);
+int check_same_pattern(intT* arr0, intT len0, intT* arr1, intT len1, intT block_size, int mode);
 
-int check_same_pattern(int* arr0, int len0, int* arr1, int len1, int* block_partition, int mode);
+int check_same_pattern(intT* arr0, intT len0, intT* arr1, intT len1, intT* block_partition, int mode);
 
-int get_pattern(int* arr0, int len0, int* block_partition, int* pattern, int mode);
+int get_pattern(intT* arr0, intT len0, intT* block_partition, intT* pattern, int mode);
 
-int scalar_product(int* pat_0, int len_0, int* pat_1);
+intT scalar_product(intT* pat_0, intT len_0, intT* pat_1);
 
-int norm2(int* arr, int len);
+intT norm2(intT* arr, intT len);
 
-int angle_hash_method(CSR& cmat, float eps, int* compressed_dim_partition, int nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt, int mode);
+int angle_hash_method(CSR& cmat, float eps, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt, int mode);
 
-int angle_method(CSR& cmat, float eps, int* comp_dim_partition, int nB, int* in_perm, int* in_group, int* out_group, int mode);
+int angle_method(CSR& cmat, float eps, intT* compressed_dim_partition, intT nB, intT* in_perm, intT* in_group, intT* out_group, int mode);
+
+void read_snap_format(GraphMap& gmap, std::string filename);
+
+void read_snap_format(GraphMap& gmap, std::string filename, std::string delimiter);
 
 int isProper(const GraphMap& gmap, bool mirroring);
 
@@ -142,9 +149,4 @@ void MakeProper(GraphMap& gmap);
 
 void write_snap_format(GraphMap& gmap, std::string filename);
 
-void read_snap_format(GraphMap& gmap, std::string filename);
-
-void read_snap_format(GraphMap& gmap, std::string filename, std::string delimiter);
-
 void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt);
-

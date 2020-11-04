@@ -21,6 +21,11 @@
 #include "comp_mats.h"
 #include "sparse_utilities.h"
 
+/*ONLY WORKS WITH 
+    DataT = float, double, int;
+    intT = int
+    unsigned_intT = unsigned int;
+*/
 void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lead_dim, DataT *C, int C_lead_dim, float &dt){
     //multiplies a VBS matrix (vbmatA) and a dense matrix (B); stores into (C)
     //vbmatA:       column-major entries storage;

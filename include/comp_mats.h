@@ -1,6 +1,7 @@
 #pragma once
 typedef float DataT; //precision for matrix entries
-
+typedef long int intT;
+typedef unsigned long int long_intT;
 
 struct CSR {
     /*--------------------------------------------------------------
@@ -15,10 +16,10 @@ struct CSR {
             fmt   = 0: compressed sparse rows
                     1: compressed sparse columns
     |--------------------------------------------------------------------   */
-    int rows;      /* number of rows                                        */
-    int cols;      /* number of cols                                        */
-    int* nzcount;  /* number of nonzero entry in each row (column)          */
-    int** ja;      /* pointer-to-pointer to store column (row) indices      */
+    intT rows;      /* number of rows                                        */
+    intT cols;      /* number of cols                                        */
+    intT* nzcount;  /* number of nonzero entry in each row (column)          */
+    intT** ja;      /* pointer-to-pointer to store column (row) indices      */
     DataT** ma;   /* pointer-to-pointer to store nonzero entries           */
     int fmt;
 
@@ -45,13 +46,13 @@ struct VBS {
 
 ------------------------------------------------------------                        */
 
-    int block_rows;  	            /* the block row dimension of the matrix    	        */
-    int block_cols;	            /* the block column dimension of the matrix   	        */
-    int* nzcount;	        /* number of nonzero blocks in each block-row (-column) */
-    int nztot;              /* total number of nonzero element in mab*/
-    int* jab;              /* block-columns (-rows) indices of nonzero blocks      */
-    int* col_part;              /*cumulative number of row up to start of col partition element i (last element col_part[block_cols] is total number of cols) */
-    int* row_part;              /*cumulative number of row up to start of row partition element i (last element row_part[block_rows] is total number of rows)*/
+    intT block_rows;  	            /* the block row dimension of the matrix    	        */
+    intT block_cols;	            /* the block column dimension of the matrix   	        */
+    intT* nzcount;	        /* number of nonzero blocks in each block-row (-column) */
+    intT nztot;              /* total number of nonzero element in mab*/
+    intT* jab;              /* block-columns (-rows) indices of nonzero blocks      */
+    intT* col_part;              /*cumulative number of cols up to start of col partition element i (first element = 0, last element col_part[block_cols] is total number of cols) */
+    intT* row_part;              /*cumulative number of rows up to start of row partition element i (first element = 0, last element row_part[block_rows] is total number of rows)*/
 
     DataT* mab;             /* array containing all entries, block by block	        */
     int entries_fmt;         /* storage format inside blocks:
@@ -80,11 +81,11 @@ struct VBSfx {
 
 ------------------------------------------------------------                        */
 
-    int block_size;         /*side lenght of blocks                                 */
-    int block_rows;  	            /* the block row dimension of the matrix    	        */
-    int block_cols;	            /* the block column dimension of the matrix   	        */
-    int* nzcount;	        /* number of nonzero blocks in each block-row (-column) */
-    int* jab;              /* block-columns (-rows) indices of nonzero blocks      */
+    intT block_size;         /*side lenght of blocks                                 */
+    intT block_rows;  	            /* the block row dimension of the matrix    	        */
+    intT block_cols;	            /* the block column dimension of the matrix   	        */
+    intT* nzcount;	        /* number of nonzero blocks in each block-row (-column) */
+    intT* jab;              /* block-columns (-rows) indices of nonzero blocks      */
     DataT* mab;             /* array containing all entries, block by block	        */
     int entries_fmt;         /* storage format inside blocks:
                                 0: row-major
