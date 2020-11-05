@@ -729,7 +729,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         }
 
     }
-    std::cout << "test" << test++ << std::endl;
 
     //counts total nonzero area and total nonzero blocks
     intT total_area = 0;
@@ -750,7 +749,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
             }
         }
     }
-    std::cout << "test" << test++ << std::endl;
 
     //assign the values to the matrix
     vbmat.mab = new DataT[total_area]{ 0 };
@@ -775,7 +773,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         }
     }
 
-    std::cout << "test" << test++ << std::endl;
 
     //fill vbmat nonzeros with entries from cmat
     for (intT i = 0; i < cmat_main_dim; i++)
