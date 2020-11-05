@@ -726,7 +726,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
             current_block_col--;
 
             //flag the bookmark position (nonzero block)
-            std::cout << "nonzero block in " << current_block_row << " " << current_block_col << std::endl;
             blocks_bookmark[*current_main_pos][*current_second_pos] = -2;
         }
 
@@ -751,8 +750,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
                 total_area += (row_part[block_row + 1] - row_part[block_row]) * (col_part[block_col + 1] - col_part[block_col]);
                 vbmat.nzcount[ib] += 1;
                 total_nz_blocks += 1;
-                std::cout << "total_area " << total_area << "nzcount[" << ib << "] = " << vbmat.nzcount[ib] << std::endl;
-
             }
         }
     }
@@ -775,13 +772,12 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         for (intT jb = 0; jb < vbmat_second_dim; jb++)
         {
 
-            intT row = vbmat.blocks_fmt == 0 ? ib : jb;
-            intT col = vbmat.blocks_fmt == 0 ? jb : ib;
             if (blocks_bookmark[ib][jb] != -1)
             {
+                std::cout << "nonzero block in " << ib << " " << jb << std::endl;
+
                 vbmat.jab[total_nz_blocks] = jb;
                 total_nz_blocks += 1;
-                vbmat.nzcount[ib] += 1;
             }
         }
     }
