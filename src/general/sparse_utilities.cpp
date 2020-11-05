@@ -663,6 +663,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
 
     intT mat_rows = cmat.rows;
     intT mat_cols = cmat.cols;
+    matprint(cmat);
     
     intT cmat_main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
     intT cmat_second_dim = cmat.fmt == 0 ? cmat.cols : cmat.rows;
