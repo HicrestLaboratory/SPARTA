@@ -712,9 +712,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
             intT col = cmat.fmt == 0 ? j : i;
             
 
-            //DEBUG
-            std::cout << "test" << "i:  " << i << "nzs:  " << nzs << "j: " << j << std::endl;
-
             while (row > row_part[current_block_row])
             {
                 current_block_row++;
@@ -725,8 +722,14 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
                 current_block_col++;
             }
             
+            //DEBUG 
             std::cout << "test" << "i:  " << i << "nzs:  " << nzs << "j: " << j << std::endl;
+
             //tag it
+
+            //DEBUG 
+            std::cout << "test: main pos: " << *current_main_pos << " second_pos: " << *current_second_pos << std::endl;
+
             blocks_bookmark[*current_main_pos][*current_second_pos] = -2;
             
         }
