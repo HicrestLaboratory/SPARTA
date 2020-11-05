@@ -663,7 +663,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
 
     intT mat_rows = cmat.rows;
     intT mat_cols = cmat.cols;
-    matprint(cmat);
     
     intT cmat_main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
     intT cmat_second_dim = cmat.fmt == 0 ? cmat.cols : cmat.rows;
@@ -748,7 +747,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         {
             intT block_row = vbmat.blocks_fmt == 0 ? ib : jb;
             intT block_col = vbmat.blocks_fmt == 0 ? jb : ib;
-            std::cout << "area of " << ib << " " << jb << " = " << blocks_bookmark[ib][jb] << std::endl;
             if (blocks_bookmark[ib][jb] == -2)
             {
                 blocks_bookmark[ib][jb] = total_area;
@@ -758,10 +756,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
             }
         }
     }
-
-    std::cout << "nzcount:" << std::endl;
-    arr_print(vbmat.nzcount, vbmat_main_dim);
-    std::cout << "total_nz_blocks:" << total_nz_blocks << std::endl;
 
     //assign the values to the matrix
     vbmat.mab = new DataT[total_area]{ 0 };
@@ -776,19 +770,14 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     {
         for (intT jb = 0; jb < vbmat_second_dim; jb++)
         {
-            std::cout << "area of " << ib << " " << jb << " = " << blocks_bookmark[ib][jb] << std::endl;
             if (blocks_bookmark[ib][jb] != -1)
             {
-                std::cout << "foun nonzero at:" << ib << " " << jb << " area: " << blocks_bookmark[ib][jb] << std::endl;
                 vbmat.jab[total_nz_blocks] = jb;
                 total_nz_blocks += 1;
             }
         }
     }
 
-
-    std::cout << "jab:" << std::endl;
-    arr_print(vbmat.jab, total_nz_blocks);
 
     //fill vbmat nonzeros with entries from cmat
     for (intT i = 0; i < cmat_main_dim; i++)
@@ -836,6 +825,8 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         delete[] blocks_bookmark[i];
     }
     delete[] blocks_bookmark;
+    delete current_main_pos;
+    delete current_second_pos;
     return 0;
 }
 
