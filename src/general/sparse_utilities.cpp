@@ -771,7 +771,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     {
         for (intT jb = 0; jb < vbmat_second_dim; jb++)
         {
-
+            std::cout << "area of " << ib << " " << jb << " = " << blocks_bookmark[ib][jb] << std::endl;
             if (blocks_bookmark[ib][jb] != -1)
             {
                 std::cout << "foun nonzero at:" << ib << " " << jb << " area: " << blocks_bookmark[ib][jb] << std::endl;
