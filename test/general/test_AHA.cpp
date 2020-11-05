@@ -346,7 +346,6 @@ int main(int argc, char* argv[]) {
                 permute_CSR(input_cmat, random_cols_permutation, 1);
                 delete[] random_cols_permutation;
             }
-
             if (verbose > 1) matprint(input_cmat);
 
 
