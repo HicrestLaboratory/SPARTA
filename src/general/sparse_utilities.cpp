@@ -697,6 +697,9 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     }
 
 
+    //DEBUG
+    arr_print(row_part, block_rows);
+    arr_print(col_part, col_rows);
 
     //bookmarks nonzero blocks
     for (intT i = 0; i < cmat_main_dim; i++)
