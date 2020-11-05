@@ -723,6 +723,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
                 current_block_col++;
             }    
 
+            //flag the bookmark position (nonzero block)
             blocks_bookmark[*current_main_pos][*current_second_pos] = -2;
             
         }
@@ -763,9 +764,8 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     total_nz_blocks = 0;
     for (intT ib = 0; ib < vbmat_main_dim; ib++)
     {
-        std::cout << "writing nzcount" << test++ << std::endl;
         vbmat.nzcount[ib] = 0;
-        std::cout << "writed nzcount" << test++ << std::endl;
+        std::cout << "writing nzcount" << vbmat.nzcount[ib] << std::endl;
 
         for (intT jb = 0; jb < vbmat_second_dim; jb++)
         {
