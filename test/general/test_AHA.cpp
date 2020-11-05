@@ -19,9 +19,8 @@
 using namespace std;
 typedef std::vector<float> vec_d;
 typedef std::vector<string> vec_str;
-typedef std::vector<int> vec_i;
 
-float mean(vec_i v)
+float mean(svi v)
 {
     //mean of a vector
     float m = 0.;
@@ -33,7 +32,7 @@ float mean(vec_i v)
     return m;
 }
 
-float std_dev(vec_i v)
+float std_dev(svi v)
 {
     //std of a vector
     float m = mean(v);
@@ -72,24 +71,24 @@ int main(int argc, char* argv[]) {
     int verbose = 3;
     
     //matrix features
-    int mat_rows = 12;
-    int mat_cols = 8;
-    int mat_fmt = 0;
+    intT mat_rows = 12;
+    intT mat_cols = 8;
+    intT mat_fmt = 0;
 
     string input_source = "no_input_source";
     int seed = 123;
-    int input_block_size = 4;
+    intT input_block_size = 4;
     float input_block_density = 0.5;
     float input_entries_density = 0.5;
-    int* A_row_part;
-    int* A_col_part;
+    intT* A_row_part;
+    intT* A_col_part;
 
     //algorithm and experiments parameters
     float eps = 0.5;
     int generate_new_random = 0;
 
     int input_type = 4;
-    int algo_block_size = 3;
+    intT algo_block_size = 3;
     int experiment_reps= 1;
     int scramble = 3;
     int scramble_rows = 1;
@@ -301,7 +300,7 @@ int main(int argc, char* argv[]) {
         string output_values;
 
 
-        int mat_nnz = count_nnz(input_cmat);
+        intT mat_nnz = count_nnz(input_cmat);
 
         output_couple(output_names, output_values, "exp_name", exp_name);
         output_couple(output_names, output_values, "input_type", input_type);
@@ -318,11 +317,11 @@ int main(int argc, char* argv[]) {
 
 
         VBS vbmat_algo;
-        vec_i total_area_vec;
-        vec_i block_rows_vec;
-        vec_i nz_blocks_vec;
-        vec_i min_block_vec;
-        vec_i max_block_vec;
+        svi total_area_vec;
+        svi block_rows_vec;
+        svi nz_blocks_vec;
+        svi min_block_vec;
+        svi max_block_vec;
         scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
         scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
         output_couple(output_names, output_values, "scramble", scramble);
@@ -333,7 +332,7 @@ int main(int argc, char* argv[]) {
             {
 
                 if (verbose > 0) cout << "input matrix rows scrambled" << endl;
-                int* random_rows_permutation = new int[mat_rows];
+                intT* random_rows_permutation = new intT[mat_rows];
                 randperm(random_rows_permutation, mat_rows);
                 permute_CSR(input_cmat, random_rows_permutation, 0);
                 delete[] random_rows_permutation;
@@ -342,7 +341,7 @@ int main(int argc, char* argv[]) {
             {
 
                 if (verbose > 0) cout << "input matrix cols scrambled" << endl;
-                int* random_cols_permutation = new int[mat_cols];
+                intT* random_cols_permutation = new intT[mat_cols];
                 randperm(random_cols_permutation, mat_cols);
                 permute_CSR(input_cmat, random_cols_permutation, 1);
                 delete[] random_cols_permutation;
@@ -353,11 +352,11 @@ int main(int argc, char* argv[]) {
 
             int vbmat_blocks_fmt = 1;
             int vbmat_entries_fmt = 1;
-            int algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
+            intT algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
 
 
             //run the reordering and blocking algorithm
-            int* algo_col_part = new int[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
+            intT* algo_col_part = new intT[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
             partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
             angle_hash_method(input_cmat, eps, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
             delete[] algo_col_part;
@@ -366,11 +365,11 @@ int main(int argc, char* argv[]) {
 
 
             //size of minimum and mazimum height of blocks
-            int max_block_H = 0;
-            int min_block_H = mat_rows;
-            for (int i = 0; i < vbmat_algo.block_rows; i++) //modifies
+            intT max_block_H = 0;
+            intT min_block_H = mat_rows;
+            for (intT i = 0; i < vbmat_algo.block_rows; i++) //modifies
             {
-                int b_size = vbmat_algo.row_part[i + 1] - vbmat_algo.row_part[i];
+                intT b_size = vbmat_algo.row_part[i + 1] - vbmat_algo.row_part[i];
                 if (b_size > max_block_H) max_block_H = b_size;
                 if (b_size < min_block_H) min_block_H = b_size;
             }
