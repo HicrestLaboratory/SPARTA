@@ -682,7 +682,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     }
 
     //pointers for proper iteration depending on fmt
-    intT current_block_row, current_block_col;
+    intT current_block_row = 0, current_block_col = 0;
     intT* current_main_pos, *current_second_pos;
     if (vbmat_block_fmt == 0)
     {
