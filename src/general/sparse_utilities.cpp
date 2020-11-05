@@ -756,6 +756,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
 
     std::cout << "nzcount:" << std::endl;
     arr_print(vbmat.nzcount, vbmat_main_dim);
+    std::cout << "total_nz_blocks:" << total_nz_blocks << std::endl;
 
     //assign the values to the matrix
     vbmat.mab = new DataT[total_area]{ 0 };
