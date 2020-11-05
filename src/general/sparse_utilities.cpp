@@ -678,7 +678,11 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     intT** blocks_bookmark = new intT*[vbmat_main_dim]; //will identify nonzero blocks;
     for (intT i = 0; i < vbmat_main_dim; i++)
     {
-        blocks_bookmark[i] = new intT[vbmat_second_dim]{ -1 };
+        blocks_bookmark[i] = new intT[vbmat_second_dim];
+        for (intT j = 0; j < vbmat_second_dim; j++)
+        {
+            blocks_bookmark[i][j] = -1;
+        }
     }
 
     //pointers for proper iteration depending on fmt
