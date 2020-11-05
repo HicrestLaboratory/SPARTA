@@ -811,15 +811,18 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
 
             std::cout << "test i:" << i << " j: " << j << std::endl;
 
-            while (row < row_part[current_block_row])
+            while (row >= row_part[current_block_row])
             {
                 current_block_row++;
             }
 
-            while (col < col_part[current_block_col])
+            while (col >= col_part[current_block_col])
             {
                 current_block_col++;
             }
+            current_block_row--;
+            current_block_col--;
+
 
             //put the value in the correct block at the correct position
 
