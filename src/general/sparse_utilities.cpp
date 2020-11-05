@@ -680,7 +680,8 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         blocks_bookmark[i] = new intT[vbmat_second_dim]{ -1 };
     }
 
-
+    int test = 0;
+    std::cout << "test" << test++ << std::endl;
     //pointers for proper iteration depending on fmt
     intT current_block_row, current_block_col;
     intT* current_main_pos, *current_second_pos;
@@ -695,7 +696,8 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         intT* current_second_pos = &current_block_row;
     }
     
-    
+    std::cout << "test" << test++ << std::endl;
+
     //bookmarks nonzero blocks
     for (intT i = 0; i < cmat_main_dim; i++)
     {
@@ -725,6 +727,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         }
 
     }
+    std::cout << "test" << test++ << std::endl;
 
     //counts total nonzero area and total nonzero blocks
     intT total_area = 0;
@@ -745,11 +748,13 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
             }
         }
     }
+    std::cout << "test" << test++ << std::endl;
 
     //assign the values to the matrix
     vbmat.mab = new DataT[total_area]{ 0 };
     vbmat.nztot = total_area;
     vbmat.jab = new intT[total_nz_blocks];
+    std::cout << "test" << test++ << std::endl;
 
     //fill jab (nonzero blocks positions)
     total_nz_blocks = 0;
@@ -768,6 +773,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         }
     }
 
+    std::cout << "test" << test++ << std::endl;
 
     //fill vbmat nonzeros with entries from cmat
     for (intT i = 0; i < cmat_main_dim; i++)
@@ -806,6 +812,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         }
 
     }
+    std::cout << "test" << test++ << std::endl;
 
     for (intT i = 0; i < vbmat_main_dim; i++)
     {
