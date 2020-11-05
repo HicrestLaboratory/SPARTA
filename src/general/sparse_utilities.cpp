@@ -825,8 +825,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         delete[] blocks_bookmark[i];
     }
     delete[] blocks_bookmark;
-    delete current_main_pos;
-    delete current_second_pos;
     return 0;
 }
 
