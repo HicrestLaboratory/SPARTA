@@ -750,6 +750,8 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
                 total_area += (row_part[block_row + 1] - row_part[block_row]) * (col_part[block_col + 1] - col_part[block_col]);
                 vbmat.nzcount[ib] += 1;
                 total_nz_blocks += 1;
+                std::cout << "total nz blocks: " << total_nz_blocks << std::endl;
+
             }
         }
     }
