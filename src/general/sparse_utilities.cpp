@@ -681,9 +681,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         blocks_bookmark[i] = new intT[vbmat_second_dim]{ -1 };
     }
 
-    int test = 0;
-    std::cout << "test" << test++ << std::endl;
-
     //pointers for proper iteration depending on fmt
     intT current_block_row, current_block_col;
     intT* current_main_pos, *current_second_pos;
@@ -698,8 +695,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         intT* current_second_pos = &current_block_row;
     }
     
-    std::cout << "test" << test++ << std::endl;
-
     //bookmarks nonzero blocks
     for (intT i = 0; i < cmat_main_dim; i++)
     {
@@ -714,7 +709,9 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
             intT row = cmat.fmt == 0 ? i : j;
             intT col = cmat.fmt == 0 ? j : i;
             
-            std::cout << "test" << test++ << "i:  " << i << "nzs:  " << nzs << "j: " << j << std::endl;
+
+            //DEBUG
+            std::cout << "test" << "i:  " << i << "nzs:  " << nzs << "j: " << j << std::endl;
 
             while (row > row_part[current_block_row])
             {
@@ -726,6 +723,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
                 current_block_col++;
             }
             
+            std::cout << "test" << "i:  " << i << "nzs:  " << nzs << "j: " << j << std::endl;
             //tag it
             blocks_bookmark[*current_main_pos][*current_second_pos] = -2;
             
