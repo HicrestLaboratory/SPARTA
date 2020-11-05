@@ -767,8 +767,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     total_nz_blocks = 0;
     for (intT ib = 0; ib < vbmat_main_dim; ib++)
     {
-        vbmat.nzcount[ib] = 0;
-
         for (intT jb = 0; jb < vbmat_second_dim; jb++)
         {
 
