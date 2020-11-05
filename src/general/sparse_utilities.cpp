@@ -710,7 +710,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
             //find vbmat block;
             intT row = cmat.fmt == 0 ? i : j;
             intT col = cmat.fmt == 0 ? j : i;
-            std::cout << "nonzero element in pos " << i << " " << j << std::endl;
 
 
             while (row >= row_part[current_block_row])
@@ -728,14 +727,11 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
 
             //flag the bookmark position (nonzero block)
             blocks_bookmark[*current_main_pos][*current_second_pos] = -2;
-            std::cout << "nonzero block in position " << current_block_row << " " << current_block_col << std::endl;
-            std::cout << "nonzero block in position "<<*current_main_pos << " " << *current_second_pos << std::endl;
         }
 
     }
     //DEBUG 
     int test = 0;
-    std::cout << "test" << test++ << std::endl;
 
 
     //counts total nonzero area and total nonzero blocks
@@ -754,13 +750,11 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
                 total_area += (row_part[block_row + 1] - row_part[block_row]) * (col_part[block_col + 1] - col_part[block_col]);
                 vbmat.nzcount[ib] += 1;
                 total_nz_blocks += 1;
-                std::cout << "total nz blocks: " << total_nz_blocks << std::endl;
 
             }
         }
     }
 
-    std::cout << "total nz blocks: " << total_nz_blocks << std::endl;
 
 
     //assign the values to the matrix
@@ -769,7 +763,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     vbmat.jab = new intT[total_nz_blocks];
    
     
-    std::cout << "test" << test++ << std::endl;
 
     //fill jab (nonzero blocks positions)
     total_nz_blocks = 0;
@@ -779,17 +772,13 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
 
         for (intT jb = 0; jb < vbmat_second_dim; jb++)
         {
-            std::cout << "test i:" << ib << " j: " << jb << std::endl;
 
             intT row = vbmat.blocks_fmt == 0 ? ib : jb;
             intT col = vbmat.blocks_fmt == 0 ? jb : ib;
             if (blocks_bookmark[ib][jb] != -1)
             {
-                std::cout << "test i:" << ib << " j: " << jb << std::endl;
                 vbmat.jab[total_nz_blocks] = jb;
-                std::cout << "test i:" << ib << " j: " << jb << std::endl;
                 total_nz_blocks += 1;
-                std::cout << "test i:" << ib << " j: " << jb << std::endl;
                 vbmat.nzcount[ib] += 1;
             }
         }
@@ -808,8 +797,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
             //find vbmat block;
             intT row = cmat.fmt == 0 ? i : j;
             intT col = cmat.fmt == 0 ? j : i;
-
-            std::cout << "test i:" << i << " j: " << j << std::endl;
 
             while (row >= row_part[current_block_row])
             {
@@ -838,7 +825,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         }
 
     }
-    std::cout << "test" << test++ << std::endl;
 
     for (intT i = 0; i < vbmat_main_dim; i++)
     {
