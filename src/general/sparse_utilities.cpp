@@ -744,6 +744,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         {
             intT block_row = vbmat.blocks_fmt == 0 ? ib : jb;
             intT block_col = vbmat.blocks_fmt == 0 ? jb : ib;
+            std::cout << "area of " << ib << " " << jb << " = " << blocks_bookmark[ib][jb] << std::endl;
             if (blocks_bookmark[ib][jb] == -2)
             {
                 blocks_bookmark[ib][jb] = total_area;
