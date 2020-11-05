@@ -780,6 +780,9 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     }
 
 
+    std::cout << "jab:" << std::endl;
+    arr_print(vbmat.jab, total_nz_blocks);
+
     //fill vbmat nonzeros with entries from cmat
     for (intT i = 0; i < cmat_main_dim; i++)
     {
