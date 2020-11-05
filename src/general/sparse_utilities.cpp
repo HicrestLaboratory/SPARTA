@@ -774,8 +774,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
 
             if (blocks_bookmark[ib][jb] != -1)
             {
-                std::cout << "nonzero block in " << ib << " " << jb << std::endl;
-
                 vbmat.jab[total_nz_blocks] = jb;
                 total_nz_blocks += 1;
             }
