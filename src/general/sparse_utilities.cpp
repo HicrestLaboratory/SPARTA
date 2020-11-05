@@ -707,7 +707,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
 
         for (intT nzs = 0; nzs < cmat.nzcount[i]; nzs++)
         {
-            std::cout << "test" << test++ << " " << i << " " << nsz << std::endl;
+            std::cout << "test" << test++ << " " << i << " " << nzs << std::endl;
 
             intT j = cmat.ja[i][nzs];
             //find vbmat block;
