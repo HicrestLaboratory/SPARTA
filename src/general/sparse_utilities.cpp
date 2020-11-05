@@ -809,7 +809,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
 
             intT block_start = blocks_bookmark[*current_main_pos][*current_second_pos];
             intT block_rows = row_part[current_block_row + 1] - row_part[current_block_row];
-            intT block_cols = col_part[current_block_row + 1] - col_part[current_block_row];
+            intT block_cols = col_part[current_block_cols + 1] - col_part[current_block_cols];
             intT relative_row_pos = row - row_part[current_block_row];
             intT relative_col_pos = col - col_part[current_block_col];
 
