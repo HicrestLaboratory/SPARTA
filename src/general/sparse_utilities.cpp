@@ -758,6 +758,8 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     vbmat.mab = new DataT[total_area]{ 0 };
     vbmat.nztot = total_area;
     vbmat.jab = new intT[total_nz_blocks];
+   
+    
     std::cout << "test" << test++ << std::endl;
 
     //fill jab (nonzero blocks positions)
@@ -768,6 +770,8 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
 
         for (intT jb = 0; jb < vbmat_second_dim; jb++)
         {
+            std::cout << "test i:" << i << " j: " << j << std::endl;
+
             intT row = vbmat.blocks_fmt == 0 ? ib : jb;
             intT col = vbmat.blocks_fmt == 0 ? jb : ib;
             if (blocks_bookmark[ib][jb] != -1)
