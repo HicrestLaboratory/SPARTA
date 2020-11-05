@@ -787,6 +787,8 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
             intT row = cmat.fmt == 0 ? i : j;
             intT col = cmat.fmt == 0 ? j : i;
 
+            std::cout << "test i:" << i << " j: " << j << std::endl;
+
             while (row > row_part[current_block_row])
             {
                 current_block_row++;
