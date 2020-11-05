@@ -695,7 +695,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         intT* current_second_pos = &current_block_row;
     }
     //DEBUG 
-    int test = 0
+    int test = 0;
 
     //bookmarks nonzero blocks
     for (intT i = 0; i < cmat_main_dim; i++)
