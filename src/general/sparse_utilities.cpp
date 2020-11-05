@@ -694,6 +694,8 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
         intT* current_main_pos = &current_block_col;
         intT* current_second_pos = &current_block_row;
     }
+    std::cout << "test: main pos: " << (*current_main_pos) << " second_pos: " << (*current_second_pos) << std::endl;
+
     //DEBUG 
     int test = 0;
 
