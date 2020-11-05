@@ -834,7 +834,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
 
             intT block_leading_dim = vbmat.entries_fmt == 0 ? block_rows : block_cols;
             intT block_idx = block_start + IDX(relative_row_pos, relative_col_pos, block_leading_dim, vbmat.entries_fmt);
-            vbmat.mab[block_idx] = cmat.ja[i][nzs];
+            vbmat.mab[block_idx] = cmat.ma[i][nzs];
         }
 
     }
