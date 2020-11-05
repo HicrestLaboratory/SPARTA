@@ -725,7 +725,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
 
             //flag the bookmark position (nonzero block)
             blocks_bookmark[*current_main_pos][*current_second_pos] = -2;
-            
+            std::cout << "nonzero block in position "<<*current_main_pos << " " << *current_second_pos << std::endl;
         }
 
     }
