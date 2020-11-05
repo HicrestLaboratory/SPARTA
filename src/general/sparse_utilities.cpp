@@ -687,13 +687,13 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     intT* current_second_pos = new intT();
     if (vbmat_block_fmt == 0)
     {
-        intT* current_main_pos = &current_block_row;
-        intT* current_second_pos = &current_block_col;
+        current_main_pos = &current_block_row;
+        current_second_pos = &current_block_col;
     }
     else
     {
-        intT* current_main_pos = &current_block_col;
-        intT* current_second_pos = &current_block_row;
+        current_main_pos = &current_block_col;
+        current_second_pos = &current_block_row;
     }
 
 
