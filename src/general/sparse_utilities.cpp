@@ -682,6 +682,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
 
     int test = 0;
     std::cout << "test" << test++ << std::endl;
+
     //pointers for proper iteration depending on fmt
     intT current_block_row, current_block_col;
     intT* current_main_pos, *current_second_pos;
@@ -706,6 +707,8 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
 
         for (intT nzs = 0; nzs < cmat.nzcount[i]; nzs++)
         {
+            std::cout << "test" << test++ << " " << i << " " << nsz << std::endl;
+
             intT j = cmat.ja[i][nzs];
             //find vbmat block;
             intT row = cmat.fmt == 0 ? i : j;
