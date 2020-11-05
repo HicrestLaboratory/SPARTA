@@ -765,7 +765,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     for (intT ib = 0; ib < vbmat_main_dim; ib++)
     {
         vbmat.nzcount[ib] = 0;
-        std::cout << "writing nzcount" << vbmat.nzcount[ib] << std::endl;
 
         for (intT jb = 0; jb < vbmat_second_dim; jb++)
         {
@@ -775,6 +774,7 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
             {
                 vbmat.jab[total_nz_blocks] = jb;
                 total_nz_blocks += 1;
+                vbmat.nzcount[ib] += 1;
             }
         }
     }
