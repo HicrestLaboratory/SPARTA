@@ -697,15 +697,11 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     }
 
 
-    //DEBUG
-    arr_print(row_part, block_rows);
-    arr_print(col_part, block_cols);
-
     //bookmarks nonzero blocks
     for (intT i = 0; i < cmat_main_dim; i++)
     {
-        current_block_row = 0;
-        current_block_col = 0;
+        current_block_row = block_rows;
+        current_block_col = block_cols;
 
         for (intT nzs = 0; nzs < cmat.nzcount[i]; nzs++)
         {
@@ -717,18 +713,15 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
             std::cout << "nonzero element in pos " << i << " " << j << std::endl;
 
 
-            while (row >= row_part[current_block_row])
+            while (row < row_part[current_block_row])
             {
-                current_block_row++;
+                current_block_row--;
             }
 
-            while (col >= col_part[current_block_col])
+            while (col < col_part[current_block_col])
             {
-                current_block_col++;
-            }    
-            current_block_row--;
-            current_block_row--;
-
+                current_block_col--;
+            }
 
             //flag the bookmark position (nonzero block)
             blocks_bookmark[*current_main_pos][*current_second_pos] = -2;
