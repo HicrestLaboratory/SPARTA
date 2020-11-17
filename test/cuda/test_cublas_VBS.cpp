@@ -186,8 +186,9 @@ int main(int argc, char* argv[]) {
 
 
         case 's': //scramble the input matrix?  0: NO SCRAMBLE
-                    //                          1: SCRAMBLE the rows randomly 
-            scramble = stoi(optarg);
+                    //                          1: SCRAMBLE the rows 
+                    //                          2: SCRAMBLE the columns
+                    //                          3: SCRAMBLE both rows and columsn
             break;
 
 
@@ -311,16 +312,30 @@ int main(int argc, char* argv[]) {
     A_rows = cmat_A.rows;
     A_cols = cmat_A.cols;
 
+
+    int scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
+    int scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
     //scramble the original matrix
-    if (scramble)
+    if (scramble_rows)
     {
 
         if (verbose > 0) cout << "input matrix rows scrambled" << endl;
-        int* random_permutation = new int[A_rows];
-        randperm(random_permutation, A_rows);
-        permute_CSR(cmat_A, random_permutation, 0);
-        delete[] random_permutation;
+        intT* random_rows_permutation = new intT[mat_rows];
+        randperm(random_rows_permutation, mat_rows);
+        permute_CSR(input_cmat, random_rows_permutation, 0);
+        delete[] random_rows_permutation;
     }
+    if (scramble_cols)
+    {
+
+        if (verbose > 0) cout << "input matrix cols scrambled" << endl;
+        intT* random_cols_permutation = new intT[mat_cols];
+        randperm(random_cols_permutation, mat_cols);
+        permute_CSR(input_cmat, random_cols_permutation, 1);
+        delete[] random_cols_permutation;
+    }
+    if (verbose > 1) matprint(input_cmat);
+
 
     //*******************************************
     //	 CREATES (several) VBS from the CSR, EXTRACT FEATURES
@@ -353,47 +368,6 @@ int main(int argc, char* argv[]) {
     A_col_part = new int[block_cols + 1];
     partition(A_row_part, 0, cmat_A.rows, block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
     partition(A_col_part, 0, cmat_A.cols, block_size);
-
-    //Create a VBS with fixed block dimension (see input)
-    VBS vbmat_A;
-    if (algo == 2 or algo == -1)
-    {
-
-
-
-        if ((A_rows % block_size != 0) or (A_cols % block_size != 0))
-        {
-            std::cout << "WARNING: The row or column dimension of the input matrix is not multiple of the block size " << std::endl;
-        }
-
-
-        convert_to_VBS(cmat_A,
-            vbmat_A,
-            block_rows, A_row_part,
-            block_cols, A_col_part,
-            vbmat_blocks_fmt, vbmat_entries_fmt);
-
-        if (verbose > 0) cout << "VBS matrix created." << endl;
-        if (verbose > 1) matprint(vbmat_A);
-    }
-    //---------------------------------------------------
-
-
-    //Create a VBS with same structure as vbmat_A but which treats zero blocks as full blocks. Used for comparison.
-    VBS vbmat_A_full;
-    if (algo == 3 or algo == -1)
-    {
-        int no_zero_mode = 1;
-        convert_to_VBS(cmat_A,
-            vbmat_A_full,
-            block_rows, A_row_part,
-            block_cols, A_col_part,
-            vbmat_blocks_fmt, vbmat_entries_fmt, no_zero_mode);
-
-        if (verbose > 0)    cout << "VBS matrix (no zero blocks mode ON) created:" << endl;
-        if (verbose > 1)    matprint(vbmat_A_full);
-    }
-    //---------------------------------------------------
 
 
     //create a VBS which is permuted with the asymmetric angle method
@@ -484,12 +458,8 @@ int main(int argc, char* argv[]) {
 
         DataT* mat_A_gemm = new DataT [A_rows * A_cols]{ 0 };
  
-
-
         convert_to_mat(cmat_A, mat_A_gemm, mat_A_fmt);
  
-
-
         DataT* mat_Cgemm = new DataT[C_rows * C_cols]{ 0 };
         int mat_Cgemm_fmt = 1;
 
@@ -522,84 +492,6 @@ int main(int argc, char* argv[]) {
         delete[] mat_Cgemm;
 
     }
-
-
-    //--------------------------------------------
-    //      VBS x dense cublas multiplication	
-    //--------------------------------------------
-    if ((algo == 2) or (algo == -1))
-    {
-        DataT* mat_Cblock = new DataT[C_rows * C_cols];
-        int mat_Cblock_fmt = 1;
-
-        algo_times.clear();
-        for (int i = -warmup; i < experiment_reps; i++)
-        {
-            cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt);
-            //only saves non-warmup runs
-            if (i >= 0) algo_times.push_back(dt);
-        }
-
-        mean_time = mean(algo_times);
-        std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "VBSmm_mean(ms)", mean_time);
-        output_couple(output_names, output_values, "VBSmm_std", std_time);
-
-
-        if (verbose > 0)
-        {
-            cout << "BlockSparse-Dense multiplication. Time taken(ms): " << mean_time << endl;
-        }
-        if (verbose > 1)
-        {
-
-            cout << "BLOCK RESULT" << endl;
-            matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
-        }
-
-        //TODO add correctness check
-        delete[] mat_Cblock;
-
-    }
-
-
-    //--------------------------------------------
-    //      VBS x dense cublas multiplication (no zero blocks mode)
-    //--------------------------------------------
-    if ((algo == 3) or (algo == -1))
-    {
-        DataT* mat_Cblock_full = new DataT[C_rows * C_cols];
-        int mat_Cblock_full_fmt = 1;
-
-
-        algo_times.clear();
-        for (int i = -warmup; i < experiment_reps; i++)
-        {
-            cublas_blockmat_multiply(vbmat_A_full, mat_B, B_cols, B_rows, mat_Cblock_full, C_rows, dt);
-            if (i >= 0) algo_times.push_back(dt);
-        }
-
-        mean_time = mean(algo_times);
-        std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "VBSmm_nozeros_mean(ms)", mean_time);
-        output_couple(output_names, output_values, "VBSmm_nozeros_std", std_time);
-
-
-        if (verbose > 0)
-        {
-            cout << "BlockSparse-Dense multiplication (no zero mode ON). Time taken(ms): " << mean_time << endl;
-        }
-        if (verbose > 1)
-        {
-
-            cout << "BLOCK RESULT (no zero mode ON)" << endl;
-            matprint(mat_Cblock_full, C_rows, C_cols, C_rows, 1);
-        }
-
-        //TODO add correctness check
-        delete[] mat_Cblock_full;
-    }
-
 
     //--------------------------------------------
     //      VBS x dense cublas multiplication (permuted with angle algorithm)
@@ -701,7 +593,6 @@ int main(int argc, char* argv[]) {
 
     delete[] mat_B;
     if (algo == 2 or algo == -1) cleanCSR(cmat_A);
-    if (algo == 3 or algo == -1) cleanVBS(vbmat_A_full);
     if (algo == 4) cleanVBS(vbmat_A_angle);
 
 }

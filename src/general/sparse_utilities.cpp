@@ -828,30 +828,6 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     return 0;
 }
 
-
-//NOT TESTED YET
-//TO BE FINISHED
-/*
-int convert_to_VBS_direct(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT* col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode)
-{
-    //convert from CSR to VBS
-
-    intT nz_tot = count_nnz(cmat);
-    
-    cmat_main_dim = (cmat.fmt == 0)? cmat.rows : cmat.cols;
-    vbmat_main_dim = (vbmat_blocks_fmt == 0) ? block_rows : block_cols;
-
-    init_VBS(vbmat, block_rows, row_part, block_cols, col_part, vbmat_blocks_fmt, vbmat_entries_fmt);
-
-    for (intT i = 0; i < cmat_main_dim; i++)
-    {
-
-    }
-    init_VBS(vbmat, nz_tot, nz_blocks, block_rows, row_part, block_cols, col_part, vbmat_blocks_fmt, vbmat_entries_fmt);
-
-}
-*/
-
 int matprint(const VBS& vbmat)
 {
 

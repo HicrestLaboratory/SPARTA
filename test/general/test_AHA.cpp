@@ -91,8 +91,6 @@ int main(int argc, char* argv[]) {
     intT algo_block_size = 3;
     int experiment_reps= 1;
     int scramble = 3;
-    int scramble_rows = 1;
-    int scramble_cols = 0;
     string exp_name = "default";
 
     //terminal options loop
@@ -322,8 +320,8 @@ int main(int argc, char* argv[]) {
         svi nz_blocks_vec;
         svi min_block_vec;
         svi max_block_vec;
-        scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
-        scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
+        int scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
+        int scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
         output_couple(output_names, output_values, "scramble", scramble);
         for (int current_repetition = 0; current_repetition < experiment_reps; current_repetition++)
         {
