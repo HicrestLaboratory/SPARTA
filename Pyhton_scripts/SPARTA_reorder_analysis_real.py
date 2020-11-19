@@ -28,8 +28,12 @@ def plot_x_vs_y(x_field_function, y_field_function, fixed, label = None, draw_st
         for fixed_field, condition in fixed.items():
             if not check_fixed_condition(experiments[fixed_field][i], condition):
                 skip = True;
+
+
         if not check_good_sample(i):
             skip = True;
+                        
+
         if skip:
             continue;   
         
@@ -76,7 +80,7 @@ try:
 except:
     print("overwriting images");
     
-datasetName = "real_reordering_results_old.txt"
+datasetName = "real_reordering_results_v2.txt"
 experiments = {};
 
 
@@ -134,11 +138,92 @@ def plot_density_vs_block_density(epsilon, block_size):
     varying = "input_source";
     plot_x_vs_y_all_z(x_field_function, y_field_function, fixed = fixed, varying = varying);
     
-    plt.title(make_title(fixed))
+    title = make_title(fixed);
+    plt.title(title)
+    plt.xlim([0,0.005])
+    plt.ylim([0,0.1])
     plt.xlabel("input entries density");
     plt.ylabel("in-block density");
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+
+    plt.savefig(saving_path + "/" + "density_vs_block" + str(block_size) + "_" + str(epsilon) +  ".png")
+    plt.show()
+
+    
+def plot_density_vs_block_density_varying_eps(graph):
+    
+    graph_name = graph.split("/")[1]
+    graph_name = graph_name.split(".")[0]
+    plt.figure();
+    x_field_function = lambda i: experiments["epsilon"][i]
+    y_field_function = density_inside_blocks;
+    fixed = {"scramble": 1, "input_source": graph};
+    varying = "algo_block_size";
+    plot_x_vs_y_all_z(x_field_function, y_field_function, fixed = fixed, varying = varying);
+
+    title = make_title(fixed);
+    plt.title(title)
+    plt.xlabel("epsilon");
+    plt.ylabel("in-block density");
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+
+    saving_name = saving_path + "/density_vs_density_varying_eps" + graph_name + ".jpg"
+    plt.savefig(saving_name)
+    plt.show()
+
+
+def plot_density_vs_block_size_varying_eps(graph):
+    
+    graph_name = graph.split("/")[1]
+    graph_name = graph_name.split(".")[0]
+    plt.figure();
+    x_field_function = lambda i: experiments["epsilon"][i]
+    y_field_function = lambda i: experiments["rows"][i]/experiments["VBS_block_rows"][i];
+    fixed = {"scramble": 1, "input_source": graph};
+    varying = "algo_block_size";
+    plot_x_vs_y_all_z(x_field_function, y_field_function, fixed = fixed, varying = varying);
+
+    title = make_title(fixed);
+    plt.title(title)
+    plt.xlabel("epsilon");
+    plt.ylabel("average row block-size");
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+
+    saving_name = saving_path + "/density_vs_blocksize_varying_eps" + graph_name + ".jpg"
+    plt.savefig(saving_name)
+    plt.show()
+
+def plot_density_vs_block_entries_varying_eps(graph):
+    
+    graph_name = graph.split("/")[1]
+    graph_name = graph_name.split(".")[0]
+    plt.figure();
+    x_field_function = lambda i: experiments["epsilon"][i]
+    y_field_function = lambda i: experiments["total_nonzeros"][i]/experiments["VBS_nz_blocks"][i];
+    fixed = {"scramble": 1, "input_source": graph};
+    varying = "algo_block_size";
+    plot_x_vs_y_all_z(x_field_function, y_field_function, fixed = fixed, varying = varying);
+
+    title = make_title(fixed);
+    plt.title(title)
+    plt.ylim([0,200])
+    plt.xlabel("epsilon");
+    plt.ylabel("average entries per block");
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+
+    saving_name = saving_path + "/density_vs_block_entries_varying_eps" + graph_name + ".jpg"
+    plt.savefig(saving_name)
     plt.show()
     
-    
-plot_density_vs_block_density(epsilon = 0.8, block_size = 32);
+plot_density_vs_block_density(epsilon = 0.6, block_size = 128);
+
+
+for graph in graphs:
+    plot_density_vs_block_density_varying_eps(graph = graph);
+    plot_density_vs_block_size_varying_eps(graph = graph);
+    plot_density_vs_block_entries_varying_eps(graph = graph);
+
