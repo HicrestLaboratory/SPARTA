@@ -70,13 +70,13 @@ def make_title(fixed_values_dict):
         title += key + ":" + str(value) + "\n"
     return title
 
-saving_path = "images/real_reorder_experiment";
+saving_path = "images/real_reorder_experiment_18_11";
 try:
     os.mkdir(saving_path)
 except:
     print("overwriting images");
     
-datasetName = "real_reordering_results.txt"
+datasetName = "real_reordering_results_old.txt"
 experiments = {};
 
 
@@ -118,17 +118,25 @@ def find_unique(property_name):
 
 graphs = find_unique("input_source");
 
+
+def nonzero_blocks(i):
+    return experiments["VBS_nz_blocks"][i]/(experiments["VBS_block_rows"][i]*experiments["cols"][i]/experiments["algo_block_size"][i]);
+
+
+def density_inside_blocks(i):
+    return experiments["total_nonzeros"][i]/experiments['VBS_total_nonzeros'][i]
+
 def plot_density_vs_block_density(epsilon, block_size):
     plt.figure();
     x_field_function = lambda i: experiments["total_nonzeros"][i]/(experiments["rows"][i]*experiments["cols"][i]);
-    y_field_function = lambda i: experiments["VBS_nz_blocks"][i]/(experiments["VBS_block_rows"][i]*experiments["cols"][i]/experiments["algo_block_size"][i]);
-    fixed = {"algo_block_size": block_size, "scramble": 3, "epsilon": epsilon};
+    y_field_function = density_inside_blocks;
+    fixed = {"algo_block_size": block_size, "scramble": 1, "epsilon": epsilon};
     varying = "input_source";
     plot_x_vs_y_all_z(x_field_function, y_field_function, fixed = fixed, varying = varying);
     
     plt.title(make_title(fixed))
     plt.xlabel("input entries density");
-    plt.ylabel("percentage of nonzero blocks");
+    plt.ylabel("in-block density");
     plt.legend()
     plt.show()
     

@@ -43,7 +43,7 @@ def is_valid(i):
 def mat_size(i):
     return experiments["A_cols"][i]*experiments["A_rows"][i];
 
-def mat_sparsity(i):
+def mat_density(i):
     return experiments["A_total_nonzeros"][i]/mat_size(i)
     
 def plot_best_scatter(x_field_func, y_field_func, method, fixed):
@@ -145,7 +145,7 @@ def plot_times_vs_other(x_field_function, time_field_function, time_std_field, f
  
 save = True;
 if save:
-    saving_path = "images/performance_experiment_v2";
+    saving_path = "images/performance_experiment_v3";
     try:
         os.mkdir(saving_path)
     except:
@@ -160,7 +160,7 @@ field_names = "input_type A_rows A_cols A_total_nonzeros A_blocks_density A_bloc
                 VBSmm_angle_mean(ms) \
                 VBSmm_angle_std cusparse_spmm_mean(ms) cusparse_spmm_std"    
     
-datasetName = "test_complete_cublas_results.txt"
+datasetName = "test_complete_cublas_results_old.txt"
 experiments = {};
 
 expanded_names = {"A_rows" : "M", "A_cols": "K", "B_cols": "N", \
@@ -315,6 +315,8 @@ if dothis:
 
 
 #VBS vs cusparse, in_block_density. 
+#--------------------------------------------------------------------------------------------------------
+
 dothis = False
 if dothis:
     x_field = "A_in_block_density";
@@ -357,7 +359,14 @@ if dothis:
         plt.savefig(saving_path + '/' + plot_name  + '.eps', format = 'eps', dpi=1000, bbox_inches = "tight")
         plt.savefig(saving_path + '/' + plot_name  + '.jpg', format = 'jpg', dpi=1000, bbox_inches = "tight")
 
+
+
+
+
+
 #VBS vs cusparse, in_block_density. ZOOMED 
+#--------------------------------------------------------------------------------------------------------
+
 dothis = False
 if dothis:
     x_field = "A_in_block_density";
@@ -403,6 +412,8 @@ if dothis:
 
 
 #ABSOLUTE VBS vs cusparse, varying in-block density, fixed blocksize and block density
+#--------------------------------------------------------------------------------------------------------
+
 dothis = False
 if dothis:
     x_field = "A_in_block_density";
@@ -446,6 +457,8 @@ if dothis:
 
 
 #VBS vs GEMM varying columns
+#--------------------------------------------------------------------------------------------------------
+
 dothis = False
 if dothis:
     x_field = "A_blocks_density";
@@ -483,18 +496,16 @@ if dothis:
 
 dothis = True
 if dothis:
-    y_field = "A_blocks_density";
-    y_field_function = lambda i: experiments[y_field][i];
+    y_field_function = lambda i: experiments["A_total_nonzeros"][i]/experiments["VBS_AAM_nonzeros"][i];
     
-    x_field = "A_total_nonzeros";
-    x_field_function = mat_sparsity;
+    x_field_function = mat_density
     
     plt.figure();
     A_cols = 2048; 
     A_rows = 4096;
     B_cols = 4096*4; 
-    block_size = 256;
-    accessibility = True
+    block_size = 128;
+    accessibility = False
     plot_name = "scatter_performance_plot_" + str(block_size);
     if accessibility: plot_name += "_access";
     title = "\n" + "M,K,N = (" + str(A_rows) + "," + str(A_cols) + "," + str(B_cols) +")" + " \n Block size = " + str(block_size);
@@ -513,11 +524,11 @@ if dothis:
         plt.fill_between(x_s, 1, y_s, alpha = 0.1, label = "accessible region")
     
     plt.tight_layout()
-    plt.ylabel(expanded_names[y_field]);
+    plt.ylabel("density inside blocks");
     plt.xlabel("density of A");
     
-    plt.ylim([0,0.4]);
-    plt.xlim([0,0.01]);
+    plt.ylim([0,0.2]);
+    plt.xlim([0,0.03]);
     plt.legend()
     plt.title(title);
     if save:

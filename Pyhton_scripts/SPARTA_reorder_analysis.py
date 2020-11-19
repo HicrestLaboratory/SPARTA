@@ -56,13 +56,13 @@ def plot_x_vs_y(x_field_function, y_field_function, fixed, label = None, draw_st
 
 
 
-saving_path = "images/reorder_experiment";
+saving_path = "images/reorder_experiment_v2";
 try:
     os.mkdir(saving_path)
 except:
     print("overwriting images");
     
-datasetName = "test_reordering.txt"
+datasetName = "test_reordering_old.txt"
 experiments = {};
 
 with open(datasetName, 'r') as f:
