@@ -1278,16 +1278,11 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
 
     intT* hashes = new intT[main_dim]; //will store hash values. The hash of a row (col) is the sum of the indices (mod block_size) of its nonzero entries
 
-    #pragma omp parallel
+    for (intT i = 0; i < main_dim; i++)
     {
-        std::cout << omp_get_num_threads() << std::endl;
-        #pragma omp for
-        for (intT i = 0; i < main_dim; i++)
-        {
-            group[i] = -1;
+        group[i] = -1;
 
-            hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], compressed_dim_partition, mode); //calculate hash value for each row
-        }
+        hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], compressed_dim_partition, mode); //calculate hash value for each row
     }
 
     sort_permutation(perm, hashes, main_dim); //find a permutation that sorts hashes
@@ -1326,6 +1321,99 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
         }
     }
 
+    delete[] hashes;
+    sort_permutation(perm, group, main_dim); //stores in perm a permutation that sorts rows by group
+}
+
+int omp_hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* group, int mode)
+{
+    //finds a group structure and a permutation for the main dimension of a CSR mat
+    //NOTE: this does NOT automatically permute the CSR
+
+    // IN:
+    //  cmat:        a matrix in CSR form
+    //  block_size:  the number of elements to consider together when determining sparsity structure
+    //              e.g if block_size = 8, every 8 element of secondary dimension will be considered nonzero if any of that is so
+    //  mode:        0: at most one element per block is considered
+    //              1: all elements in a block contribute to the hash
+    // OUT:
+    //  perm:        an array of length equal to cmat main dimension; stores a permutation of such dimension that leaves groups together
+    //  group:       an array of length equal to cmat main dimension; for each main row, stores the row group it belongs to
+
+    intT main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
+    intT second_dim = cmat.fmt == 0 ? cmat.cols : cmat.rows;
+
+    intT* hashes = new intT[main_dim]; //will store hash values. The hash of a row (col) is the sum of the indices (mod block_size) of its nonzero entries
+
+    #pragma omp parallel
+    {
+        #pragma omp for
+        for (intT i = 0; i < main_dim; i++)
+        {
+            group[i] = -1;
+
+            hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], compressed_dim_partition, mode); //calculate hash value for each row
+        }
+    }
+
+    sort_permutation(perm, hashes, main_dim); //find a permutation that sorts hashes
+
+
+    
+#pragma omp parallel
+    {
+        #pragma omp single
+        {
+            intT start_idx = 0
+            while (start_idx < main_dim) //scan main dimension in perm order and assign rows with same pattern to same group;
+            {
+                intT end_idx = idx + 1; //will hold end of hash-block TODO PRIVATE
+                intT hash = hashes[perm[idx]]; //TODO PRIVATE
+                while((hashes[perm[end_idx]] == hash) & (end_idx < main_dim))
+                {
+                    end_idx++;
+                }
+                #pragma omp task
+                {
+                    intT my_hash = hash;
+                    intT my_end_idx = end_idx;
+                    intT* ja_0, * ja_1;
+                    intT len_0, len_1;
+                    intT tmp_group = -1;
+                    for (intT idx = start_idx, idx < end_idx, idx++)
+                    {
+                        intT i = perm[idx]; //counter i refers to original order. Counter idx to permuted one. 
+                        if (group[i] == -1) //if row is still unassigned
+                        {
+
+                            tmp_group++; //create new group
+                            group[i] = tmp_group; //assign row to group
+
+                            ja_0 = cmat.ja[i]; //the row in compressed sparse format
+                            len_0 = cmat.nzcount[i];//the row length
+                            for (intT jdx = idx + 1; jdx < end_idx; jdx++)
+                            {
+                                intT j = perm[jdx]; //counter j refers to original order. Counter jdx to permuted one. 
+                                if (group[j] != -1) continue; //only unassigned row must be compared
+
+                                ja_1 = cmat.ja[j];
+                                len_1 = cmat.nzcount[j];
+
+                                if (check_same_pattern(ja_0, len_0, ja_1, len_1, compressed_dim_partition, mode))
+                                {
+                                    group[j] = tmp_group; //assign row j to the tmp_group
+                                }
+                            }
+                        }
+                    }
+                }
+                //end of task
+                //TODO MAKE SOMETHING WITH GROUPS
+                start_idx = end_idx;
+            }
+
+        }
+    }
     delete[] hashes;
     sort_permutation(perm, group, main_dim); //stores in perm a permutation that sorts rows by group
 }
