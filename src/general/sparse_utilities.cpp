@@ -1280,6 +1280,7 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
 
     #pragma omp parallel
     {
+        std::cout << omp_get_num_threads() << std::endl;
         #pragma omp for
         for (intT i = 0; i < main_dim; i++)
         {
