@@ -1276,12 +1276,16 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
 
     intT* hashes = new intT[main_dim]; //will store hash values. The hash of a row (col) is the sum of the indices (mod block_size) of its nonzero entries
 
-    #pragma omp parallel for
-    for (intT i = 0; i < main_dim; i++)
+    #pragma omp parallel
     {
-        group[i] = -1;
+        omp_get_num_threads();
+        #pragma omp for
+        for (intT i = 0; i < main_dim; i++)
+        {
+            group[i] = -1;
 
-        hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], compressed_dim_partition, mode); //calculate hash value for each row
+            hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], compressed_dim_partition, mode); //calculate hash value for each row
+        }
     }
 
     sort_permutation(perm, hashes, main_dim); //find a permutation that sorts hashes
