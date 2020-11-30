@@ -1256,8 +1256,6 @@ void read_mtx_format(CSR& cmat, std::string infilename, int cmat_fmt) {
 
 }
 
-//TODO: unify hash_permute, angle-permute and conversion to VBS
-
 int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* group, int mode)
 {
     //finds a group structure and a permutation for the main dimension of a CSR mat
@@ -1278,6 +1276,7 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
 
     intT* hashes = new intT[main_dim]; //will store hash values. The hash of a row (col) is the sum of the indices (mod block_size) of its nonzero entries
 
+    #pragma omp parallel for
     for (intT i = 0; i < main_dim; i++)
     {
         group[i] = -1;
@@ -1325,38 +1324,6 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
     sort_permutation(perm, group, main_dim); //stores in perm a permutation that sorts rows by group
 }
 
-intT hash(intT* arr, intT a_len, intT block_size, int mode)
-{
-    //evaluate hash function for a equally partitioned array of indices
-    /* IN:
-            arr: the array of indices.
-            a_len: length fo the array;
-            block_size: elements in the same block give the same contribution to hash
-            mode:  0: at most one element per block contribute to hash
-                   1: all elements in a block contribute to hash
-        OUT: 
-            intT hash : the hash is the sum of the indices of nonzero blocks (indices are counted from 1, to avoid ignoring the 0 idx);
-            */
-       
-
-    intT nzs = 0;
-    intT tmp_idx = -1;
-    intT hash = 0;
-    while (nzs < a_len)
-    {
-        intT j = arr[nzs] / block_size;
-        nzs++;
-        if ((j == tmp_idx) and (mode == 0)) //if mode is 0, only one j per block is considered in the hash sum;
-        {
-            continue;
-        }
-
-        hash += j + 1;
-        tmp_idx = j;
-    }
-    return hash;
-}
-
 intT hash(intT* arr, intT a_len, intT* block_partition, int mode)
 {
     //evaluate hash function for a arbitrarily partitioned array of indices
@@ -1399,7 +1366,7 @@ intT hash(intT* arr, intT a_len, intT* block_partition, int mode)
 int check_same_pattern(intT* arr0, intT len0, intT* arr1, intT len1, intT block_size, int mode)
 {
     //check if two arrays of indices have the same pattern
-    //PATTERN IS DEFINED BLOCKS OF FIXED DIMENSION block_size
+    //PATTERN IS DEFINED FOR BLOCKS OF FIXED DIMENSION block_size
 
 
     intT i = 0;
@@ -1561,7 +1528,6 @@ intT norm2(intT* arr, intT len)
     }
     return norm;
 }
-
 
 int angle_hash_method(CSR& cmat, float eps, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt, int mode)
 {
@@ -1845,7 +1811,6 @@ int angle_method(CSR& cmat, float eps, intT* compressed_dim_partition, intT nB,i
 
 
 }
-
 
 void read_snap_format(GraphMap& gmap, std::string filename)
 {
