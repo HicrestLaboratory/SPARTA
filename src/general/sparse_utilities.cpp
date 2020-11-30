@@ -14,6 +14,8 @@
 
 #include "sparse_utilities.h"
 #include "comp_mats.h"
+#include "omp.h"
+
 
 // Matrix utilities
 
@@ -1278,7 +1280,6 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
 
     #pragma omp parallel
     {
-        omp_get_num_threads();
         #pragma omp for
         for (intT i = 0; i < main_dim; i++)
         {
