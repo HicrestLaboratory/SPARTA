@@ -21,7 +21,7 @@ CUDA install
 # RESULTS
 We have compared our routine with cusparse_spmm and cublas_gemm, the two main CUDA routines for sparse and dense matrix multiplication.
 
-![alt text](https://github.com/LACSFUB/SPARTA/master/images/performance_experiment/VBS_vs_spmm_A8192_B_8192_fixed_blockdensity_0.1.jpg)
+![alt text](/images/performance_experiment/VBS_vs_spmm_A8192_B_8192_fixed_blockdensity_0.1.jpg)
 
 
 # STRUCTURE
