@@ -22,7 +22,7 @@ CUDA install
 We have compared our routine with cusparse_spmm and cublas_gemm, the two main CUDA routines for sparse and dense matrix multiplication.
 
 **CUSPARSE COMPARISON**
-Preliminary results show that our routine is faster than cusparse_spmm on when density in blocks is greater then a small value (around 2%, which in our case corresponds to a total density of 0.2%)
+Preliminary results show that our routine is faster than cusparse_spmm when the density inside blocks is greater then around 2% (in this case, this corresponds to a total density of 0.2%)
 ![](/images/performance_experiment/VBS_vs_spmm_A8192_B_8192_fixed_blockdensity_0.1.jpg)
 
 
@@ -33,7 +33,7 @@ Preliminary results show that our routine is faster than cublas_gemm when less t
 
 
 **PERFORMANCE LANDSCAPE**
-The image below shows the faster algorithm for each data point.
+The image below shows the faster algorithm for each data point when both the in-block density and the density of blocks vary.
 ![](/images/performance_experiment_v2/scatter_performance_plot.jpg)
 
 # STRUCTURE
