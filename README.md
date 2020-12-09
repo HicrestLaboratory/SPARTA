@@ -12,14 +12,19 @@ The repository also contains code for sparse-dense matrix-matrix multiplication 
 Input sparse matrices are stored in Compressed Sparse Row (CSR) or Compressed sparse columns (CSC) format. 
 A variant of the variable Block Compressed Sparse Rows (or Columns) is used to store block-sparse matrices. 
 
-Running the code requires either Intel MKL library (currently not supported) or the CUDA Toolkit.
-
-MKL Library: 
-https://software.intel.com/en-us/mkl
+Running the code requires CUDA 10.0.
 
 CUDA install
 * Donwload the cuda toolkit (currently supported 10.0) and follow the instructions: https://developer.nvidia.com/cuda-downloads
 * Set the CUDA_PATH variable to your cuda path (default is /usr/local/cuda-10.0)
+
+# RESULTS
+We have compared our routine with cusparse_spmm and cublas_gemm, the two main CUDA routines for sparse and dense matrix multiplication.
+
+![alt text](https://github.com/LACSFUB/SPARTA/master/images/performance_experiment/VBS_vs_spmm_A8192_B_8192_fixed_blockdensity_0.1.jpg)
+
+
+# STRUCTURE
 
 The files have the following structure
 
@@ -35,8 +40,11 @@ each folder contains
 * cuda: files needed by the cuda version
 * mkl: files needed by the mkl version
 
+
+# RUNNING A TEST
+
 use `make test_cublas_VBS` to create a test executable of the cuda test. The executable will be placed in programs/cuda. You can run it with different command line arguments to test different features.  
-use 'source ./scripts/synthetic.sh' from the main folder to run and save some experiments. The experiments will be saved in 
+use 'source ./scripts/synthetic.sh' from the main folder to run and save some experiments. 
 
 Options for the cuda_test:
 
