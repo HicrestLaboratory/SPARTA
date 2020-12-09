@@ -1,10 +1,10 @@
 # SPARTA
 **SPAR**se acceleration on **T**ensor **A**rchitecture
 
-The project aims to investigate new data structures and compression algorithms for exploting new architecture capabilities, specifically designed for deep learning, to accelerate **sparse and irregular** application, such as graph analytics.
+The project aims to investigate new data structures and compression algorithms for exploting new architecture capabilities, specifically designed for deep learning, to accelerate **sparse and irregular** applications, such as graph analytics.
 
 The repository contains code for reordering and compressing sparse matrices into dense block data-structures.
-The reordering algorithm matches rows (or columns) with similar patterns and attempts to build dense blocks. 
+The reordering algorithm matches rows (or columns) with similar patterns and build dense blocks. 
 The similarity of patterns is first determined with a hash function, and then refined with a "angle algorithm", which matches patterns with high scalar product.
 
 The repository also contains code for sparse-dense matrix-matrix multiplication that exploits the dense block data-structure.
