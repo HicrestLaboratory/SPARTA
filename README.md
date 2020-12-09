@@ -29,7 +29,7 @@ Preliminary results show that our routine is faster than cusparse_spmm when the 
 **CUBLAS COMPARISON**
 Preliminary results show that our routine is faster than cublas_gemm when less than the 20% of blocks are nonzero. 
 (both cublas and our routine treat nonzero blocks as dense, so changing the density inside blocks does not affect this result)
-![](/images/performance_experiment/performance_experiment_v2/VBS_vs_gemm_A4096_B_16384Block_size_128_varying_Block_density.jpg)
+![](/images/performance_experiment_v2/VBS_vs_gemm_A4096_B_16384Block_size_128_varying_Block_density.jpg)
 
 
 **PERFORMANCE LANDSCAPE**
