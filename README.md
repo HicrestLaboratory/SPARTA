@@ -33,7 +33,7 @@ Preliminary results show that our routine is faster than cublas_gemm when less t
 
 
 **PERFORMANCE LANDSCAPE**
-The image below shows the faster algorithm for each data point when both the density of nonzero blocks and the matrix density vary.
+The image below shows the fastest algorithm for each data point when both the density of nonzero blocks and the matrix density vary.
 For matrices in the green zone, SPARTA is the fastest choice. 
 ![](/images/performance_experiment_v2/scatter_performance_plot.jpg)
 
