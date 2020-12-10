@@ -15,7 +15,7 @@ A variant of the variable Block Compressed Sparse Rows (or Columns) is used to s
 Running the code requires CUDA 10.0.
 
 CUDA install
-* Donwload the cuda toolkit (currently supported 10.0) and follow the instructions: https://developer.nvidia.com/cuda-downloads
+* Donwload the cuda toolkit (SPARTA supports CUDA 10.0) and follow the instructions: https://developer.nvidia.com/cuda-downloads
 
 # PRELIMINARY RESULTS
 We have compared our routine with cusparse_spmm and cublas_gemm, the two main CUDA routines for sparse and dense matrix multiplication.
