@@ -14,6 +14,8 @@
 
 #include "sparse_utilities.h"
 #include "comp_mats.h"
+#include "omp.h"
+
 
 // Matrix utilities
 
@@ -1256,8 +1258,6 @@ void read_mtx_format(CSR& cmat, std::string infilename, int cmat_fmt) {
 
 }
 
-//TODO: unify hash_permute, angle-permute and conversion to VBS
-
 int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* group, int mode)
 {
     //finds a group structure and a permutation for the main dimension of a CSR mat
@@ -1325,36 +1325,97 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
     sort_permutation(perm, group, main_dim); //stores in perm a permutation that sorts rows by group
 }
 
-intT hash(intT* arr, intT a_len, intT block_size, int mode)
+int omp_hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* group, int mode)
 {
-    //evaluate hash function for a equally partitioned array of indices
-    /* IN:
-            arr: the array of indices.
-            a_len: length fo the array;
-            block_size: elements in the same block give the same contribution to hash
-            mode:  0: at most one element per block contribute to hash
-                   1: all elements in a block contribute to hash
-        OUT: 
-            intT hash : the hash is the sum of the indices of nonzero blocks (indices are counted from 1, to avoid ignoring the 0 idx);
-            */
-       
+    //finds a group structure and a permutation for the main dimension of a CSR mat
+    //NOTE: this does NOT automatically permute the CSR
 
-    intT nzs = 0;
-    intT tmp_idx = -1;
-    intT hash = 0;
-    while (nzs < a_len)
+    // IN:
+    //  cmat:        a matrix in CSR form
+    //  block_size:  the number of elements to consider together when determining sparsity structure
+    //              e.g if block_size = 8, every 8 element of secondary dimension will be considered nonzero if any of that is so
+    //  mode:        0: at most one element per block is considered
+    //              1: all elements in a block contribute to the hash
+    // OUT:
+    //  perm:        an array of length equal to cmat main dimension; stores a permutation of such dimension that leaves groups together
+    //  group:       an array of length equal to cmat main dimension; for each main row, stores the row group it belongs to
+
+    intT main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
+    intT second_dim = cmat.fmt == 0 ? cmat.cols : cmat.rows;
+
+    intT* hashes = new intT[main_dim]; //will store hash values. The hash of a row (col) is the sum of the indices (mod block_size) of its nonzero entries
+
+    #pragma omp parallel
     {
-        intT j = arr[nzs] / block_size;
-        nzs++;
-        if ((j == tmp_idx) and (mode == 0)) //if mode is 0, only one j per block is considered in the hash sum;
+        #pragma omp for
+        for (intT i = 0; i < main_dim; i++)
         {
-            continue;
-        }
+            group[i] = -1;
 
-        hash += j + 1;
-        tmp_idx = j;
+            hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], compressed_dim_partition, mode); //calculate hash value for each row
+        }
     }
-    return hash;
+
+    sort_permutation(perm, hashes, main_dim); //find a permutation that sorts hashes
+
+
+    
+#pragma omp parallel
+    {
+        #pragma omp single
+        {
+            intT start_idx = 0
+            while (start_idx < main_dim) //scan main dimension in perm order and assign rows with same pattern to same group;
+            {
+                intT end_idx = idx + 1; //will hold end of hash-block TODO PRIVATE
+                intT hash = hashes[perm[idx]]; //TODO PRIVATE
+                while((hashes[perm[end_idx]] == hash) & (end_idx < main_dim))
+                {
+                    end_idx++;
+                }
+                #pragma omp task
+                {
+                    intT my_hash = hash;
+                    intT my_end_idx = end_idx;
+                    intT* ja_0, * ja_1;
+                    intT len_0, len_1;
+                    intT tmp_group = -1;
+                    for (intT idx = start_idx, idx < end_idx, idx++)
+                    {
+                        intT i = perm[idx]; //counter i refers to original order. Counter idx to permuted one. 
+                        if (group[i] == -1) //if row is still unassigned
+                        {
+
+                            tmp_group++; //create new group
+                            group[i] = tmp_group; //assign row to group
+
+                            ja_0 = cmat.ja[i]; //the row in compressed sparse format
+                            len_0 = cmat.nzcount[i];//the row length
+                            for (intT jdx = idx + 1; jdx < end_idx; jdx++)
+                            {
+                                intT j = perm[jdx]; //counter j refers to original order. Counter jdx to permuted one. 
+                                if (group[j] != -1) continue; //only unassigned row must be compared
+
+                                ja_1 = cmat.ja[j];
+                                len_1 = cmat.nzcount[j];
+
+                                if (check_same_pattern(ja_0, len_0, ja_1, len_1, compressed_dim_partition, mode))
+                                {
+                                    group[j] = tmp_group; //assign row j to the tmp_group
+                                }
+                            }
+                        }
+                    }
+                }
+                //end of task
+                //TODO MAKE SOMETHING WITH GROUPS
+                start_idx = end_idx;
+            }
+
+        }
+    }
+    delete[] hashes;
+    sort_permutation(perm, group, main_dim); //stores in perm a permutation that sorts rows by group
 }
 
 intT hash(intT* arr, intT a_len, intT* block_partition, int mode)
@@ -1399,7 +1460,7 @@ intT hash(intT* arr, intT a_len, intT* block_partition, int mode)
 int check_same_pattern(intT* arr0, intT len0, intT* arr1, intT len1, intT block_size, int mode)
 {
     //check if two arrays of indices have the same pattern
-    //PATTERN IS DEFINED BLOCKS OF FIXED DIMENSION block_size
+    //PATTERN IS DEFINED FOR BLOCKS OF FIXED DIMENSION block_size
 
 
     intT i = 0;
@@ -1561,7 +1622,6 @@ intT norm2(intT* arr, intT len)
     }
     return norm;
 }
-
 
 int angle_hash_method(CSR& cmat, float eps, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt, int mode)
 {
@@ -1845,7 +1905,6 @@ int angle_method(CSR& cmat, float eps, intT* compressed_dim_partition, intT nB,i
 
 
 }
-
 
 void read_snap_format(GraphMap& gmap, std::string filename)
 {
