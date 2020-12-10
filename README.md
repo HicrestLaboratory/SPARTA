@@ -4,8 +4,8 @@
 The project aims to investigate new data structures and compression algorithms for exploting new architecture capabilities, specifically designed for deep learning, to accelerate **sparse and irregular** applications, such as graph analytics.
 
 The repository contains code for reordering and compressing sparse matrices into dense block data-structures.
-The reordering algorithm matches rows (or columns) with similar patterns and build dense blocks. 
-The similarity of patterns is first determined with a hash function, and then refined with a "angle algorithm", which matches patterns with high scalar product.
+The reordering algorithm matches rows (or columns) with similar patterns and builds dense blocks. 
+The similarity of patterns is first determined with a hash function, and then refined with a "angle algorithm", which matches patterns with high cosine similarity.
 
 The repository also contains code for sparse-dense matrix-matrix multiplication that exploits the dense block data-structure.
 
