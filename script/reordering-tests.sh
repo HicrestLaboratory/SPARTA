@@ -2,7 +2,8 @@
 
 OPTS="-r 3 -v -1 -i 4"
 
-: > "test_reordering_synth.txt"
+RESULTS = "results/test_reordering_synth.txt"
+: > $(RESULTS)
 
 m_shapes=(1024 2048);
 n_shapes=(1024 2048);
@@ -23,7 +24,7 @@ for m in ${m_shapes[@]}; do
             for q in ${q_value[@]}; do
 	      for s in ${s_value[@]}; do
 		  echo $m $n $e $p $P $b $q
-	          ./programs/general/test_AHA $OPTS -m $m -n $n -e $e -p $p -P $P -b $b -q $q >> "test_reordering_synth.txt"
+	          ./programs/general/test_AHA $OPTS -m $m -n $n -e $e -p $p -P $P -b $b -q $q >> $(RESULTS)
               done
             done
 	  done
