@@ -47,14 +47,24 @@ int cleanVBS(ncVBS& vbmat)
 
 
 
-
-
-
+//INSPECTION UTILITIES
 
 int matprint(const ncVBS& vbmat)
 {
     //NOT IMPLEMENTED YET
     return 0;
+}
+
+int print_block_info(const ncVBS& vbmat, int block)
+{
+    //NOT IMPLEMENTED YET
+    return 0;
+}
+
+bool equal(const ncVBS& vbmat_1, const ncVBS& vbmat_2)
+{
+    //NOT IMPLEMENTED YET
+    return false;
 }
 
 
@@ -76,7 +86,7 @@ int random_ncVBS_partitioned(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT bl
 
 //CONVERSION UTILITIES
 
-int convert_to_mat(ncVBS& vbmat, DataT* out_mat, int out_mat_fmt)
+int convert_to_mat(const ncVBS& vbmat, DataT* out_mat, int out_mat_fmt)
 {
     //make mat zero?
     intT out_mat_rows = vbmat.rows;
@@ -126,3 +136,11 @@ int convert_to_CSR(const ncVBS& vbmat, CSR& cmat, int csr_fmt)
 }
 
 
+
+//MULTIPLICATION UTILITY
+
+int multiply(const ncVBS& vbmat, DataT* in_mat, intT in_mat_rows, intT in_mat_cols, int in_mat_fmt, intT in_mat_leading_dim, DataT* out_mat, intT out_mat_leading_dim, int out_mat_fmt)
+{
+    //NOT IMPLEMENTED YET
+    return 0;
+}
