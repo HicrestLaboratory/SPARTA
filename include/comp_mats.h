@@ -62,8 +62,32 @@ struct VBS {
                                     1: column_major                                     */
 };
 
+struct ncVBS 
+{
+    /*
+        Non-conform Variable Block Sparse matrix (ncVBS)
+
+    */
+
+    intT rows;                  //number of rows                     
+    intT* col_part;             /*cumulative number of cols up to start of col partition element i (first element = 0, last element col_part[block_cols] is total number of cols) */
+    intT* nzcount;	            /* number of nonzero rows in each block-colums */
+    intT block_cols;	        /* the block column dimension of the matrix   	        */
+    intT** nzindex              /* lenght: block_cols. Each vector contains the indices of the nzcount[i] nonzero rows in that column. */
+    DataT** mab                 /* lenght: block_cols. Each vector contains the nonzero elements in that column block, row by row. */
+
+    intT cols()
+    {
+        if (col_part) return col_part[block_cols];
+        else return -1;
+    }
+};
+
+
 struct VBSfx {
 
+
+    //DEPRECATED
     /*--------------------------------------------------------------
         Block Sparse (VBS) matrix with square blocks of fixed dimension.
         The matrix itself doesn't need to be square, but must contain 
