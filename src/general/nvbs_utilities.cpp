@@ -67,6 +67,32 @@ bool equal(const ncVBS& vbmat_1, const ncVBS& vbmat_2)
     return false;
 }
 
+bool equal(const ncVBS& vbmat, const DataT* mat, intT mat_rows, intT mat_cols, intT mat_leading_dim, int mat_fmt)
+{
+    //NOT IMPLEMENTED YET
+    return false;
+}
+
+bool check_consistent(const ncVBS& vbmat)
+{
+    //NOT IMPLEMENTED YET
+    return false;
+}
+
+int count_nnz(const ncVBS& vbmat)
+{
+    //NOT IMPLEMENTED YET
+    return -1;
+}
+
+int count_nnz_rows(const ncVBS& vbmat)
+{
+    //NOT IMPLEMENTED YET
+    return -1;
+}
+
+
+
 
 //GENERATION UTILITIES
 
@@ -88,7 +114,8 @@ int random_ncVBS_partitioned(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT bl
 
 int convert_to_mat(const ncVBS& vbmat, DataT* out_mat, int out_mat_fmt)
 {
-    //make mat zero?
+    //out_mat must be of the appropriate dimension; 
+
     intT out_mat_rows = vbmat.rows;
     intT out_mat_cols = vbmat.cols();
     mat_leading_dim = out_mat_fmt == 0 ? out_mat_cols : out_mat_rows;
