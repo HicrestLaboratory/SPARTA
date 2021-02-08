@@ -176,6 +176,7 @@ int convert_to_mat(ncVBS& vbmat, DataT* out_mat, int out_mat_fmt)
     intT out_mat_cols = vbmat.cols();
     intT mat_leading_dim = out_mat_fmt == 0 ? out_mat_cols : out_mat_rows;
 
+    std::cout << vbmat.block_cols << std::endl;
     for (int jb = 0; jb < vbmat.block_cols; jb++)
     {
         intT rows_number = vbmat.nzcount[jb];
