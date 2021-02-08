@@ -1,6 +1,6 @@
 #pragma once
 #include "comp_mats.h"
-
+#include "sparse_utilities.h"
 
 int cleanVBS(ncVBS& vbmat);
 
