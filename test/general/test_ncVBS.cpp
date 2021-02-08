@@ -30,6 +30,7 @@ int main(int argc, char* argv[]) {
 
     DataT* mat = new DataT[mat_rows * mat_cols];
     convert_to_mat(vbmat, mat, 0);
+    mat[10] = 1;
     matprint(mat, mat_rows, mat_cols, mat_cols, 0);
 
 
