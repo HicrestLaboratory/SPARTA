@@ -32,17 +32,17 @@ int main(int argc, char* argv[]) {
     
     random_mat(mat_A, A_rows, A_cols, A_sparsity);
     
-    std::cout << "A" << std::endl;
+    std::cout << "\n A" << std::endl;
     matprint(mat_A, A_rows, A_cols, A_cols, 0);
 
 
-    std::cout << "VBMAT_A" << std::endl;
+    std::cout << "\n VBMAT_A" << std::endl;
     intT block_cols = A_cols / block_size;
     intT* col_part = new intT[block_cols + 1];
     partition(col_part, 0, A_cols, block_size);
     convert_to_ncVBS(mat_A, A_rows, A_cols, 0, A_cols, vbmat, block_cols, col_part);
     matprint(vbmat);
-    std::cout << "EQUALITY CHECK: vbmat and mat: " << equal(vbmat, mat_A, A_rows, A_cols, A_cols, 0) << std::endl;
+    std::cout << "\n EQUALITY CHECK: vbmat and mat: " << equal(vbmat, mat_A, A_rows, A_cols, A_cols, 0) << std::endl;
 
 
     int B_rows = A_cols;
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
 
     random_mat(mat_B, B_rows, B_cols, A_sparsity);
 
-    std::cout << "B" << std::endl;
+    std::cout << "\n B" << std::endl;
     matprint(mat_B, B_rows, B_cols, B_cols, 0);
 
     int C_rows = A_rows;
@@ -58,8 +58,14 @@ int main(int argc, char* argv[]) {
     DataT* mat_C = new DataT[C_rows * C_cols]{ 0 };
     multiply(mat_A, A_rows, A_cols, 0, A_cols, mat_B, B_cols, 0, B_cols, mat_C, C_cols, 0);
 
-    std::cout << "C" << std::endl;
+    std::cout << "\n C" << std::endl;
     matprint(mat_C, C_rows, C_cols, C_cols, 0);
 
+    std::cout << "\n C multiplied with vbmat" << std::endl;
+    DataT* mat_C2 = new DataT[C_rows * C_cols]{ 0 };
+    multiply(vbmat, mat_B, B_cols, 0, B_cols, mat_C2, C_cols, 0);
+    matprint(mat_C2, C_rows, C_cols, C_cols, 0);
+
+    std::cout << "\n EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C2, C_cols, 0, 0.00001f) << std::endl;
 
 }
