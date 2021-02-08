@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
 
 
     std::cout << "VBMAT_A" << std::endl;
-    block_cols = A_cols / block_size;
+    intT block_cols = A_cols / block_size;
     intT* col_part = new intT[block_cols + 1];
     partition(col_part, 0, A_cols, block_size);
     convert_to_ncVBS(mat_A, A_rows, A_cols, 0, A_cols, vbmat, block_cols, col_part);
