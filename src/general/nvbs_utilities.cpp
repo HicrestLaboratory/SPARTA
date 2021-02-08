@@ -94,10 +94,11 @@ bool equal(const ncVBS& vbmat_1, const ncVBS& vbmat_2)
     return false;
 }
 
-bool equal(const ncVBS& vbmat, const DataT* mat, intT mat_rows, intT mat_cols, intT mat_leading_dim, int mat_fmt)
+bool equal(ncVBS& vbmat, const DataT* mat, intT mat_rows, intT mat_cols, intT mat_leading_dim, int mat_fmt)
 {
-    //NOT IMPLEMENTED YET
-    return false;
+    DataT* mat2 = new DataT[vbmat.rows * vbmat.cols()];
+    convert_to_mat(vbmat, mat2, 0);
+    return equal(vbmat.rows, vbmat.cols(), mat2, vbmat.cols(), 0, mat, mat_leading_dim, mat_fmt, 0.00001f);
 }
 
 bool check_consistent(const ncVBS& vbmat)

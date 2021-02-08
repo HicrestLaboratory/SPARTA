@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 
     ncVBS vbmat;
     int A_rows = 4;
-    int A_cols = 3;
+    int A_cols = 9;
     int B_cols = 5;
     int block_size = 3;
     float mat_density = 0.5f;
@@ -42,6 +42,7 @@ int main(int argc, char* argv[]) {
     partition(col_part, 0, A_cols, block_size);
     convert_to_ncVBS(mat_A, A_rows, A_cols, 0, A_cols, vbmat, block_cols, col_part);
     matprint(vbmat);
+    std::cout << "EQUALITY CHECK: vbmat and mat: " << equal(vbmat, mat_A, A_rows, A_cols, A_cols, 0) << std::endl;
 
 
     int B_rows = A_cols;
