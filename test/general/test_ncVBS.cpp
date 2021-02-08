@@ -20,8 +20,8 @@
 int main(int argc, char* argv[]) {
 
     ncVBS vbmat;
-    int A_rows = 10;
-    int A_cols = 18;
+    int A_rows = 4;
+    int A_cols = 3;
     int B_cols = 5;
     int block_size = 3;
     float mat_density = 0.5f;
@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
     
     random_mat(mat_A, A_rows, A_cols, A_sparsity);
     
+    std::cout << "A" << std::endl;
     matprint(mat_A, A_rows, A_cols, A_cols, 0);
 
 
@@ -41,6 +42,7 @@ int main(int argc, char* argv[]) {
 
     random_mat(mat_B, B_rows, B_cols, A_sparsity);
 
+    std::cout << "B" << std::endl;
     matprint(mat_B, B_rows, B_cols, B_cols, 0);
 
     int C_rows = A_rows;
@@ -48,6 +50,7 @@ int main(int argc, char* argv[]) {
     DataT* mat_C = new DataT[C_rows * C_cols]{ 0 };
     multiply(mat_A, A_rows, A_cols, 0, A_cols, mat_B, B_cols, 0, B_cols, mat_C, C_cols, 0);
 
+    std::cout << "C" << std::endl;
     matprint(mat_C, C_rows, C_cols, C_cols, 0);
 
 
