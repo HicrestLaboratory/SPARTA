@@ -36,6 +36,13 @@ int main(int argc, char* argv[]) {
     matprint(mat_A, A_rows, A_cols, A_cols, 0);
 
 
+    std::cout << "VBMAT_A" << std::endl;
+    block_cols = A_cols / block_size;
+    intT* col_part = new intT[block_cols + 1];
+    partition(col_part, 0, A_cols, block_size);
+    convert_to_ncVBS(mat_A, A_rows, A_cols, 0, A_cols, vbmat, block_cols, col_part);
+    matprint(vbmat);
+
 
     int B_rows = A_cols;
     DataT* mat_B = new DataT[B_rows * B_cols]{ 0 };
