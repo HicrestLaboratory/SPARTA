@@ -316,8 +316,7 @@ int convert_to_CSR(const ncVBS& vbmat, CSR& cmat, int csr_fmt)
 int multiply(const ncVBS& vbmat, DataT* in_mat, intT in_mat_cols, int in_mat_fmt, intT in_mat_leading_dim, DataT* out_mat, intT out_mat_leading_dim, int out_mat_fmt)
 {
 
-    int in_mat_leading_dim = in_mat_fmt == 0 ? in_mat_cols : in_mat_rows;
-    for (jb = 0; jb < vbmat.block_col; jb++)
+    for (intT jb = 0; jb < vbmat.block_cols; jb++)
     {
         intT rows_number = vbmat.nzcount[jb];
         intT* rows_indices = vbmat.nzindex[jb];
@@ -334,9 +333,9 @@ int multiply(const ncVBS& vbmat, DataT* in_mat, intT in_mat_cols, int in_mat_fmt
                 intT out_mat_IDX = IDX(i, j_b, out_mat_leading_dim, out_mat_fmt);
                 for (int j = column_start; j < column_end; j++)
                 {
-                    intT mat_IDX = IDX(j, j_b, in_mat_leading_dim, in_mat_fmt);
-                    intT vbmat_IDX = IDX(nz_i, column_block_size, 0);
-                    elem += mat[mat_idx] * vbmat[vbmat_IDX];
+                    intT in_mat_IDX = IDX(j, j_b, in_mat_leading_dim, in_mat_fmt);
+                    intT vbmat_IDX = IDX(nz_i, j - column_start, column_block_size, 0);
+                    elem += in_mat[in_mat_idx] * vbmat[jb][vbmat_IDX];
                 }
                 out_mat[out_mat_IDX] += elem;
             }
