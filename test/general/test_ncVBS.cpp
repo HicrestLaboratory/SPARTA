@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
     float row_density = 0.2f;
 
     random_ncVBS(vbmat, mat_rows, mat_cols, block_size, mat_density, row_density);
+    matprint(vbmat);
 
     DataT* mat = new DataT[mat_rows * mat_cols];
     convert_to_mat(vbmat, mat, 0);

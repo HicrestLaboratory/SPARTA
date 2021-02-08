@@ -61,8 +61,25 @@ int initialize_ncVBS(ncVBS& vbmat, intT mat_rows, intT block_cols, intT* col_par
 
 int matprint(const ncVBS& vbmat)
 {
-    //NOT IMPLEMENTED YET
-    return 0;
+    for (intT jb = 0; jb < vbmat.block_cols; jb++)
+    {
+        intT rows_number = vbmat.nzcount[jb];
+        intT* rows_indices = vbmat.nzindex[jb];
+        intT column_start = vbmat.col_part[jb];
+        intT column_end = vbmat.col_part[jb + 1];
+        intT column_block_size = column_end - column_start;
+
+        std::cout << "BLOCK " << jb << "; rows: " << rows_number << "; start: " << column_start << "; end: " << column_end << std::endl;
+
+        matprint(vbmat.mab[jb], rows_number, column_block_size, column_block_size, 0);
+        
+        std::cout << "INDICES" << std::endl;
+        arrprint(vbmat.nzindex[jb], rows_number);
+
+    }
+
+
+
 }
 
 int print_block_info(const ncVBS& vbmat, int block)
@@ -176,7 +193,6 @@ int convert_to_mat(ncVBS& vbmat, DataT* out_mat, int out_mat_fmt)
     intT out_mat_cols = vbmat.cols();
     intT mat_leading_dim = out_mat_fmt == 0 ? out_mat_cols : out_mat_rows;
 
-    std::cout << vbmat.block_cols << std::endl;
     for (int jb = 0; jb < vbmat.block_cols; jb++)
     {
         intT rows_number = vbmat.nzcount[jb];
