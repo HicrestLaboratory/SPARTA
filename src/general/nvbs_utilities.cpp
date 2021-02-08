@@ -333,7 +333,7 @@ int multiply(const ncVBS& vbmat, DataT* B_mat, intT B_mat_cols, int B_mat_fmt, i
 
         for (int nz_i = 0; nz_i < rows_number; nz_i++)
         {
-            int i = rows_indices[i];
+            int i = rows_indices[nz_i];
             for (int col_B = 0; col_B < B_mat_cols; col_B++)
             {
                 DataT elem = 0;
