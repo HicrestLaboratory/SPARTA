@@ -1280,41 +1280,6 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
 
     delete[] hashes;
     sort_permutation(perm, group, main_dim); //stores in perm a permutation that sorts rows by group
-}
-
-int omp_hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* group, int mode)
-{
-    //finds a group structure and a permutation for the main dimension of a CSR mat
-    //NOTE: this does NOT automatically permute the CSR
-
-    // IN:
-    //  cmat:        a matrix in CSR form
-    //  block_size:  the number of elements to consider together when determining sparsity structure
-    //              e.g if block_size = 8, every 8 element of secondary dimension will be considered nonzero if any of that is so
-    //  mode:        0: at most one element per block is considered
-    //              1: all elements in a block contribute to the hash
-    // OUT:
-    //  perm:        an array of length equal to cmat main dimension; stores a permutation of such dimension that leaves groups together
-    //  group:       an array of length equal to cmat main dimension; for each main row, stores the row group it belongs to
-
-    intT main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
-    intT second_dim = cmat.fmt == 0 ? cmat.cols : cmat.rows;
-
-    intT* hashes = new intT[main_dim]; //will store hash values. The hash of a row (col) is the sum of the indices (mod block_size) of its nonzero entries
-
-    #pragma omp parallel
-    {
-        #pragma omp for
-        for (intT i = 0; i < main_dim; i++)
-        {
-            group[i] = -1;
-
-            hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], compressed_dim_partition, mode); //calculate hash value for each row
-        }
-    }
-
-    sort_permutation(perm, hashes, main_dim); //find a permutation that sorts hashes
-}
 
 intT hash(intT* arr, intT a_len, intT* block_partition, int mode)
 {
