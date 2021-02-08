@@ -24,7 +24,7 @@ int cleanVBS(ncVBS& vbmat)
 
     if (vbmat.mab)
     {
-        for (int i = 0; i < block_cols; i++)
+        for (int i = 0; i < vbmat.block_cols; i++)
         {
             if (vbmat.mab[i]) delete[] vbmat.mab[i];
         }
@@ -33,7 +33,7 @@ int cleanVBS(ncVBS& vbmat)
 
     if (vbmat.nzindex)
     {
-        for (int i = 0; i < block_cols; i++)
+        for (int i = 0; i < vbmat.block_cols; i++)
         {
             if (vbmat.nzindex[i]) delete[] vbmat.nzindex[i];
         }
