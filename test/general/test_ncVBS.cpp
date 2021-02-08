@@ -25,15 +25,12 @@ int main(int argc, char* argv[]) {
     int block_size = 5;
     float mat_density = 0.5f;
     float row_density = 0.2f;
-    srand(1);
-
 
     random_ncVBS(vbmat, mat_rows, mat_cols, block_size, mat_density, row_density);
     matprint(vbmat);
 
-    DataT* mat = new DataT[mat_rows * mat_cols];
+    DataT* mat = new DataT[mat_rows * mat_cols]{ 0 };
     convert_to_mat(vbmat, mat, 0);
-    mat[10] = 1;
     matprint(mat, mat_rows, mat_cols, mat_cols, 0);
 
 
