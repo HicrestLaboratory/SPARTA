@@ -142,4 +142,6 @@ test_cublas_VBS : build_cuda $(CUDA_APP_DIR)/test_cublas_VBS
 
 test_AHA : build_general $(GEN_APP_DIR)/test_AHA 
 
+test_ncVBS : build_general $(GEN_APP_DIR)/test_ncVBS 
+
 
