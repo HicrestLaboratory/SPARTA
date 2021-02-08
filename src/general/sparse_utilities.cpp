@@ -1245,7 +1245,7 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
     sort_permutation(perm, hashes, main_dim); //find a permutation that sorts hashes
 
 
-    intT *ja_0, *ja_1;
+    intT* ja_0, * ja_1;
     intT len_0, len_1;
     intT tmp_group = -1;
 
@@ -1258,7 +1258,7 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
 
             tmp_group++; //create new group
             group[i] = tmp_group; //assign row to group
-            
+
             ja_0 = cmat.ja[i]; //the row in compressed sparse format
             len_0 = cmat.nzcount[i];//the row length
             for (intT jdx = idx + 1; jdx < main_dim; jdx++)
@@ -1280,6 +1280,7 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
 
     delete[] hashes;
     sort_permutation(perm, group, main_dim); //stores in perm a permutation that sorts rows by group
+}
 
 intT hash(intT* arr, intT a_len, intT* block_partition, int mode)
 {
