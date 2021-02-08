@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
     int mat_rows = 20;
     int mat_cols = 20;
     int block_size = 5;
-    float mat_density = 0.1f;
+    float mat_density = 0.5f;
     float row_density = 0.2f;
 
     random_ncVBS(vbmat, mat_rows, mat_cols, block_size, mat_density, row_density);
