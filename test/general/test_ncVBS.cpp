@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     convert_to_mat(vbmat, mat, 0);
     matprint(mat, mat_rows, mat_cols, mat_cols, 0);
 
-
+    std::cout << "MAT2" << std::endl;
     DataT* mat2 = new DataT[mat_rows * mat_cols]{ 0 };
     mat2[1] = 1;
     mat2[3] = 1;
@@ -57,11 +57,17 @@ int main(int argc, char* argv[]) {
     int* col_part = new int[block_cols];
     partition(col_part, 0, mat_cols, block_size);
 
+    
+    std::cout << "VBMAT2" << std::endl;
+
     convert_to_ncVBS(mat2, mat_rows, mat_cols, 0, mat_cols, vbmat2, block_cols, col_part);
     matprint(vbmat2);
 
     DataT* mat3 = new DataT[mat_rows * mat_cols]{ 0 };
     convert_to_mat(vbmat2, mat3, 0);
+
+
+    std::cout << "MAT3" << std::endl;
 
     matprint(mat3, mat_rows, mat_cols, mat_cols, 0);
 
