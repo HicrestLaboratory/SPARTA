@@ -335,7 +335,7 @@ int multiply(const ncVBS& vbmat, DataT* in_mat, intT in_mat_cols, int in_mat_fmt
                 {
                     intT in_mat_IDX = IDX(j, j_b, in_mat_leading_dim, in_mat_fmt);
                     intT vbmat_IDX = IDX(nz_i, j - column_start, column_block_size, 0);
-                    elem += in_mat[in_mat_idx] * vbmat[jb][vbmat_IDX];
+                    elem += in_mat[in_mat_IDX] * vbmat.mab[jb][vbmat_IDX];
                 }
                 out_mat[out_mat_IDX] += elem;
             }
