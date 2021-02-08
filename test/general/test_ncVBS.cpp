@@ -67,8 +67,6 @@ int main(int argc, char* argv[]) {
 
     matprint(mat3, mat_rows, mat_cols, mat_cols, 0);
     
-    std::cout << "EQUAL?" << equal(mat_rows, mat_cols, mat2, mat_cols, 0, mat3, mat_cols, 0, 0.1f);
-    )
-
+    std::cout << "EQUAL?" << equal(mat_rows, mat_cols, mat2, mat_cols, 0, mat3, mat_cols, 0, 0.1f) << std::endl;;
 
 }
