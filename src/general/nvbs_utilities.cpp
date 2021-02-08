@@ -162,8 +162,11 @@ int random_ncVBS(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT block_size, fl
         intT nz_row = 0;
         for (intT i = 0; i < mat_rows; i++)
         {
-            if (rows[i] == 1) vbmat.nzindex[jb][nz_row] = i;
-            nz_row++;
+            if (rows[i] == 1)
+            {
+                vbmat.nzindex[jb][nz_row] = i;
+                nz_row++;
+            }
         }
 
         std::cout << "indices" << std::endl;
