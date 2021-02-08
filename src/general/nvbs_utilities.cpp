@@ -74,7 +74,7 @@ int matprint(const ncVBS& vbmat)
         matprint(vbmat.mab[jb], rows_number, column_block_size, column_block_size, 0);
         
         std::cout << "INDICES" << std::endl;
-        arrprint(vbmat.nzindex[jb], rows_number);
+        arr_print(vbmat.nzindex[jb], rows_number);
 
     }
 
