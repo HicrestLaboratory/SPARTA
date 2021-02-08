@@ -20,7 +20,7 @@
 int main(int argc, char* argv[]) {
 
     ncVBS vbmat;
-    int mat_rows = 14;
+    int mat_rows = 30;
     int mat_cols = 20;
     int block_size = 5;
     float mat_density = 0.5f;
