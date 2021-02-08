@@ -16,7 +16,6 @@
 #include "nvbs_utilities.h"
 
 #include "comp_mats.h"
-#include "..\..\include\nvbs_utilities.h"
 
 int cleanVBS(ncVBS& vbmat)
 {
