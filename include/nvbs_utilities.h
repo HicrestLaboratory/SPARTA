@@ -14,7 +14,7 @@ int convert_to_ncVBS(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, int 
 
 int matprint(const ncVBS& vbmat);
 
-bool equal(ncVBS& vbmat, const DataT* mat, intT mat_rows, intT mat_cols, intT mat_leading_dim, int mat_fmt);
+bool equal(const ncVBS& vbmat, const DataT* mat, intT mat_rows, intT mat_cols, intT mat_leading_dim, int mat_fmt);
 
 int multiply(const ncVBS& vbmat, DataT* in_mat, intT in_mat_cols, int in_mat_fmt, intT in_mat_leading_dim, DataT* out_mat, intT out_mat_leading_dim, int out_mat_fmt);
 
