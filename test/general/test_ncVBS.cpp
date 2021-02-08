@@ -44,10 +44,6 @@ int main(int argc, char* argv[]) {
     mat2[31] = 1;
     mat2[100] = 1;
     mat2[123] = 1;
-    mat2[200] = 1;
-    mat2[201] = 1;
-    mat2[205] = 1;
-    mat2[10] = 1;
 
 
     ncVBS vbmat2;
