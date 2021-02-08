@@ -83,7 +83,49 @@ int equal(intT rows, intT cols, DataT* A, intT lead_A, int fmt_A, DataT* B, intT
     return 1;
 }
 
+///TODO: make version with arbitrary secondary dimension partition, instead of fixed block side
+int random_sparse_blocks_mat(DataT *mat, intT rows, intT cols, int fmt, intT block_size, float block_sparsity, float block_entries_sparsity) 
+{
 
+    if ((rows % block_size != 0) or (cols % block_size != 0))
+    {
+        std::cout << "ERROR: matrix dimension must be a multiple of block size" << std::endl;
+        return 1;
+    }
+
+    intT n_blocks = (intT)rows * cols / (block_size * block_size);     //total number of blocks
+    intT nzblocks = (intT)(block_sparsity * n_blocks);              //total number of nonzero blocks
+
+    std::fill(mat, mat + rows * cols, 0);
+    svi blocks = svi(n_blocks, 0);              //will store 0 unless a block is nonzero;
+    std::fill(blocks.begin(), blocks.begin() + nzblocks, 1);    //make nzblocks blocks nonzero;
+    std::random_shuffle(blocks.begin(), blocks.end());          //put the nonzero blocks in random positions
+
+    intT mat_lead_dim = (fmt == 0) ? cols : rows;
+
+    //put nonzerovalues in the mat
+    for (intT i = 0; i < rows; i += block_size) {//iterate through block rows
+        intT ib = i / block_size;
+        for (intT j = 0; j < cols; j += block_size) { //iterate through block columns
+            intT jb = j / block_size;
+
+            if (blocks[ib * (cols / block_size ) + jb] != 0) {
+                //if block is nonempty, put random values in it;
+
+                DataT tmp_block[block_size*block_size] = { 0 }; //temporary block
+                random_mat(tmp_block, block_size, block_size, block_entries_sparsity); //make a random block with given sparsity
+
+                intT block_idx = IDX(ib * block_size, jb * block_size, mat_lead_dim, fmt); //find starting position of the block in mat
+                mat_cpy(tmp_block, block_size, block_size, block_size, 0, mat + block_idx, mat_lead_dim, fmt); //copy entries from tmp_block to mat
+            }
+        }
+    }
+
+
+}
+
+
+//NOT TESTED YET
 int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, int entries_fmt, intT row_block_size, intT col_block_size, float block_density, float entries_density)
 {
     /*
@@ -113,11 +155,11 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
     intT block_cols = std::ceil((float)cols / col_block_size);
     intT size_of_block = row_block_size * col_block_size;
     intT n_blocks = block_rows * block_cols;
-
+    
     intT* row_part = new intT[block_rows + 1];
     intT* col_part = new intT[block_cols + 1];
-    partition(row_part, 0, block_rows, row_block_size); //row and block partition for creating the VBS
-    partition(col_part, 0, block_cols, col_block_size);
+    partition(row_part, 0, rows, row_block_size); //row and block partition for creating the VBS
+    partition(col_part, 0, cols, col_block_size);
 
 
     //DETERMINE THE NZ BLOCK STRUCTURE
@@ -137,11 +179,11 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
     vbmat.mab = new DataT[nz_tot];
     vbmat.jab = new intT[nz_blocks];
     
-    
     intT nz_in_block = std::ceil(entries_density * size_of_block);
     //saves the indices of nonzero blocks into jab; saves the number of nz blocks per row (or col) into vbmat.nzcount;
     intT b = 0;
-    DataT* mab_idx = vbmat.mab; //the mab array will is filled up to this pointer
+    intT jab_count = 0;
+    DataT* mab_idx = vbmat.mab; //the mab array is filled up to this pointer
     for (intT i = 0; i < main_dim; i++)
     {
         intT nzcount = 0;
@@ -151,12 +193,14 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
             {
                 std::fill(mab_idx, mab_idx + nz_in_block, 1); //fill part of the block with ones
                 std::random_shuffle(mab_idx, mab_idx + size_of_block); //shuffle the block
-                vbmat.jab[b] == i; //save the index of the block in jab
+                vbmat.jab[jab_count] = j; //save the index of the block in jab
                 nzcount += 1; //keep the count of nonzero blocks
+                jab_count += 1;
                 mab_idx += size_of_block; // jump to next block on mab 
             }
             b++;
         }
+
         vbmat.nzcount[i] = nzcount;
     }
 
@@ -180,6 +224,7 @@ int matprint(DataT* mat, intT rows, intT* row_part, intT row_blocks, intT cols, 
 {
     for (intT ib = 0; ib < row_blocks; ib++)
     {
+
         for (intT i = row_part[ib]; i < row_part[ib + 1]; i++)
         {
             for (intT jb = 0; jb < col_blocks; jb++)
@@ -346,6 +391,7 @@ int cleanVBS(VBS& vbmat)
 
 
 //NEW
+//NOT TESTED YET
 int init_VBS(VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT* col_part, int blocks_fmt, int entries_fmt)
 {
     intT main_dim = (blocks_fmt == 0) ? block_rows : block_cols;
@@ -458,22 +504,15 @@ int convert_to_VBS(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, VBS& v
     }
     //----------------------------------------------------------------------------------
 
- 
-
-
     vbmat.nztot = total_nonzero_entries;
     vbmat.jab = new intT[jab.size()];
     vbmat.mab = new DataT[total_nonzero_entries];
 
     std:copy(jab.begin(), jab.end(), vbmat.jab);
 
-
     intT mat_idx = 0; //keeps reading position for mat
     intT vbmat_idx = 0; //keeps writing position for vbmat 
     intT jab_count = 0;
-
- 
-
 
     //COPY VALUES from mat to vbmat ------------------------------------------------------
     for (intT i = 0; i < vbmat_main_dim; i++)
@@ -515,9 +554,6 @@ int convert_to_VBS(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, VBS& v
             jab_count++;
         }
     }
-
- 
-
 
     return 0;
 }
@@ -1245,7 +1281,7 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
     sort_permutation(perm, hashes, main_dim); //find a permutation that sorts hashes
 
 
-    intT* ja_0, * ja_1;
+    intT *ja_0, *ja_1;
     intT len_0, len_1;
     intT tmp_group = -1;
 
@@ -1258,7 +1294,7 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
 
             tmp_group++; //create new group
             group[i] = tmp_group; //assign row to group
-
+            
             ja_0 = cmat.ja[i]; //the row in compressed sparse format
             len_0 = cmat.nzcount[i];//the row length
             for (intT jdx = idx + 1; jdx < main_dim; jdx++)
@@ -1281,6 +1317,7 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
     delete[] hashes;
     sort_permutation(perm, group, main_dim); //stores in perm a permutation that sorts rows by group
 }
+
 
 intT hash(intT* arr, intT a_len, intT* block_partition, int mode)
 {
