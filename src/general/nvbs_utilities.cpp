@@ -313,8 +313,54 @@ int convert_to_CSR(const ncVBS& vbmat, CSR& cmat, int csr_fmt)
 
 //MULTIPLICATION UTILITY
 
-int multiply(const ncVBS& vbmat, DataT* in_mat, intT in_mat_rows, intT in_mat_cols, int in_mat_fmt, intT in_mat_leading_dim, DataT* out_mat, intT out_mat_leading_dim, int out_mat_fmt)
+int multiply(const ncVBS& vbmat, DataT* in_mat, intT in_mat_cols, int in_mat_fmt, intT in_mat_leading_dim, DataT* out_mat, intT out_mat_leading_dim, int out_mat_fmt)
 {
-    //NOT IMPLEMENTED YET
+
+    int in_mat_leading_dim = in_mat_fmt == 0 ? in_mat_cols : in_mat_rows;
+    for (jb = 0; jb < vbmat.block_col; jb++)
+    {
+        intT rows_number = vbmat.nzcount[jb];
+        intT* rows_indices = vbmat.nzindex[jb];
+        intT column_start = vbmat.col_part[jb];
+        intT column_end = vbmat.col_part[jb + 1];
+        intT column_block_size = column_end - column_start;
+
+        for (int nz_i = 0; nz_i < rows_number; nz_i++)
+        {
+            int i = rows_indices[i];
+            for (int j_b = 0; jb < in_mat_cols; jb++)
+            {
+                DataT elem = 0;
+                intT out_mat_IDX = IDX(i, j_b, out_mat_leading_dim, out_mat_fmt);
+                for (int j = column_start; j < column_end; j++)
+                {
+                    intT mat_IDX = IDX(j, j_b, in_mat_leading_dim, in_mat_fmt);
+                    intT vbmat_IDX = IDX(nz_i, column_block_size, 0);
+                    elem += mat[mat_idx] * vbmat[vbmat_IDX];
+                }
+                out_mat[out_mat_IDX] += elem;
+            }
+        }
+
+    }
     return 0;
+}
+
+int multiply(DataT* A_mat, intT A_mat_rows, intT A_mat_cols, int A_mat_fmt, intT A_mat_leading_dim, DataT* B_mat, intT B_mat_cols, int B_mat_fmt, intT B_mat_leading_dim, DataT* C_mat, intT C_mat_leading_dim, int C_mat_fmt)
+{
+    for (intT i = 0; i < A_mat_rows; i++)
+    {
+        for (intT j_b = 0; j_b < B_mat_cols; j_b++)
+        {
+            DataT elem = 0;
+            intT C_IDX = IDX(i, j_b, C_mat_leading_dim, C_mat_fmt);
+            for (intT j = 0; j < A_mat_cols; j++)
+            {
+                intT A_IDX = IDX(i, j, A_mat_leading_dim, A_mat_fmt);
+                intT B_IDX = IDX(j, j_b, B_mat_leading_dim, B_mat_fmt);
+                elem += A_mat[A_IDX] * B_mat[B_IDX];
+            }
+            C_mat[C_IDX] = elem;
+        }
+    }
 }
