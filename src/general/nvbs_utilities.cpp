@@ -17,6 +17,12 @@
 
 #include "comp_mats.h"
 
+
+//REMOVE!!!!!!!
+typedef int intT;
+typedef float DataT;
+//!!!!!!!!!!!!!
+
 int cleanVBS(ncVBS& vbmat)
 {
 
@@ -200,13 +206,13 @@ int random_ncVBS_partitioned(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT bl
 
 //CONVERSION UTILITIES
 
-int convert_to_mat(ncVBS& vbmat, DataT* out_mat, int out_mat_fmt)
+int convert_to_mat(ncVBS& vbmat, DataT* out_mat, int C_fmt)
 {
-    //out_mat must be of the appropriate dimension; 
+    //C_mat must be of the appropriate dimension; 
 
     intT out_mat_rows = vbmat.rows;
     intT out_mat_cols = vbmat.cols();
-    intT mat_leading_dim = out_mat_fmt == 0 ? out_mat_cols : out_mat_rows;
+    intT mat_leading_dim = C_fmt == 0 ? out_mat_cols : out_mat_rows;
 
     for (int jb = 0; jb < vbmat.block_cols; jb++)
     {
@@ -222,7 +228,7 @@ int convert_to_mat(ncVBS& vbmat, DataT* out_mat, int out_mat_fmt)
             for (int j = column_start; j < column_end; j++)
             {
                 intT vbmat_idx = IDX(row, j - column_start, column_block_size, 0);
-                intT mat_idx = IDX(i, j, mat_leading_dim, out_mat_fmt);
+                intT mat_idx = IDX(i, j, mat_leading_dim, C_fmt);
 
                 out_mat[mat_idx] = vbmat.mab[jb][vbmat_idx];
             }
@@ -314,7 +320,7 @@ int convert_to_CSR(const ncVBS& vbmat, CSR& cmat, int csr_fmt)
 
 //MULTIPLICATION UTILITY
 
-int multiply(const ncVBS& vbmat, DataT* in_mat, intT in_mat_cols, int in_mat_fmt, intT in_mat_leading_dim, DataT* out_mat, intT out_mat_leading_dim, int out_mat_fmt)
+int multiply(const ncVBS& vbmat, DataT* B_mat, intT B_mat_cols, int B_mat_fmt, intT B_leading_dim, DataT* C_mat, intT C_leading_dim, int C_fmt)
 {
 
     for (intT jb = 0; jb < vbmat.block_cols; jb++)
@@ -328,17 +334,19 @@ int multiply(const ncVBS& vbmat, DataT* in_mat, intT in_mat_cols, int in_mat_fmt
         for (int nz_i = 0; nz_i < rows_number; nz_i++)
         {
             int i = rows_indices[i];
-            for (int j_b = 0; jb < in_mat_cols; jb++)
+            for (int j_b = 0; jb < B_mat_cols; jb++)
             {
                 DataT elem = 0;
-                intT out_mat_IDX = IDX(i, j_b, out_mat_leading_dim, out_mat_fmt);
+                intT C_IDX = IDX(i, j_b, C_leading_dim, C_fmt);
                 for (int j = column_start; j < column_end; j++)
                 {
-                    intT in_mat_IDX = IDX(j, j_b, in_mat_leading_dim, in_mat_fmt);
+
+                    std::cout << "jb " << jb << " nzi " << nz_i << " i " << i << " j " << j << std::endl;
+                    intT B_IDX = IDX(j, j_b, B_leading_dim, B_mat_fmt);
                     intT vbmat_IDX = IDX(nz_i, j - column_start, column_block_size, 0);
-                    elem += in_mat[in_mat_IDX] * vbmat.mab[jb][vbmat_IDX];
+                    elem += B_mat[B_IDX] * vbmat.mab[jb][vbmat_IDX];
                 }
-                out_mat[out_mat_IDX] += elem;
+                C_mat[C_IDX] += elem;
             }
         }
 
