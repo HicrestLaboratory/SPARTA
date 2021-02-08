@@ -1314,65 +1314,6 @@ int omp_hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT
     }
 
     sort_permutation(perm, hashes, main_dim); //find a permutation that sorts hashes
-
-
-    
-#pragma omp parallel
-    {
-        #pragma omp single
-        {
-            intT start_idx = 0
-            while (start_idx < main_dim) //scan main dimension in perm order and assign rows with same pattern to same group;
-            {
-                intT end_idx = idx + 1; //will hold end of hash-block TODO PRIVATE
-                intT hash = hashes[perm[idx]]; //TODO PRIVATE
-                while((hashes[perm[end_idx]] == hash) & (end_idx < main_dim))
-                {
-                    end_idx++;
-                }
-                #pragma omp task
-                {
-                    intT my_hash = hash;
-                    intT my_end_idx = end_idx;
-                    intT* ja_0, * ja_1;
-                    intT len_0, len_1;
-                    intT tmp_group = -1;
-                    for (intT idx = start_idx, idx < end_idx, idx++)
-                    {
-                        intT i = perm[idx]; //counter i refers to original order. Counter idx to permuted one. 
-                        if (group[i] == -1) //if row is still unassigned
-                        {
-
-                            tmp_group++; //create new group
-                            group[i] = tmp_group; //assign row to group
-
-                            ja_0 = cmat.ja[i]; //the row in compressed sparse format
-                            len_0 = cmat.nzcount[i];//the row length
-                            for (intT jdx = idx + 1; jdx < end_idx; jdx++)
-                            {
-                                intT j = perm[jdx]; //counter j refers to original order. Counter jdx to permuted one. 
-                                if (group[j] != -1) continue; //only unassigned row must be compared
-
-                                ja_1 = cmat.ja[j];
-                                len_1 = cmat.nzcount[j];
-
-                                if (check_same_pattern(ja_0, len_0, ja_1, len_1, compressed_dim_partition, mode))
-                                {
-                                    group[j] = tmp_group; //assign row j to the tmp_group
-                                }
-                            }
-                        }
-                    }
-                }
-                //end of task
-                //TODO MAKE SOMETHING WITH GROUPS
-                start_idx = end_idx;
-            }
-
-        }
-    }
-    delete[] hashes;
-    sort_permutation(perm, group, main_dim); //stores in perm a permutation that sorts rows by group
 }
 
 intT hash(intT* arr, intT a_len, intT* block_partition, int mode)
