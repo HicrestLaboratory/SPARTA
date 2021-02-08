@@ -166,6 +166,9 @@ int random_ncVBS(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT block_size, fl
             nz_row++;
         }
 
+        std::cout << "indices" << std::endl;
+        arr_print(vbmat.nzindex[jb], nonzero_rows_per_block);
+
         //fill mab[jb] with random rows
         for (intT i = 0; i < nonzero_rows_per_block; i++)
         {
@@ -173,7 +176,7 @@ int random_ncVBS(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT block_size, fl
             svi elems = svi(block_size, 0);
             std::fill(elems.begin(), elems.begin() + elements_per_row, 1); //only elems_per_row are nonzero;
             std:random_shuffle(rows.begin(), rows.end());
-            std::copy(rows.begin(), rows.end(), vbmat.mab[jb] + block_size * i); 
+            std::copy(rows.begin(), rows.end(), vbmat.mab[jb] + (block_size * i)); 
         }
 
     }
