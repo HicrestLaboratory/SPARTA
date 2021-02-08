@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
     ncVBS vbmat;
     int mat_rows = 10;
     int mat_cols = 18;
-    int block_size = 5;
+    int block_size = 3;
     float mat_density = 0.5f;
     float row_density = 0.3f;
 
@@ -53,7 +53,6 @@ int main(int argc, char* argv[]) {
     ncVBS vbmat2;
     matprint(mat2, mat_rows, mat_cols, mat_cols, 0);
 
-    int block_size = 3;
     int block_cols = mat_cols / block_size;
     int* col_part = new int[block_cols];
     partition(col_part, 0, mat_cols, block_size);
