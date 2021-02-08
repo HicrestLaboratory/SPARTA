@@ -127,7 +127,7 @@ int random_ncVBS(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT block_size, fl
 {
     intT nonzero_rows_per_block = (int)(row_density * mat_rows);
     intT elements_per_row = (int)(mat_density * block_size);
-    intT elements_per_block = nonzero_rows_per_block * block_size_;
+    intT elements_per_block = nonzero_rows_per_block * block_size;
     if (mat_cols % block_size != 0) std::cout << "WARNING: mat_cols not a multiple of block_size" << std::endl;
 
 
