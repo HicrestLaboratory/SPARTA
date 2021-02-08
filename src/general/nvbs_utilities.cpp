@@ -125,8 +125,8 @@ int count_nnz_rows(const ncVBS& vbmat)
 
 int random_ncVBS(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT block_size, float mat_density, float row_density, int mode = 0, int block_variation = 0, float density_variation = 0)
 {
-    intT nonzero_rows_per_block = (int)row_density * mat_rows;
-    intT elements_per_row = (int)mat_density * block_size;
+    intT nonzero_rows_per_block = (int)(row_density * mat_rows);
+    intT elements_per_row = (int)(mat_density * block_size);
     intT elements_per_block = elements_per_row * nonzero_rows_per_block;
     if (mat_cols % block_size != 0) std::cout << "WARNING: mat_cols not a multiple of block_size" << std::endl;
 
