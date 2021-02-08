@@ -16,6 +16,7 @@
 #include "nvbs_utilities.h"
 
 #include "comp_mats.h"
+#include "..\..\include\nvbs_utilities.h"
 
 int cleanVBS(ncVBS& vbmat)
 {
@@ -134,7 +135,7 @@ int random_ncVBS(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT block_size, fl
     intT block_cols = mat_cols / block_size;
     vbmat.block_cols = block_cols;
     vbmat.col_part = new intT[block_cols + 1];
-    partition(vbmat.col_part, 0, block_cols, block_size);
+    partition(vbmat.col_part, 0, mat_cols, block_size);
 
     vbmat.nzcount = new intT[block_cols];
     vbmat.nzindex = new intT * [block_cols];
