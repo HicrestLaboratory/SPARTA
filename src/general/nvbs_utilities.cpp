@@ -334,15 +334,15 @@ int multiply(const ncVBS& vbmat, DataT* B_mat, intT B_mat_cols, int B_mat_fmt, i
         for (int nz_i = 0; nz_i < rows_number; nz_i++)
         {
             int i = rows_indices[i];
-            for (int j_b = 0; jb < B_mat_cols; jb++)
+            for (int col_B = 0; col_B < B_mat_cols; col_B++)
             {
                 DataT elem = 0;
-                intT C_IDX = IDX(i, j_b, C_leading_dim, C_fmt);
+                intT C_IDX = IDX(i, col_B, C_leading_dim, C_fmt);
                 for (int j = column_start; j < column_end; j++)
                 {
 
                     std::cout << "jb " << jb << " nzi " << nz_i << " i " << i << " j " << j << std::endl;
-                    intT B_IDX = IDX(j, j_b, B_leading_dim, B_mat_fmt);
+                    intT B_IDX = IDX(j, col_B, B_leading_dim, B_mat_fmt);
                     intT vbmat_IDX = IDX(nz_i, j - column_start, column_block_size, 0);
                     elem += B_mat[B_IDX] * vbmat.mab[jb][vbmat_IDX];
                 }
@@ -359,14 +359,14 @@ int multiply(DataT* A_mat, intT A_mat_rows, intT A_mat_cols, int A_mat_fmt, intT
 {
     for (intT i = 0; i < A_mat_rows; i++)
     {
-        for (intT j_b = 0; j_b < B_mat_cols; j_b++)
+        for (intT col_B = 0; col_B < B_mat_cols; col_B++)
         {
             DataT elem = 0;
-            intT C_IDX = IDX(i, j_b, C_mat_leading_dim, C_mat_fmt);
+            intT C_IDX = IDX(i, col_B, C_mat_leading_dim, C_mat_fmt);
             for (intT j = 0; j < A_mat_cols; j++)
             {
                 intT A_IDX = IDX(i, j, A_mat_leading_dim, A_mat_fmt);
-                intT B_IDX = IDX(j, j_b, B_mat_leading_dim, B_mat_fmt);
+                intT B_IDX = IDX(j, col_B, B_mat_leading_dim, B_mat_fmt);
                 elem += A_mat[A_IDX] * B_mat[B_IDX];
             }
             C_mat[C_IDX] = elem;
