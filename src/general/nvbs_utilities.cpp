@@ -108,22 +108,23 @@ int count_nnz_rows(const ncVBS& vbmat)
 
 int random_ncVBS(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT block_size, float mat_density, float row_density, int mode = 0, int block_variation = 0, float density_variation = 0)
 {
-    intT nonzero_rows_per_block = (int)row_density * math_rows;
+    intT nonzero_rows_per_block = (int)row_density * mat_rows;
     intT elements_per_row = (int)mat_density * block_size;
     intT elements_per_block = elements_per_row * nonzero_rows_per_block;
     if (mat_cols % block_size != 0) std::cout << "WARNING: mat_cols not a multiple of block_size" << std::endl;
 
     vbmat.rows = mat_rows;
-    vbmat.block_cols = mat_cols / block_size;
+    intT block_cols = mat_cols / block_size;
+    vbmat.block_cols = block_cols;
     vbmat.col_part = new intT[block_cols + 1];
-    partition(col_part, 0, col_blocks, block_size);
+    partition(vbmat.col_part, 0, block_cols, block_size);
 
     vbmat.nzcount = new intT[block_cols];
     vbmat.nzindex = new intT * [block_cols];
     vbmat.mab = new DataT * [block_cols];
 
     //loop through column blocks
-    for (int jb = 0; jb < col_block; jb++)
+    for (int jb = 0; jb < block_cols; jb++)
     {
         vbmat.nzcount[jb] = nonzero_rows_per_block;
         vbmat.nzindex[jb] = new intT[vbmat.nzcount[jb]];
@@ -138,7 +139,7 @@ int random_ncVBS(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT block_size, fl
         intT nz_row = 0;
         for (intT i = 0; i < mat_rows; i++)
         {
-            if (rows == 1) vbmat.nzindex[jb][nz_row] = i;
+            if (rows[i] == 1) vbmat.nzindex[jb][nz_row] = i;
             nz_row++;
         }
 
@@ -147,7 +148,7 @@ int random_ncVBS(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT block_size, fl
         {
             //add one random row to mab[jb]
             svi elems = svi(block_size, 0);
-            std::fill(elems.begin(), elems.begin() + elems_per_row, 1); //only elems_per_row are nonzero;
+            std::fill(elems.begin(), elems.begin() + elements_per_row, 1); //only elems_per_row are nonzero;
             std:random_shuffle(rows.begin(), rows.end());
             std::copy(rows.begin(), rows.end(), vbmat.mab[jb] + block_size * i); 
         }
@@ -167,20 +168,20 @@ int random_ncVBS_partitioned(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT bl
 
 //CONVERSION UTILITIES
 
-int convert_to_mat(const ncVBS& vbmat, DataT* out_mat, int out_mat_fmt)
+int convert_to_mat(ncVBS& vbmat, DataT* out_mat, int out_mat_fmt)
 {
     //out_mat must be of the appropriate dimension; 
 
     intT out_mat_rows = vbmat.rows;
     intT out_mat_cols = vbmat.cols();
-    mat_leading_dim = out_mat_fmt == 0 ? out_mat_cols : out_mat_rows;
+    intT mat_leading_dim = out_mat_fmt == 0 ? out_mat_cols : out_mat_rows;
 
     for (int jb = 0; jb < vbmat.block_cols; jb++)
     {
-        intT rows_number = vbmat.nzcount[i];
-        intT* rows_indices = vbmat.nzindex[i];
-        intT column_start = vbmat.col_part[i];
-        intT column_end = vbmat.col_part[i + 1];
+        intT rows_number = vbmat.nzcount[jb];
+        intT* rows_indices = vbmat.nzindex[jb];
+        intT column_start = vbmat.col_part[jb];
+        intT column_end = vbmat.col_part[jb + 1];
         intT column_block_size = column_end - column_start;
 
         for (int row = 0; row < rows_number; row++)
@@ -191,7 +192,7 @@ int convert_to_mat(const ncVBS& vbmat, DataT* out_mat, int out_mat_fmt)
                 intT vbmat_idx = IDX(row, j - column_start, column_block_size, 0);
                 intT mat_idx = IDX(i, j, mat_leading_dim, out_mat_fmt);
 
-                out_mat[mat_idx] = vbmat.mab[vbmat_idx];
+                out_mat[mat_idx] = vbmat.mab[jb][vbmat_idx];
             }
         }
 
@@ -203,7 +204,7 @@ int convert_to_ncVBS(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, int 
 {
     initialize_ncVBS(vbmat, mat_rows, block_cols, col_part);
 
-    for (jb = 0; jb < block_cols; jb++)
+    for (int jb = 0; jb < block_cols; jb++)
     {
         intT block_start = col_part[jb];
         intT block_end = col_part[jb + 1];
@@ -211,7 +212,7 @@ int convert_to_ncVBS(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, int 
 
         svi nz_rows; 
         //fill nz_rows with indices of nonzero rows for this block;
-        for (int i = 0; i < mat_rows; i++)
+        for (intT i = 0; i < mat_rows; i++)
         {
 
             //check if row is empty
