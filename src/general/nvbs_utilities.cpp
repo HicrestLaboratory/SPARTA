@@ -180,8 +180,8 @@ int random_ncVBS(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT block_size, fl
             //add one random row to mab[jb]
             svi elems = svi(block_size, 0);
             std::fill(elems.begin(), elems.begin() + elements_per_row, 1); //only elems_per_row are nonzero;
-            std:random_shuffle(rows.begin(), rows.end());
-            std::copy(rows.begin(), rows.end(), vbmat.mab[jb] + (block_size * i)); 
+            std:random_shuffle(elems.begin(), elems.end());
+            std::copy(elems.begin(), elems.end(), vbmat.mab[jb] + (block_size * i)); 
         }
 
     }
