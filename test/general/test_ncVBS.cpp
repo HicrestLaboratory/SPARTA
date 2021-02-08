@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
     random_ncVBS(vbmat, mat_rows, mat_cols, block_size, mat_density, row_density);
 
     DataT* mat = new DataT[mat_rows * mat_cols];
-    //convert_to_mat(vbmat, mat, 0);
+    convert_to_mat(vbmat, mat, 0);
     matprint(mat, mat_rows, mat_cols, mat_cols, 0);
 
 
