@@ -43,7 +43,12 @@ int main(int argc, char* argv[]) {
 
     matprint(mat_B, B_rows, B_cols, B_cols, 0);
 
+    int C_rows = A_rows;
+    int C_cols = B_cols;
+    DataT* mat_C = new DataT[C_rows * C_cols]{ 0 };
+    multiply(mat_A, A_rows, A_cols, 0, A_cols, mat_B, B_cols, 0, B_cols, mat_C, C_cols, 0);
 
+    matprint(mat_C, C_rows, C_cols, C_cols, 0);
 
 
 }
