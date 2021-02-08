@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
     int block_size = 3;
     float mat_density = 0.5f;
     float row_density = 0.3f;
-    float A_sparsity = 0.1f;
+    float A_sparsity = 0.5f;
 
     DataT* mat_A = new DataT[A_rows * A_cols]{ 0 };
     
