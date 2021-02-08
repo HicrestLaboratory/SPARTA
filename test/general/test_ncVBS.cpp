@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
     mat2[10] = 1;
 
 
-    ncVBS vmat2;
+    ncVBS vbmat2;
     matprint(mat2, mat_rows, mat_cols, mat_cols, 0);
 
     int block_size = 3;
