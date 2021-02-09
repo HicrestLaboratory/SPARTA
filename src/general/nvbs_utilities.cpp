@@ -100,7 +100,7 @@ bool equal(const ncVBS& vbmat_1, const ncVBS& vbmat_2)
     return false;
 }
 
-bool equal(ncVBS& vbmat, const DataT* mat, intT mat_rows, intT mat_cols, intT mat_leading_dim, int mat_fmt)
+bool equal(ncVBS& vbmat, DataT* mat, intT mat_rows, intT mat_cols, intT mat_leading_dim, int mat_fmt)
 {
     DataT* mat2 = new DataT[vbmat.rows * vbmat.cols()];
     convert_to_mat(vbmat, mat2, 0);
