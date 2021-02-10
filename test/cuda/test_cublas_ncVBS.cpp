@@ -27,6 +27,7 @@
 #include "sparse_utilities.h"
 #include "nvbs_utilities.h"
 #include "comp_mats.h"
+#include "cuda_utilities_ncVBS.h"
 
 
 
