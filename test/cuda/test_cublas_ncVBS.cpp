@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
 	cublas_ncVBS_multiply(vbmat, mat_B, B_cols, B_cols, mat_C3, C_cols, dt);
 	matprint(mat_C3, C_rows, C_cols, C_cols, 0);
 
-	std::cout << "\n EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C3, C_cols, 0, 0.00001f) << std::endl;
+	std::cout << "\n EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C3, C_cols, 0, 0.00001f) << " TIME: " << dt << std::endl;
 
 
 
