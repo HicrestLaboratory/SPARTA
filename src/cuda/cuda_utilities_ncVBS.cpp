@@ -89,11 +89,11 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, DataT* B, int B_cols, int B_lead_dim, 
     for (intT jb = 0; jb < vbmatA.block_cols; jb++)
     {
 
-        unsigned int rows_number = vbmatA.nzcount[jb];
-        unsigned int* rows_indices = vbmatA.nzindex[jb];
-        unsigned int column_start = vbmatA.col_part[jb];
-        unsigned int column_end = vbmatA.col_part[jb + 1];
-        unsigned int column_block_size = column_end - column_start;
+        int rows_number = vbmatA.nzcount[jb];
+        int* rows_indices = vbmatA.nzindex[jb];
+        int column_start = vbmatA.col_part[jb];
+        int column_end = vbmatA.col_part[jb + 1];
+        int column_block_size = column_end - column_start;
 
 
         int stream_n = jb % n_streams_mult;
