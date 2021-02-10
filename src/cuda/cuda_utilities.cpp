@@ -446,7 +446,7 @@ int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int *csrColInd, float *csrVa
 }
 
 
-
+/*
 
 //WORK IN PROGRESS
 void cublas_blockmat_spsp(const VBS& vbmatA, const VBS& vbmatB, DataT* C, int C_lead_dim, float& dt) {
@@ -609,3 +609,6 @@ void cublas_blockmat_spsp(const VBS& vbmatA, const VBS& vbmatB, DataT* C, int C_
     checkCudaErrors(cublasDestroy(handle));
 
 }
+
+
+*/
