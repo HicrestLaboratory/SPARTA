@@ -84,5 +84,6 @@ void cublas_ncVBS_multiply(const ncVBS& vbmatA, DataT* B, int B_cols, int B_lead
     }
 
 
-*/
+
 }
+*/
