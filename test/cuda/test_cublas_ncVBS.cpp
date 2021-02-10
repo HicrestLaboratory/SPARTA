@@ -42,12 +42,40 @@ int main(int argc, char* argv[]) {
 	float row_density = 0.2f;
 	float A_sparsity = 0.2f;
 
+    opterr = 0;
+    char c;
+    while ((c = getopt(argc, argv, "a:b:i:q:e:f:m:n:p:r:k:s:v:w:S:")) != -1)
+        switch (c)
+        {
+		case 'm':
+			A_rows = stoi(optarg);
+			break;
+		case 'n':
+			B_cols = stoi(optarg);
+			break;
+		case 'k':
+			A_cols = stoi(optarg);
+			break;
+		case 'p':
+			block_size = stoi(optarg);
+			break;
+        case '?':
+            fprintf(stderr, "Option -%c does not exists, or requires an argument.\n", optopt);
+            return 1;
+        default:
+            abort();
+        }
+
+
+
+
+
 	DataT* mat_A = new DataT[A_rows * A_cols]{ 0 };
 
 	random_mat(mat_A, A_rows, A_cols, A_sparsity);
 
 	std::cout << "\n A" << std::endl;
-	matprint(mat_A, A_rows, A_cols, A_cols, 0);
+	//matprint(mat_A, A_rows, A_cols, A_cols, 0);
 
 
 	std::cout << "\n VBMAT_A" << std::endl;
@@ -86,8 +114,10 @@ int main(int argc, char* argv[]) {
 	DataT* mat_C3 = new DataT[C_rows * C_cols]{ 0 };
 	float dt = 0;
 	cublas_ncVBS_multiply(vbmat, mat_B, B_cols, B_cols, mat_C3, C_cols, dt);
-	matprint(mat_C3, C_rows, C_cols, C_cols, 0);
+	//matprint(mat_C3, C_rows, C_cols, C_cols, 0);
 
+
+	//TODO more detailed timing
 	std::cout << "\n EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C3, C_cols, 0, 0.00001f) << " TIME: " << dt << std::endl;
 
 
