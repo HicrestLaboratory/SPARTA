@@ -76,6 +76,7 @@ struct ncVBS
     intT** nzindex;              /* lenght: block_cols. Each vector contains the indices of the nzcount[i] nonzero rows in that column. */
     DataT** mab;                 /* lenght: block_cols. Each vector contains the nonzero elements in that column block, row by row. */
 
+
     intT cols()
     {
         if (col_part) return col_part[block_cols];
