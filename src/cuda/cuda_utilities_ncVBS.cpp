@@ -162,12 +162,14 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
         }
     }
 
+    cublasSetStream(handle, 0);
+
     //copy into C
     checkCudaErrors(
-        cublasGetMatrix(
-            C_rows, C_cols, sizeof(DataT),
-            d_C_whole, C_cols, 
-            C, C_lead_dim
+        cublasGetVector(
+            C_rows*C_cols, sizeof(DataT),
+            d_C_whole, 1,
+            C, 1
         )
     );
 
