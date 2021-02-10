@@ -320,21 +320,21 @@ int main(int argc, char* argv[]) {
     {
 
         if (verbose > 0) cout << "input matrix rows scrambled" << endl;
-        intT* random_rows_permutation = new intT[mat_rows];
-        randperm(random_rows_permutation, mat_rows);
-        permute_CSR(input_cmat, random_rows_permutation, 0);
+        intT* random_rows_permutation = new intT[A_rows];
+        randperm(random_rows_permutation, A_rows);
+        permute_CSR(cmat_A, random_rows_permutation, 0);
         delete[] random_rows_permutation;
     }
     if (scramble_cols)
     {
 
         if (verbose > 0) cout << "input matrix cols scrambled" << endl;
-        intT* random_cols_permutation = new intT[mat_cols];
-        randperm(random_cols_permutation, mat_cols);
-        permute_CSR(input_cmat, random_cols_permutation, 1);
+        intT* random_cols_permutation = new intT[A_cols];
+        randperm(random_cols_permutation, A_cols);
+        permute_CSR(cmat_A, random_cols_permutation, 1);
         delete[] random_cols_permutation;
     }
-    if (verbose > 1) matprint(input_cmat);
+    if (verbose > 1) matprint(cmat_A);
 
 
     //*******************************************
