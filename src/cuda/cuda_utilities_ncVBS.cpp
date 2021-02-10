@@ -151,7 +151,7 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, DataT* B, int B_cols, int B_lead_dim, 
             int stream_n = i % n_streams_cpy;
             cublasSetStream(handle, streams_cpy[stream_n]);
 
-            unsigned int C_pos = vbmatA.nzindex[jb][i] * C_cols;
+            int C_pos = vbmatA.nzindex[jb][i] * C_cols;
             //TODO make it work for other datatypes
             checkCudaErrors(
                 cublasSaxpy(handle, C_cols,
