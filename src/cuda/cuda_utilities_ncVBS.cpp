@@ -183,9 +183,13 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
 
-    checkCudaErrors(cudaFree(d_C));
-    checkCudaErrors(cudaFree(d_A));
-    checkCudaErrors(cudaFree(d_B));
+    for (int i = 0; i < vbmatA.block_cols; i++)
+    {
+        checkCudaErrors(cudaFree(d_C[jb]));
+        checkCudaErrors(cudaFree(d_A[jb]));
+        checkCudaErrors(cudaFree(d_B[jb]));
+    }
+    checkCudaErrors(cudaFree(d_C_whole));
 
     checkCudaErrors(cublasDestroy(handle));
 
