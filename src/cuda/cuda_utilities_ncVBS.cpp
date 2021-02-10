@@ -29,7 +29,7 @@
 */
 
 
-
+/*
 void cublas_ncVBS_multiply(const ncVBS& vbmatA, DataT* B, int B_cols, int B_lead_dim, DataT* C, int C_lead_dim, float& dt, int n_streams_mult = 32, int n_streams_cpy = 32)
 {
     cudaDataType_t cuda_type;
@@ -84,6 +84,5 @@ void cublas_ncVBS_multiply(const ncVBS& vbmatA, DataT* B, int B_cols, int B_lead
     }
 
 
-
-    //NOT IMPLEMENTED YET
+*/
 }
