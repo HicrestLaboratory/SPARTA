@@ -155,7 +155,7 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, DataT* B, int B_cols, int B_lead_dim, 
             //TODO make it work for other datatypes
             checkCudaErrors(
                 cublasSaxpy(handle, C_cols,
-                    1.,
+                    1,
                     d_C[jb] + i * C_cols, 1,
                     d_C_whole + C_pos, 1)
             );
