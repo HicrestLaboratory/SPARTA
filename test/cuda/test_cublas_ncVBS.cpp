@@ -29,6 +29,7 @@
 #include "comp_mats.h"
 #include "cuda_utilities_ncVBS.h"
 
+using namespace std;
 
 
 int main(int argc, char* argv[]) {
