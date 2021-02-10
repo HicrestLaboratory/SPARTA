@@ -29,7 +29,7 @@
 */
 
 
-void cublas_ncVBS_multiply(const ncVBS& vbmatA, DataT* B, int B_cols, int B_lead_dim, DataT* C, int C_lead_dim, float& dt, int n_streams_mult = 32, int n_streams_cpy = 32)
+void cublas_ncVBS_multiply(ncVBS& vbmatA, DataT* B, int B_cols, int B_lead_dim, DataT* C, int C_lead_dim, float& dt, int n_streams_mult = 32, int n_streams_cpy = 32)
 {
     cudaDataType_t cuda_type;
     if (typeid(DataT) == typeid(float))    cuda_type = CUDA_R_32F;
@@ -59,7 +59,7 @@ void cublas_ncVBS_multiply(const ncVBS& vbmatA, DataT* B, int B_cols, int B_lead
     cudaEventRecord(start, 0);
 
 
-    n_stream_mult = std::min(n_streams_mult, vbmatA.block_cols);
+    n_streams_mult = std::min(n_streams_mult, vbmatA.block_cols);
 
     cudaStream_t streams_mult[n_streams_mult];
     cudaStream_t streams_cpy[n_streams_cpy];
@@ -76,23 +76,23 @@ void cublas_ncVBS_multiply(const ncVBS& vbmatA, DataT* B, int B_cols, int B_lead
 
     unsigned int size_C_whole = C_rows * C_cols;
     unsigned int mem_size_C_whole = sizeof(DataT) * size_C_whole;
-    DataT* C_whole;
+    DataT* d_C_whole;
     checkCudaErrors(cudaMalloc((void**)&d_C_whole, mem_size_C_whole));
     cudaMemset(d_C_whole, 0, mem_size_C_whole);
     
     
-    DataT** d_A = new DataT*[vbmat.block_cols];
-    DataT** d_B = new DataT*[vbmat.block_cols];
-    DataT** d_C = new DataT*[vbmat.block_cols];
+    DataT** d_A = new DataT*[vbmatA.block_cols];
+    DataT** d_B = new DataT*[vbmatA.block_cols];
+    DataT** d_C = new DataT*[vbmatA.block_cols];
 
 
-    for (intT jb = 0; jb < vbmat.block_cols; jb++)
+    for (intT jb = 0; jb < vbmatA.block_cols; jb++)
     {
 
-        unsigned int rows_number = vbmat.nzcount[jb];
-        unsigned int* rows_indices = vbmat.nzindex[jb];
-        unsigned int column_start = vbmat.col_part[jb];
-        unsigned int column_end = vbmat.col_part[jb + 1];
+        unsigned int rows_number = vbmatA.nzcount[jb];
+        unsigned int* rows_indices = vbmatA.nzindex[jb];
+        unsigned int column_start = vbmatA.col_part[jb];
+        unsigned int column_end = vbmatA.col_part[jb + 1];
         unsigned int column_block_size = column_end - column_start;
 
 
@@ -142,16 +142,16 @@ void cublas_ncVBS_multiply(const ncVBS& vbmatA, DataT* B, int B_cols, int B_lead
     cudaDeviceSynchronize();
 
     //accumulate onto C_whole, row_by_row
-    for (int jb = 0; jb < vbmat.block_cols; jb++)
+    for (int jb = 0; jb < vbmatA.block_cols; jb++)
     {
-        unsigned int rows_number = vbmat.nzcount[jb];
+        unsigned int rows_number = vbmatA.nzcount[jb];
 
         for (int i = 0; i < rows_number; i++)
         {
             int stream_n = i % n_streams_cpy;
             cublasSetStream(handle, streams_cpy[stream_n]);
 
-            unsigned int C_pos = vbmat.nzindex[jb][i] * C_cols;
+            unsigned int C_pos = vbmatA.nzindex[jb][i] * C_cols;
             //TODO make it work for other datatypes
             checkCudaErrors(
                 cublasSaxpy(handle, C_cols,
