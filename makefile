@@ -18,7 +18,7 @@ MKL_LDFLAGS  = -lmkl_rt -lpthread -lm -ldl
 
 
 #cuda------------------------------------------
-CUDA_PATH ?= /usr/local/cuda-11
+CUDA_PATH ?= /usr/local/cuda-10.0
 #CUDA_LDFLAGS = --dynamic-linker=/lib/ld-linux-armhf.so.3
 #CUDA_LDFLAGS += $(addprefix -Xlinker ,$(CUDA_LDFLAGS))
 #CUDA_LDFLAGS += --sysroot=$(TARGET_FS)
