@@ -65,6 +65,7 @@ int main(int argc, char* argv[]) {
 			break;
 		case 's':
 			streams = stoi(optarg);
+			break;
         case '?':
             fprintf(stderr, "Option -%c does not exists, or requires an argument.\n", optopt);
             return 1;
