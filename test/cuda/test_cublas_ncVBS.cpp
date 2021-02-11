@@ -121,8 +121,7 @@ int main(int argc, char* argv[]) {
 	//TODO more detailed timing
 	std::cout << "\n EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C3, C_cols, 0, 0.00001f) << std::endl;
 	std::cout << "TIME MEASUREMENTS:" << std::endl;
-	arr_print(dt, 6);
-
+	for (auto t : dt) std::cout << t << " " << std::endl;
 
 
 }
