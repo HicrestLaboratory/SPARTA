@@ -78,11 +78,12 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
 
     //event 1: streams created
 
-    t_counter++;
     cudaEventRecord(t_measures[t_counter], 0);
     cudaEventSynchronize(t_measures[t_counter]);
-    cudaEventElapsedTime(times + t_counter - 1, t_measures[0], t_measures[t_counter]);
+    cudaEventElapsedTime(times + t_counter, t_measures[0], t_measures[t_counter]);
     cudaEventDestroy(t_measures[t_counter]);
+    t_counter++;
+
 
     unsigned int size_C_whole = C_rows * C_cols;
     unsigned int mem_size_C_whole = sizeof(DataT) * size_C_whole;
@@ -97,11 +98,12 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
 
 
     //event 2: memory allocated
-    t_counter++;
     cudaEventRecord(t_measures[t_counter], 0);
     cudaEventSynchronize(t_measures[t_counter]);
     cudaEventElapsedTime(times + t_counter, t_measures[0], t_measures[t_counter]);
     cudaEventDestroy(t_measures[t_counter]);
+    t_counter++;
+
 
     for (intT jb = 0; jb < vbmatA.block_cols; jb++)
     {
@@ -159,11 +161,11 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
 
     cudaDeviceSynchronize();
     //event 3: multiplication end
-    t_counter++;
     cudaEventRecord(t_measures[t_counter], 0);
     cudaEventSynchronize(t_measures[t_counter]);
     cudaEventElapsedTime(times + t_counter, t_measures[0], t_measures[t_counter]);
     cudaEventDestroy(t_measures[t_counter]);
+    t_counter++;
 
 
     //accumulate onto C_whole, row_by_row
@@ -190,12 +192,11 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
     cudaDeviceSynchronize();
 
     //event 4: accumulation end
-    t_counter++;
     cudaEventRecord(t_measures[t_counter], 0);
     cudaEventSynchronize(t_measures[t_counter]);
     cudaEventElapsedTime(times + t_counter, t_measures[0], t_measures[t_counter]);
     cudaEventDestroy(t_measures[t_counter]);
-
+    t_counter++;
 
     //copy into C
     checkCudaErrors(
@@ -208,11 +209,11 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
 
 
     //event 5: final copy end
-    t_counter++;
     cudaEventRecord(t_measures[t_counter], 0);
     cudaEventSynchronize(t_measures[t_counter]);
     cudaEventElapsedTime(times + t_counter, t_measures[0], t_measures[t_counter]);
     cudaEventDestroy(t_measures[t_counter]);
+    t_counter++;
 
 
 
