@@ -64,7 +64,7 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
     }
 
     cudaEventRecord(t_measures[0], 0);
-
+    t_counter++;
 
     //starting the streams
     n_streams_mult = std::min(n_streams_mult, vbmatA.block_cols);

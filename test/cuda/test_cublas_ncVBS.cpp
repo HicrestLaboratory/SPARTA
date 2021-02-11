@@ -145,7 +145,8 @@ int main(int argc, char* argv[]) {
 	std::cout << "EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C_cusparse, C_cols, 0, 0.00001f) << std::endl;
 	std::cout << "TIME MEASUREMENT:" << cusparse_dt << std::endl;
 
-
+	cleanVBS(vbmat);
+	cleanCSR(cmat_A);
 }
  
  
