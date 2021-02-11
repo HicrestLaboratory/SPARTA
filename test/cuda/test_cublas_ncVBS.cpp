@@ -100,10 +100,10 @@ int main(int argc, char* argv[]) {
 
 	bool do_serial = false;
 
+	DataT* mat_C = new DataT[C_rows * C_cols]{ 0 };
 	if (do_serial)
 	{
 		//MULTIPLYING SERIAL
-		DataT* mat_C = new DataT[C_rows * C_cols]{ 0 };
 		multiply(mat_A, A_rows, A_cols, 0, A_cols, mat_B, B_cols, 0, B_cols, mat_C, C_cols, 0);
 		std::cout << "\n C" << std::endl;
 		//matprint(mat_C, C_rows, C_cols, C_cols, 0);
