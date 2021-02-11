@@ -39,10 +39,11 @@ int main(int argc, char* argv[]) {
 	int A_cols = 20;
 	int B_cols = 20;
 	int block_size = 5;
-	float mat_density = 0.2f;
-	float row_density = 0.2f;
+	float mat_density = 0.5f;
+	float row_density = 0.5f;
 	float A_sparsity = 0.2f;
 	float B_sparsity = 0.9f;
+	int streams = 32;
 
 
     opterr = 0;
@@ -62,6 +63,8 @@ int main(int argc, char* argv[]) {
 		case 'p':
 			block_size = stoi(optarg);
 			break;
+		case 's':
+			streams = stoi(optarg);
         case '?':
             fprintf(stderr, "Option -%c does not exists, or requires an argument.\n", optopt);
             return 1;
@@ -114,7 +117,7 @@ int main(int argc, char* argv[]) {
 	std::cout << "\n multiplying with vbmat CUBLAS" << std::endl;
 	DataT* mat_C_vbs_cublas = new DataT[C_rows * C_cols]{ 0 };
 	float* dt = new float[6];
-	cublas_ncVBS_multiply(vbmat, mat_B, B_cols, B_cols, mat_C_vbs_cublas, C_cols, dt);
+	cublas_ncVBS_multiply(vbmat, mat_B, B_cols, B_cols, mat_C_vbs_cublas, C_cols, dt, streams, streams);
 	//matprint(mat_C3, C_rows, C_cols, C_cols, 0);
 
 	std::cout << "EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C_vbs_cublas, C_cols, 0, 0.00001f) << std::endl;
