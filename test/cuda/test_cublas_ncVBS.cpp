@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
 
 	std::cout << "\n C multiplied with vbmat CUBLAS" << std::endl;
 	DataT* mat_C3 = new DataT[C_rows * C_cols]{ 0 };
-	float dt = 0;
+	float* dt = new float[6];
 	cublas_ncVBS_multiply(vbmat, mat_B, B_cols, B_cols, mat_C3, C_cols, dt);
 	//matprint(mat_C3, C_rows, C_cols, C_cols, 0);
 
