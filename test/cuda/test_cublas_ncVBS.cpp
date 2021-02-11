@@ -135,10 +135,10 @@ int main(int argc, char* argv[]) {
 	float* csrVal = new float[nnz];
 	prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
 
-	float dt;
+	float cusparse_dt;
 	DataT* mat_C_cusparse = new DataT[C_rows * C_cols]{ 0 };
 	std::cout << "\n multiplying with CUSPARSE" << std::endl;
-	cusparse_gemm_custom(cmat_A.rows, cmat_A.cols, nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_cusparse, C_rows, 1.0f, 0.0f, dt);
+	cusparse_gemm_custom(cmat_A.rows, cmat_A.cols, nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_cusparse, C_rows, 1.0f, 0.0f, cusparse_dt);
 	std::cout << "EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C_cusparse, C_cols, 0, 0.00001f) << std::endl;
 	std::cout << "TIME MEASUREMENT:" << dt << std::endl;
 
