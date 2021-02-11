@@ -39,9 +39,9 @@ int main(int argc, char* argv[]) {
 	int A_cols = 20;
 	int B_cols = 20;
 	int block_size = 5;
-	float mat_density = 0.5f;
-	float row_density = 0.5f;
-	float A_sparsity = 0.2f;
+//	float mat_density = 0.1f;
+//	float row_density = 0.1f;
+	float A_sparsity = 0.1f;
 	float B_sparsity = 0.9f;
 	int streams = 32;
 
@@ -98,20 +98,24 @@ int main(int argc, char* argv[]) {
 	//matprint(mat_B, B_rows, B_cols, B_cols, 0);
 
 
-	//MULTIPLYING SERIAL
-	DataT* mat_C = new DataT[C_rows * C_cols]{ 0 };
-	multiply(mat_A, A_rows, A_cols, 0, A_cols, mat_B, B_cols, 0, B_cols, mat_C, C_cols, 0);
-	std::cout << "\n C" << std::endl;
-	//matprint(mat_C, C_rows, C_cols, C_cols, 0);
+	bool do_serial = false;
+
+	if (do_serial)
+	{
+		//MULTIPLYING SERIAL
+		DataT* mat_C = new DataT[C_rows * C_cols]{ 0 };
+		multiply(mat_A, A_rows, A_cols, 0, A_cols, mat_B, B_cols, 0, B_cols, mat_C, C_cols, 0);
+		std::cout << "\n C" << std::endl;
+		//matprint(mat_C, C_rows, C_cols, C_cols, 0);
 
 
-	//MULTIPLYING WITH VBMAT
-	std::cout << "\n multiplying with vbmat" << std::endl;
-	DataT* mat_C2 = new DataT[C_rows * C_cols]{ 0 };
-	multiply(vbmat, mat_B, B_cols, 0, B_cols, mat_C2, C_cols, 0);
-	//matprint(mat_C2, C_rows, C_cols, C_cols, 0);
-	std::cout << "EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C2, C_cols, 0, 0.00001f) << std::endl;
-
+		//MULTIPLYING WITH VBMAT
+		std::cout << "\n multiplying with vbmat" << std::endl;
+		DataT* mat_C2 = new DataT[C_rows * C_cols]{ 0 };
+		multiply(vbmat, mat_B, B_cols, 0, B_cols, mat_C2, C_cols, 0);
+		//matprint(mat_C2, C_rows, C_cols, C_cols, 0);
+		std::cout << "EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C2, C_cols, 0, 0.00001f) << std::endl;
+	}
 
 	//MULTIPLYING WITH VBMAT CUBLAS
 	std::cout << "\n multiplying with vbmat CUBLAS" << std::endl;
@@ -120,7 +124,7 @@ int main(int argc, char* argv[]) {
 	cublas_ncVBS_multiply(vbmat, mat_B, B_cols, B_cols, mat_C_vbs_cublas, C_cols, dt, streams, streams);
 	//matprint(mat_C3, C_rows, C_cols, C_cols, 0);
 
-	std::cout << "EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C_vbs_cublas, C_cols, 0, 0.00001f) << std::endl;
+	if (do_serial) std::cout << "EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C_vbs_cublas, C_cols, 0, 0.00001f) << std::endl;
 	std::cout << "TIME MEASUREMENTS:" << std::endl;
 	for (int i = 0; i < 6; i++) std::cout << dt[i] << " ";
 	std::cout << std::endl;
@@ -142,7 +146,7 @@ int main(int argc, char* argv[]) {
 	DataT* mat_C_cusparse = new DataT[C_rows * C_cols]{ 0 };
 	std::cout << "\n multiplying with CUSPARSE" << std::endl;
 	cusparse_gemm_custom(cmat_A.rows, cmat_A.cols, nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_cusparse, C_rows, 1.0f, 0.0f, cusparse_dt);
-	std::cout << "EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C_cusparse, C_cols, 0, 0.00001f) << std::endl;
+	if (do_serial) std::cout << "EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C_cusparse, C_cols, 0, 0.00001f) << std::endl;
 	std::cout << "TIME MEASUREMENT:" << cusparse_dt << std::endl;
 
 	cleanVBS(vbmat);
