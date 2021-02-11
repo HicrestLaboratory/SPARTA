@@ -81,7 +81,7 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
     t_counter++;
     cudaEventRecord(t_measures[t_counter], 0);
     cudaEventSynchronize(t_measures[t_counter]);
-    cudaEventElapsedTime(times + t_counter, t_measures[0], t_measures[t_counter]);
+    cudaEventElapsedTime(times + t_counter - 1, t_measures[0], t_measures[t_counter]);
     cudaEventDestroy(t_measures[t_counter]);
 
     unsigned int size_C_whole = C_rows * C_cols;

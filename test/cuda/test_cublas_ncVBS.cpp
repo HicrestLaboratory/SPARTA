@@ -123,7 +123,6 @@ int main(int argc, char* argv[]) {
 	std::cout << "TIME MEASUREMENTS:" << std::endl;
 	for (int i = 0; i < 6;  i++) std::cout << dt[i] << " " << std::endl;
 
-
 }
  
  
