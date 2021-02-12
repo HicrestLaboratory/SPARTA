@@ -85,6 +85,7 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
     t_counter++;
 
 
+    //allocate d_C, initialize to 0;
     unsigned int size_C_whole = C_rows * C_cols;
     unsigned int mem_size_C_whole = sizeof(DataT) * size_C_whole;
     DataT* d_C_whole;
@@ -92,12 +93,57 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
     cudaMemset(d_C_whole, 0, mem_size_C_whole);
     
     
-    DataT** d_A = new DataT*[vbmatA.block_cols];
-    DataT** d_B = new DataT*[vbmatA.block_cols];
-    DataT** d_C = new DataT*[vbmatA.block_cols];
+    DataT** d_A_blocks = new DataT * [vbmatA.block_cols];
+    DataT** d_B_blocks = new DataT * [vbmatA.block_cols];
 
 
-    //event 2: memory allocated
+    //allocate and fill d_B. Set pointers in d_B_blocks to right pos in d_B
+    unsigned int size_B = B_rows * B_cols;
+    unsigned int mem_size_B = sizeof(DataT) * size_B;
+    DataT* d_B;
+    checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
+    checkCudaErrors(cublasSetVector(
+        B_cols * B_rows, sizeof(DataT), B, 1, d_B, 1));
+    for (int jb = 0; jb < vbmatA.block_cols; jb++)
+    {
+        d_B_blocks[jb] = d_B + B_cols* vbmatA.block_width(jb);
+    }
+
+    
+    //allocate and fill d_A. Set pointers in d_A_blocks to right pos in d_A
+    unsigned int size_A_total = vbmatA.tot_elems();
+    unsigned int mem_size_A = sizeof(DataT) * size_A_total;
+    DataT* d_A;
+    checkCudaErrors(cudaMalloc((void**)&d_A, mem_size_A));
+    
+    DataT* pointerA = d_A;
+    intT block_size;
+    for (int jb = 0; jb < vbmatA.block_cols; jb++)
+    {
+        d_A_blocks[jb] = pointerA;
+        block_size = (vbmat.col_part[jb + 1] - vbmat.col_part[jb]) * vbmat.nzcount[jb];
+
+        checkCudaErrors(cublasSetVector(
+            block_size, sizeof(DataT), vbmatA.mab[jb], 1, d_A_blocks[jb], 1));
+
+        pointerA += block_size;
+    }
+
+
+    //allocate d_C_blocks
+    DataT** d_C_blocks = new DataT * [vbmatA.block_cols];
+    unsigned int C_block_size;
+    unsigned int C_block_mem;
+    for (int jb = 0; ib < vbmatA.block_cols; jb++)
+    {
+        C_block_size = vbmatA.nzcount[jb] * B_cols;
+        C_block_mem = sizeof(DataT) * C_block_size;
+        checkCudaErrors(cudaMalloc((void**)&d_C_blocks[jb], C_block_mem));
+    }
+
+
+
+    //event 2: data transfer completed
     cudaEventRecord(t_measures[t_counter], 0);
     cudaEventSynchronize(t_measures[t_counter]);
     cudaEventElapsedTime(times + t_counter, t_measures[0], t_measures[t_counter]);
@@ -105,6 +151,8 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
     t_counter++;
 
 
+
+    
     for (intT jb = 0; jb < vbmatA.block_cols; jb++)
     {
 
@@ -118,40 +166,19 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
         int stream_n = jb % n_streams_mult;
         cublasSetStream(handle, streams_mult[stream_n]);
 
-
-        unsigned int size_A_block = column_block_size * rows_number;
-        unsigned int mem_size_A = sizeof(DataT) * size_A_block;
-
-        unsigned int size_B_block = column_block_size * B_cols;
-        unsigned int mem_size_B = sizeof(DataT) * size_B_block;
-
-        unsigned int size_C_block = rows_number*B_cols;
-        unsigned int mem_size_C = sizeof(DataT) * size_C_block;
-
-        checkCudaErrors(cudaMalloc((void**)&d_A[jb], mem_size_A));
-        checkCudaErrors(cudaMalloc((void**)&d_B[jb], mem_size_B));
-        checkCudaErrors(cudaMalloc((void**)&d_C[jb], mem_size_C));
-
-        checkCudaErrors(cublasSetVector(
-            size_A_block, sizeof(DataT), vbmatA.mab[jb], 1, d_A[jb], 1));
-
-        int B_start_position = column_start * B_cols;
-        checkCudaErrors(cublasSetVector(
-            size_B_block, sizeof(DataT), B + B_start_position, 1, d_B[jb], 1));
-
         checkCudaErrors(
             cublasGemmEx(
                 handle, CUBLAS_OP_N, CUBLAS_OP_N,
                 B_cols, rows_number, column_block_size,           //m, n, k <-- block_B: m*k   block_A: k*n   block_C: n*m
                 &alpha,
-                d_B[jb],                                      // blockB device pointer,
+                d_B_blocks[jb],                                      // blockB device pointer,
                 cuda_type,                                      // blockB datatype
                 B_cols,                                  // blockB leading dimension
-                d_A[jb],                                      // blockA device pointer
+                d_A_blocks[jb],                                      // blockA device pointer
                 cuda_type,                                      // blockA datatype
                 column_block_size,                                         // leading dimension
                 &beta,
-                d_C[jb], cuda_type,                           // blockC device pointer, blockC type
+                d_C_blocks[jb], cuda_type,                           // blockC device pointer, blockC type
                 B_cols,
                 cuda_type,                                      // compute_type
                 cuda_algo)
@@ -183,7 +210,7 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
             checkCudaErrors(
                 cublasSaxpy(handle, C_cols,
                     &alpha,
-                    d_C[jb] + i * C_cols, 1,
+                    d_C_blocks[jb] + i * C_cols, 1,
                     d_C_whole + C_pos, 1)
             );
         }

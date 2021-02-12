@@ -82,6 +82,28 @@ struct ncVBS
         if (col_part) return col_part[block_cols];
         else return -1;
     }
+
+    intT tot_elems()
+    {
+        intT elems = 0;
+        intT col_size;
+        for (int jb = 0; jb < block_cols; jb++)
+        {
+            col_size = col_part[jb + 1] - col_part[jb];
+            elems += col_size * nzcount[jb];
+        }
+        return elems;
+    }
+
+    intT block_width(intT jb)
+    {
+        return (col_part[jb + 1] - col_part[jb];
+    }
+
+    intT elems_in_block(intT jb)
+    {
+        return  (col_part[jb + 1] - col_part[jb]) * nzcount[jb];
+    }
 };
 
 
