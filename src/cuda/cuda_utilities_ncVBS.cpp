@@ -151,20 +151,24 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
     t_counter++;
 
 
+    int rows_number;
+    int* rows_indices;
+    int column_start;
+    int column_end;
+    int column_block_size;
+    int stream_n; 
 
-    
     for (intT jb = 0; jb < vbmatA.block_cols; jb++)
     {
 
-        int rows_number = vbmatA.nzcount[jb];
-        int* rows_indices = vbmatA.nzindex[jb];
-        int column_start = vbmatA.col_part[jb];
-        int column_end = vbmatA.col_part[jb + 1];
-        int column_block_size = column_end - column_start;
+        rows_number = vbmatA.nzcount[jb];
+        rows_indices = vbmatA.nzindex[jb];
+        column_start = vbmatA.col_part[jb];
+        column_end = vbmatA.col_part[jb + 1];
+        column_block_size = column_end - column_start;
 
 
-        int stream_n = jb % n_streams_mult;
-        std::cout << "stream " << stream_n << std::endl;
+        stream_n = jb % n_streams_mult;
         cublasSetStream(handle, streams_mult[stream_n]);
 
         checkCudaErrors(
