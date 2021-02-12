@@ -97,7 +97,7 @@ struct ncVBS
 
     intT block_width(intT jb)
     {
-        return (col_part[jb + 1] - col_part[jb];
+        return (col_part[jb + 1] - col_part[jb]);
     }
 
     intT elems_in_block(intT jb)
