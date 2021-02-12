@@ -164,7 +164,7 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
 
 
         int stream_n = jb % n_streams_mult;
-        std::cout << "stream " << stream_n << sted::endl;
+        std::cout << "stream " << stream_n << std::endl;
         cublasSetStream(handle, streams_mult[stream_n]);
 
         checkCudaErrors(
