@@ -121,7 +121,7 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
     for (int jb = 0; jb < vbmatA.block_cols; jb++)
     {
         d_A_blocks[jb] = pointerA;
-        block_size = (vbmat.col_part[jb + 1] - vbmat.col_part[jb]) * vbmat.nzcount[jb];
+        block_size = vbmatA.elems_in_block(jb);
 
         checkCudaErrors(cublasSetVector(
             block_size, sizeof(DataT), vbmatA.mab[jb], 1, d_A_blocks[jb], 1));
@@ -134,7 +134,7 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
     DataT** d_C_blocks = new DataT * [vbmatA.block_cols];
     unsigned int C_block_size;
     unsigned int C_block_mem;
-    for (int jb = 0; ib < vbmatA.block_cols; jb++)
+    for (int jb = 0; jb < vbmatA.block_cols; jb++)
     {
         C_block_size = vbmatA.nzcount[jb] * B_cols;
         C_block_mem = sizeof(DataT) * C_block_size;
@@ -249,9 +249,9 @@ void cublas_ncVBS_multiply(ncVBS& vbmatA, const DataT* B, int B_cols, int B_lead
 
     for (int jb = 0; jb < vbmatA.block_cols; jb++)
     {
-        checkCudaErrors(cudaFree(d_C[jb]));
-        checkCudaErrors(cudaFree(d_A[jb]));
-        checkCudaErrors(cudaFree(d_B[jb]));
+        checkCudaErrors(cudaFree(d_C_blocks[jb]));
+        checkCudaErrors(cudaFree(d_A_blocks[jb]));
+        checkCudaErrors(cudaFree(d_B_blocks[jb]));
     }
     checkCudaErrors(cudaFree(d_C_whole));
 
