@@ -312,8 +312,8 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
     initialize_ncVBS(vbmat, mat_rows, block_cols, col_part);
 
 
-    std::vector<intT>* nzindices = new std::vector<intT>[block_cols];
-    std::vector<DataT>* mab = new std::vector<DataT>[block_cols];
+    std::vector<intT> nzindices[block_cols];
+    std::vector<DataT> mab[block_cols];
 
 
     //count nonzero rows per block;
