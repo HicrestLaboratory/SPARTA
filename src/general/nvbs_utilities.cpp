@@ -335,7 +335,7 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
             std::cout << "i: " << i << " nz " << nz << " block: " << block << std::endl;
             while (nz < n_elems && cmat.ja[i][nz] < col_part[block + 1])
             {
-                std::cout << " nz " << nz << " ja: " << ja << std::endl;
+                std::cout << " nz " << nz << " ja: " << cmat.ja[i][nz] << std::endl;
 
                 intT column = cmat.ja[i][nz] - col_part[block];
                 DataT elem = cmat.ma[i][nz];
