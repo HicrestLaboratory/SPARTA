@@ -50,12 +50,7 @@ int main(int argc, char* argv[]) {
     convert_to_ncVBS(cmatA, vbmat_csr, block_cols, col_part);
     matprint(vbmat_csr);
 
-
-    std::cout << "\n VBMAT_A" << std::endl;
-    ncVBS vbmat;
-    convert_to_ncVBS(mat_A, A_rows, A_cols, 0, A_cols, vbmat, block_cols, col_part);
-    matprint(vbmat);
-    std::cout << "\n EQUALITY CHECK: vbmat and mat: " << equal(vbmat, mat_A, A_rows, A_cols, A_cols, 0) << std::endl;
+    std::cout << "\n EQUALITY CHECK: vbmat and mat: " << equal(vbmat_csr, mat_A, A_rows, A_cols, A_cols, 0) << std::endl;
 
 
     int B_rows = A_cols;
