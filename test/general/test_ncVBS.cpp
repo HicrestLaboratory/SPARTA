@@ -19,27 +19,40 @@
 
 int main(int argc, char* argv[]) {
 
-    ncVBS vbmat;
-    int A_rows = 4;
-    int A_cols = 9;
+    int A_rows = 10;
+    int A_cols = 20;
     int B_cols = 5;
     int block_size = 3;
     float mat_density = 0.5f;
     float row_density = 0.3f;
-    float A_sparsity = 0.5f;
+    float A_sparsity = 0.3f;
+    intT block_cols = A_cols / block_size;
+    intT* col_part = new intT[block_cols + 1];
+    partition(col_part, 0, A_cols, block_size);
+
+
 
     DataT* mat_A = new DataT[A_rows * A_cols]{ 0 };
-    
+
     random_mat(mat_A, A_rows, A_cols, A_sparsity);
     
     std::cout << "\n A" << std::endl;
     matprint(mat_A, A_rows, A_cols, A_cols, 0);
 
 
+    std::cout << "\n cmat A" << std::endl;
+    CSR cmatA;
+    convert_to_CSR(mat_A, A_rows, A_cols, 0, cmatA, 0);
+    matprint(cmatA);
+
+    std::cout << "\n cmat to vbmat" << std::endl;
+    ncVBS vbmat_csr;
+    convert_to_ncVBS(cmat, vbmat_csr, block_cols, col_part);
+    matprint(vbmat_csr);
+
+
     std::cout << "\n VBMAT_A" << std::endl;
-    intT block_cols = A_cols / block_size;
-    intT* col_part = new intT[block_cols + 1];
-    partition(col_part, 0, A_cols, block_size);
+    ncVBS vbmat;
     convert_to_ncVBS(mat_A, A_rows, A_cols, 0, A_cols, vbmat, block_cols, col_part);
     matprint(vbmat);
     std::cout << "\n EQUALITY CHECK: vbmat and mat: " << equal(vbmat, mat_A, A_rows, A_cols, A_cols, 0) << std::endl;

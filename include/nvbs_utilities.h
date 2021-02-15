@@ -12,6 +12,8 @@ int convert_to_mat(ncVBS& vbmat, DataT* out_mat, int out_mat_fmt);
 
 int convert_to_ncVBS(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, int mat_lead_dim, ncVBS& vbmat, intT block_cols, intT* col_part);
 
+int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_part);
+
 int matprint(const ncVBS& vbmat);
 
 bool equal(ncVBS& vbmat, DataT* mat, intT mat_rows, intT mat_cols, intT mat_leading_dim, int mat_fmt);
