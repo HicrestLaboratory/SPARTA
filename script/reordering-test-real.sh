@@ -8,8 +8,6 @@ s_value=(1 3);
 ​
 RESULTS = "results/real_reordering_results.txt"
 
-: > "$(RESULTS)"
-
 for f in "data/*"; do
 	for e in ${e_value[@]}; do
 		for P in ${P_value[@]}; do
