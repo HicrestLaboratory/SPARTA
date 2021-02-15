@@ -323,30 +323,29 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
 
 
     //count nonzero rows per block;
-    intT nz = 0; //cmat.ja counter
     for (intT i = 0; i < mat_rows; i++)
     {
-        block = 0;
+        intT block = 0;
         intT n_elems = cmat.nzcount[i];
-        for (; nz < n_elems; nz++)
+        for (nz = 0; nz < n_elems; nz++)
         {
-            DataT elem = cmat.ma[nz];
-            while (cmat.ja[nz] >= col_part[block + 1]) block++; //find in which block the nz is;
+            DataT elem = cmat.ma[i][nz];
+            while (cmat.ja[i][nz] >= col_part[block + 1]) block++; //find in which block the nz is;
             vbmat.nzcount[block]++; //flag this row as nonzero;
 
 
             intT width = vbmat.block_width(block);
             nzindices[block].push_back(i); //store the row index;
-            std::vector<DataT> temp_vec = new std::vector(width,0);
+            std::vector<DataT> temp_vec = new std::vector<DataT>(width,0);
             while (cmat.ja[nz] < col_part[block + 1] && nz < n_elems)
             {
-                intT column = cmat.ja[nz] - col_part[block];
-                DataT elem = cmat.ma[nz];
+                intT column = cmat.ja[i][nz] - col_part[block];
+                DataT elem = cmat.ma[i][nz];
                 
                 temp_vec[column] = elem;
                 nz++;
             }
-            mab[jb].insert(mab[jb].end(), temp_vec.begin(), temp_vec.end());
+            mab[block].insert(mab[block].end(), temp_vec.begin(), temp_vec.end());
         }
     }
 
@@ -355,7 +354,7 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
     {
         intT width = vbmat.block_width(jb);
         vbmat.nzindex[jb] = new intT[vbmat.nzcount[jb]]{ 0 };
-        vbmat.mab[jb] = new intT[vbmat.nzcount[jb] * width];
+        vbmat.mab[jb] = new DataT[vbmat.nzcount[jb] * width];
         std::copy(nzindices[jb].begin(), nzindices[jb].end(), vbmat.nzindex[jb]);
         std::copy(mab[jb].begin(), mab[jb].end(), vbmat.mab[jb]);
     }
