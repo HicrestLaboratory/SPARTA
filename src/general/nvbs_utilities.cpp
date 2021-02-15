@@ -332,7 +332,7 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
             intT width = vbmat.block_width(block);
             nzindices[block].push_back(i); //store the row index;
             std::vector<DataT> temp_vec(width);
-            while (cmat.ja[nz] < col_part[block + 1] && nz < n_elems)
+            while (cmat.ja[i][nz] < col_part[block + 1] && nz < n_elems)
             {
                 intT column = cmat.ja[i][nz] - col_part[block];
                 DataT elem = cmat.ma[i][nz];
