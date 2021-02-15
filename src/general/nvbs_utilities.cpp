@@ -333,7 +333,7 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
             std::vector<DataT> temp_vec(width);
 
             std::cout << "i: " << i << " nz " << nz << " block: " << block << std::endl;
-            while (cmat.ja[i][nz] < col_part[block + 1] && nz < n_elems)
+            while (nz < n_elems && cmat.ja[i][nz] < col_part[block + 1])
             {
                 std::cout << " nz " << nz << std::endl;
 
