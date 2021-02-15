@@ -7,6 +7,7 @@ e_value=(0.5 0.6 0.65 0.7 0.75 0.8 );
 s_value=(1 3);
 ​
 RESULTS = "results/real_reordering_results.txt"
+
 : > "$(RESULTS)"
 
 for f in "data/*"; do
