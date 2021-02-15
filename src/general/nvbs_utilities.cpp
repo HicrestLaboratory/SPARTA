@@ -342,6 +342,9 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
                 std::cout << "column: " << column << std::endl;
 
                 temp_vec[column] = elem;
+
+                std::cout << "column: " << column << std::endl;
+
                 nz++;
             }
             mab[block].insert(mab[block].end(), temp_vec.begin(), temp_vec.end());
