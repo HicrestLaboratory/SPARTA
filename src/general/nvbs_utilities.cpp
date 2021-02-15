@@ -339,7 +339,8 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
 
                 intT column = cmat.ja[i][nz] - col_part[block];
                 DataT elem = cmat.ma[i][nz];
-                
+                std::cout << "column: " << column << std::endl;
+
                 temp_vec[column] = elem;
                 nz++;
             }
