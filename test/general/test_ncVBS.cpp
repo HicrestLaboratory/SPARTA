@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     std::cout << "\n cmat to vbmat" << std::endl;
     ncVBS vbmat_csr;
     convert_to_ncVBS(cmatA, vbmat_csr, block_cols, col_part);
-    matprint(vbmat_csr);
+    matprint(cmatA);
 
 
     std::cout << "\n VBMAT_A" << std::endl;
