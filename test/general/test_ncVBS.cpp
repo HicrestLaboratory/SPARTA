@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
 
     std::cout << "\n EQUALITY CHECK: vbmat and mat: " << equal(vbmat_csr, mat_A, A_rows, A_cols, A_cols, 0) << std::endl;
 
-
+    /*
     int B_rows = A_cols;
     DataT* mat_B = new DataT[B_rows * B_cols]{ 0 };
 
@@ -75,5 +75,5 @@ int main(int argc, char* argv[]) {
     matprint(mat_C2, C_rows, C_cols, C_cols, 0);
 
     std::cout << "\n EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C2, C_cols, 0, 0.00001f) << std::endl;
-
+    */
 }
