@@ -95,12 +95,6 @@ int print_block_info(const ncVBS& vbmat, int block)
     return 0;
 }
 
-bool equal(const ncVBS& vbmat_1, const ncVBS& vbmat_2)
-{
-    //NOT IMPLEMENTED YET
-    return false;
-}
-
 bool equal(ncVBS& vbmat, DataT* mat, intT mat_rows, intT mat_cols, intT mat_leading_dim, int mat_fmt)
 {
     DataT* mat2 = new DataT[vbmat.rows * vbmat.cols()];
@@ -327,7 +321,7 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
     {
         intT block = 0;
         intT n_elems = cmat.nzcount[i];
-        for (nz = 0; nz < n_elems; nz++)
+        for (intT nz = 0; nz < n_elems; nz++)
         {
             DataT elem = cmat.ma[i][nz];
             while (cmat.ja[i][nz] >= col_part[block + 1]) block++; //find in which block the nz is;
