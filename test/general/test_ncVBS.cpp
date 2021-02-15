@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
     int A_rows = 10;
     int A_cols = 20;
     int B_cols = 6;
-    int block_size = 5;
+    int block_size = 6;
     float mat_density = 0.5f;
     float row_density = 0.3f;
     float A_sparsity = 0.1f;
