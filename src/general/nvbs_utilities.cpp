@@ -323,11 +323,14 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
         intT n_elems = cmat.nzcount[i];
         for (intT nz = 0; nz < n_elems; nz++)
         {
-            std::cout << "i:" << i << " nz: " << nz << std::endl;
 
             DataT elem = cmat.ma[i][nz];
             while (cmat.ja[i][nz] >= col_part[block + 1]) block++; //find in which block the nz is;
             vbmat.nzcount[block]++; //flag this row as nonzero;
+
+
+            std::cout << "i:" << i << " nz: " << nz << " j: " << cmat.ja[i][nz] << std::endl;
+
 
             intT width = vbmat.block_width(block);
             nzindices[block].push_back(i); //store the row index;
