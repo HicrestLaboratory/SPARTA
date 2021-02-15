@@ -321,7 +321,8 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
     {
         intT block = 0;
         intT n_elems = cmat.nzcount[i];
-        for (intT nz = 0; nz < n_elems; nz++)
+        intT nz = 0;
+        while(nz < n_elems)
         {
 
             DataT elem = cmat.ma[i][nz];
