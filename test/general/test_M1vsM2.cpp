@@ -235,7 +235,6 @@ int main(int argc, char* argv[]) {
         if (verbose > 0)            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
         //______________________________________
         }
-
         //INPUT EXAMPLE 4: create a random matrix with block structure
     else if (input_type == 4)
     {
@@ -274,6 +273,7 @@ int main(int argc, char* argv[]) {
     }
         //___________________________________________
 
+    matprint(input_cmat);
 
     //*******************************************
     //		END OF INPUT
