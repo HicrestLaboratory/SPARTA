@@ -1,7 +1,7 @@
 #!/bin/bash
 
 OPTS="-i 2 -v -1"
-P_value=(64 128 200 256 300 512)
+P_value=(128 200 256 300 512)
 e_value=(0.7 0.8 0.9)
 s_value=(1 3)
 RESULTS="results/compression_results.txt"
