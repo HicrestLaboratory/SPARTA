@@ -318,6 +318,13 @@ int main(int argc, char* argv[]) {
     svi max_block_vec;
     int scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
     int scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
+
+    intT algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
+
+    intT* algo_col_part = new intT[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
+    partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions
+
+
     output_couple(output_names, output_values, "scramble", scramble);
     for (int current_repetition = 0; current_repetition < experiment_reps; current_repetition++)
     {
@@ -345,12 +352,9 @@ int main(int argc, char* argv[]) {
 
         int vbmat_blocks_fmt = 1;
         int vbmat_entries_fmt = 1;
-        intT algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
 
 
         //run the reordering and blocking algorithm
-        intT* algo_col_part = new intT[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
-        partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
         angle_hash_method(input_cmat, eps, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
         delete[] algo_col_part;
         if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
