@@ -1806,50 +1806,6 @@ int angle_method(CSR& cmat, float eps, intT* compressed_dim_partition, intT nB,i
 
 }
 
-void read_snap_format(GraphMap& gmap, std::string filename)
-{
-    /*		Read from edgelist to a graphmap
-     *		TODO Error handling
-     *----------------------------------------------------------------------------
-     * on entry:
-     * =========
-     * filename: the file were the edgelist is stored
-     *----------------------------------------------------------------------------
-     * on return:
-     * ==========
-     * gmap   = the edgelist now into GraphMap format
-     *----------------------------------------------------------------------------
-     */
-
-    gmap.clear();
-
-    std::ifstream infile;
-
-    //TODO handle reading error
-    infile.open(filename);
-    std::string temp = "-1";
-    intT current_node = -1, child;
-    std::set<intT> emptyset;
-
-    // Ignore comments headers
-    while ((infile.peek() == '%') or (infile.peek() == '#')) infile.ignore(2048, '\n');
-
-    //TODO: check import success
-    //read the source node (row) of a new line
-    while (getline(infile, temp, ' ')) {
-        current_node = stoi(temp);
-
-        if (gmap.count(current_node) == 0) { //new source node encountered
-            gmap[current_node] = emptyset;
-        }
-
-        //get target node (column)
-        getline(infile, temp);
-        child = stoi(temp);
-        gmap[current_node].insert(child);
-    }
-}
-
 void read_snap_format(GraphMap& gmap, std::string filename, std::string delimiter)
 {
     /*		Read from edgelist to a graphmap
