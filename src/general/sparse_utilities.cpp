@@ -1898,7 +1898,6 @@ void read_snap_format(GraphMap& gmap, std::string filename, std::string delimite
         gmap[current_node].insert(child);
     }
 }
-
 //check if a graphmap is well-numbered, complete and (optional) symmetric
 int isProper(const GraphMap& gmap, bool mirroring) 
 {
@@ -2000,36 +1999,6 @@ void write_snap_format(GraphMap& gmap, std::string filename) {
 
     }
     outfile.close();
-}
-
-void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt) {
-    
-    intT n = gmap.size();
-
-    cmat.fmt = cmat_fmt;
-    cmat.rows = n;
-    cmat.cols = n;
-    cmat.nzcount = new intT[n];
-    cmat.ja = new intT* [n];
-    cmat.ma = new DataT * [n];
-
-    //build the appropriate vectors from Mat;
-    for (auto node : gmap) {
-
-        intT parent = node.first; //parent node
-        std::set<intT> tempset = node.second; //adiacency list for the node.
-        intT nzs = tempset.size();
-        cmat.nzcount[parent] = nzs;
-
-        cmat.ja[parent] = new intT [nzs];
-        cmat.ma[parent] = new DataT [nzs];
-
-        std::copy(tempset.begin(), tempset.end(), cmat.ja[parent]);
-
-        std::vector<DataT> temp_vec(tempset.size(), 1.);
-        std::copy(temp_vec.begin(), temp_vec.end(), cmat.ma[parent]); //entries = 1s. GraphMap are unweighted (for now).
-    }
-
 }
 
 void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt) {
