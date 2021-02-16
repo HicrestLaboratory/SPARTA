@@ -326,8 +326,6 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
 
             intT width = vbmat.block_width(block);
             nzindices[block].push_back(i); //store the row index;
-            std::cout << "i: " << i << " width: " << width << "nz: " << cmat.ja[i][nz] << " block: " << block << std::endl;
-            std::cout << "start " << col_part[block] << " end " << col_part[block + 1] << std::endl;
             std::vector<DataT> temp_vec(width);
 
             while (nz < n_elems && cmat.ja[i][nz] < col_part[block + 1])
