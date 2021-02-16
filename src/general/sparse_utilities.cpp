@@ -1960,7 +1960,7 @@ void write_snap_format(GraphMap& gmap, std::string filename) {
 void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt) {
 
     intT n = gmap.size();
-
+    std::cout << n << std::endl;
     cmat.fmt = cmat_fmt;
     cmat.rows = n;
     cmat.cols = n;
