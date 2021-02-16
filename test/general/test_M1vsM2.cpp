@@ -220,9 +220,8 @@ int main(int argc, char* argv[]) {
             string delimiter = "\t";
             GraphMap snap_graph;
             read_snap_format(snap_graph, input_source, delimiter);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
-            MakeProper(snap_graph);
+            //MakeProper(snap_graph);
             convert_to_CSR(snap_graph, input_cmat, input_cmat_fmt);
-            std::cout << input_cmat.rows << " " << input_cmat.cols << " " << std::endl;
             arr_print(input_cmat.nzcount, input_cmat.rows);
 
             if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
