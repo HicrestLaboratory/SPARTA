@@ -402,7 +402,7 @@ int main(int argc, char* argv[]) {
     svi nc_nz_per_block;
     intT nc_nz_blocks = 0;
 
-    arr_print(algo_col_part, algo_col_blocks);
+    arr_print(algo_col_part, algo_block_cols);
     convert_to_ncVBS(input_cmat, vbmat, algo_block_cols, algo_col_part);
 
     for (int jb = 0; jb < algo_block_cols; jb++)
