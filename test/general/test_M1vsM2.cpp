@@ -397,10 +397,6 @@ int main(int argc, char* argv[]) {
     output_couple(output_names, output_values, "VBS_max_block_H_error", std_dev(max_block_vec));
 
 
-    std::cout << "????" << std::endl;
-
-
-
     ncVBS vbmat;
     svi nc_block_height;
     svi nc_nz_per_block;
