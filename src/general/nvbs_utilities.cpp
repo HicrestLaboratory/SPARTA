@@ -80,9 +80,16 @@ int matprint(const ncVBS& vbmat)
 
         matprint(vbmat.mab[jb], rows_number, column_block_size, column_block_size, 0);
         
-        std::cout << "INDICES" << std::endl;
-        arr_print(vbmat.nzindex[jb], rows_number);
-
+        if (rows_number > 0)
+        {
+            std::cout << "INDICES: ";
+            arr_print(vbmat.nzindex[jb], rows_number);
+            std::cout << std::endl;
+        }
+        else
+        {
+            std::cout << "empty" << std::endl;
+        }
     }
 
 
