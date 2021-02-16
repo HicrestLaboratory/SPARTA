@@ -412,7 +412,7 @@ int main(int argc, char* argv[]) {
     svi nc_nz_per_block;
     intT nc_nz_blocks = 0;
 
-    arr_print(algo_col_part, algo_block_col + 1);
+    arr_print(algo_col_part, algo_block_cols + 1);
     convert_to_ncVBS(input_cmat, vbmat, algo_block_cols, algo_col_part);
     if (verbose > 0)    cout << "converted to ncVBS:" << endl;
 
