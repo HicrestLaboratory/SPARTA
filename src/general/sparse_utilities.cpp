@@ -1838,6 +1838,7 @@ void read_snap_format(GraphMap& gmap, std::string filename, std::string delimite
     //read the source node (row) of a new line
     while (getline(infile, temp)) {
 
+        std::cout << temp << std::endl;
         intT del_pos = temp.find(delimiter);
         intT del_size = delimiter.size();
 
@@ -1960,7 +1961,6 @@ void write_snap_format(GraphMap& gmap, std::string filename) {
 void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt) {
 
     intT n = gmap.size();
-    std::cout << n << std::endl;
     cmat.fmt = cmat_fmt;
     cmat.rows = n;
     cmat.cols = n;
