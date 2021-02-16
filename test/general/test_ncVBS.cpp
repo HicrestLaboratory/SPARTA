@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
     int block_size = 6;
     float mat_density = 0.5f;
     float row_density = 0.3f;
-    float A_sparsity = 0.1f;
+    float A_sparsity = 0.0f;
     intT block_cols = std::ceil((1.f*A_cols)/block_size);
     intT* col_part = new intT[block_cols + 1];
     partition(col_part, 0, A_cols, block_size);
