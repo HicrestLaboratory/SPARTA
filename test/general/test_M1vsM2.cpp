@@ -406,8 +406,6 @@ int main(int argc, char* argv[]) {
     algo_col_part = new intT[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
     partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions
 
-    std::cout << algo_block_cols << std::endl;
-    arr_print(algo_col_part, algo_block_cols + 1);
     convert_to_ncVBS(input_cmat, vbmat, algo_block_cols, algo_col_part);
 
     for (int jb = 0; jb < algo_block_cols; jb++)

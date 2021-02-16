@@ -136,7 +136,6 @@ int random_ncVBS(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT block_size, fl
     vbmat.rows = mat_rows;
     intT block_cols = mat_cols / block_size;
 
-    std::cout << "block_cols" << block_cols << std::endl;
     
     vbmat.block_cols = block_cols;
     vbmat.col_part = new intT[block_cols + 1];
@@ -153,7 +152,6 @@ int random_ncVBS(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT block_size, fl
         vbmat.nzindex[jb] = new intT[vbmat.nzcount[jb]];
         vbmat.mab[jb] = new DataT[elements_per_block];
 
-        std::cout << "jb: " << jb << " nzount: " << vbmat.nzcount[jb] << std::endl;
 
         //determine nonzero rows for a block
         svi rows = svi(mat_rows, 0);              //will store 0 unless a row is nonzero;
@@ -171,14 +169,12 @@ int random_ncVBS(ncVBS& vbmat, intT mat_rows, intT mat_cols, intT block_size, fl
             }
         }
 
-        std::cout << "indices" << std::endl;
         arr_print(vbmat.nzindex[jb], nonzero_rows_per_block);
 
         //fill mab[jb] with random rows
         for (intT i = 0; i < nonzero_rows_per_block; i++)
         {
 
-            std::cout << "making row " << i << std::endl;
             //add one random row to mab[jb]
             svi elems = svi(block_size, 0);
             std::fill(elems.begin(), elems.begin() + elements_per_row, 1); //only elems_per_row are nonzero;
@@ -347,8 +343,8 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
     for (intT jb = 0; jb < block_cols; jb++)
     {
         intT width = vbmat.block_width(jb);
-        std::cout << "width " << width << " jb " << jb << std::endl;
 
+        std::cout << "count: " << vbmat.nzcount[jb] << std::endl;
         vbmat.nzindex[jb] = new intT[vbmat.nzcount[jb]]{ 0 };
         vbmat.mab[jb] = new DataT[vbmat.nzcount[jb] * width];
         std::copy(nzindices[jb].begin(), nzindices[jb].end(), vbmat.nzindex[jb]);
