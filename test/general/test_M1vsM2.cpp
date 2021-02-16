@@ -197,7 +197,6 @@ int main(int argc, char* argv[]) {
 
     CSR input_cmat; //this will hold the CSR matrix
     int input_cmat_fmt = 0;
-    std::cout << "input_type" << input_type << std::endl;
     if (input_type == 1)
         {
         //INPUT EXAMPLE 1: RANDOM CSR
@@ -220,7 +219,7 @@ int main(int argc, char* argv[]) {
             string delimiter = "\t";
             GraphMap snap_graph;
             read_snap_format(snap_graph, input_source, delimiter);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
-            //MakeProper(snap_graph);
+            MakeProper(snap_graph);
             convert_to_CSR(snap_graph, input_cmat, input_cmat_fmt);
             arr_print(input_cmat.nzcount, input_cmat.rows);
 
