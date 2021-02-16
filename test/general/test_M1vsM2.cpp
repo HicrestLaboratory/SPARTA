@@ -222,7 +222,6 @@ int main(int argc, char* argv[]) {
             
             MakeProper(snap_graph);
             convert_to_CSR(snap_graph, input_cmat, input_cmat_fmt);
-            arr_print(input_cmat.nzcount, input_cmat.rows);
 
             if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
             //______________________________________
@@ -416,6 +415,7 @@ int main(int argc, char* argv[]) {
     partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions
 
     convert_to_ncVBS(input_cmat, vbmat, algo_block_cols, algo_col_part);
+    if (verbose > 0)    cout << "converted to ncVBS:" << endl;
 
     for (int jb = 0; jb < algo_block_cols; jb++)
     {
