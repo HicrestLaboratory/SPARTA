@@ -364,7 +364,7 @@ int main(int argc, char* argv[]) {
             intT algo_block_rows = std::ceil((float)mat_rows / algo_block_size);
             intT* algo_row_part = new intT[algo_block_rows + 1]; //partitions have one element more for the rightmost border.
             partition(algo_row_part, 0, input_cmat.rows, algo_block_size); //row and column partitions
-            convert_to_VBS(input_cmat, vbmat, algo_block_rows, algo_row_part, algo_block_cols, algo_col_part, vbmat_blocks_fmt, vbmat_entries_fmt);
+            convert_to_VBS(input_cmat, vbmat_algo, algo_block_rows, algo_row_part, algo_block_cols, algo_col_part, vbmat_blocks_fmt, vbmat_entries_fmt);
         }
 
         if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
