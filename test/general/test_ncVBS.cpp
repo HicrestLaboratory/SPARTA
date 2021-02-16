@@ -76,4 +76,6 @@ int main(int argc, char* argv[]) {
 
     std::cout << "\n EQUALITY CHECK: MULTIPLICATION: " << equal(C_rows, C_cols, mat_C, C_cols, 0, mat_C2, C_cols, 0, 0.00001f) << std::endl;
     */
+
+    cleanVBS(vbmat_csr);
 }
