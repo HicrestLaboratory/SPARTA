@@ -196,24 +196,24 @@ int main(int argc, char* argv[]) {
 
     CSR input_cmat; //this will hold the CSR matrix
     int input_cmat_fmt = 0;
-    switch (input_type)
+    if (input_type == 1)
     {
         //INPUT EXAMPLE 1: RANDOM CSR
         //create a random sparse matrix
-        case 1:
-            DataT* rand_mat = new DataT[mat_cols * mat_rows];
-            random_mat(rand_mat, mat_rows, mat_cols, input_entries_density); //generate random mat //todo: generate directly the CSR
-            convert_to_CSR(rand_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
-            delete[] rand_mat;
+        DataT* rand_mat = new DataT[mat_cols * mat_rows];
+        random_mat(rand_mat, mat_rows, mat_cols, input_entries_density); //generate random mat //todo: generate directly the CSR
+        convert_to_CSR(rand_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
+        delete[] rand_mat;
 
-            if (verbose > 0) cout << "CREATED A RANDOM CSR with density = " << input_entries_density << endl;
-            break;
-        //______________________________________
+        if (verbose > 0) cout << "CREATED A RANDOM CSR with density = " << input_entries_density << endl;
+    }
+    //______________________________________
 
-
+    else if (input_type == 2)
+    {
         //TEST
         //INPUT EXAMPLE 2: read graph in edgelist format into CSR
-        case 2: 
+        case 2:
             if (input_source.empty()) input_source = "testgraph1.txt";
 
             string delimiter = "\t";
@@ -223,56 +223,55 @@ int main(int argc, char* argv[]) {
             convert_to_CSR(snap_graph, input_cmat, input_cmat_fmt);
 
             if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
-            break;
-        //______________________________________
-
-
-        //INPUT EXAMPLE 3: read from MTX format
-        case 3: 
+            //______________________________________
+    }
+    else if (input_type == 3)
+    {
+        //INPUT EXAMPLE 3: read from MTX format 
             //read from mtx
-            if (input_source.empty()) input_source = "testmat.mtx";
-            read_mtx_format(input_cmat, input_source, input_cmat_fmt); //read into CSR
+        if (input_source.empty()) input_source = "testmat.mtx";
+        read_mtx_format(input_cmat, input_source, input_cmat_fmt); //read into CSR
 
-            if (verbose > 0)            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
-            break;
+        if (verbose > 0)            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
+        break;
         //______________________________________
+    }
+
+    //INPUT EXAMPLE 4: create a random matrix with block structure
+    else if (input_type == 4)
+    {
+        DataT* rand_block_mat = new DataT[mat_rows * mat_cols];
+
+        //TODO do not start by array but create directly the CSR?
+        //TODO arbitrary partition
 
 
-        //INPUT EXAMPLE 4: create a random matrix with block structure
-        case 4:
-            DataT* rand_block_mat = new DataT[mat_rows * mat_cols];
+        if (mat_rows % input_block_size or mat_cols % input_block_size)
+        {
+            //TODO exception
+            std::cout << "ERROR when creating a random-sparse-blocks matrix: \n matrix dimensions (currently"
+                << mat_rows << " x " << mat_cols
+                << " must be a multiple of block size (" << input_block_size << ")"
+                << std::endl;
+            return 1;
+        }
 
-            //TODO do not start by array but create directly the CSR?
-            //TODO arbitrary partition
+        random_sparse_blocks_mat(rand_block_mat, mat_rows, mat_cols, mat_fmt, input_block_size, input_block_density, input_entries_density);
 
+        convert_to_CSR(rand_block_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
 
-            if (mat_rows % input_block_size or mat_cols % input_block_size)
-            {
-                //TODO exception
-                std::cout << "ERROR when creating a random-sparse-blocks matrix: \n matrix dimensions (currently"
-                    << mat_rows << " x " << mat_cols
-                    << " must be a multiple of block size (" << input_block_size << ")"
-                    << std::endl;
-                return 1;
-            }
+        delete[] rand_block_mat;
 
-            random_sparse_blocks_mat(rand_block_mat, mat_rows, mat_cols, mat_fmt, input_block_size, input_block_density, input_entries_density);
-
-            convert_to_CSR(rand_block_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
-
-            delete[] rand_block_mat;
-
-            if (verbose > 0)
-            {
-                cout << "CREATED A RANDOM BLOCK MATRIX:"
-                    << " Rows = " << mat_rows << "\n"
-                    << " Columns: " << mat_cols << "\n"
-                    << " Block size: " << input_block_size << "\n"
-                    << " Density OF blocks: " << input_block_density << "\n"
-                    << " Density IN blocks: " << input_entries_density << "\n"
-                    << endl;
-            }
-            break;
+        if (verbose > 0)
+        {
+            cout << "CREATED A RANDOM BLOCK MATRIX:"
+                << " Rows = " << mat_rows << "\n"
+                << " Columns: " << mat_cols << "\n"
+                << " Block size: " << input_block_size << "\n"
+                << " Density OF blocks: " << input_block_density << "\n"
+                << " Density IN blocks: " << input_entries_density << "\n"
+                << endl;
+        }
     }
         //___________________________________________
 
