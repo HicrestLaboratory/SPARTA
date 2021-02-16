@@ -111,7 +111,7 @@ int convert_to_VBS(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, VBS& v
 
 int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt);
 
-int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, intT block_cols, intT* colpart, int vbmat_block_fmt, int vbmat_entries_fmt, int no_zero_mode);
+int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, intT block_cols, intT* colpart, int vbmat_block_fmt, int vbmat_entries_fmt);
 
 int matprint(const VBS& vbmat);
 
