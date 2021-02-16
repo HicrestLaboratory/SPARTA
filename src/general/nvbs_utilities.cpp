@@ -311,12 +311,8 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
 
     initialize_ncVBS(vbmat, mat_rows, block_cols, col_part);
 
-    std::cout << "test" << std::endl;
-
     std::vector<intT> nzindices[block_cols];
     std::vector<DataT> mab[block_cols];
-
-    std::cout << "test" << std::endl;
 
     //count nonzero rows per block;
     for (intT i = 0; i < mat_rows; i++)
@@ -346,12 +342,13 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
         }
     }
 
-    std::cout << "test" << std::endl;
 
     //initialize vbmat.nzindex;
     for (intT jb = 0; jb < block_cols; jb++)
     {
         intT width = vbmat.block_width(jb);
+        std::cout << "width " << width << " jb " << jb << std::endl;
+
         vbmat.nzindex[jb] = new intT[vbmat.nzcount[jb]]{ 0 };
         vbmat.mab[jb] = new DataT[vbmat.nzcount[jb] * width];
         std::copy(nzindices[jb].begin(), nzindices[jb].end(), vbmat.nzindex[jb]);
