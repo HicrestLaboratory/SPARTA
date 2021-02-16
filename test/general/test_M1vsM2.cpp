@@ -402,6 +402,10 @@ int main(int argc, char* argv[]) {
     svi nc_nz_per_block;
     intT nc_nz_blocks = 0;
 
+    algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
+    algo_col_part = new intT[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
+    partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions
+
     std::cout << algo_block_cols << std::endl;
     arr_print(algo_col_part, algo_block_cols);
     convert_to_ncVBS(input_cmat, vbmat, algo_block_cols, algo_col_part);
