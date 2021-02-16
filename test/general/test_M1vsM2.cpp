@@ -78,8 +78,8 @@ int main(int argc, char* argv[]) {
     string input_source = "no_input_source";
     int seed = 123;
     intT input_block_size = 4;
-    float input_block_density = 0.5;
-    float input_entries_density = 0.5;
+    float input_block_density = 0.2;
+    float input_entries_density = 0.2;
     intT* A_row_part;
     intT* A_col_part;
 
@@ -320,7 +320,6 @@ int main(int argc, char* argv[]) {
     int scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
 
     intT algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
-
     intT* algo_col_part = new intT[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
     partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions
 
@@ -409,6 +408,7 @@ int main(int argc, char* argv[]) {
 
     convert_to_ncVBS(input_cmat, vbmat, algo_block_cols, algo_col_part);
 
+    std::cout << "????" << std::endl;
     for (int jb = 0; jb < algo_block_cols; jb++)
     {
         nc_block_height.push_back(vbmat.nzcount[jb]);
