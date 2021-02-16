@@ -402,7 +402,7 @@ int main(int argc, char* argv[]) {
     svi nc_nz_per_block;
     intT nc_nz_blocks = 0;
 
-    std::cout << algo_col_blocks << std::endl;
+    std::cout << algo_block_cols << std::endl;
     arr_print(algo_col_part, algo_block_cols);
     convert_to_ncVBS(input_cmat, vbmat, algo_block_cols, algo_col_part);
 
