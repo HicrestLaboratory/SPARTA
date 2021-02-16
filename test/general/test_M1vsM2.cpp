@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
     intT* A_col_part;
 
     //algorithm and experiments parameters
-    float eps = 0.5;
+    float eps = 0.8;
     int generate_new_random = 0;
 
     int input_type = 4;
@@ -355,7 +355,6 @@ int main(int argc, char* argv[]) {
 
         //run the reordering and blocking algorithm
         angle_hash_method(input_cmat, eps, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
-        delete[] algo_col_part;
         if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
         if (verbose > 1)    matprint(vbmat_algo);
 
@@ -402,8 +401,6 @@ int main(int argc, char* argv[]) {
     svi nc_nz_per_block;
     intT nc_nz_blocks = 0;
 
-    algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
-    algo_col_part = new intT[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
     partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions
 
     convert_to_ncVBS(input_cmat, vbmat, algo_block_cols, algo_col_part);
@@ -429,6 +426,7 @@ int main(int argc, char* argv[]) {
 
     cleanCSR(input_cmat);
 
+    delete[] algo_col_part;
 
     //OUTPUT PHASE
     if ((verbose == -1) or (verbose > 1))
