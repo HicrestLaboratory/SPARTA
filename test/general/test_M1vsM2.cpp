@@ -210,7 +210,7 @@ int main(int argc, char* argv[]) {
         }
         //______________________________________
 
-    else if (input_type == 2)
+    if (input_type == 2)
         {
         //TEST
         //INPUT EXAMPLE 2: read graph in edgelist format into CSR
@@ -227,7 +227,7 @@ int main(int argc, char* argv[]) {
             if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
             //______________________________________
         }
-    else if (input_type == 3)
+    if (input_type == 3)
         {
         //INPUT EXAMPLE 3: read from MTX format 
             //read from mtx
@@ -238,7 +238,7 @@ int main(int argc, char* argv[]) {
         //______________________________________
         }
         //INPUT EXAMPLE 4: create a random matrix with block structure
-    else if (input_type == 4)
+    if (input_type == 4)
     {
         DataT* rand_block_mat = new DataT[mat_rows * mat_cols];
 
