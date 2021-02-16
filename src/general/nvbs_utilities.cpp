@@ -344,7 +344,6 @@ int convert_to_ncVBS(const CSR& cmat, ncVBS& vbmat, intT block_cols, intT* col_p
     {
         intT width = vbmat.block_width(jb);
 
-        std::cout << "count: " << vbmat.nzcount[jb] << std::endl;
         vbmat.nzindex[jb] = new intT[vbmat.nzcount[jb]]{ 0 };
         vbmat.mab[jb] = new DataT[vbmat.nzcount[jb] * width];
         std::copy(nzindices[jb].begin(), nzindices[jb].end(), vbmat.nzindex[jb]);
