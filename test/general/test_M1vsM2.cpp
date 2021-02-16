@@ -397,6 +397,7 @@ int main(int argc, char* argv[]) {
     output_couple(output_names, output_values, "VBS_max_block_H_error", std_dev(max_block_vec));
 
 
+    std::cout << "????" << std::endl;
 
 
 
@@ -408,7 +409,6 @@ int main(int argc, char* argv[]) {
 
     convert_to_ncVBS(input_cmat, vbmat, algo_block_cols, algo_col_part);
 
-    std::cout << "????" << std::endl;
     for (int jb = 0; jb < algo_block_cols; jb++)
     {
         nc_block_height.push_back(vbmat.nzcount[jb]);
