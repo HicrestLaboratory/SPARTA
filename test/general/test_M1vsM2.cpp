@@ -74,6 +74,7 @@ int main(int argc, char* argv[]) {
     intT mat_rows = 12;
     intT mat_cols = 8;
     intT mat_fmt = 0;
+    intT reordering = 1;
 
     string input_source = "no_input_source";
     int seed = 123;
@@ -354,7 +355,18 @@ int main(int argc, char* argv[]) {
 
 
         //run the reordering and blocking algorithm
-        angle_hash_method(input_cmat, eps, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
+        if (reordering == 1)
+        {
+            angle_hash_method(input_cmat, eps, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
+        }
+        else
+        {
+            intT algo_block_rows = std::ceil((float)mat_rows / algo_block_size);
+            intT* algo_row_part = new intT[algo_block_rows + 1]; //partitions have one element more for the rightmost border.
+            partition(algo_row_part, 0, input_cmat.rows, algo_block_size); //row and column partitions
+            convert_to_VBS(input_cmat, vbmat, algo_block_rows, algo_row_part, algo_block_cols, algo_col_part, vbmat_blocks_fmt, vbmat_entries_fmt);
+        }
+
         if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
         if (verbose > 1)    matprint(vbmat_algo);
 

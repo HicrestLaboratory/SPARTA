@@ -125,7 +125,6 @@ int random_sparse_blocks_mat(DataT *mat, intT rows, intT cols, int fmt, intT blo
 }
 
 
-//NOT TESTED YET
 int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, int entries_fmt, intT row_block_size, intT col_block_size, float block_density, float entries_density)
 {
     /*
