@@ -57,7 +57,7 @@ int initialize_ncVBS(ncVBS& vbmat, intT mat_rows, intT block_cols, intT* col_par
     vbmat.col_part = new intT[block_cols + 1];
     std::copy(col_part, col_part + block_cols + 1, vbmat.col_part);
     vbmat.rows = mat_rows;
-    vbmat.nzcount = new intT[block_cols];
+    vbmat.nzcount = new intT[block_cols]{ 0 };
     vbmat.nzindex = new intT * [block_cols];
     vbmat.mab = new DataT * [block_cols];
 }
