@@ -398,8 +398,30 @@ int main(int argc, char* argv[]) {
 
 
     ncVBS vbmat;
+    svi nc_block_height;
+    svi nc_nz_per_block;
+    intT nc_nz_blocks = 0;
+
+
     convert_to_ncVBS(input_cmat, vbmat, algo_block_cols, algo_col_part);
 
+    for (int jb = 0; jb < algo_block_cols; jb++)
+    {
+        nc_block_height.push_back(vbmat.nzcount[jb]);
+        nc_nz_per_block.push_back(vbmat.nz_elems_in_block(jb));
+        if (vbmat.nzcount[jb] != 0)
+        {
+            nc_nz_blocks++;
+        }
+    }
+
+    output_couple(output_names, output_values, "ncVBS_height_mean", mean(nc_block_height));
+    output_couple(output_names, output_values, "ncVBS_height_std", std_dev(nc_block_height));
+
+    output_couple(output_names, output_values, "ncVBS_nz_per_block_mean", mean(nc_nz_per_block));
+    output_couple(output_names, output_values, "ncVBS_nz_per_block_std", std_dev(nc_nz_per_block));
+
+    output_couple(output_names, output_values, "ncVBS_nz_blocks", nc_nz_blocks);
 
 
     cleanCSR(input_cmat);

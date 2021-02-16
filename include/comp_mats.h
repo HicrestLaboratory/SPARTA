@@ -104,6 +104,20 @@ struct ncVBS
     {
         return  (col_part[jb + 1] - col_part[jb]) * nzcount[jb];
     }
+
+    intT nz_elems_in_block(intT jb)
+    {
+        intT elems = block_width(jb) * nzcount[jb];
+        intT nz = 0;
+        for (int i = 0; i < elems; i++)
+        {
+            if (vbmat.mab[jb][i] != 0)
+            {
+                nz++;
+            }
+        }
+        return nz;
+    }
 };
 
 
