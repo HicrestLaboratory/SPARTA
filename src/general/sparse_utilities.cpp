@@ -1174,7 +1174,7 @@ int permute_CSR(CSR& cmat, intT* perm, int dim) {
         intT* ja;
         for (intT i = 0; i < main_dim; i++)
         {
-            std:cout << "i" << i << std::endl;  
+            std::cout << "i" << i << std::endl;  
             ja = cmat.ja[i];
             intT ja_len = cmat.nzcount[i];
             if (ja_len > 0)
