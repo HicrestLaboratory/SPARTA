@@ -146,4 +146,6 @@ test_AHA : build_general $(GEN_APP_DIR)/test_AHA
 
 test_ncVBS : build_general $(GEN_APP_DIR)/test_ncVBS 
 
+test_M1vsM2 : build_general $(GEN_APP_DIR)/test_M1vsM2 
+
 
