@@ -213,7 +213,6 @@ int main(int argc, char* argv[]) {
         {
         //TEST
         //INPUT EXAMPLE 2: read graph in edgelist format into CSR
-        case 2:
             if (input_source.empty()) input_source = "testgraph1.txt";
 
             string delimiter = "\t";
@@ -233,7 +232,6 @@ int main(int argc, char* argv[]) {
         read_mtx_format(input_cmat, input_source, input_cmat_fmt); //read into CSR
 
         if (verbose > 0)            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
-        break;
         //______________________________________
         }
 
@@ -276,142 +274,142 @@ int main(int argc, char* argv[]) {
         //___________________________________________
 
 
-        //*******************************************
-        //		END OF INPUT
-        //spmat must hold a proper CSR matrix at this point
-        //******************************************
+    //*******************************************
+    //		END OF INPUT
+    //spmat must hold a proper CSR matrix at this point
+    //******************************************
 
-        if (verbose > 0) cout << "INPUT ACQUIRED." << endl;
+    if (verbose > 0) cout << "INPUT ACQUIRED." << endl;
+    if (verbose > 1) matprint(input_cmat);
+
+    //update rows and cols count to input values
+    mat_rows = input_cmat.rows;
+    mat_cols = input_cmat.cols;
+
+    //*******************************************
+    //	 CREATES (several) VBS from the CSR, EXTRACT FEATURES
+    //******************************************
+
+    string output_names;
+    string output_values;
+
+
+    intT mat_nnz = count_nnz(input_cmat);
+
+    output_couple(output_names, output_values, "exp_name", exp_name);
+    output_couple(output_names, output_values, "input_type", input_type);
+    output_couple(output_names, output_values, "input_source", input_source);
+    output_couple(output_names, output_values, "rows", input_cmat.rows);
+    output_couple(output_names, output_values, "cols", input_cmat.cols);
+    output_couple(output_names, output_values, "total_nonzeros", mat_nnz);
+    output_couple(output_names, output_values, "input_blocks_density", input_block_density);
+    output_couple(output_names, output_values, "input_entries_density", input_entries_density);
+    output_couple(output_names, output_values, "input_block_size", input_block_size);
+    output_couple(output_names, output_values, "algo_block_size", algo_block_size);
+    output_couple(output_names, output_values, "epsilon", eps);
+
+
+
+    VBS vbmat_algo;
+    svi total_area_vec;
+    svi block_rows_vec;
+    svi nz_blocks_vec;
+    svi min_block_vec;
+    svi max_block_vec;
+    int scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
+    int scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
+    output_couple(output_names, output_values, "scramble", scramble);
+    for (int current_repetition = 0; current_repetition < experiment_reps; current_repetition++)
+    {
+        //scramble the original matrix
+        if (scramble_rows)
+        {
+
+            if (verbose > 0) cout << "input matrix rows scrambled" << endl;
+            intT* random_rows_permutation = new intT[mat_rows];
+            randperm(random_rows_permutation, mat_rows);
+            permute_CSR(input_cmat, random_rows_permutation, 0);
+            delete[] random_rows_permutation;
+        }
+        if (scramble_cols)
+        {
+
+            if (verbose > 0) cout << "input matrix cols scrambled" << endl;
+            intT* random_cols_permutation = new intT[mat_cols];
+            randperm(random_cols_permutation, mat_cols);
+            permute_CSR(input_cmat, random_cols_permutation, 1);
+            delete[] random_cols_permutation;
+        }
         if (verbose > 1) matprint(input_cmat);
 
-        //update rows and cols count to input values
-        mat_rows = input_cmat.rows;
-        mat_cols = input_cmat.cols;
 
-        //*******************************************
-        //	 CREATES (several) VBS from the CSR, EXTRACT FEATURES
-        //******************************************
-
-        string output_names;
-        string output_values;
+        int vbmat_blocks_fmt = 1;
+        int vbmat_entries_fmt = 1;
+        intT algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
 
 
-        intT mat_nnz = count_nnz(input_cmat);
-
-        output_couple(output_names, output_values, "exp_name", exp_name);
-        output_couple(output_names, output_values, "input_type", input_type);
-        output_couple(output_names, output_values, "input_source", input_source);
-        output_couple(output_names, output_values, "rows", input_cmat.rows);
-        output_couple(output_names, output_values, "cols", input_cmat.cols);
-        output_couple(output_names, output_values, "total_nonzeros", mat_nnz);
-        output_couple(output_names, output_values, "input_blocks_density", input_block_density);
-        output_couple(output_names, output_values, "input_entries_density", input_entries_density);
-        output_couple(output_names, output_values, "input_block_size", input_block_size);
-        output_couple(output_names, output_values, "algo_block_size", algo_block_size);
-        output_couple(output_names, output_values, "epsilon", eps);
+        //run the reordering and blocking algorithm
+        intT* algo_col_part = new intT[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
+        partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
+        angle_hash_method(input_cmat, eps, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
+        delete[] algo_col_part;
+        if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
+        if (verbose > 1)    matprint(vbmat_algo);
 
 
-
-        VBS vbmat_algo;
-        svi total_area_vec;
-        svi block_rows_vec;
-        svi nz_blocks_vec;
-        svi min_block_vec;
-        svi max_block_vec;
-        int scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
-        int scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
-        output_couple(output_names, output_values, "scramble", scramble);
-        for (int current_repetition = 0; current_repetition < experiment_reps; current_repetition++)
+        //size of minimum and mazimum height of blocks
+        intT max_block_H = 0;
+        intT min_block_H = mat_rows;
+        for (intT i = 0; i < vbmat_algo.block_rows; i++) //modifies
         {
-            //scramble the original matrix
-            if (scramble_rows)
-            {
-
-                if (verbose > 0) cout << "input matrix rows scrambled" << endl;
-                intT* random_rows_permutation = new intT[mat_rows];
-                randperm(random_rows_permutation, mat_rows);
-                permute_CSR(input_cmat, random_rows_permutation, 0);
-                delete[] random_rows_permutation;
-            }
-            if (scramble_cols)
-            {
-
-                if (verbose > 0) cout << "input matrix cols scrambled" << endl;
-                intT* random_cols_permutation = new intT[mat_cols];
-                randperm(random_cols_permutation, mat_cols);
-                permute_CSR(input_cmat, random_cols_permutation, 1);
-                delete[] random_cols_permutation;
-            }
-            if (verbose > 1) matprint(input_cmat);
-
-
-            int vbmat_blocks_fmt = 1;
-            int vbmat_entries_fmt = 1;
-            intT algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
-
-
-            //run the reordering and blocking algorithm
-            intT* algo_col_part = new intT[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
-            partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
-            angle_hash_method(input_cmat, eps, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
-            delete[] algo_col_part;
-            if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
-            if (verbose > 1)    matprint(vbmat_algo);
-
-
-            //size of minimum and mazimum height of blocks
-            intT max_block_H = 0;
-            intT min_block_H = mat_rows;
-            for (intT i = 0; i < vbmat_algo.block_rows; i++) //modifies
-            {
-                intT b_size = vbmat_algo.row_part[i + 1] - vbmat_algo.row_part[i];
-                if (b_size > max_block_H) max_block_H = b_size;
-                if (b_size < min_block_H) min_block_H = b_size;
-            }
+            intT b_size = vbmat_algo.row_part[i + 1] - vbmat_algo.row_part[i];
+            if (b_size > max_block_H) max_block_H = b_size;
+            if (b_size < min_block_H) min_block_H = b_size;
+        }
  
 
-            //accumulate results in vectors
-            total_area_vec.push_back(vbmat_algo.nztot);
-            block_rows_vec.push_back(vbmat_algo.block_rows);
-            nz_blocks_vec.push_back(count_nnz_blocks(vbmat_algo));
-            min_block_vec.push_back(min_block_H);
-            max_block_vec.push_back(max_block_H);
+        //accumulate results in vectors
+        total_area_vec.push_back(vbmat_algo.nztot);
+        block_rows_vec.push_back(vbmat_algo.block_rows);
+        nz_blocks_vec.push_back(count_nnz_blocks(vbmat_algo));
+        min_block_vec.push_back(min_block_H);
+        max_block_vec.push_back(max_block_H);
 
-            cleanVBS(vbmat_algo);
-        }
+        cleanVBS(vbmat_algo);
+    }
 
-        output_couple(output_names, output_values, "VBS_total_nonzeros", mean(total_area_vec));
-        output_couple(output_names, output_values, "VBS_total_nonzeros_error", std_dev(total_area_vec));
+    output_couple(output_names, output_values, "VBS_total_nonzeros", mean(total_area_vec));
+    output_couple(output_names, output_values, "VBS_total_nonzeros_error", std_dev(total_area_vec));
 
-        output_couple(output_names, output_values, "VBS_block_rows", mean(block_rows_vec));
-        output_couple(output_names, output_values, "VBS_block_rows_error", std_dev(block_rows_vec));
+    output_couple(output_names, output_values, "VBS_block_rows", mean(block_rows_vec));
+    output_couple(output_names, output_values, "VBS_block_rows_error", std_dev(block_rows_vec));
 
-        output_couple(output_names, output_values, "VBS_nz_blocks", mean(nz_blocks_vec));
-        output_couple(output_names, output_values, "VBS_nz_blocks_error", std_dev(nz_blocks_vec));
+    output_couple(output_names, output_values, "VBS_nz_blocks", mean(nz_blocks_vec));
+    output_couple(output_names, output_values, "VBS_nz_blocks_error", std_dev(nz_blocks_vec));
 
-        output_couple(output_names, output_values, "VBS_min_block_H", mean(min_block_vec));
-        output_couple(output_names, output_values, "VBS_min_block_H_error", std_dev(min_block_vec));
+    output_couple(output_names, output_values, "VBS_min_block_H", mean(min_block_vec));
+    output_couple(output_names, output_values, "VBS_min_block_H_error", std_dev(min_block_vec));
 
-        output_couple(output_names, output_values, "VBS_max_block_H", mean(max_block_vec));
-        output_couple(output_names, output_values, "VBS_max_block_H_error", std_dev(max_block_vec));
-
-
+    output_couple(output_names, output_values, "VBS_max_block_H", mean(max_block_vec));
+    output_couple(output_names, output_values, "VBS_max_block_H_error", std_dev(max_block_vec));
 
 
 
-        ncVBS vbmat;
-        convert_to_ncVBS(input_cmat, vbmat, algo_block_cols, algo_col_part);
+
+
+    ncVBS vbmat;
+    convert_to_ncVBS(input_cmat, vbmat, algo_block_cols, algo_col_part);
 
 
 
-        cleanCSR(input_cmat);
+    cleanCSR(input_cmat);
 
 
-        //OUTPUT PHASE
-        if ((verbose == -1) or (verbose > 1))
-        {
-            cout << output_names << endl;
-            cout << output_values << endl;
-        }
+    //OUTPUT PHASE
+    if ((verbose == -1) or (verbose > 1))
+    {
+        cout << output_names << endl;
+        cout << output_values << endl;
+    }
 
 }
