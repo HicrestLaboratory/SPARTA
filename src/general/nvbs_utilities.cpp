@@ -97,7 +97,7 @@ int print_block_info(const ncVBS& vbmat, int block)
 
 bool equal(ncVBS& vbmat, DataT* mat, intT mat_rows, intT mat_cols, intT mat_leading_dim, int mat_fmt)
 {
-    DataT* mat2 = new DataT[vbmat.rows * vbmat.cols()];
+    DataT* mat2 = new DataT[vbmat.rows * vbmat.cols()]{ 0 };
     convert_to_mat(vbmat, mat2, 0);
     return equal(vbmat.rows, vbmat.cols(), mat2, vbmat.cols(), 0, mat, mat_leading_dim, mat_fmt, 0.00001f);
 }
