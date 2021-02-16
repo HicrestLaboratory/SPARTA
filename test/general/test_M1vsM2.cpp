@@ -197,6 +197,7 @@ int main(int argc, char* argv[]) {
 
     CSR input_cmat; //this will hold the CSR matrix
     int input_cmat_fmt = 0;
+    std::cout << "input_type" << input_type << std::endl;
     if (input_type == 1)
         {
         //INPUT EXAMPLE 1: RANDOM CSR
