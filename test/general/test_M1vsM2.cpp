@@ -12,7 +12,7 @@
 #include <vector>
 #include <string>
 
-
+#include "nvbs_utilities.h"
 #include "sparse_utilities.h"
 #include "comp_mats.h"
 
@@ -380,7 +380,6 @@ int main(int argc, char* argv[]) {
 
             cleanVBS(vbmat_algo);
         }
-        cleanCSR(input_cmat);
 
         output_couple(output_names, output_values, "VBS_total_nonzeros", mean(total_area_vec));
         output_couple(output_names, output_values, "VBS_total_nonzeros_error", std_dev(total_area_vec));
@@ -397,6 +396,16 @@ int main(int argc, char* argv[]) {
         output_couple(output_names, output_values, "VBS_max_block_H", mean(max_block_vec));
         output_couple(output_names, output_values, "VBS_max_block_H_error", std_dev(max_block_vec));
 
+
+
+
+
+        ncVBS vbmat;
+        convert_to_ncVBS(input_cmat, vbmat, algo_block_cols, algo_col_part);
+
+
+
+        cleanCSR(input_cmat);
 
 
         //OUTPUT PHASE
