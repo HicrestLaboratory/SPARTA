@@ -1824,6 +1824,7 @@ void read_snap_format(GraphMap& gmap, std::string filename, std::string delimite
     gmap.clear();
 
     std::ifstream infile;
+    std::cout << "READING SNAP" << std::endl;
 
     //TODO handle reading error
     infile.open(filename);
