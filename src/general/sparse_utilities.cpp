@@ -411,8 +411,7 @@ int init_VBS(VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT*
     vbmat.nzcount = new intT[main_dim];
 }
 
-int 
-(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT *col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode)
+int  convert_to_VBS(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT *col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode)
 {
 
     vbmat.block_rows = block_rows;
