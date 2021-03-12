@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OPTS="-w 1 -r 10 -v -1 -i 4"
+OPTS="-w 1 -r 3 -v -1 -i 4"
 
 
 RESULTS = "results/test_complete_cublas_results_ultrasparse.txt
@@ -19,7 +19,6 @@ Qvalue=(0.0001 0.0002 0.0005 0.001 0.002 0.005 0.01 0.05 0.1);
 for m in ${Mshapes[@]}; do
   for k in ${Kshapes[@]}; do
     for n in ${Nshapes[@]}; do
-#      #echo "$m $k $n"; sleep 0.2 
       for p in ${Pvalue[@]}; do
         for b in ${Bvalue[@]}; do
           for q in ${Qvalue[@]}; do
