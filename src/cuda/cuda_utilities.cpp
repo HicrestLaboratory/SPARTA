@@ -24,8 +24,8 @@
 /*ONLY WORKS WITH 
     DataT = float, double, int;
     intT = int
-    unsigned_intT = unsigned int;
 */
+
 void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lead_dim, DataT *C, int C_lead_dim, float &dt){
     //multiplies a VBS matrix (vbmatA) and a dense matrix (B); stores into (C)
     //vbmatA:       column-major entries storage;
@@ -446,7 +446,7 @@ int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int *csrColInd, float *csrVa
 }
 
 
-
+/*
 
 //WORK IN PROGRESS
 void cublas_blockmat_spsp(const VBS& vbmatA, const VBS& vbmatB, DataT* C, int C_lead_dim, float& dt) {
@@ -609,3 +609,6 @@ void cublas_blockmat_spsp(const VBS& vbmatA, const VBS& vbmatB, DataT* C, int C_
     checkCudaErrors(cublasDestroy(handle));
 
 }
+
+
+*/

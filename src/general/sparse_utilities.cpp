@@ -125,7 +125,6 @@ int random_sparse_blocks_mat(DataT *mat, intT rows, intT cols, int fmt, intT blo
 }
 
 
-//NOT TESTED YET
 int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, int entries_fmt, intT row_block_size, intT col_block_size, float block_density, float entries_density)
 {
     /*
@@ -155,11 +154,11 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
     intT block_cols = std::ceil((float)cols / col_block_size);
     intT size_of_block = row_block_size * col_block_size;
     intT n_blocks = block_rows * block_cols;
-
+    
     intT* row_part = new intT[block_rows + 1];
     intT* col_part = new intT[block_cols + 1];
-    partition(row_part, 0, block_rows, row_block_size); //row and block partition for creating the VBS
-    partition(col_part, 0, block_cols, col_block_size);
+    partition(row_part, 0, rows, row_block_size); //row and block partition for creating the VBS
+    partition(col_part, 0, cols, col_block_size);
 
 
     //DETERMINE THE NZ BLOCK STRUCTURE
@@ -179,11 +178,11 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
     vbmat.mab = new DataT[nz_tot];
     vbmat.jab = new intT[nz_blocks];
     
-    
     intT nz_in_block = std::ceil(entries_density * size_of_block);
     //saves the indices of nonzero blocks into jab; saves the number of nz blocks per row (or col) into vbmat.nzcount;
     intT b = 0;
-    DataT* mab_idx = vbmat.mab; //the mab array will is filled up to this pointer
+    intT jab_count = 0;
+    DataT* mab_idx = vbmat.mab; //the mab array is filled up to this pointer
     for (intT i = 0; i < main_dim; i++)
     {
         intT nzcount = 0;
@@ -193,12 +192,14 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
             {
                 std::fill(mab_idx, mab_idx + nz_in_block, 1); //fill part of the block with ones
                 std::random_shuffle(mab_idx, mab_idx + size_of_block); //shuffle the block
-                vbmat.jab[b] == i; //save the index of the block in jab
+                vbmat.jab[jab_count] = j; //save the index of the block in jab
                 nzcount += 1; //keep the count of nonzero blocks
+                jab_count += 1;
                 mab_idx += size_of_block; // jump to next block on mab 
             }
             b++;
         }
+
         vbmat.nzcount[i] = nzcount;
     }
 
@@ -222,6 +223,7 @@ int matprint(DataT* mat, intT rows, intT* row_part, intT row_blocks, intT cols, 
 {
     for (intT ib = 0; ib < row_blocks; ib++)
     {
+
         for (intT i = row_part[ib]; i < row_part[ib + 1]; i++)
         {
             for (intT jb = 0; jb < col_blocks; jb++)
@@ -409,7 +411,7 @@ int init_VBS(VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT*
     vbmat.nzcount = new intT[main_dim];
 }
 
-int convert_to_VBS(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT *col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode)
+int  convert_to_VBS(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT *col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode)
 {
 
     vbmat.block_rows = block_rows;
@@ -501,22 +503,15 @@ int convert_to_VBS(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, VBS& v
     }
     //----------------------------------------------------------------------------------
 
- 
-
-
     vbmat.nztot = total_nonzero_entries;
     vbmat.jab = new intT[jab.size()];
     vbmat.mab = new DataT[total_nonzero_entries];
 
     std:copy(jab.begin(), jab.end(), vbmat.jab);
 
-
     intT mat_idx = 0; //keeps reading position for mat
     intT vbmat_idx = 0; //keeps writing position for vbmat 
     intT jab_count = 0;
-
- 
-
 
     //COPY VALUES from mat to vbmat ------------------------------------------------------
     for (intT i = 0; i < vbmat_main_dim; i++)
@@ -558,9 +553,6 @@ int convert_to_VBS(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, VBS& v
             jab_count++;
         }
     }
-
- 
-
 
     return 0;
 }
@@ -1325,98 +1317,6 @@ int hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* gr
     sort_permutation(perm, group, main_dim); //stores in perm a permutation that sorts rows by group
 }
 
-int omp_hash_permute(CSR& cmat, intT* compressed_dim_partition, intT* perm, intT* group, int mode)
-{
-    //finds a group structure and a permutation for the main dimension of a CSR mat
-    //NOTE: this does NOT automatically permute the CSR
-
-    // IN:
-    //  cmat:        a matrix in CSR form
-    //  block_size:  the number of elements to consider together when determining sparsity structure
-    //              e.g if block_size = 8, every 8 element of secondary dimension will be considered nonzero if any of that is so
-    //  mode:        0: at most one element per block is considered
-    //              1: all elements in a block contribute to the hash
-    // OUT:
-    //  perm:        an array of length equal to cmat main dimension; stores a permutation of such dimension that leaves groups together
-    //  group:       an array of length equal to cmat main dimension; for each main row, stores the row group it belongs to
-
-    intT main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
-    intT second_dim = cmat.fmt == 0 ? cmat.cols : cmat.rows;
-
-    intT* hashes = new intT[main_dim]; //will store hash values. The hash of a row (col) is the sum of the indices (mod block_size) of its nonzero entries
-
-    #pragma omp parallel
-    {
-        #pragma omp for
-        for (intT i = 0; i < main_dim; i++)
-        {
-            group[i] = -1;
-
-            hashes[i] = hash(cmat.ja[i], cmat.nzcount[i], compressed_dim_partition, mode); //calculate hash value for each row
-        }
-    }
-
-    sort_permutation(perm, hashes, main_dim); //find a permutation that sorts hashes
-
-
-    
-#pragma omp parallel
-    {
-        #pragma omp single
-        {
-            intT start_idx = 0
-            while (start_idx < main_dim) //scan main dimension in perm order and assign rows with same pattern to same group;
-            {
-                intT end_idx = idx + 1; //will hold end of hash-block TODO PRIVATE
-                intT hash = hashes[perm[idx]]; //TODO PRIVATE
-                while((hashes[perm[end_idx]] == hash) & (end_idx < main_dim))
-                {
-                    end_idx++;
-                }
-                #pragma omp task
-                {
-                    intT my_hash = hash;
-                    intT my_end_idx = end_idx;
-                    intT* ja_0, * ja_1;
-                    intT len_0, len_1;
-                    intT tmp_group = -1;
-                    for (intT idx = start_idx, idx < end_idx, idx++)
-                    {
-                        intT i = perm[idx]; //counter i refers to original order. Counter idx to permuted one. 
-                        if (group[i] == -1) //if row is still unassigned
-                        {
-
-                            tmp_group++; //create new group
-                            group[i] = tmp_group; //assign row to group
-
-                            ja_0 = cmat.ja[i]; //the row in compressed sparse format
-                            len_0 = cmat.nzcount[i];//the row length
-                            for (intT jdx = idx + 1; jdx < end_idx; jdx++)
-                            {
-                                intT j = perm[jdx]; //counter j refers to original order. Counter jdx to permuted one. 
-                                if (group[j] != -1) continue; //only unassigned row must be compared
-
-                                ja_1 = cmat.ja[j];
-                                len_1 = cmat.nzcount[j];
-
-                                if (check_same_pattern(ja_0, len_0, ja_1, len_1, compressed_dim_partition, mode))
-                                {
-                                    group[j] = tmp_group; //assign row j to the tmp_group
-                                }
-                            }
-                        }
-                    }
-                }
-                //end of task
-                //TODO MAKE SOMETHING WITH GROUPS
-                start_idx = end_idx;
-            }
-
-        }
-    }
-    delete[] hashes;
-    sort_permutation(perm, group, main_dim); //stores in perm a permutation that sorts rows by group
-}
 
 intT hash(intT* arr, intT a_len, intT* block_partition, int mode)
 {
@@ -1906,50 +1806,6 @@ int angle_method(CSR& cmat, float eps, intT* compressed_dim_partition, intT nB,i
 
 }
 
-void read_snap_format(GraphMap& gmap, std::string filename)
-{
-    /*		Read from edgelist to a graphmap
-     *		TODO Error handling
-     *----------------------------------------------------------------------------
-     * on entry:
-     * =========
-     * filename: the file were the edgelist is stored
-     *----------------------------------------------------------------------------
-     * on return:
-     * ==========
-     * gmap   = the edgelist now into GraphMap format
-     *----------------------------------------------------------------------------
-     */
-
-    gmap.clear();
-
-    std::ifstream infile;
-
-    //TODO handle reading error
-    infile.open(filename);
-    std::string temp = "-1";
-    intT current_node = -1, child;
-    std::set<intT> emptyset;
-
-    // Ignore comments headers
-    while ((infile.peek() == '%') or (infile.peek() == '#')) infile.ignore(2048, '\n');
-
-    //TODO: check import success
-    //read the source node (row) of a new line
-    while (getline(infile, temp, ' ')) {
-        current_node = stoi(temp);
-
-        if (gmap.count(current_node) == 0) { //new source node encountered
-            gmap[current_node] = emptyset;
-        }
-
-        //get target node (column)
-        getline(infile, temp);
-        child = stoi(temp);
-        gmap[current_node].insert(child);
-    }
-}
-
 void read_snap_format(GraphMap& gmap, std::string filename, std::string delimiter)
 {
     /*		Read from edgelist to a graphmap
@@ -1998,7 +1854,6 @@ void read_snap_format(GraphMap& gmap, std::string filename, std::string delimite
         gmap[current_node].insert(child);
     }
 }
-
 //check if a graphmap is well-numbered, complete and (optional) symmetric
 int isProper(const GraphMap& gmap, bool mirroring) 
 {
@@ -2103,14 +1958,13 @@ void write_snap_format(GraphMap& gmap, std::string filename) {
 }
 
 void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt) {
-    
-    intT n = gmap.size();
 
+    intT n = gmap.size();
     cmat.fmt = cmat_fmt;
     cmat.rows = n;
     cmat.cols = n;
     cmat.nzcount = new intT[n];
-    cmat.ja = new intT* [n];
+    cmat.ja = new intT * [n];
     cmat.ma = new DataT * [n];
 
     //build the appropriate vectors from Mat;
@@ -2121,8 +1975,8 @@ void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt) {
         intT nzs = tempset.size();
         cmat.nzcount[parent] = nzs;
 
-        cmat.ja[parent] = new intT [nzs];
-        cmat.ma[parent] = new DataT [nzs];
+        cmat.ja[parent] = new intT[nzs];
+        cmat.ma[parent] = new DataT[nzs];
 
         std::copy(tempset.begin(), tempset.end(), cmat.ja[parent]);
 

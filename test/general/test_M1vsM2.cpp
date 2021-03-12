@@ -12,7 +12,7 @@
 #include <vector>
 #include <string>
 
-
+#include "nvbs_utilities.h"
 #include "sparse_utilities.h"
 #include "comp_mats.h"
 
@@ -74,17 +74,18 @@ int main(int argc, char* argv[]) {
     intT mat_rows = 12;
     intT mat_cols = 8;
     intT mat_fmt = 0;
+    intT reordering = 1;
 
     string input_source = "no_input_source";
     int seed = 123;
     intT input_block_size = 4;
-    float input_block_density = 0.5;
-    float input_entries_density = 0.5;
+    float input_block_density = 0.2;
+    float input_entries_density = 0.2;
     intT* A_row_part;
     intT* A_col_part;
 
     //algorithm and experiments parameters
-    float eps = 0.5;
+    float eps = 0.8;
     int generate_new_random = 0;
 
     int input_type = 4;
@@ -197,7 +198,7 @@ int main(int argc, char* argv[]) {
     CSR input_cmat; //this will hold the CSR matrix
     int input_cmat_fmt = 0;
     if (input_type == 1)
-    {
+        {
         //INPUT EXAMPLE 1: RANDOM CSR
         //create a random sparse matrix
         DataT* rand_mat = new DataT[mat_cols * mat_rows];
@@ -206,11 +207,11 @@ int main(int argc, char* argv[]) {
         delete[] rand_mat;
 
         if (verbose > 0) cout << "CREATED A RANDOM CSR with density = " << input_entries_density << endl;
-    }
-    //______________________________________
+        }
+        //______________________________________
 
-    else if (input_type == 2)
-    {
+    if (input_type == 2)
+        {
         //TEST
         //INPUT EXAMPLE 2: read graph in edgelist format into CSR
             if (input_source.empty()) input_source = "testgraph1.txt";
@@ -218,14 +219,15 @@ int main(int argc, char* argv[]) {
             string delimiter = "\t";
             GraphMap snap_graph;
             read_snap_format(snap_graph, input_source, delimiter);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
+            
             MakeProper(snap_graph);
             convert_to_CSR(snap_graph, input_cmat, input_cmat_fmt);
 
             if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
             //______________________________________
-    }
-    else if (input_type == 3)
-    {
+        }
+    if (input_type == 3)
+        {
         //INPUT EXAMPLE 3: read from MTX format 
             //read from mtx
         if (input_source.empty()) input_source = "testmat.mtx";
@@ -233,46 +235,44 @@ int main(int argc, char* argv[]) {
 
         if (verbose > 0)            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
         //______________________________________
-    }
-
-    //INPUT EXAMPLE 4: create a random matrix with block structure
-    else if (input_type == 4)
+        }
+        //INPUT EXAMPLE 4: create a random matrix with block structure
+    if (input_type == 4)
     {
         DataT* rand_block_mat = new DataT[mat_rows * mat_cols];
 
-        //TODO do not start by array but create directly the CSR?
-        //TODO arbitrary partition
+            //TODO do not start by array but create directly the CSR?
+            //TODO arbitrary partition
 
 
-        if (mat_rows % input_block_size or mat_cols % input_block_size)
-        {
-            //TODO exception
-            std::cout << "ERROR when creating a random-sparse-blocks matrix: \n matrix dimensions (currently"
-                << mat_rows << " x " << mat_cols
-                << " must be a multiple of block size (" << input_block_size << ")"
-                << std::endl;
-            return 1;
-        }
+            if (mat_rows % input_block_size or mat_cols % input_block_size)
+            {
+                //TODO exception
+                std::cout << "ERROR when creating a random-sparse-blocks matrix: \n matrix dimensions (currently"
+                    << mat_rows << " x " << mat_cols
+                    << " must be a multiple of block size (" << input_block_size << ")"
+                    << std::endl;
+                return 1;
+            }
 
-        random_sparse_blocks_mat(rand_block_mat, mat_rows, mat_cols, mat_fmt, input_block_size, input_block_density, input_entries_density);
+            random_sparse_blocks_mat(rand_block_mat, mat_rows, mat_cols, mat_fmt, input_block_size, input_block_density, input_entries_density);
 
-        convert_to_CSR(rand_block_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
+            convert_to_CSR(rand_block_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
 
-        delete[] rand_block_mat;
+            delete[] rand_block_mat;
 
-        if (verbose > 0)
-        {
-            cout << "CREATED A RANDOM BLOCK MATRIX:"
-                << " Rows = " << mat_rows << "\n"
-                << " Columns: " << mat_cols << "\n"
-                << " Block size: " << input_block_size << "\n"
-                << " Density OF blocks: " << input_block_density << "\n"
-                << " Density IN blocks: " << input_entries_density << "\n"
-                << endl;
-        }
+            if (verbose > 0)
+            {
+                cout << "CREATED A RANDOM BLOCK MATRIX:"
+                    << " Rows = " << mat_rows << "\n"
+                    << " Columns: " << mat_cols << "\n"
+                    << " Block size: " << input_block_size << "\n"
+                    << " Density OF blocks: " << input_block_density << "\n"
+                    << " Density IN blocks: " << input_entries_density << "\n"
+                    << endl;
+            }
     }
         //___________________________________________
-
 
     //*******************************************
     //		END OF INPUT
@@ -318,6 +318,12 @@ int main(int argc, char* argv[]) {
     svi max_block_vec;
     int scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
     int scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
+
+    intT algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
+    intT* algo_col_part = new intT[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
+    partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions
+
+
     output_couple(output_names, output_values, "scramble", scramble);
     for (int current_repetition = 0; current_repetition < experiment_reps; current_repetition++)
     {
@@ -345,14 +351,21 @@ int main(int argc, char* argv[]) {
 
         int vbmat_blocks_fmt = 1;
         int vbmat_entries_fmt = 1;
-        intT algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
 
 
         //run the reordering and blocking algorithm
-        intT* algo_col_part = new intT[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
-        partition(algo_col_part, 0, input_cmat.cols, algo_block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
-        angle_hash_method(input_cmat, eps, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
-        delete[] algo_col_part;
+        if (reordering == 1)
+        {
+            angle_hash_method(input_cmat, eps, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
+        }
+        else
+        {
+            intT algo_block_rows = std::ceil((float)mat_rows / algo_block_size);
+            intT* algo_row_part = new intT[algo_block_rows + 1]; //partitions have one element more for the rightmost border.
+            partition(algo_row_part, 0, input_cmat.rows, algo_block_size); //row and column partitions
+            convert_to_VBS(input_cmat, vbmat_algo, algo_block_rows, algo_row_part, algo_block_cols, algo_col_part, vbmat_blocks_fmt, vbmat_entries_fmt);
+        }
+
         if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
         if (verbose > 1)    matprint(vbmat_algo);
 
@@ -377,10 +390,6 @@ int main(int argc, char* argv[]) {
 
         cleanVBS(vbmat_algo);
     }
-    
-    
-    
-    cleanCSR(input_cmat);
 
     output_couple(output_names, output_values, "VBS_total_nonzeros", mean(total_area_vec));
     output_couple(output_names, output_values, "VBS_total_nonzeros_error", std_dev(total_area_vec));
@@ -398,6 +407,36 @@ int main(int argc, char* argv[]) {
     output_couple(output_names, output_values, "VBS_max_block_H_error", std_dev(max_block_vec));
 
 
+    ncVBS vbmat;
+    svi nc_block_height;
+    svi nc_nz_per_block;
+    intT nc_nz_blocks = 0;
+
+    convert_to_ncVBS(input_cmat, vbmat, algo_block_cols, algo_col_part);
+    if (verbose > 0)    cout << "converted to ncVBS:" << endl;
+
+    for (int jb = 0; jb < algo_block_cols; jb++)
+    {
+        nc_block_height.push_back(vbmat.nzcount[jb]);
+        nc_nz_per_block.push_back(vbmat.nz_elems_in_block(jb));
+        if (vbmat.nzcount[jb] != 0)
+        {
+            nc_nz_blocks++;
+        }
+    }
+
+    output_couple(output_names, output_values, "ncVBS_height_mean", mean(nc_block_height));
+    output_couple(output_names, output_values, "ncVBS_height_std", std_dev(nc_block_height));
+
+    output_couple(output_names, output_values, "ncVBS_nz_per_block_mean", mean(nc_nz_per_block));
+    output_couple(output_names, output_values, "ncVBS_nz_per_block_std", std_dev(nc_nz_per_block));
+
+    output_couple(output_names, output_values, "ncVBS_nz_blocks", nc_nz_blocks);
+
+
+    cleanCSR(input_cmat);
+
+    delete[] algo_col_part;
 
     //OUTPUT PHASE
     if ((verbose == -1) or (verbose > 1))

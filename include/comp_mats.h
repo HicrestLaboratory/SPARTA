@@ -62,8 +62,69 @@ struct VBS {
                                     1: column_major                                     */
 };
 
+struct ncVBS 
+{
+    /*
+        Non-conform Variable Block Sparse matrix (ncVBS)
+
+    */
+
+    intT rows;                  //number of rows                     
+    intT* col_part;             /*cumulative number of cols up to start of col partition element i (first element = 0, last element col_part[block_cols] is total number of cols) */
+    intT* nzcount;	            /* len: block_cols; number of nonzero rows in each block-colums */
+    intT block_cols;	        /* the block column dimension of the matrix   	        */
+    intT** nzindex;              /* lenght: block_cols. Each vector contains the indices of the nzcount[i] nonzero rows in that column. */
+    DataT** mab;                 /* lenght: block_cols. Each vector contains the nonzero elements in that column block, row by row. */
+    DataT* mab_data;              /* length: sum of blocks dimensions*/
+
+    intT cols()
+    {
+        if (col_part) return col_part[block_cols];
+        else return -1;
+    }
+
+    intT tot_elems()
+    {
+        intT elems = 0;
+        intT col_size;
+        for (int jb = 0; jb < block_cols; jb++)
+        {
+            col_size = col_part[jb + 1] - col_part[jb];
+            elems += col_size * nzcount[jb];
+        }
+        return elems;
+    }
+
+    intT block_width(intT jb)
+    {
+        return (col_part[jb + 1] - col_part[jb]);
+    }
+
+    intT elems_in_block(intT jb)
+    {
+        return  (col_part[jb + 1] - col_part[jb]) * nzcount[jb];
+    }
+
+    intT nz_elems_in_block(intT jb)
+    {
+        intT elems = block_width(jb) * nzcount[jb];
+        intT nz = 0;
+        for (int i = 0; i < elems; i++)
+        {
+            if (mab[jb][i] != 0)
+            {
+                nz++;
+            }
+        }
+        return nz;
+    }
+};
+
+
 struct VBSfx {
 
+
+    //DEPRECATED
     /*--------------------------------------------------------------
         Block Sparse (VBS) matrix with square blocks of fixed dimension.
         The matrix itself doesn't need to be square, but must contain 

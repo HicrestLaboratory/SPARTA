@@ -18,7 +18,7 @@ MKL_LDFLAGS  = -lmkl_rt -lpthread -lm -ldl
 
 
 #cuda------------------------------------------
-CUDA_PATH ?= /usr/local/cuda-9.2
+CUDA_PATH ?= /usr/local/cuda-10.0
 #CUDA_LDFLAGS = --dynamic-linker=/lib/ld-linux-armhf.so.3
 #CUDA_LDFLAGS += $(addprefix -Xlinker ,$(CUDA_LDFLAGS))
 #CUDA_LDFLAGS += --sysroot=$(TARGET_FS)
@@ -140,6 +140,12 @@ clean:
 
 test_cublas_VBS : build_cuda $(CUDA_APP_DIR)/test_cublas_VBS
 
+test_cublas_ncVBS : build_cuda $(CUDA_APP_DIR)/test_cublas_ncVBS 
+
 test_AHA : build_general $(GEN_APP_DIR)/test_AHA 
+
+test_ncVBS : build_general $(GEN_APP_DIR)/test_ncVBS 
+
+test_M1vsM2 : build_general $(GEN_APP_DIR)/test_M1vsM2 
 
 
