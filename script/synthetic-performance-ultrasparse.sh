@@ -2,11 +2,9 @@
 
 OPTS="-w 1 -r 3 -v -1 -i 4"
 
+RESULTS="results/test_complete_cublas_results_ultrasparse.txt";
 
-RESULTS="results/test_complete_cublas_results_ultrasparse.txt"
-: > $(RESULTS)
-
-
+>"${RESULTS}";
 
 Mshapes=(1024 2048 4096 8192 16384);
 Nshapes=(1024 2048 4096 8192 16384);
@@ -22,7 +20,7 @@ for m in ${Mshapes[@]}; do
       for p in ${Pvalue[@]}; do
         for b in ${Bvalue[@]}; do
           for q in ${Qvalue[@]}; do
-            	./programs/cuda/test_cublas_VBS $(OPTS) -m $m -n $n -k $k -p $p -b $b -q $q >> $(RESULTS)
+          	./programs/cuda/test_cublas_VBS -w 1 -r 3 -v -1 -i 4 -m $m -n $n -k $k -p $p -b $b -q\ $q >> "${RESULTS}"
           done
         done
       done
