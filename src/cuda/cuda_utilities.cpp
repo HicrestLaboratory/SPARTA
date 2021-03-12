@@ -151,7 +151,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     }
 
     //record the elapsed time onto dt
-//    cudaDeviceSynchronize();
+    cudaDeviceSynchronize();
     cudaEventRecord(stop, 0);
 
     cudaEventSynchronize(stop);
