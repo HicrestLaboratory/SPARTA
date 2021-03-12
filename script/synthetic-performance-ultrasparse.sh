@@ -3,7 +3,7 @@
 OPTS="-w 1 -r 3 -v -1 -i 4"
 
 
-RESULTS = "results/test_complete_cublas_results_ultrasparse.txt"
+RESULTS="results/test_complete_cublas_results_ultrasparse.txt"
 : > $(RESULTS)
 
 
