@@ -369,9 +369,28 @@ int main(int argc, char* argv[]) {
     partition(A_row_part, 0, cmat_A.rows, block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
     partition(A_col_part, 0, cmat_A.cols, block_size);
 
+    //Create a VBS with fixed block dimension (see input)
+    VBS vbmat_A;
+    if (algo == 2 or algo == -1)
+    {
+
+        if ((A_rows % block_size != 0) or (A_cols % block_size != 0))
+        {
+            std::cout << "WARNING: The row or column dimension of the input matrix is not multiple of the block size " << std::endl;
+        }
+
+        convert_to_VBS(cmat_A,
+            vbmat_A,
+            block_rows, A_row_part,
+            block_cols, A_col_part,
+            vbmat_blocks_fmt, vbmat_entries_fmt);
+
+        if (verbose > 0) cout << "VBS matrix created." << endl;
+        if (verbose > 1) matprint(vbmat_A);
+    }
+
 
     //create a VBS which is permuted with the asymmetric angle method
-
 
     VBS vbmat_A_angle;
     if (algo == 4)
@@ -494,6 +513,44 @@ int main(int argc, char* argv[]) {
     }
 
     //--------------------------------------------
+    //      VBS x dense cublas multiplication	
+    //--------------------------------------------
+    if ((algo == 2) or (algo == -1))
+    {
+        DataT* mat_Cblock = new DataT[C_rows * C_cols];
+        int mat_Cblock_fmt = 1;
+
+        algo_times.clear();
+        for (int i = -warmup; i < experiment_reps; i++)
+        {
+            cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt);
+            //only saves non-warmup runs
+            if (i >= 0) algo_times.push_back(dt);
+        }
+
+        mean_time = mean(algo_times);
+        std_time = std_dev(algo_times);
+        output_couple(output_names, output_values, "VBSmm_mean(ms)", mean_time);
+        output_couple(output_names, output_values, "VBSmm_std", std_time);
+
+
+        if (verbose > 0)
+        {
+            cout << "BlockSparse-Dense multiplication. Time taken(ms): " << mean_time << endl;
+        }
+        if (verbose > 1)
+        {
+
+            cout << "BLOCK RESULT" << endl;
+            matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
+        }
+
+        //TODO add correctness check
+        delete[] mat_Cblock;
+
+    }
+
+    //--------------------------------------------
     //      VBS x dense cublas multiplication (permuted with angle algorithm)
     //--------------------------------------------
     if ((algo == 4)) 
@@ -527,7 +584,6 @@ int main(int argc, char* argv[]) {
 
         delete[] mat_Cblock_angle;
     }
-
 
     //--------------------------------------------
     //      CSR x Dense cusparse multiplication
@@ -592,7 +648,8 @@ int main(int argc, char* argv[]) {
     }
 
     delete[] mat_B;
-    if (algo == 2 or algo == -1) cleanCSR(cmat_A);
+    cleanCSR(cmat_A);
+    if (algo == 2 or algo == -1) cleanCSR(vbmat_A);
     if (algo == 4) cleanVBS(vbmat_A_angle);
 
 }
