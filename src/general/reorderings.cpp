@@ -630,13 +630,13 @@ int saad_reordering(CSR& cmat, float tau, intT* out_group)
     intT current_in_group = 0;
     intT current_out_group = 0;
 
-    for (int ip = 0; ip < cmat.rows; ip++)
+    for (intT ip = 0; ip < cmat.rows; ip++)
     {
         intT i = perm[ip];
         if (in_group[i] != -1) assign_group(in_group, out_group, perm, ip, current_out_group)
 
         //check all (groups of) rows after i; 
-        for (int jp = ip + 1; jp < cmat.rows; jp++)
+        for (intT jp = ip + 1; jp < cmat.rows; jp++)
         {
             j = perm[jp];
             if (in_group[j] != -1)
@@ -676,7 +676,7 @@ int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT
     CSR cmat_cpy;
     copy(cmat, cmat_cpy);
 
-    permute_CSR(cmat_cpy, angle_perm, cmat_cpy.fmt); //permute the tmp CSR
+    permute_CSR(cmat_cpy, perm, cmat_cpy.fmt); //permute the tmp CSR
 
     intT* row_part;
     intT row_blocks;
