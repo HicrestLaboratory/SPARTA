@@ -578,7 +578,8 @@ int hash_reordering(CSR& cmat, intT* groups)
 int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp, intT new_group_idx)
 {
     intT current_in_group = in_group[perm[jp]];
-    while (jp < len & in_group[perm[jp]] == current_in_group)
+    while (jp < len) 
+        if(in_group[perm[jp]] == current_in_group)
         {
             std::cout << "-------------------------- group element < " << len << std::endl;
             in_group[perm[jp]] = -1; //flagged;
