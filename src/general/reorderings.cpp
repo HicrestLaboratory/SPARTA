@@ -589,7 +589,7 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp,
 int saad_reordering(CSR& cmat, float tau, intT* out_group)
 {
     intT* in_group = new intT[cmat.rows];
-    hash_reordering(CSR& cmat, intT* in_group);
+    hash_reordering(cmat, in_group);
 
     intT* perm = new intT[cmat.rows];
     sort_permutation(perm, in_group, cmat.rows);
