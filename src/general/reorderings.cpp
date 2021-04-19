@@ -617,6 +617,7 @@ int saad_reordering(CSR& cmat, float tau, intT* out_group)
                 if (scalar_condition(cmat.ja[i], cmat.nzcount[i], cmat.ja[j], cmat.nzcount[j], tau))
                 {
                     assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
+                    std::cout << "-----------------added a group" << j << std::endl;
                 }
             }
         }
