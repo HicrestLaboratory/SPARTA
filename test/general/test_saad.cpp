@@ -73,8 +73,8 @@ int main(int argc, char* argv[]) {
     int verbose = 3;
     
     //matrix features
-    intT mat_rows = 12;
-    intT mat_cols = 8;
+    intT mat_rows = 20;
+    intT mat_cols = 40;
     intT mat_fmt = 0;
 
     string input_source = "no_input_source";
