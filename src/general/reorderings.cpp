@@ -608,7 +608,7 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float 
         }
     }
 
-    if ((count ^ 2) > (tau ^ 2) * len_A * len_B) return true;
+    if ((std::pow(count,2) > std::pow(tau,2) * len_A * len_B) return true;
     else return false;
 
 }
