@@ -569,7 +569,7 @@ int hash_reordering(CSR& cmat, intT* groups)
         }
         else
         {
-            if (!equal_rows(cmat.ja[curr], cmat.nzcount[curr], cmat.ja[prev], cmat.nzcount[prev]) current_group++;
+            if (!equal_rows(cmat.ja[curr], cmat.nzcount[curr], cmat.ja[prev], cmat.nzcount[prev])) current_group++;
         }
         groups[curr] = current_group;
     }
