@@ -586,34 +586,6 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT jp, intT new_
         }
 }
 
-
-bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float tau)
-{
-    if (len_A == 0 && len_B == 0) return true;
-    if (len_A == 0 || len_B == 0) return false;
-
-
-    intT count = 0;
-    intT i = 0, j = 0;
-
-    while (i < len_A && j < len_B)
-    {
-        if (cols_A[i] < cols_B[j]) i++;
-        else if (cols_A[i] > cols_B[j]) j++;
-        else if (cols_A[i] == cols_B[j])
-        {
-            i++;
-            j++;
-            count++;
-        }
-    }
-
-    if ((std::pow(count,2) > std::pow(tau,2) * len_A * len_B) return true;
-    else return false;
-
-}
-
-
 int saad_reordering(CSR& cmat, float tau, intT* out_group)
 {
     intT* in_group = new intT[cmat.rows];
@@ -644,6 +616,33 @@ int saad_reordering(CSR& cmat, float tau, intT* out_group)
         }
         current_out_group++;
     }
+
+}
+
+
+bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float tau)
+{
+    if (len_A == 0 && len_B == 0) return true;
+    if (len_A == 0 || len_B == 0) return false;
+
+
+    intT count = 0;
+    intT i = 0, j = 0;
+
+    while (i < len_A && j < len_B)
+    {
+        if (cols_A[i] < cols_B[j]) i++;
+        else if (cols_A[i] > cols_B[j]) j++;
+        else if (cols_A[i] == cols_B[j])
+        {
+            i++;
+            j++;
+            count++;
+        }
+    }
+
+    if ((std::pow(count, 2) > std::pow(tau, 2) * len_A * len_B)) return true;
+    else return false;
 
 }
 
