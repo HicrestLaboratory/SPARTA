@@ -545,7 +545,6 @@ bool equal_rows(intT* cols_A, intT len_A, intT* cols_B, intT len_B)
 
 int hash_reordering(CSR& cmat, intT* groups)
 {
-    intT* groups = new intT[cmat.rows];
     intT* hashes = new intT[cmat.rows]{ 0 };
     
     for (int i = 0; i < cmat.rows; i++)
@@ -561,8 +560,8 @@ int hash_reordering(CSR& cmat, intT* groups)
 
     for (int ip = 1; ip < cmat.rows; ip++)
     {
-        curr = perm[ip];
-        prev = perm[ip - 1];
+        intT curr = perm[ip];
+        intT prev = perm[ip - 1];
         if (hashes[curr] != hashes[prev])
         {
             current_group++;
