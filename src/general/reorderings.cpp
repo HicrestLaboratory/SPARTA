@@ -586,7 +586,6 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp,
         }
 }
 
-/*
 int saad_reordering(CSR& cmat, float tau, intT* out_group)
 {
     intT* in_group = new intT[cmat.rows];
@@ -619,7 +618,6 @@ int saad_reordering(CSR& cmat, float tau, intT* out_group)
     }
 
 }
-*/
 
 bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float tau)
 {
