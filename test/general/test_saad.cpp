@@ -345,7 +345,7 @@ int main(int argc, char* argv[]) {
 
 
         intT* hash_groups = new intT[input_cmat.rows];
-        hash_reordering(input_cmat, hash_groups);
+        saad_reordering(input_cmat, eps,hash_groups);
 
 
         int vbmat_blocks_fmt = 1;
