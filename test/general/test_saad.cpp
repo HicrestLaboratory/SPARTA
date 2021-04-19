@@ -14,6 +14,8 @@
 
 
 #include "sparse_utilities.h"
+#include "reorderings.h"
+
 #include "comp_mats.h"
 
 using namespace std;
@@ -342,7 +344,7 @@ int main(int argc, char* argv[]) {
 
 
 
-        intT* hash_groups = new intT[cmat.rows];
+        intT* hash_groups = new intT[input_cmat.rows];
         hash_reordering(input_cmat, hash_groups);
 
 
