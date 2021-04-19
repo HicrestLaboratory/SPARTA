@@ -601,12 +601,14 @@ int saad_reordering(CSR& cmat, float tau, intT* out_group)
     intT i, j;
     for (intT ip = 0; ip < cmat.rows; ip++)
     {
+        std::cout << ip << "<--- left" << std::endl;
         i = perm[ip];
         if (in_group[i] != -1) assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
 
         //check all (groups of) rows after i; 
         for (intT jp = ip + 1; jp < cmat.rows; jp++)
         {
+            std::cout << "     -    " << jp << "<--- right row:" << std::endl;
             j = perm[jp];
             if (in_group[j] != -1)
             {
