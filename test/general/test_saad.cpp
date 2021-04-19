@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
     int generate_new_random = 0;
 
     int input_type = 4;
-    intT algo_block_size = 3;
+    intT algo_block_size = 5;
     int experiment_reps= 1;
     int scramble = 3;
     string exp_name = "default";
