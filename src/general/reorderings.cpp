@@ -597,9 +597,11 @@ int saad_reordering(CSR& cmat, float tau, intT* out_group)
     intT current_in_group = 0;
     intT current_out_group = 0;
 
+
+    intT i, j;
     for (intT ip = 0; ip < cmat.rows; ip++)
     {
-        intT i = perm[ip];
+        i = perm[ip];
         if (in_group[i] != -1) assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
 
         //check all (groups of) rows after i; 
