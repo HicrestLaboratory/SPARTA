@@ -521,6 +521,7 @@ int angle_hash_method(CSR& cmat, float eps, intT* compressed_dim_partition, intT
 intT row_hash(intT* cols, intT len)
 {
     if (len == 0) return -1;
+    intT hash = 0;
     for (int i = 0; i < len; i++)
     {
         hash += cols[i];
