@@ -575,10 +575,10 @@ int hash_reordering(CSR& cmat, intT* groups)
     }
 }
 
-int assign_group(intT* in_group, intT* out_group, intT* perm, intT jp, intT new_group_idx)
+int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp, intT new_group_idx)
 {
     intT current_in_group = in_group[perm[jp]];
-    while (jp < cmat.rows & in_group[perm[jp]] == current_in_group)
+    while (jp < len & in_group[perm[jp]] == current_in_group)
         {
             in_group[perm[jp]] = -1; //flagged;
             out_group[perm[jp]] = new_group_idx;
@@ -586,6 +586,7 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT jp, intT new_
         }
 }
 
+/*
 int saad_reordering(CSR& cmat, float tau, intT* out_group)
 {
     intT* in_group = new intT[cmat.rows];
@@ -600,7 +601,7 @@ int saad_reordering(CSR& cmat, float tau, intT* out_group)
     for (intT ip = 0; ip < cmat.rows; ip++)
     {
         intT i = perm[ip];
-        if (in_group[i] != -1) assign_group(in_group, out_group, perm, ip, current_out_group);
+        if (in_group[i] != -1) assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
 
         //check all (groups of) rows after i; 
         for (intT jp = ip + 1; jp < cmat.rows; jp++)
@@ -610,7 +611,7 @@ int saad_reordering(CSR& cmat, float tau, intT* out_group)
             {
                 if (scalar_condition(cmat.ja[i], cmat.nzcount[i], cmat.ja[j], cmat.nzcount[j], tau))
                 {
-                    assign_group(in_group, out_group, perm, jp, current_out_group);
+                    assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
                 }
             }
         }
@@ -618,7 +619,7 @@ int saad_reordering(CSR& cmat, float tau, intT* out_group)
     }
 
 }
-
+*/
 
 bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float tau)
 {
