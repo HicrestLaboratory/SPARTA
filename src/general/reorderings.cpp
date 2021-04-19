@@ -582,6 +582,7 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp,
         {
             in_group[perm[jp]] = -1; //flagged;
             out_group[perm[jp]] = new_group_idx;
+            std::cout << "-------------------------- adding group element " << jp << std::endl;
             jp++;
         }
 }
