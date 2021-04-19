@@ -518,8 +518,6 @@ int angle_hash_method(CSR& cmat, float eps, intT* compressed_dim_partition, intT
     delete[] angle_grp;
 }
 
-
-
 intT row_hash(intT* cols, intT len)
 {
     if (len == 0) return -1;
@@ -529,7 +527,6 @@ intT row_hash(intT* cols, intT len)
     }
     return hash;
 }
-
 
 bool equal_rows(intT* cols_A, intT len_A, intT* cols_B, intT len_B)
 {
@@ -633,7 +630,7 @@ int saad_reordering(CSR& cmat, float tau, intT* out_group)
     for (intT ip = 0; ip < cmat.rows; ip++)
     {
         intT i = perm[ip];
-        if (in_group[i] != -1) assign_group(in_group, out_group, perm, ip, current_out_group)
+        if (in_group[i] != -1) assign_group(in_group, out_group, perm, ip, current_out_group);
 
         //check all (groups of) rows after i; 
         for (intT jp = ip + 1; jp < cmat.rows; jp++)
