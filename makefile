@@ -138,8 +138,6 @@ clean:
 
 #------------------TESTS--------------------
 
-test_% : build_general $(GEN_APP_DIR)/test_%
-
 test_cublas_VBS : build_cuda $(CUDA_APP_DIR)/test_cublas_VBS
 
 test_cublas_ncVBS : build_cuda $(CUDA_APP_DIR)/test_cublas_ncVBS 
@@ -150,4 +148,5 @@ test_ncVBS : build_general $(GEN_APP_DIR)/test_ncVBS
 
 test_M1vsM2 : build_general $(GEN_APP_DIR)/test_M1vsM2 
 
+test_saad : build_general $(GEN_APP_DIR)/test_saad
 
