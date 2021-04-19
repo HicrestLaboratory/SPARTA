@@ -616,8 +616,6 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float 
 
 int saad_reordering(CSR& cmat, float tau, intT* out_group)
 {
-    intT* out_group = new intT[cmat.rows];
-
     intT* in_group = new intT[cmat.rows];
     hash_reordering(CSR& cmat, intT* in_group);
 
