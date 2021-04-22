@@ -728,7 +728,7 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
     }
 
     intT i = 0;
-    intT i = 0;
+    intT j = 0;
     intT count = 0;
     while (i < len_A && j < len_B)
     {
