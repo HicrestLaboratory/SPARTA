@@ -1,5 +1,11 @@
 #pragma once
 
+struct reorder_params
+{
+    float tau = 0.9;
+    intT block_size = 16;
+};
+
 intT count_groups(intT* grp, intT grp_len);
 
 int grp_to_partition(intT* grp, intT grp_len, intT* partition);
@@ -34,8 +40,3 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
 
 int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt);
 
-struct reorder_params
-{
-    float tau = 0.9;
-    intT block_size = 16;
-};
