@@ -352,7 +352,7 @@ int main(int argc, char* argv[]) {
         reorder_params params;
         params.tau = eps;
         params.block_size = algo_block_size;
-        params.algo = "saad";
+        params.algo = reorder_algo;
         intT* hash_groups = new intT[input_cmat.rows];
         saad_reordering(input_cmat, params, hash_groups);
 
