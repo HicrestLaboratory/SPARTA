@@ -95,11 +95,12 @@ int main(int argc, char* argv[]) {
     int experiment_reps= 1;
     int scramble = 3;
     string exp_name = "default";
+    string reorder_algo = "saad";
 
     //terminal options loop
     int opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "b:e:f:i:m:n:p:P:q:r:S:s:v:")) != -1)
+    while ((c = getopt(argc, argv, "b:e:f:i:m:n:p:P:q:r:R:S:s:v:")) != -1)
         switch (c)
         {
         case 'N': //name of the experiment
@@ -176,6 +177,10 @@ int main(int argc, char* argv[]) {
         
         case 'v': //verbose
             verbose = stoi(optarg);
+            break;
+
+        case 'R': //verbose
+            reorder_algo = stoi(optarg);
             break;
 
         case 'S': //random seed; use -1 for random seeding.
