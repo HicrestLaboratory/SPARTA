@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
             break;
 
         case 'R': //verbose
-            reorder_algo = stoi(optarg);
+            reorder_algo = optarg;
             break;
 
         case 'S': //random seed; use -1 for random seeding.
