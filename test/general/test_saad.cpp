@@ -345,7 +345,11 @@ int main(int argc, char* argv[]) {
 
 
         intT* hash_groups = new intT[input_cmat.rows];
-        saad_reordering(input_cmat, eps,hash_groups);
+
+
+        //similarity function, lambda is used to fix the block-size parameter
+        auto sim_func = [](intT* cols_A, intT len_A, intT* cols_B, intT len_B, float tau)->scalar_block_condition(cols_A, len_A, cols_B, len_B, tau, block_size);
+        saad_reordering(input_cmat, eps,hash_groups, hash_reordering, sim_func);
 
 
         int vbmat_blocks_fmt = 1;
