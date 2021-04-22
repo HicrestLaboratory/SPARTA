@@ -576,7 +576,7 @@ int hash_reordering(CSR& cmat, intT* groups)
 }
 
 //TO DO 
-int hash_reordering(CSR& cmat, intT* groups, reorder_params params)
+int hash_reordering(CSR& cmat, intT* groups, reorder_params &params)
 {
     intT* hashes = new intT[cmat.rows]{ 0 };
 
@@ -620,7 +620,7 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp,
         }
 }
 
-int saad_reordering(CSR& cmat, reorder_params params, intT* out_group, int (*reorder_func)(CSR&, intT*, reorder_params), bool (*sim_condition)(intT*, intT, intT*, intT, float, reorder_params))
+int saad_reordering(CSR& cmat, reorder_params &params, intT* out_group, int (*reorder_func)(CSR&, intT*, reorder_params&), bool (*sim_condition)(intT*, intT, intT*, intT, float, reorder_params&))
 {
 
     intT* in_group = new intT[cmat.rows];
@@ -658,7 +658,7 @@ int saad_reordering(CSR& cmat, reorder_params params, intT* out_group, int (*reo
 
 }
 
-bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_params params)
+bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_params &params)
 {
 
     float tau = params->tau;
@@ -686,7 +686,7 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorde
 
 }
 
-bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_params params)
+bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_params &params)
 {
 
     float tau = params->tau;
