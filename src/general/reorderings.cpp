@@ -722,7 +722,7 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
 
     std::cout << "len_A: " << len_mod_A << std::endl;
 
-    intT i = 0;
+    i = 0;
     intT len_mod_B = 0;
     while (i < len_B)
     {
