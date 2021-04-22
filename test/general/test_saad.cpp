@@ -345,10 +345,9 @@ int main(int argc, char* argv[]) {
 
 
         intT* hash_groups = new intT[input_cmat.rows];
+        int (*sim_func)(intT*, intT, intT*, intT, float);
+        sim_func = [algo_block_size](intT* a, intT len_a, intT* b, intT len_b, float e) -> {return scalar_block_condition(intT * a, intT len_a, intT * b, intT len_b, float e, algo_block_size)};
 
-
-        //similarity function, lambda is used to fix the block-size parameter
-        auto sim_func = [algo_block_size](intT* cols_A, intT len_A, intT* cols_B, intT len_B, float tau)->int { return scalar_block_condition(cols_A, len_A, cols_B, len_B, tau, algo_block_size); };
         saad_reordering(input_cmat, eps,hash_groups, hash_reordering, sim_func);
 
 
