@@ -344,10 +344,9 @@ int main(int argc, char* argv[]) {
         if (verbose > 1) matprint(input_cmat);
 
 
-        bool sim_func(intT* a, intT len_a, intT* b, intT len_b, float tau) { return scalar_block_condition(a, len_a, b, len_b, tau, algo_block_size); }
-
+        reorder_params params;
         intT* hash_groups = new intT[input_cmat.rows];
-        saad_reordering(input_cmat, eps,hash_groups, hash_reordering, sim_func);
+        saad_reordering(input_cmat, eps,hash_groups, hash_reordering, scalar_block_condition);
 
 
         int vbmat_blocks_fmt = 1;

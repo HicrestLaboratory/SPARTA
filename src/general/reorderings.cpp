@@ -575,6 +575,38 @@ int hash_reordering(CSR& cmat, intT* groups)
     }
 }
 
+//TO DO 
+int hash_reordering(CSR& cmat, intT* groups, void* params)
+{
+    intT* hashes = new intT[cmat.rows]{ 0 };
+
+    for (int i = 0; i < cmat.rows; i++)
+    {
+        hashes[i] = row_hash(cmat.ja[i], cmat.nzcount[i]) + cmat.nzcount[i];
+    }
+
+    intT* perm = new intT[cmat.rows]{ 0 };
+    sort_permutation(perm, hashes, cmat.rows);
+
+    intT current_group = 0;
+    groups[perm[0]] = current_group;
+
+    for (int ip = 1; ip < cmat.rows; ip++)
+    {
+        intT curr = perm[ip];
+        intT prev = perm[ip - 1];
+        if (hashes[curr] != hashes[prev])
+        {
+            current_group++;
+        }
+        else
+        {
+            if (!equal_rows(cmat.ja[curr], cmat.nzcount[curr], cmat.ja[prev], cmat.nzcount[prev])) current_group++;
+        }
+        groups[curr] = current_group;
+    }
+}
+
 int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp, intT new_group_idx)
 {
     intT current_in_group = in_group[perm[jp]];
@@ -588,14 +620,15 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp,
         }
 }
 
-int saad_reordering(CSR& cmat, float tau, intT* out_group, int (*reorder_func)(CSR&, intT*), bool (*sim_condition)(intT*,intT,intT*,intT,float))
+int saad_reordering(CSR& cmat, void* params, intT* out_group, int (*reorder_func)(CSR&, intT*, void*), bool (*sim_condition)(intT*, intT, intT*, intT, float, void*))
 {
+
     intT* in_group = new intT[cmat.rows];
     reorder_func(cmat, in_group);
 
     intT* perm = new intT[cmat.rows];
     sort_permutation(perm, in_group, cmat.rows);
-    
+
     intT current_in_group = 0;
     intT current_out_group = 0;
 
@@ -612,7 +645,7 @@ int saad_reordering(CSR& cmat, float tau, intT* out_group, int (*reorder_func)(C
             j = perm[jp];
             if (in_group[j] != -1)
             {
-                if (sim_condition(cmat.ja[i], cmat.nzcount[i], cmat.ja[j], cmat.nzcount[j], tau))
+                if (sim_condition(cmat.ja[i], cmat.nzcount[i], cmat.ja[j], cmat.nzcount[j], params))
                 {
                     assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
                 }
@@ -625,13 +658,10 @@ int saad_reordering(CSR& cmat, float tau, intT* out_group, int (*reorder_func)(C
 
 }
 
-int saad_reordering(CSR& cmat, float tau, intT* out_group)
+bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, void* params)
 {
-   return saad_reordering(cmat, tau, out_group, hash_reordering, scalar_condition);
-}
 
-bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float tau)
-{
+    float tau = params->tau;
     if (len_A == 0 && len_B == 0) return true;
     if (len_A == 0 || len_B == 0) return false;
 
@@ -656,8 +686,11 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float 
 
 }
 
-bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float tau, intT block_size)
+bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, void *params)
 {
+
+    float tau = params->tau;
+    intT block_size = params->block_size;
     if (len_A == 0 && len_B == 0) return true;
     if (len_A == 0 || len_B == 0) return false;
 
