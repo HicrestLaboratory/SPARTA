@@ -635,8 +635,6 @@ int saad_reordering(CSR& cmat, reorder_params &params, intT* out_group, int (*re
     for (intT ip = 0; ip < cmat.rows; ip++)
     {
         i = perm[ip];
-        std::cout << "evaluating row: " << i << std::endl;
-
         if (in_group[i] != -1) assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
 
         //check all (groups of) rows after i; 
@@ -648,8 +646,6 @@ int saad_reordering(CSR& cmat, reorder_params &params, intT* out_group, int (*re
                 if (sim_condition(cmat.ja[i], cmat.nzcount[i], cmat.ja[j], cmat.nzcount[j], params))
                 {
                     assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
-                    std::cout << "---------merging with row: " << j << std::endl;
-
                 }
             }
         }
@@ -693,11 +689,7 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorde
         }
     }
 
-    if ((std::pow(count, 2) > std::pow(tau, 2) * len_A * len_B))
-    {
-        std::cout << std::pow(count, 2) - std::pow(tau, 2) * len_A * len_B;
-        return true;
-    }
+    if ((std::pow(count, 2) > std::pow(tau, 2) * len_A * len_B)) return true;
     else return false;
 
 }
@@ -744,15 +736,7 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
         while (j < len_B && cols_B[j]/block_size < modA) j++;
     }
 
-    std::cout << "count: " << count << std::endl;
-    std::cout << "eps: " << tau << std::endl;
-
-
-    if ((std::pow(count, 2) > std::pow(tau, 2) * len_mod_A * len_mod_B)) 
-    {
-        std::cout << std::pow(count, 2) - std::pow(tau, 2) * len_mod_A * len_mod_B;
-        return true;
-    }
+    if ((std::pow(count, 2) > std::pow(tau, 2) * len_mod_A * len_mod_B)) return true;
     else return false;
 }
 
