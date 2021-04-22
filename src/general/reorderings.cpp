@@ -658,6 +658,22 @@ int saad_reordering(CSR& cmat, reorder_params &params, intT* out_group, int (*re
 
 }
 
+int saad_reordering(CSR& cmat, reorder_params& params, intT* out_group)
+{
+    switch(params.algo)
+        case "saad":
+            saad_reordering(cmat, params, out_group, hash_reordering, scalar_condition);
+            break;
+        case "block_saad":
+            saad_reordering(cmat, params, out_group, hash_reordering, scalar_block_condition);
+            break;
+        case '?':
+            fprintf(stderr, "Option -%c does not exists, or requires an argument.\n", optopt);
+            return 1;
+        default:
+            abort();
+}
+
 bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_params &params)
 {
 
