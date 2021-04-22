@@ -612,7 +612,7 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp,
     intT current_in_group = in_group[perm[jp]];
     while (jp < len && in_group[perm[jp]] == current_in_group)
         {
-            std::cout << "--------------------------  group element < " << len << std::endl;
+            std::cout << "--------------------------  group element < " << current_in_group << std::endl;
             in_group[perm[jp]] = -1; //flagged;
             out_group[perm[jp]] = new_group_idx;
             std::cout << "-------------------------- adding group element " << jp << std::endl;
