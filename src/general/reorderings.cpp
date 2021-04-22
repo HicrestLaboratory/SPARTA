@@ -41,7 +41,7 @@ intT count_groups(intT* grp, intT grp_len)
 int grp_to_partition(intT* grp, intT grp_len, intT* partition)
 {
     // IN: 
-    //    grp: an array
+    //    grp: an array with group assignments
     //    grp_len: lenght of grp
     // OUT: 
     //    partition: partition similar entries of grp together (sorted by entry)
@@ -588,10 +588,10 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp,
         }
 }
 
-int saad_reordering(CSR& cmat, float tau, intT* out_group)
+int saad_reordering(CSR& cmat, float tau, intT* out_group, int (*reorder_func)(CSR&, intT*), bool (*sim_condition)(intT*,intT,intT*,intT,float))
 {
     intT* in_group = new intT[cmat.rows];
-    hash_reordering(cmat, in_group);
+    reorder_func(cmat, in_group);
 
     intT* perm = new intT[cmat.rows];
     sort_permutation(perm, in_group, cmat.rows);
@@ -603,21 +603,18 @@ int saad_reordering(CSR& cmat, float tau, intT* out_group)
     intT i, j;
     for (intT ip = 0; ip < cmat.rows; ip++)
     {
-        std::cout << ip << "<--- left" << std::endl;
         i = perm[ip];
         if (in_group[i] != -1) assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
 
         //check all (groups of) rows after i; 
         for (intT jp = ip + 1; jp < cmat.rows; jp++)
         {
-            std::cout << "     -    " << jp << "<--- right row:" << std::endl;
             j = perm[jp];
             if (in_group[j] != -1)
             {
-                if (scalar_condition(cmat.ja[i], cmat.nzcount[i], cmat.ja[j], cmat.nzcount[j], tau))
+                if (sim_condition(cmat.ja[i], cmat.nzcount[i], cmat.ja[j], cmat.nzcount[j], tau))
                 {
                     assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
-                    std::cout << "-----------------added a group" << j << std::endl;
                 }
             }
         }
@@ -639,7 +636,7 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float 
     {
         if (cols_A[i] < cols_B[j]) i++;
         else if (cols_A[i] > cols_B[j]) j++;
-        else if (cols_A[i] == cols_B[j])
+        else
         {
             i++;
             j++;
@@ -651,6 +648,53 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float 
     else return false;
 
 }
+
+bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float tau, intT block_size)
+{
+    if (len_A == 0 && len_B == 0) return true;
+    if (len_A == 0 || len_B == 0) return false;
+
+    intT i = 0, j = 0;
+    
+    intT modA, modB;
+    intT len_mod_A = 0;
+    while (i < len_A)
+    {
+        len_mod_A++;
+        modA = cols_A[i] / block_size;
+        while (i < len_A && cols_A[i] / block_size == modA) i++;
+    }
+
+    intT len_mod_B = 0;
+    while (i < len_B)
+    {
+        len_mod_B++;
+        modB = cols_B[i] / block_size;
+        while (i < len_B && cols_B[i] / block_size == modB) i++;
+    }
+
+
+    i = 0;
+    j = 0;
+    intT count = 0;
+    while (i < len_A && j < len_B)
+    {
+        modA = cols_A[i] / block_size;
+        modB = cols_B[j] / block_size;
+        if (modA == modB)
+        {
+            count++;
+            modA++;
+            modB++;
+        }
+        while (i < len_A && cols_A[i]/block_size < modB) i++;
+        while (j < len_B && cols_B[j]/block_size < modA) j++;
+    }
+
+    if ((std::pow(count, 2) > std::pow(tau, 2) * len_mod_A * len_mod_B)) return true;
+    else return false;
+}
+
 
 
 int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt)
