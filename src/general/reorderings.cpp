@@ -620,7 +620,7 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp,
         }
 }
 
-int saad_reordering(CSR& cmat, reorder_params &params, intT* out_group, int (*reorder_func)(CSR&, intT*, reorder_params&), bool (*sim_condition)(intT*, intT, intT*, intT, float, reorder_params&))
+int saad_reordering(CSR& cmat, reorder_params &params, intT* out_group, int (*reorder_func)(CSR&, intT*, reorder_params&), bool (*sim_condition)(intT*, intT, intT*, intT, reorder_params&))
 {
 
     intT* in_group = new intT[cmat.rows];
