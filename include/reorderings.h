@@ -26,7 +26,11 @@ int hash_reordering(CSR& cmat, intT* groups);
 
 int assign_group(intT* in_group, intT* out_group, intT* perm, intT jp, intT new_group_idx);
 
+int saad_reordering(CSR& cmat, float tau, intT* out_group, int(*reorder_func)(CSR&, intT*), bool(*sim_condition)(intT*, intT, intT*, intT, float));
+
 bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float tau);
+
+bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float tau, intT block_size);
 
 int saad_reordering(CSR& cmat, float tau, intT* out_group);
 

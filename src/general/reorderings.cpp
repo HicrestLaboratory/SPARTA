@@ -621,6 +621,13 @@ int saad_reordering(CSR& cmat, float tau, intT* out_group, int (*reorder_func)(C
         current_out_group++;
     }
 
+    return 0;
+
+}
+
+int saad_reordering(CSR& cmat, float tau, intT* out_group)
+{
+   return saad_reordering(cmat, tau, out_group, hash_reordering, scalar_condition);
 }
 
 bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, float tau)
@@ -694,8 +701,6 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
     if ((std::pow(count, 2) > std::pow(tau, 2) * len_mod_A * len_mod_B)) return true;
     else return false;
 }
-
-
 
 int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt)
 {
