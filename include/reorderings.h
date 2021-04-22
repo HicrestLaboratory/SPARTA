@@ -8,7 +8,7 @@ struct reorder_params
 {
     float tau = 0.9;
     intT block_size = 16;
-    string algo = "saad";
+    std::string algo = "saad";
 };
 
 intT count_groups(intT* grp, intT grp_len);
