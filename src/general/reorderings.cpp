@@ -721,6 +721,8 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
         while (i < len_A && cols_A[i] / block_size == modA) i++;
     }
 
+    std::cout << "len_A: " << len_mod_A << std::endl;
+
     intT len_mod_B = 0;
     while (i < len_B)
     {
@@ -728,6 +730,8 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
         modB = cols_B[i] / block_size;
         while (i < len_B && cols_B[i] / block_size == modB) i++;
     }
+
+    std::cout << "len_B: " << len_mod_B << std::endl;
 
 
     i = 0;
@@ -746,6 +750,10 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
         while (i < len_A && cols_A[i]/block_size < modB) i++;
         while (j < len_B && cols_B[j]/block_size < modA) j++;
     }
+
+    std::cout << "count: " << count << std::endl;
+    std::cout << "eps: " << tau << std::endl;
+
 
     if ((std::pow(count, 2) > std::pow(tau, 2) * len_mod_A * len_mod_B)) 
     {
