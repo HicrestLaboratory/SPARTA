@@ -661,7 +661,7 @@ int saad_reordering(CSR& cmat, reorder_params &params, intT* out_group, int (*re
 bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_params &params)
 {
 
-    float tau = params->tau;
+    float tau = params.tau;
     if (len_A == 0 && len_B == 0) return true;
     if (len_A == 0 || len_B == 0) return false;
 
@@ -689,8 +689,8 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorde
 bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_params &params)
 {
 
-    float tau = params->tau;
-    intT block_size = params->block_size;
+    float tau = params.tau;
+    intT block_size = params.block_size;
     if (len_A == 0 && len_B == 0) return true;
     if (len_A == 0 || len_B == 0) return false;
 
