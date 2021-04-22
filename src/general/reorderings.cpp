@@ -712,30 +712,23 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
 
     intT modA, modB;
     intT len_mod_A = 0;
-    intT i = 0;
-    while (i < len_A)
+    for(intT i = 0; i < len_A;)
     {
         len_mod_A++;
         modA = cols_A[i] / block_size;
         while (i < len_A && cols_A[i] / block_size == modA) i++;
     }
 
-    std::cout << "len_A: " << len_mod_A << std::endl;
-
-    i = 0;
     intT len_mod_B = 0;
-    while (i < len_B)
+    for (intT i = 0; i < len_B;)
     {
         len_mod_B++;
         modB = cols_B[i] / block_size;
         while (i < len_B && cols_B[i] / block_size == modB) i++;
     }
 
-    std::cout << "len_B: " << len_mod_B << std::endl;
-
-
-    i = 0;
-    j = 0;
+    intT i = 0;
+    intT i = 0;
     intT count = 0;
     while (i < len_A && j < len_B)
     {
