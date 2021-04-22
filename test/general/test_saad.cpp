@@ -66,6 +66,8 @@ int output_couple(string& names, string& values, string name, string value)
     values += value + " ";
 }
 
+
+
 int main(int argc, char* argv[]) {
 
 
@@ -340,8 +342,6 @@ int main(int argc, char* argv[]) {
             delete[] random_cols_permutation;
         }
         if (verbose > 1) matprint(input_cmat);
-
-    }
 
 
         bool sim_func(intT* a, intT len_a, intT* b, intT len_b, float tau) { return scalar_block_condition(a, len_a, b, len_b, tau, algo_block_size); }
