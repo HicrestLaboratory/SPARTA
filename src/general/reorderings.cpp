@@ -747,7 +747,11 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
         while (j < len_B && cols_B[j]/block_size < modA) j++;
     }
 
-    if ((std::pow(count, 2) > std::pow(tau, 2) * len_mod_A * len_mod_B)) return true;
+    if ((std::pow(count, 2) > std::pow(tau, 2) * len_mod_A * len_mod_B)) 
+    {
+        std::cout << std::pow(count, 2) - std::pow(tau, 2) * len_mod_A * len_mod_B;
+        return true;
+    }
     else return false;
 }
 
