@@ -32,7 +32,7 @@ int hash_reordering(CSR& cmat, intT* groups, reorder_params &params);
 
 int assign_group(intT* in_group, intT* out_group, intT* perm, intT jp, intT new_group_idx);
 
-int saad_reordering(CSR& cmat, reorder_params &params, intT* out_group, int(*reorder_func)(CSR&, intT*, reorder_params&), bool(*sim_condition)(intT*, intT, intT*, intT, float, reorder_params&));
+int saad_reordering(CSR& cmat, reorder_params &params, intT* out_group, int(*reorder_func)(CSR&, intT*, reorder_params&), bool(*sim_condition)(intT*, intT, intT*, intT, reorder_params&));
 
 bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_params &params);
 
