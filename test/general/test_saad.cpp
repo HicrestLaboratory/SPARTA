@@ -66,7 +66,6 @@ int output_couple(string& names, string& values, string name, string value)
     values += value + " ";
 }
 
-
 int main(int argc, char* argv[]) {
 
 
@@ -342,12 +341,12 @@ int main(int argc, char* argv[]) {
         }
         if (verbose > 1) matprint(input_cmat);
 
+    }
 
+
+        bool sim_func(intT* a, intT len_a, intT* b, intT len_b, float tau) { return scalar_block_condition(a, len_a, b, len_b, tau, algo_block_size); }
 
         intT* hash_groups = new intT[input_cmat.rows];
-        int (*sim_func)(intT*, intT, intT*, intT, float);
-        sim_func = [algo_block_size](intT* a, intT len_a, intT* b, intT len_b, float e) -> {return scalar_block_condition(intT * a, intT len_a, intT * b, intT len_b, float e, algo_block_size)};
-
         saad_reordering(input_cmat, eps,hash_groups, hash_reordering, sim_func);
 
 
