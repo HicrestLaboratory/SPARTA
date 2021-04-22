@@ -612,10 +612,8 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp,
     intT current_in_group = in_group[perm[jp]];
     while (jp < len && in_group[perm[jp]] == current_in_group)
         {
-            std::cout << "--------------------------  group element < " << current_in_group << std::endl;
             in_group[perm[jp]] = -1; //flagged;
             out_group[perm[jp]] = new_group_idx;
-            std::cout << "-------------------------- adding group element " << jp << std::endl;
             jp++;
         }
 }
@@ -637,6 +635,8 @@ int saad_reordering(CSR& cmat, reorder_params &params, intT* out_group, int (*re
     for (intT ip = 0; ip < cmat.rows; ip++)
     {
         i = perm[ip];
+        std::cout << "evaluating row: " << i << std::endl;
+
         if (in_group[i] != -1) assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
 
         //check all (groups of) rows after i; 
@@ -648,6 +648,8 @@ int saad_reordering(CSR& cmat, reorder_params &params, intT* out_group, int (*re
                 if (sim_condition(cmat.ja[i], cmat.nzcount[i], cmat.ja[j], cmat.nzcount[j], params))
                 {
                     assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
+                    std::cout << "---------merging with row: " << j << std::endl;
+
                 }
             }
         }
