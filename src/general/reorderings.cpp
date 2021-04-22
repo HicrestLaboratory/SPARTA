@@ -659,21 +659,13 @@ int saad_reordering(CSR& cmat, reorder_params &params, intT* out_group, int (*re
 }
 
 int saad_reordering(CSR& cmat, reorder_params& params, intT* out_group)
-{
-    switch (params.algo)
-    {
-    case "saad":
+{  
+    if (params.algo == "saad")
         saad_reordering(cmat, params, out_group, hash_reordering, scalar_condition);
-        break;
-    case "block_saad":
+    else if (params.algo == "saad_blocks")
         saad_reordering(cmat, params, out_group, hash_reordering, scalar_block_condition);
-        break;
-    case '?':
-        fprintf(stderr, "Option -%c does not exists, or requires an argument.\n", optopt);
-        return 1;
-    default:
-        abort();
-    }
+    else
+        std::cout << "UNKNONW ALGORITMH -->" << params.algo << "<-- in saad reordering" << std::endl;
 }
 
 bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_params &params)
