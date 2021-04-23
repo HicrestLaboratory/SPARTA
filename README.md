@@ -1,7 +1,7 @@
 # SPARTA
 **SPAR**se acceleration on **T**ensor **A**rchitecture
 
-The project aims to investigate new data structures and compression algorithms for exploiting new architecture capabilities, specifically designed for deep learning, to accelerate **sparse and irregular** applications, such as graph analytics. SPARTA looks at productivity and performance portability across different AI accelerators by providing an abtraction layer.  
+The project aims to investigate new data structures and compression algorithms for exploiting new architecture capabilities, specifically designed for deep learning, to accelerate **sparse and irregular** applications, such as graph analytics and arbitrary sparse DNN and GCN. SPARTA also looks at productivity and performance portability across different AI accelerators by providing an abtraction layer.  
 
 The repository contains stable code for reordering and compressing sparse matrices into dense block data-structures.
 The reordering algorithm matches rows (or columns) with similar patterns and builds dense blocks. 
