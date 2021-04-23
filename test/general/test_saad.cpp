@@ -310,6 +310,7 @@ int main(int argc, char* argv[]) {
     output_couple(output_names, output_values, "exp_name", exp_name);
     output_couple(output_names, output_values, "input_type", input_type);
     output_couple(output_names, output_values, "input_source", input_source);
+    output_couple(output_names, output_values, "reorder_algorithm", reorder_algo);
     output_couple(output_names, output_values, "rows", input_cmat.rows);
     output_couple(output_names, output_values, "cols", input_cmat.cols);
     output_couple(output_names, output_values, "total_nonzeros", mat_nnz);
