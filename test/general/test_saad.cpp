@@ -377,7 +377,7 @@ int main(int argc, char* argv[]) {
         //size of minimum, mazimum, average height of nonzero blocks.
         intT max_block_H = 0;
         intT min_block_H = mat_rows;
-        float avg_block_height = 0;
+        float avg_block_height = 0.;
         intT tot_nz_blocks = 0;
         for (intT i = 0; i < vbmat_algo.block_rows; i++) //modifies
         {
