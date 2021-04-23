@@ -22,7 +22,9 @@ using namespace std;
 typedef std::vector<float> vec_d;
 typedef std::vector<string> vec_str;
 
-float mean(svi v)
+
+template<class T>
+float mean(std::vector<T> v)
 {
     //mean of a vector
     float m = 0.;
@@ -34,7 +36,8 @@ float mean(svi v)
     return m;
 }
 
-float std_dev(svi v)
+template<class T>
+float std_dev(std::vector<T> v)
 {
     //std of a vector
     float m = mean(v);
@@ -321,7 +324,7 @@ int main(int argc, char* argv[]) {
     svi nz_blocks_vec;
     svi min_block_vec;
     svi max_block_vec;
-    svi avg_height_vec;
+    vec_d avg_height_vec;
     int scramble_cols = (scramble == 2 or scramble == 3) ? 1 : 0;
     int scramble_rows = (scramble == 1 or scramble == 3) ? 1 : 0;
 
