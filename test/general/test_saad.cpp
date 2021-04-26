@@ -353,6 +353,18 @@ int main(int argc, char* argv[]) {
         }
         if (verbose > 1) matprint(input_cmat);
 
+
+
+        int vbmat_blocks_fmt = 1;
+        int vbmat_entries_fmt = 1;
+        intT algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
+
+        //prepare the column partition
+        intT* algo_col_part = new intT[algo_block_cols + 1]; 
+        partition(algo_col_part, 0, input_cmat.cols, algo_block_size);
+
+
+        //run the reordering algo
         reorder_parameters params;
         params.tau = eps;
         params.block_size = algo_block_size;
@@ -360,18 +372,9 @@ int main(int argc, char* argv[]) {
         intT* hash_groups = new intT[input_cmat.rows];
         saad_reordering(input_cmat, params, hash_groups);
 
-        int vbmat_blocks_fmt = 1;
-        int vbmat_entries_fmt = 1;
-        intT algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
-
-        //run the reordering and blocking algorithm
-        intT* algo_col_part = new intT[algo_block_cols + 1]; //partitions have one element more for the rightmost border.
-        partition(algo_col_part, 0, input_cmat.cols, algo_block_size);
-
+        //create the block matrix
         VBS vbmat_algo;
         group_to_VBS(input_cmat, hash_groups, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt);
-
-        //create the matrix;
 
         delete[] algo_col_part;
         if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
@@ -388,6 +391,7 @@ int main(int argc, char* argv[]) {
             intT b_size = vbmat_algo.row_part[i + 1] - vbmat_algo.row_part[i];
             avg_block_height += b_size * vbmat_algo.nzcount[i];
             tot_nz_blocks += vbmat_algo.nzcount[i];
+            std::cout << "size: " << b_size << ", count: " << vbmat_algo.nzcount[i] << std::endl;
             if (b_size > max_block_H) max_block_H = b_size;
             if (b_size < min_block_H) min_block_H = b_size;
         }
