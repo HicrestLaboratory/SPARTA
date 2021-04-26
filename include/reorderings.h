@@ -4,7 +4,7 @@
 
 
 
-struct reorder_params
+struct reorder_parameters
 {
     float tau = 0.9;
     intT block_size = 16;
@@ -31,19 +31,21 @@ int angle_hash_method(CSR& cmat, float eps, intT* compressed_dim_partition, intT
 
 intT row_hash(intT* cols, intT len);
 
+intT row_block_hash(intT* cols, intT len, intT block_size);
+
 bool equal_rows(intT* cols_A, intT len_A, intT* cols_B, intT len_B);
 
-int hash_reordering(CSR& cmat, intT* groups, reorder_params &params);
+int hash_reordering(CSR& cmat, intT* groups, reorder_parameters &params);
 
 int assign_group(intT* in_group, intT* out_group, intT* perm, intT jp, intT new_group_idx);
 
-int saad_reordering(CSR& cmat, reorder_params &params, intT* out_group, int(*reorder_func)(CSR&, intT*, reorder_params&), bool(*sim_condition)(intT*, intT, intT*, intT, reorder_params&));
+int saad_reordering(CSR& cmat, reorder_parameters &params, intT* out_group, int(*reorder_func)(CSR&, intT*, reorder_parameters&), bool(*sim_condition)(intT*, intT, intT*, intT, reorder_parameters&));
 
-int saad_reordering(CSR& cmat, reorder_params& params, intT* out_group);
+int saad_reordering(CSR& cmat, reorder_parameters& params, intT* out_group);
 
-bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_params &params);
+bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_parameters &params);
 
-bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_params &params);
+bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_parameters &params);
 
 int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt);
 

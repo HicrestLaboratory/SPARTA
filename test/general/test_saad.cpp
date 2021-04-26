@@ -353,7 +353,7 @@ int main(int argc, char* argv[]) {
         }
         if (verbose > 1) matprint(input_cmat);
 
-        reorder_params params;
+        reorder_parameters params;
         params.tau = eps;
         params.block_size = algo_block_size;
         params.algo = reorder_algo;
