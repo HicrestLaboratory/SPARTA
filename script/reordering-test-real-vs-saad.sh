@@ -1,7 +1,5 @@
 #!/bin/bash
-
-OPTS="-i 2 -v -1"
-
+OPTS="-i 2 -v -1";
 RESULTS="results/reordering_vs_saad.txt";
 
 >"${RESULTS}";
@@ -15,8 +13,8 @@ for f in "data/*"; do
 		for P in ${P_value[@]}; do
 	      		for s in ${s_value[@]}; do
 				echo $f $e $P $s
-	          		./programs/general/test_saad $OPTS -e $e -P $P -s $s -f $f -R saad_blocks >> "$(RESULTS)"
-				./programs/general/test_saad $OPTS -e $e -P $P -s $s -f $f -R saad >> "$(RESULTS)"
+	          		./programs/general/test_saad $OPTS -e $e -P $P -s $s -f $f -R saad_blocks >> "${RESULTS}"
+				./programs/general/test_saad $OPTS -e $e -P $P -s $s -f $f -R saad >> "${RESULTS}"
 			done
 		done
 	done
