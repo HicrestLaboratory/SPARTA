@@ -391,7 +391,6 @@ int main(int argc, char* argv[]) {
             intT b_size = vbmat_algo.row_part[i + 1] - vbmat_algo.row_part[i];
             avg_block_height += b_size * vbmat_algo.nzcount[i];
             tot_nz_blocks += vbmat_algo.nzcount[i];
-            std::cout << "size: " << b_size << ", count: " << vbmat_algo.nzcount[i] << std::endl;
             if (b_size > max_block_H) max_block_H = b_size;
             if (b_size < min_block_H) min_block_H = b_size;
         }
