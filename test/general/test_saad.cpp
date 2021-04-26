@@ -297,6 +297,8 @@ int main(int argc, char* argv[]) {
     mat_rows = input_cmat.rows;
     mat_cols = input_cmat.cols;
 
+
+    std::cout << "rows: " << mat_rows << ", cols: " << mat_cols << std::endl;
     //*******************************************
     //	 CREATES (several) VBS from the CSR, EXTRACT FEATURES
     //******************************************
