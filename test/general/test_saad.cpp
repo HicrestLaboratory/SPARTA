@@ -355,7 +355,7 @@ int main(int argc, char* argv[]) {
 
 
 
-        int vbmat_blocks_fmt = 1;
+        int vbmat_blocks_fmt = 0;
         int vbmat_entries_fmt = 1;
         intT algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
 
@@ -386,7 +386,7 @@ int main(int argc, char* argv[]) {
         intT min_block_H = mat_rows;
         float avg_block_height = 0.;
         intT tot_nz_blocks = 0;
-        for (intT i = 0; i < vbmat_algo.block_rows; i++) //modifies
+        for (intT i = 0; i < vbmat_algo.block_rows; i++)
         {
             intT b_size = vbmat_algo.row_part[i + 1] - vbmat_algo.row_part[i];
             avg_block_height += b_size * vbmat_algo.nzcount[i];
