@@ -566,40 +566,19 @@ int hash_reordering(CSR& cmat, intT* groups, reorder_parameters &params)
 {
     intT* hashes = new intT[cmat.rows]{ 0 };
 
-    for (int i = 0; i < cmat.rows; i++)
+    if (params.algo == "saad")
     {
-        hashes[i] = row_hash(cmat.ja[i], cmat.nzcount[i]);
-    }
-
-    intT* perm = new intT[cmat.rows]{ 0 };
-    sort_permutation(perm, hashes, cmat.rows);
-
-    intT current_group = 0;
-    groups[perm[0]] = current_group;
-
-    for (int ip = 1; ip < cmat.rows; ip++)
-    {
-        intT curr = perm[ip];
-        intT prev = perm[ip - 1];
-        if (hashes[curr] != hashes[prev])
+        for (int i = 0; i < cmat.rows; i++)
         {
-            current_group++;
+            hashes[i] = row_hash(cmat.ja[i], cmat.nzcount[i]);
         }
-        else
-        {
-            if (!equal_rows(cmat.ja[curr], cmat.nzcount[curr], cmat.ja[prev], cmat.nzcount[prev])) current_group++;
-        }
-        groups[curr] = current_group;
     }
-}
-
-int hash_block_reordering(CSR& cmat, intT* groups, reorder_parameters& params)
-{
-    intT* hashes = new intT[cmat.rows]{ 0 };
-
-    for (int i = 0; i < cmat.rows; i++)
+    else if (params.algo == "saad_blocks")
     {
-        hashes[i] = row_block_hash(cmat.ja[i], cmat.nzcount[i], params.block_size);
+        for (int i = 0; i < cmat.rows; i++)
+        {
+            hashes[i] = row_block_hash(cmat.ja[i], cmat.nzcount[i], params.block_size);
+        }
     }
 
     intT* perm = new intT[cmat.rows]{ 0 };
@@ -679,7 +658,7 @@ int saad_reordering(CSR& cmat, reorder_parameters& params, intT* out_group)
     if (params.algo == "saad")
         saad_reordering(cmat, params, out_group, hash_reordering, scalar_condition);
     else if (params.algo == "saad_blocks")
-        saad_reordering(cmat, params, out_group, hash_block_reordering, scalar_block_condition);
+        saad_reordering(cmat, params, out_group, hash_reordering, scalar_block_condition);
     else
         std::cout << "UNKNONW ALGORITMH -->" << params.algo << "<-- in saad reordering" << std::endl;
 }
