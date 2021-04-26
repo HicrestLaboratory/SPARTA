@@ -740,7 +740,6 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
 int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt)
 {
     //create a VBS reordering the main (uncompressed) dimension of a CSR matrix according to a grouping
-    //do not change the original array
 
     intT rows = cmat.rows;
     intT cols = cmat.cols;
@@ -748,19 +747,19 @@ int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT
 
     intT* perm = new intT[main_dim];
 
-    sort_permutation(perm, grouping, main_dim); //find a permutation that sorts groups
+    sort_permutation(perm, grouping, main_dim); //find a permutation that sorts the main dimension according to the grouping
 
     intT grp_num;
     grp_num = count_groups(grouping, main_dim);
 
+    //partition the main dimension
     intT* main_partition = new intT[grp_num + 1];
+    grp_to_partition(grouping, main_dim, main_partition); 
 
-    grp_to_partition(grouping, main_dim, main_partition);
-
+    //create a permuted CSR
     CSR cmat_cpy;
     copy(cmat, cmat_cpy);
-
-    permute_CSR(cmat_cpy, perm, cmat_cpy.fmt); //permute the tmp CSR
+    permute_CSR(cmat_cpy, perm, cmat_cpy.fmt);
 
     intT* row_part;
     intT row_blocks;

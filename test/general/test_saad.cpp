@@ -356,7 +356,7 @@ int main(int argc, char* argv[]) {
 
 
         int vbmat_blocks_fmt = 0;
-        int vbmat_entries_fmt = 1;
+        int vbmat_entries_fmt = 0;
         intT algo_block_cols = std::ceil((float)mat_cols / algo_block_size);
 
         //prepare the column partition
