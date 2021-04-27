@@ -158,7 +158,7 @@ int main(int argc, char* argv[]) {
             }
             catch(...)
             {
-                std::out << "m (rows) should be an integer > 0";
+                std::cout << "m (rows) should be an integer > 0";
                 return 1;
             }
             break;
@@ -173,7 +173,7 @@ int main(int argc, char* argv[]) {
             }
             catch (...)
             {
-                std::out << "n (cols) should be an integer > 0";
+                std::cout << "n (cols) should be an integer > 0";
                 return 1;
             }
             break;
@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
             }
             catch (...)
             {
-                std::out << "p (input block size) should be an integer > 0";
+                std::cout << "p (input block size) should be an integer > 0";
                 return 1;
             }
             break;
@@ -201,7 +201,7 @@ int main(int argc, char* argv[]) {
             }
             catch (...)
             {
-                std::out << "P (algorithm block size) should be an integer > 0";
+                std::cout << "P (algorithm block size) should be an integer > 0";
                 return 1;
             }
             break;
@@ -210,11 +210,11 @@ int main(int argc, char* argv[]) {
             try
             {
                 experiment_reps = stoi(optarg);
-                if (stoi <= 0) throw 1;
+                if (experiment_reps <= 0) throw 1;
             }
             catch (...)
             {
-                std::out << "r (number of repetitions) should be an integer > 0";
+                std::cout << "r (number of repetitions) should be an integer > 0";
                 return 1;
             }
             break;
@@ -230,7 +230,7 @@ int main(int argc, char* argv[]) {
             }
             catch (...)
             {
-                std::out << "s (scramble) should be an 1,2 or 3";
+                std::cout << "s (scramble) should be an 1,2 or 3";
                 return 1;
             }
             break;
