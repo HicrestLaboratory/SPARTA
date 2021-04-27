@@ -150,32 +150,89 @@ int main(int argc, char* argv[]) {
 
         case 'm': //input matrix rows
             //has only effect for example 1 and 4
-            mat_rows = stoi(optarg);
+            try
+            {
+                mat_rows = stoi(optarg);
+                if (mat_rows <= 0) throw 1;
+
+            }
+            catch(...)
+            {
+                std::out << "m (rows) should be an integer > 0";
+                return 1;
+            }
             break;
 
         case 'n': //input matrix cols
             //has only effect for example 1 and 4
-            mat_cols = stoi(optarg);
+            try
+            {
+              mat_cols = stoi(optarg);
+              if (mat_cols <= 0) throw 1;
+
+            }
+            catch (...)
+            {
+                std::out << "n (cols) should be an integer > 0";
+                return 1;
+            }
+            break;
             break;
 
         case 'p': //size of input blocks
             //ony used if i = 4, random VBS
-            input_block_size = stoi(optarg);
+            try
+            {
+                input_block_size = stoi(optarg);
+                if (input_block_size <= 0) throw 1;
+            }
+            catch (...)
+            {
+                std::out << "p (input block size) should be an integer > 0";
+                return 1;
+            }
             break;
 
         case 'P': //size of the blocks used by the reordering algorithm
-            algo_block_size = stoi(optarg);
+            try 
+            {
+                algo_block_size = stoi(optarg);
+                if (algo_block_size <= 0) throw 1;
+            }
+            catch (...)
+            {
+                std::out << "P (algorithm block size) should be an integer > 0";
+                return 1;
+            }
             break;
 
         case 'r': //number of experiment repetitions
-            experiment_reps = stoi(optarg);
+            try
+            {
+                experiment_reps = stoi(optarg);
+                if (stoi <= 0) throw 1;
+            }
+            catch (...)
+            {
+                std::out << "r (number of repetitions) should be an integer > 0";
+                return 1;
+            }
             break;
 
         case 's': //scramble the input matrix?  0: NO SCRAMBLE
                     //                          1: SCRAMBLE the rows 
                     //                          2: SCRAMBLE the columns
                     //                          3: SCRAMBLE both rows and columsn
-            scramble = stoi(optarg);
+            try
+            {
+                scramble = stoi(optarg);
+                if (scramble != 1 && scramble != 2 && scramble != 3) throw 1;
+            }
+            catch (...)
+            {
+                std::out << "s (scramble) should be an 1,2 or 3";
+                return 1;
+            }
             break;
         
         case 'v': //verbose
