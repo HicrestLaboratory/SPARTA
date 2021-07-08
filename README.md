@@ -1,11 +1,11 @@
 # SPARTA
 **SPAR**se acceleration on **T**ensor **A**rchitecture
 
-The project aims to investigate new data structures and compression algorithms for exploting new architecture capabilities, specifically designed for deep learning, to accelerate **sparse and irregular** applications, such as graph analytics.
+The project aims to investigate new data structures and compression algorithms for exploiting new architecture capabilities, specifically designed for deep learning, to accelerate **sparse and irregular** applications, such as graph analytics and arbitrary sparse DNN and GCN. SPARTA also looks at productivity and performance portability across different AI accelerators by providing an abstraction layer.  
 
-The repository contains code for reordering and compressing sparse matrices into dense block data-structures.
+The repository contains stable code for reordering and compressing sparse matrices into dense block data-structures.
 The reordering algorithm matches rows (or columns) with similar patterns and builds dense blocks. 
-The similarity of patterns is first determined with a hash function, and then refined with a "angle algorithm", which matches patterns with high cosine similarity.
+The similarity of patterns is first determined with a hash function, and then refined with a tunable algorithm, which matches patterns with high cosine similarity.
 
 The repository also contains code for sparse-dense matrix-matrix multiplication that exploits the dense block data-structure.
 
@@ -103,6 +103,7 @@ Options for the cuda_test:
 * Supporting Nvidia architecture (DONE!)
 * New algorithm for Matrix reordering and compression to support non-coherent blocks (DONE!)
 * New algorithm for sparse-sparse multiplication
-* Bring back support for MKL
+* Bring back support for MKL 
+* Supporting other AI accelerators
 
 **Stay Tuned!**

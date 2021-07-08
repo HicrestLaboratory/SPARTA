@@ -18,7 +18,11 @@ MKL_LDFLAGS  = -lmkl_rt -lpthread -lm -ldl
 
 
 #cuda------------------------------------------
+<<<<<<< HEAD
 CUDA_PATH ?= $(CUDA_HOME)
+=======
+CUDA_PATH= $(CUDA_HOME)
+>>>>>>> 9170221267af4b8601cef206a4929f1264813a1a
 #CUDA_LDFLAGS = --dynamic-linker=/lib/ld-linux-armhf.so.3
 #CUDA_LDFLAGS += $(addprefix -Xlinker ,$(CUDA_LDFLAGS))
 #CUDA_LDFLAGS += --sysroot=$(TARGET_FS)
@@ -148,4 +152,5 @@ test_ncVBS : build_general $(GEN_APP_DIR)/test_ncVBS
 
 test_M1vsM2 : build_general $(GEN_APP_DIR)/test_M1vsM2 
 
+test_saad : build_general $(GEN_APP_DIR)/test_saad
 

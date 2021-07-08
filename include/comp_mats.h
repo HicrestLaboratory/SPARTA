@@ -60,6 +60,7 @@ struct VBS {
     int blocks_fmt;          /* storage format of blocks:
                                     0: row-major
                                     1: column_major                                     */
+
 };
 
 struct ncVBS 
