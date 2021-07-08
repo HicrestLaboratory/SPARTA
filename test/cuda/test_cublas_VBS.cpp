@@ -392,40 +392,6 @@ int main(int argc, char* argv[]) {
 
     //create a VBS which is permuted with the asymmetric angle method
 
-    VBS vbmat_A_angle;
-    if (algo == 4)
-    {
-
-        CSR cmat_A_scrambled;
-        copy(cmat_A, cmat_A_scrambled);
-
-        if (verbose > 0) cout << "input matrix rows scrambled" << endl;
-        int* pre_algo_permutation = new int[A_rows];
-        randperm(pre_algo_permutation, A_rows);
-        permute_CSR(cmat_A_scrambled, pre_algo_permutation, 0);
-
-        angle_hash_method(cmat_A_scrambled, eps, A_col_part, block_cols, vbmat_A_angle, vbmat_blocks_fmt, vbmat_entries_fmt, 0);
-
-        cleanCSR(cmat_A_scrambled);
-        delete[] pre_algo_permutation;
-
-        if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
-        if (verbose > 1)    matprint(vbmat_A_angle);
-
-        //report on the block structure of vbmat_A_angle
-
-        int VBS_nztot = vbmat_A_angle.nztot;
-
-        int min_block_H = *(std::min_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows));
-        int max_block_H = *(std::max_element(vbmat_A_angle.row_part, vbmat_A_angle.row_part + vbmat_A_angle.block_rows));
-
-        output_couple(output_names, output_values, "VBS_AAM_nonzeros", VBS_nztot);
-        output_couple(output_names, output_values, "VBS_AAM_block_rows", vbmat_A_angle.block_rows);
-        output_couple(output_names, output_values, "VBS_AAM_nz_blocks", count_nnz_blocks(vbmat_A_angle));
-        output_couple(output_names, output_values, "VBS_AAM_min_block_H", min_block_H);
-        output_couple(output_names, output_values, "VBS_AAM_max_block_H", max_block_H);
-    }
-
     //*******************************************
     //         MULTIPLICATION PHASE
     //___________________________________________
@@ -650,7 +616,6 @@ int main(int argc, char* argv[]) {
     delete[] mat_B;
     cleanCSR(cmat_A);
     if (algo == 2 or algo == -1) cleanVBS(vbmat_A);
-    if (algo == 4) cleanVBS(vbmat_A_angle);
 
 }
  

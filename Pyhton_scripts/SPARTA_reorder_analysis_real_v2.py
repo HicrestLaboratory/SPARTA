@@ -74,24 +74,27 @@ columsn = ['exp_name',
            'VBS_max_block_H_error']
 
 results_df["density"] = results_df.apply(lambda x: x['total_nonzeros']/(x['rows']*x["cols"]), axis=1)
-results_df["VBS_density"] = results_df.apply(lambda x: x['VBS_total_nonzeros']/(x['rows']*x["cols"]), axis=1)
+results_df["VBS_density"] = results_df.apply(lambda x: x['total_nonzeros']/x['VBS_total_nonzeros'], axis=1)
 
 
 source = "data/real_graphs/CA-CondMat.txt";
 
 plt.figure()
 
-scramble = 3;
-algo_block_size = 64;
-rows = 60341;
+scramble = 1;
+algo_block_size = 32;
+rows = 6110;
 
 ax = plt.gca();
-y = "VBS_avg_nzblock_height";
-x = "epsilon"
+x = "VBS_avg_nzblock_height";
+y = "VBS_density"
 q = 'rows == @rows and algo_block_size == @algo_block_size and scramble == @scramble and reorder_algorithm == "saad"' 
 results_df.query(q).plot(x = x, y = y, kind = "scatter", ax = ax);
 
 
+plt.title("Saad's blocking for facebook SNAP graph \n block width fixed at 32")
+plt.ylabel("density after blocking");
+plt.xlabel("average block height");
 
-q = 'rows == @rows and algo_block_size == @algo_block_size and scramble == @scramble and reorder_algorithm == "saad_blocks"' 
-results_df.query(q).plot(x = x, y = y, kind = "scatter", color = "red", ax = ax);
+#q = 'rows == @rows and algo_block_size == @algo_block_size and scramble == @scramble and reorder_algorithm == "saad_blocks"' 
+#results_df.query(q).plot(x = x, y = y, kind = "scatter", color = "red", ax = ax);
