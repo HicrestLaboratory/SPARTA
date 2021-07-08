@@ -519,37 +519,6 @@ int main(int argc, char* argv[]) {
     //--------------------------------------------
     //      VBS x dense cublas multiplication (permuted with angle algorithm)
     //--------------------------------------------
-    if ((algo == 4)) 
-    {
-
-        DataT* mat_Cblock_angle = new DataT[C_rows * C_cols];
-        int mat_Cblock_angle_fmt = 1;
-
-        algo_times.clear();
-        for (int i = -warmup; i < experiment_reps; i++)
-        {
-            cublas_blockmat_multiply(vbmat_A_angle, mat_B, B_cols, B_rows, mat_Cblock_angle, C_rows, dt);
-            if (i >= 0) algo_times.push_back(dt);
-        }
-
-        mean_time = mean(algo_times);
-        std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "VBSmm_angle_mean(ms)", mean_time);
-        output_couple(output_names, output_values, "VBSmm_angle_std", std_time);
-
-        if (verbose > 0)
-        {
-            cout << "BlockSparse-Dense multiplication (permuted with AHS). Time taken(ms): " << mean_time << endl;
-        }
-        if (verbose > 1)
-        {
-
-            cout << "BLOCK RESULT (permuted with AHS)" << endl;
-            matprint(mat_Cblock_angle, C_rows, C_cols, C_rows, mat_Cblock_angle_fmt);
-        }
-
-        delete[] mat_Cblock_angle;
-    }
 
     //--------------------------------------------
     //      CSR x Dense cusparse multiplication
