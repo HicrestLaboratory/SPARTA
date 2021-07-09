@@ -1,0 +1,5 @@
+g++ -fpermissive -Wl,--no-as-needed -m64 -std=c++11 -fopenmp -I include -o obj/general/nvbs_utilities.o -c src/general/nvbs_utilities.cpp
+g++ -fpermissive -Wl,--no-as-needed -m64 -std=c++11 -fopenmp -I include -o obj/general/reorderings.o -c src/general/reorderings.cpp
+g++ -fpermissive -Wl,--no-as-needed -m64 -std=c++11 -fopenmp -I include -o obj/general/sparse_utilities.o -c src/general/sparse_utilities.cpp
+/usr/local/cuda-10.2/bin/nvcc -ccbin g++  -std=c++11 -m64  -g -G  -I include/cuda_inc -I include   -o obj/cuda/test_cublas_cusparse_comparison.o -c test/cuda/test_cublas_cusparse_comparison.cpp
+makefile:113: recipe for target 'obj/cuda/test_cublas_cusparse_comparison.o' failed

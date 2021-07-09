@@ -12,4 +12,4 @@ srun \
 	--time=00:01:00 \
 	--ntasks=1 \
 	-N 1 \
-	./run.sh
+	./srun.sh
