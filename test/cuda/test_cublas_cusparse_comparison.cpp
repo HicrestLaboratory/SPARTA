@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
     //terminal options loop
     opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "a:b:i:q:e:f:m:n:p:r:k:s:v:w:S:")) != -1)
+    while ((c = getopt(argc, argv, "i:q:f:m:n:r:k:v:w:S:")) != -1)
         switch (c)
         {
         case 'i':// select input example
@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
             experiment_reps = stoi(optarg);
             break;
 
-	case "S": //random seed
+	case 'S': //random seed
             seed = stoi(optarg);
             break;
 
@@ -253,7 +253,6 @@ int main(int argc, char* argv[]) {
 
     output_couple(output_names, output_values, "Warmup", warmup);
     output_couple(output_names, output_values, "Repetitions", experiment_reps);
-    output_couple(output_names, output_values, "Algorithm", algo);
 
 
     if (verbose > 0)        cout << "\n \n ************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl;
