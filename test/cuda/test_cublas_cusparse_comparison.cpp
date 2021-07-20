@@ -78,7 +78,6 @@ int main(int argc, char* argv[]) {
     int A_cols = 8;
     int mat_A_fmt = 1;          //cuda needs column-major matrices
     float density = 0.5;        //density of the input matrix;
-    float block_density = 0.5;  //density inside the blocks;
     string input_source;
 
     int B_cols = 5;             //number of columns in the output matrix;
@@ -86,7 +85,7 @@ int main(int argc, char* argv[]) {
 
     int seed = 123;
 
-    int warmup = 0;             //number of warmup experiments
+    int warmup = 1;             //number of warmup experiments
     int experiment_reps = 5;    //number of non-warmup repetitions
 
     //terminal options loop
