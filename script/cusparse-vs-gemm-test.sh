@@ -14,7 +14,7 @@ for m in ${m_value[@]}; do
 		for k in ${k_value[@]}; do
 	      		for q in ${q_value[@]}; do
 				echo $m $n $k $q
-	          		./programs/general/test_cublas_cusparse_comparison $OPTS -m $m -n $n -k $k -q $q>> "${RESULTS}"
+	          		/home/clusterusers/pasyloslabini/SPARTA/programs/cuda/test_cublas_cusparse_comparison $OPTS -m $m -n $n -k $k -q $q>> "${RESULTS}"
 			done
 		done
 	done
