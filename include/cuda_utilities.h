@@ -1,6 +1,6 @@
 #include "comp_mats.h"
 
-void cublas_blockmat_multiply(const VBS& vbmatA, DataT* B, int B_cols, int B_lead_dim, DataT* C, int C_lead_dim, float &dt);
+void cublas_blockmat_multiply(const VBS& vbmatA, DataT* B, int B_cols, int B_lead_dim, DataT* C, int C_lead_dim, float &dt, int n_streams);
 
 int cublas_gemm_custom(const DataT* A, unsigned int A_rows, unsigned int A_cols, unsigned int lda, const DataT* B, unsigned int B_cols, unsigned int ldb, DataT* C, unsigned int ldc, const DataT alpha, const DataT beta, float& dt);
 

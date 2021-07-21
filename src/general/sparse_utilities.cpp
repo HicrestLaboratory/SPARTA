@@ -83,7 +83,6 @@ int equal(intT rows, intT cols, DataT* A, intT lead_A, int fmt_A, DataT* B, intT
     return 1;
 }
 
-///TODO: make version with arbitrary secondary dimension partition, instead of fixed block side
 int random_sparse_blocks_mat(DataT *mat, intT rows, intT cols, int fmt, intT block_size, float block_sparsity, float block_entries_sparsity) 
 {
 

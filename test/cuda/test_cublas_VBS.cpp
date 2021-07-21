@@ -83,6 +83,8 @@ int main(int argc, char* argv[]) {
     string input_source;
     int scramble = 0;           //scramble the input matrix?
 
+    int n_streams = 16;         //number of streams for the custom block_based multiplication
+
     int B_cols = 5;             //number of columns in the output matrix;
     float B_density = 1.;       //density of the multiplication matrix
 
@@ -106,7 +108,7 @@ int main(int argc, char* argv[]) {
     //terminal options loop
     opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "a:b:i:q:e:f:m:n:p:r:k:s:v:w:S:")) != -1)
+    while ((c = getopt(argc, argv, "a:b:i:q:e:f:m:n:p:r:k:s:v:w:S:z")) != -1)
         switch (c)
         {
         case 'i':// select input example
@@ -203,6 +205,11 @@ int main(int argc, char* argv[]) {
         case 'w': //warmup repetitions
             warmup = stoi(optarg);
             break;
+
+        case 'z': //streams for cublas_block_multiply
+            n_streams = stoi(optarg);
+            break;
+
 
         case '?':
             fprintf(stderr, "Option -%c does not exists, or requires an argument.\n", optopt);
@@ -474,8 +481,6 @@ int main(int argc, char* argv[]) {
         }
         
         delete[] mat_A_gemm;
-        delete[] mat_Cgemm;
-
     }
 
     //--------------------------------------------
@@ -499,6 +504,11 @@ int main(int argc, char* argv[]) {
         output_couple(output_names, output_values, "VBSmm_mean(ms)", mean_time);
         output_couple(output_names, output_values, "VBSmm_std", std_time);
 
+        if (check_correct)
+        {
+            bool vbs_check = equal(C_rows, C_cols, mat_Cgemm, C_cols, 0, mat_Cblock, C_cols, 0, 0.00001f);
+            output_couple(output_names, output_values, "vbs_check", vbs_check);
+        }
 
         if (verbose > 0)
         {
@@ -511,14 +521,9 @@ int main(int argc, char* argv[]) {
             matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
         }
 
-        //TODO add correctness check
         delete[] mat_Cblock;
 
     }
-
-    //--------------------------------------------
-    //      VBS x dense cublas multiplication (permuted with angle algorithm)
-    //--------------------------------------------
 
     //--------------------------------------------
     //      CSR x Dense cusparse multiplication
@@ -553,6 +558,11 @@ int main(int argc, char* argv[]) {
             output_couple(output_names, output_values, "cusparse_spmm_mean(ms)", mean_time);
             output_couple(output_names, output_values, "cusparse_spmm_std", std_time);
 
+            if (check_correct)
+            {
+                bool csr_check = equal(C_rows, C_cols, mat_Cgemm, C_cols, 0, mat_C_csrmm, C_cols, 0, 0.00001f);
+                output_couple(output_names, output_values, "csr_check", csr_check);
+            }
 
             if (verbose > 0)
             {

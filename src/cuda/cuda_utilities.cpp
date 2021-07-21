@@ -26,7 +26,7 @@
     intT = int
 */
 
-void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lead_dim, DataT *C, int C_lead_dim, float &dt){
+void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lead_dim, DataT *C, int C_lead_dim, float &dt, int n_streams = 16){
     //multiplies a VBS matrix (vbmatA) and a dense matrix (B); stores into (C)
     //vbmatA:       column-major entries storage;
     //              column-major block_storage; 
@@ -98,8 +98,10 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     cudaEventRecord(start, 0);
 
     //creates streams. Each block rows is assigned a different stream.
-    cudaStream_t streams[vbmatA.block_rows];
-    for (int ib = 0; ib < vbmatA.block_rows; ib++)
+    
+    if (n_streams > vbmatA.block_rows) n_streams = vbmatA.block_rows;
+    cudaStream_t streams[n_streams];
+    for (int ib = 0; ib < n_streams; ib++)
     {
         cudaStreamCreate(&(streams[ib]));
     }
@@ -118,7 +120,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
             tot_nonzero_blocks += 1;
             rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
 
-            cublasSetStream(handle, streams[ib]);               //each block row works on a different stream
+            cublasSetStream(handle, streams[ib%n_streams]);               //each block row works on a different stream
 
             //define the sub-matrices
 	        const DataT* d_A_block = d_A + vbmat_idx;           //access the block on d_A.
