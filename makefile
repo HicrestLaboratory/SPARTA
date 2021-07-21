@@ -150,3 +150,4 @@ test_M1vsM2 : build_general $(GEN_APP_DIR)/test_M1vsM2
 
 test_saad : build_general $(GEN_APP_DIR)/test_saad
 
+test_cublas_cusparse_comparison : build_cuda $(CUDA_APP_DIR)/test_cublas_cusparse_comparison
