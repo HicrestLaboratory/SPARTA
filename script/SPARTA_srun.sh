@@ -7,7 +7,7 @@
 #SBATCH --partition training
 #SBATCH --gres=gpu
 #SBATCH --nodes 1
-#SBATCH --time=00:01:00
+#SBATCH --time=99:00:00
 
 #SBATCH --ntasks=1
 
