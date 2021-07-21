@@ -87,11 +87,12 @@ int main(int argc, char* argv[]) {
 
     int warmup = 1;             //number of warmup experiments
     int experiment_reps = 5;    //number of non-warmup repetitions
-
+    bool header = 1;
+	
     //terminal options loop
     opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "i:q:f:m:n:r:k:v:w:S:")) != -1)
+    while ((c = getopt(argc, argv, "i:q:f:m:n:r:k:v:w:S:H")) != -1)
         switch (c)
         {
         case 'i':// select input example
@@ -145,7 +146,9 @@ int main(int argc, char* argv[]) {
         case 'w': //warmup repetitions
             warmup = stoi(optarg);
             break;
-
+	case 'H':
+	    header = stoi(optarg);
+	    break;
         case '?':
             fprintf(stderr, "Option -%c does not exists, or requires an argument.\n", optopt);
             return 1;
@@ -364,7 +367,7 @@ int main(int argc, char* argv[]) {
     //OUTPUT PHASE
     if ((verbose == -1) or (verbose > 1))
     {
-        cout << output_names << endl;
+        if(header) cout << output_names << endl;
         cout << output_values << endl;
     }
 
