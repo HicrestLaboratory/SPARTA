@@ -993,8 +993,8 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
             jb = jab[0];
             second_block_dim = vbmat.blocks_fmt ? vbmat.block_width(jb) : vbmat.block_height(jb);
 
-            row_start = vbmat.block_fmt ? vbmat.row_part[ib] : vbmat.col_part[jb];
-            col_start = vbmat.block_fmt ? vbmat.row_part[jb] : vbmat.col_part[ib];
+            row_start = vbmat.blocks_fmt ? vbmat.row_part[ib] : vbmat.col_part[jb];
+            col_start = vbmat.blocks_fmt ? vbmat.row_part[jb] : vbmat.col_part[ib];
 
             intT row;
             intT col;
@@ -1036,8 +1036,8 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
             jb = jab[0];
             second_block_dim = vbmat.blocks_fmt ? vbmat.block_width(jb) : vbmat.block_height(jb);
 
-            row_start = vbmat.block_fmt ? vbmat.row_part[ib] : vbmat.col_part[jb];
-            col_start = vbmat.block_fmt ? vbmat.row_part[jb] : vbmat.col_part[ib];
+            row_start = vbmat.blocks_fmt ? vbmat.row_part[ib] : vbmat.col_part[jb];
+            col_start = vbmat.blocks_fmt ? vbmat.row_part[jb] : vbmat.col_part[ib];
 
             intT row;
             intT col;
