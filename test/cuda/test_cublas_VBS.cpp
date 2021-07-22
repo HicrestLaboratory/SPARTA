@@ -283,15 +283,14 @@ int main(int argc, char* argv[]) {
 
         //A_rows and density have been previously set by options. Default: n = 20, density = 0.5;
 
-        DataT* rand_block_mat = new DataT [A_rows * A_cols];
+        VBS vbmat_input;
         
         //TODO do not start with array but create directly the CSR?
 
-        random_sparse_blocks_mat(rand_block_mat, A_rows, A_cols, mat_A_fmt, block_size, block_density, density);
-
-        convert_to_CSR(rand_block_mat, A_rows, A_cols, mat_A_fmt, cmat_A, cmat_A_fmt);
+        random_sparse_blocks_mat(vbmat_input, A_rows, A_cols, 1, 1, block_size, block_size, block_density, density);
+        convert_to_CSR(vbmat_input, cmat_A, 0);
         
-        delete[] rand_block_mat;
+        delete[] vbmat_input;
 
         if (verbose > 0)
         {
