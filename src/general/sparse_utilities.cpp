@@ -1026,8 +1026,8 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
 
     for (intT i = 0; i < cmat.rows; i++)
     {
-        cmat.ja[i] = new intT[cmat.nzcount[i]];
-        cmat.ma[i] = new DataT[cmat.nzcount[i]];
+        cmat.ja[i] = new intT[cmat.nzcount[i]]{ 0 };
+        cmat.ma[i] = new DataT[cmat.nzcount[i]]{ 0 };
     }
 
     intT* current_nz_count = new intT[cmat.rows]{ 0 };
