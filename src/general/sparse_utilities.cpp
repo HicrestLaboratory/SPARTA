@@ -992,12 +992,12 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
             jb = jab[0];
             second_block_dim = vbmat.blocks_fmt ? vbmat.block_width(jb) : vbmat.block_height(jb);
 
-            row_start = vbmat.blocks_fmt ? vbmat.row_part[ib] : vbmat.col_part[jb];
-            col_start = vbmat.blocks_fmt ? vbmat.row_part[jb] : vbmat.col_part[ib];
+            row_start = vbmat.blocks_fmt ? vbmat.row_part[ib] : vbmat.row_part[jb];
+            col_start = vbmat.blocks_fmt ? vbmat.col_part[jb] : vbmat.col_part[ib];
 
             intT row;
             intT col;
-            std::cout << " i " << ib << " j " << jb << "row start " << row_start << " col start " << col_start << "nzs " << nzs << std::endl;
+            std::cout << " i " << ib << " j " << jb << " row start " << row_start << " col start " << col_start << "nzs " << nzs << std::endl;
             for (intT i = 0; i < main_block_dim; i++) //loop through entries in the block
             {
                 for (intT j = 0; j < second_block_dim; j++)
@@ -1036,8 +1036,8 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
             jb = jab[0];
             second_block_dim = vbmat.blocks_fmt ? vbmat.block_width(jb) : vbmat.block_height(jb);
 
-            row_start = vbmat.blocks_fmt ? vbmat.row_part[ib] : vbmat.col_part[jb];
-            col_start = vbmat.blocks_fmt ? vbmat.row_part[jb] : vbmat.col_part[ib];
+            row_start = vbmat.blocks_fmt ? vbmat.row_part[ib] : vbmat.row_part[jb];
+            col_start = vbmat.blocks_fmt ? vbmat.col_part[jb] : vbmat.col_part[ib];
 
             intT row;
             intT col;
