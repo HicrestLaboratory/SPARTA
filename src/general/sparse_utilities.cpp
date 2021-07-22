@@ -995,8 +995,8 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
 
         for (intT nzs = 0; nzs < vbmat.nzcount[ib]; nzs++) //loop through nonzero blocks on this row
         {
-            jab++;
             jb = jab[0];
+            jab++;
             second_block_dim = vbmat.blocks_fmt ? vbmat.block_height(jb) : vbmat.block_width(jb);
 
             row_start = vbmat.blocks_fmt ? vbmat.row_part[jb] : vbmat.row_part[ib];
@@ -1029,9 +1029,8 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
 
     intT* current_nz_count = new intT[cmat.rows]{ 0 };
     
-    jab = vbmat.jab;
+    jab = vbmat.jab; //reset pointers
     mab = vbmat.mab;
-
     for (intT ib = 0; ib < vbmat.main_dim(); ib++) // loop through vbmat main dim
     {
 
@@ -1040,8 +1039,9 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
 
         for (intT nzs = 0; nzs < vbmat.nzcount[ib]; nzs++) //loop through nonzero blocks on this row
         {
-            jab++;
             jb = jab[0];
+            jab++;
+
             second_block_dim = vbmat.blocks_fmt ? vbmat.block_height(jb) : vbmat.block_width(jb);
 
             row_start = vbmat.blocks_fmt ? vbmat.row_part[jb] : vbmat.row_part[ib];
