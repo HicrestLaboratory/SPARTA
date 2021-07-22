@@ -1021,6 +1021,9 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
         }
     }
 
+    std::cout << "nzcount" << std::endl;
+    arr_print(cmat.nzcount, cmat.rows);
+
     for (intT i = 0; i < cmat.rows; i++)
     {
         cmat.ja[i] = new intT[cmat.nzcount[i]];
