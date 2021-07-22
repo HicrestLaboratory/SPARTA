@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
     int warmup = 0;             //number of warmup experiments
     int experiment_reps = 5;    //number of non-warmup repetitions
     int algo = -1;              //algorithm choice (-1: all)
-    int correct_check = 0;
+    int check_correct = 0;
 
     int* A_row_part;
     int* A_col_part;
@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
     //terminal options loop
     opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "a:b:i:q:e:f:m:n:p:r:k:s:v:w:S:z")) != -1)
+    while ((c = getopt(argc, argv, "a:b:c:i:q:e:f:m:n:p:r:k:s:v:w:S:z")) != -1)
         switch (c)
         {
         case 'i':// select input example
@@ -139,7 +139,9 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
             break;
-
+        case 'c': //check correctness;
+            check_correct = stoi(optarg);
+            break;
         case 'e': //epsilon used for matrix reordering;
             eps = stof(optarg);
             if (eps < 0. or eps > 1.) {
@@ -439,6 +441,10 @@ int main(int argc, char* argv[]) {
 	int C_rows = A_rows;
 	int C_cols = B_cols;
 
+
+    DataT* mat_Cgemm;
+
+
     //--------------------------------------------
     //  dense-dense cublas gemm multiplication
     //--------------------------------------------
@@ -452,10 +458,8 @@ int main(int argc, char* argv[]) {
  
         convert_to_mat(cmat_A, mat_A_gemm, mat_A_fmt);
  
-        DataT* mat_Cgemm = new DataT[C_rows * C_cols]{ 0 };
+        mat_Cgemm = new DataT[C_rows * C_cols]{ 0 };
         int mat_Cgemm_fmt = 1;
-
- 
 
 
         algo_times.clear();
@@ -494,7 +498,7 @@ int main(int argc, char* argv[]) {
         algo_times.clear();
         for (int i = -warmup; i < experiment_reps; i++)
         {
-            cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt);
+            cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt, n_streams);
             //only saves non-warmup runs
             if (i >= 0) algo_times.push_back(dt);
         }
