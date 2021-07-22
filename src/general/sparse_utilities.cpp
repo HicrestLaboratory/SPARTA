@@ -985,13 +985,13 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
     for (intT ib = 0; ib < vbmat.main_dim(); ib++) // loop through vbmat main dim
     {
 
-        main_block_dim = vbmat.blocks_fmt ? vbmat.block_height[ib] : vbmat.block_width[ib];
+        main_block_dim = vbmat.blocks_fmt ? vbmat.block_height(ib) : vbmat.block_width(ib);
 
         for (intT nzs = 0; nzs < vbmat.nzcount[ib]; nzs++) //loop through nonzero blocks on this row
         {
             jab++;
             jb = jab[0];
-            second_block_dim = vbmat.blocks_fmt ? vbmat.block_width[jb] : vbmat.block_height[jb];
+            second_block_dim = vbmat.blocks_fmt ? vbmat.block_width(jb) : vbmat.block_height(jb);
 
             row_start = vbmats.block_fmt ? vbmat.row_part[ib] : vbmat.col_part[jb];
             col_start = vbmats.block_fmt ? vbmat.row_part[jb] : vbmat.col_part[ib];
@@ -1028,13 +1028,13 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
     for (intT ib = 0; ib < vbmat.main_dim(); ib++) // loop through vbmat main dim
     {
 
-        main_block_dim = vbmat.blocks_fmt ? vbmat.block_height[ib] : vbmat.block_width[ib];
+        main_block_dim = vbmat.blocks_fmt ? vbmat.block_height(ib) : vbmat.block_width(ib);
 
         for (intT nzs = 0; nzs < vbmat.nzcount[ib]; nzs++) //loop through nonzero blocks on this row
         {
             jab++;
             jb = jab[0];
-            second_block_dim = vbmat.blocks_fmt ? vbmat.block_width[jb] : vbmat.block_height[jb];
+            second_block_dim = vbmat.blocks_fmt ? vbmat.block_width(jb) : vbmat.block_height(jb);
 
             row_start = vbmats.block_fmt ? vbmat.row_part[ib] : vbmat.col_part[jb];
             col_start = vbmats.block_fmt ? vbmat.row_part[jb] : vbmat.col_part[ib];
