@@ -288,6 +288,8 @@ int main(int argc, char* argv[]) {
         //TODO do not start with array but create directly the CSR?
 
         random_sparse_blocks_mat(vbmat_input, A_rows, A_cols, 1, 1, block_size, block_size, block_density, density);
+        
+        cout << "created!" << endl;
         convert_to_CSR(vbmat_input, cmat_A, 0);
        
         cleanVBS(vbmat_input);
