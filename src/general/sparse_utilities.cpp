@@ -600,9 +600,6 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
 }
 
-
-
-
 //More efficient version: TODO TEST
 int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT* col_part, int vbmat_block_fmt, int vbmat_entries_fmt)
 {
@@ -982,6 +979,8 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
     intT jb; 
     intT* jab = vbmat.jab;
     DataT* mab = vbmat.mab;
+
+    std::cout << "starting iteration" << std::endl;
     for (intT ib = 0; ib < vbmat.main_dim(); ib++) // loop through vbmat main dim
     {
 
@@ -998,6 +997,7 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
 
             intT row;
             intT col;
+            std::cout << " i " << ib << " j " << jb << "row start " << row_start << " col start " << col_start << "nzs " << nzs << std::endl;
             for (intT i = 0; i < main_block_dim; i++) //loop through entries in the block
             {
                 for (intT j = 0; j < second_block_dim; j++)
