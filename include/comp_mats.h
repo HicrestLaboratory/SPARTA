@@ -89,22 +89,22 @@ struct VBS {
 
     intT main_dim()
     {
-        return blocks_fmt ? block_rows : block_cols;
+        return blocks_fmt ? block_cols : block_rows;
     }
 
     intT compressed_dim()
     {
-        return blocks_fmt ? block_cols : block_rows;
+        return blocks_fmt ? block_rows : block_cols;
     }
 
     intT* main_ptr()
     {
-        return blocks_fmt ? row_part : col_part;
+        return blocks_fmt ? col_part : row_part;
     }
 
     intT* second_ptr()
     {
-        return blocks_fmt ? col_part : row_part;
+        return blocks_fmt ? row_part : col_part;
     }
 
 };

@@ -989,16 +989,16 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
     {
 
         std::cout << "i " << ib << std::endl;
-        main_block_dim = vbmat.blocks_fmt ? vbmat.block_height(ib) : vbmat.block_width(ib);
+        main_block_dim = vbmat.blocks_fmt ? vbmat.block_width(ib) : vbmat.block_height(ib);
 
         for (intT nzs = 0; nzs < vbmat.nzcount[ib]; nzs++) //loop through nonzero blocks on this row
         {
             jab++;
             jb = jab[0];
-            second_block_dim = vbmat.blocks_fmt ? vbmat.block_width(jb) : vbmat.block_height(jb);
+            second_block_dim = vbmat.blocks_fmt ? vbmat.block_height(jb) : vbmat.block_width(jb);
 
-            row_start = vbmat.blocks_fmt ? vbmat.row_part[ib] : vbmat.row_part[jb];
-            col_start = vbmat.blocks_fmt ? vbmat.col_part[jb] : vbmat.col_part[ib];
+            row_start = vbmat.blocks_fmt ? vbmat.row_part[jb] : vbmat.row_part[ib];
+            col_start = vbmat.blocks_fmt ? vbmat.col_part[ib] : vbmat.col_part[jb];
 
             intT row;
             intT col;
@@ -1009,8 +1009,8 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
                 {
                     if (mab[0] != 0)
                     {
-                        row = vbmat.entries_fmt ? i + row_start : j + col_start;
-                        col = vbmat.entries_fmt ? j + row_start : i + col_start;
+                        row = vbmat.entries_fmt == 0 ? i + row_start : j + col_start;
+                        col = vbmat.entries_fmt == 0 ? j + row_start : i + col_start;
                         cmat.nzcount[row]++; //found a nonzero in this row. Added to the count
                     }
                     mab++; //procede forward in the vbmat entries array
@@ -1033,27 +1033,29 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
     for (intT ib = 0; ib < vbmat.main_dim(); ib++) // loop through vbmat main dim
     {
 
-        main_block_dim = vbmat.blocks_fmt ? vbmat.block_height(ib) : vbmat.block_width(ib);
+        std::cout << "i " << ib << std::endl;
+        main_block_dim = vbmat.blocks_fmt ? vbmat.block_width(ib) : vbmat.block_height(ib);
 
         for (intT nzs = 0; nzs < vbmat.nzcount[ib]; nzs++) //loop through nonzero blocks on this row
         {
             jab++;
             jb = jab[0];
-            second_block_dim = vbmat.blocks_fmt ? vbmat.block_width(jb) : vbmat.block_height(jb);
+            second_block_dim = vbmat.blocks_fmt ? vbmat.block_height(jb) : vbmat.block_width(jb);
 
-            row_start = vbmat.blocks_fmt ? vbmat.row_part[ib] : vbmat.row_part[jb];
-            col_start = vbmat.blocks_fmt ? vbmat.col_part[jb] : vbmat.col_part[ib];
+            row_start = vbmat.blocks_fmt ? vbmat.row_part[jb] : vbmat.row_part[ib];
+            col_start = vbmat.blocks_fmt ? vbmat.col_part[ib] : vbmat.col_part[jb];
 
             intT row;
             intT col;
+            std::cout << " i " << ib << " j " << jb << " row start " << row_start << " col start " << col_start << "nzs " << nzs << std::endl;
             for (intT i = 0; i < main_block_dim; i++) //loop through entries in the block
             {
                 for (intT j = 0; j < second_block_dim; j++)
                 {
                     if (mab[0] != 0)
                     {
-                        row = vbmat.entries_fmt ? i + row_start : j + col_start;
-                        col = vbmat.entries_fmt ? j + row_start : i + col_start;
+                        row = vbmat.entries_fmt == 0 ? i + row_start : j + col_start;
+                        col = vbmat.entries_fmt == 0 ? j + row_start : i + col_start;
                         cmat.ja[row][current_nz_count[row]] = col; //save the position of the nz in the array ja[row], at the last unoccupied index
                         cmat.ma[row][current_nz_count[row]] = mab[0]; //save the value of the nz in the array ma[row], at the last unoccupied index
                         current_nz_count[row]++;
