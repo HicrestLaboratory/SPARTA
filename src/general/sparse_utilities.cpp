@@ -983,7 +983,7 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
     std::cout << "starting iteration" << std::endl;
     
     arr_print(vbmat.row_part, vbmat.block_rows);
-    arr_print(vbmat.col_part, vbmat.col_rows);
+    arr_print(vbmat.col_part, vbmat.block_cols);
     for (intT ib = 0; ib < vbmat.main_dim(); ib++) // loop through vbmat main dim
     {
 
