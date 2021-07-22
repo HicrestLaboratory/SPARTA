@@ -988,7 +988,7 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
     for (intT ib = 0; ib < vbmat.main_dim(); ib++) // loop through vbmat main dim
     {
 
-        std::cout << "i " << i << std::endl;
+        std::cout << "i " << ib << std::endl;
         main_block_dim = vbmat.blocks_fmt ? vbmat.block_height(ib) : vbmat.block_width(ib);
 
         for (intT nzs = 0; nzs < vbmat.nzcount[ib]; nzs++) //loop through nonzero blocks on this row
