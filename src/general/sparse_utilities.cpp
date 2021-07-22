@@ -1054,7 +1054,7 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
 
 }
 
-int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt)
+int convert_to_CSR_ineff(const VBS& vbmat, CSR& cmat, int csr_fmt)
 {
     //TODO: if necessary, make conversion efficient;
 
