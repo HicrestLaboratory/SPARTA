@@ -19,4 +19,4 @@ cd /home/clusterusers/pasyloslabini/SPARTA
 make clean
 make test_cublas_cusparse_comparison
 cd /home/clusterusers/pasyloslabini/SPARTA
-source /home/clusterusers/pasyloslabini/SPARTA/script/cusparse-vs-gemm-test.sh
+source ${1}  #call any script from here
