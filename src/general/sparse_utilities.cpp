@@ -1001,6 +1001,7 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
             row_start = vbmat.blocks_fmt ? vbmat.row_part[jb] : vbmat.row_part[ib];
             col_start = vbmat.blocks_fmt ? vbmat.col_part[ib] : vbmat.col_part[jb];
 
+            std::cout << " ib " << ib << " jb " << jb << "row_start" << row_start << "col_start " << col_start << std::endl;
             intT row;
             intT col;
             for (intT i = 0; i < main_block_dim; i++) //loop through entries in the block
