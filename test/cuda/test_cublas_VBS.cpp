@@ -457,7 +457,7 @@ int main(int argc, char* argv[]) {
     //--------------------------------------------
     if ((algo == 1) or (algo == -1))
     {
-        if and (A_rows * A_cols < 10000000) //avoid this step if the matrix is too big
+        if (A_rows * A_cols < 10000000) //avoid this step if the matrix is too big
         {
             //create a dense array matrix from cmat_A
 
@@ -487,7 +487,6 @@ int main(int argc, char* argv[]) {
             if (verbose > 0)        cout << "Dense-Dense multiplication. Time taken(ms): " << mean_time << endl;
             if (verbose > 1)
             {
-                cout << "GEMM Matrix:" << endl;
                 matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1);
             }
 
