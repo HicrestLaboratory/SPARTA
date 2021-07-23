@@ -1,8 +1,8 @@
 #!/bin/bash
 
-OPTS="-w 1 -r 3 -v -1 -i 4"
+OPTS="-w 1 -r 5 -v -1 -i 4"
 
-RESULTS="results/test_complete_cublas_results_ultrasparse.txt";
+RESULTS="results/test_cublas_results_ultrasparse.txt";
 
 >"${RESULTS}";
 
@@ -11,8 +11,8 @@ Nshapes=(1024 2048 4096 8192 16384);
 Kshapes=(1024 2048 4096 8192 16384);
 
 Pvalue=(32 64 128 256 512 1024);
-Bvalue=(0.05 0.1 0.15 0.2 0.25 0.3 0.4);
-Qvalue=(0.0005 0.001 0.002 0.005 0.01 0.05 0.1);
+Bvalue=(0.05 0.1 0.15 0.2 0.25 0.3 0.4 0.5);
+Qvalue=(0.005 0.01 0.05 0.1 0.15 0.2);
 
 for m in ${Mshapes[@]}; do
   for k in ${Kshapes[@]}; do

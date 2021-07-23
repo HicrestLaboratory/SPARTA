@@ -142,6 +142,7 @@ int main(int argc, char* argv[]) {
         case 'c': //check correctness;
             check_correct = stoi(optarg);
             break;
+
         case 'e': //epsilon used for matrix reordering;
             eps = stof(optarg);
             if (eps < 0. or eps > 1.) {
@@ -227,6 +228,8 @@ int main(int argc, char* argv[]) {
     //INPUT CONVERSION TO Compressed Sparse Row (CSR)
 
     CSR cmat_A; //this will hold the CSR matrix
+    VBS vbmat_input; //can hold the input VBS
+
     int cmat_A_fmt = 0;
 
 
@@ -282,17 +285,14 @@ int main(int argc, char* argv[]) {
     if (input_type == 4) {
 
         //A_rows and density have been previously set by options. Default: n = 20, density = 0.5;
-
-        DataT* rand_block_mat = new DataT [A_rows * A_cols];
         
         //TODO do not start with array but create directly the CSR?
 
-        random_sparse_blocks_mat(rand_block_mat, A_rows, A_cols, mat_A_fmt, block_size, block_density, density);
-
-        convert_to_CSR(rand_block_mat, A_rows, A_cols, mat_A_fmt, cmat_A, cmat_A_fmt);
+        random_sparse_blocks_mat(vbmat_input, A_rows, A_cols, 1, 1, block_size, block_size, block_density, density);
+        matprint(vbmat_input);
         
-        delete[] rand_block_mat;
-
+        convert_to_CSR(vbmat_input, cmat_A, 0);
+       
         if (verbose > 0)
         {
             cout << "CREATED A RANDOM BLOCK MATRIX:"
@@ -360,6 +360,7 @@ int main(int argc, char* argv[]) {
     output_couple(output_names, output_values, "A_rows", cmat_A.rows);
     output_couple(output_names, output_values, "A_cols", cmat_A.cols);
     output_couple(output_names, output_values, "A_total_nonzeros", A_nnz);
+    output_couple(output_names, output_values, "A_total_density", A_nnz*0.1/(A_cols*A_rows) );
     output_couple(output_names, output_values, "A_blocks_density", block_density);
     output_couple(output_names, output_values, "A_entries_density", density);
     output_couple(output_names, output_values, "A_block_size", block_size);
@@ -388,12 +389,18 @@ int main(int argc, char* argv[]) {
             std::cout << "WARNING: The row or column dimension of the input matrix is not multiple of the block size " << std::endl;
         }
 
-        convert_to_VBS(cmat_A,
-            vbmat_A,
-            block_rows, A_row_part,
-            block_cols, A_col_part,
-            vbmat_blocks_fmt, vbmat_entries_fmt);
-
+        if (input_type == 4) //avoid conversion if input matrix is already in VBS form
+        {
+            vbmat_A = vbmat_input;
+        }
+        else
+        {
+            convert_to_VBS(cmat_A,
+                vbmat_A,
+                block_rows, A_row_part,
+                block_cols, A_col_part,
+                vbmat_blocks_fmt, vbmat_entries_fmt);
+        }
         if (verbose > 0) cout << "VBS matrix created." << endl;
         if (verbose > 1) matprint(vbmat_A);
     }

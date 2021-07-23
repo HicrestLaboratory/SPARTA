@@ -61,6 +61,52 @@ struct VBS {
                                     0: row-major
                                     1: column_major                                     */
 
+    intT cols()
+    {
+        if (col_part) return col_part[block_cols];
+        else return -1;
+    }
+
+    intT rows()
+    {
+        if (row_part) return row_part[block_rows];
+        else return -1;
+    }
+
+    intT block_width(intT jb)
+    {
+        intT res = -1;
+        if (jb < block_cols) res = (col_part[jb + 1] - col_part[jb]);
+        return res;
+    }
+
+    intT block_height(intT ib)
+    {
+        intT res = -1;
+        if (ib <= block_rows) res = (row_part[ib + 1] - row_part[ib]);
+        return res;
+    }
+
+    intT main_dim()
+    {
+        return blocks_fmt ? block_cols : block_rows;
+    }
+
+    intT compressed_dim()
+    {
+        return blocks_fmt ? block_rows : block_cols;
+    }
+
+    intT* main_ptr()
+    {
+        return blocks_fmt ? col_part : row_part;
+    }
+
+    intT* second_ptr()
+    {
+        return blocks_fmt ? row_part : col_part;
+    }
+
 };
 
 struct ncVBS 
