@@ -1062,8 +1062,8 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
                 {
                     if (mab[0] != 0)
                     {
-                        row = vbmat.entries_fmt == 0 ? i + row_start : j + col_start;
-                        col = vbmat.entries_fmt == 0 ? j + row_start : i + col_start;
+                        row = vbmat.entries_fmt == 0 ? i + row_start : j + row_start;
+                        col = vbmat.entries_fmt == 0 ? j + col_start : i + col_start;
                         cmat.ja[row][current_nz_count[row]] = col; //save the position of the nz in the array ja[row], at the last unoccupied index
                         cmat.ma[row][current_nz_count[row]] = mab[0]; //save the value of the nz in the array ma[row], at the last unoccupied index
                         current_nz_count[row]++;
