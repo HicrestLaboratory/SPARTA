@@ -986,11 +986,10 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
     arr_print(vbmat.col_part, vbmat.block_cols);
     arr_print(vbmat.jab, 3);
     arr_print(vbmat.nzcount, vbmat.main_dim());
-    std::cout << "main dim" << vbmat.main_dim() << " format " << vbmat.blocks_fmt << std::endl;
+    std::cout << "main dim" << vbmat.main_dim() << " format " << vbmat.blocks_fmt << " rows " << cmat.rows << " cols " << cmat.cols << std::endl;
     for (intT ib = 0; ib < vbmat.main_dim(); ib++) // loop through vbmat main dim
     {
 
-        std::cout << "i " << ib << std::endl;
         main_block_dim = vbmat.blocks_fmt ? vbmat.block_width(ib) : vbmat.block_height(ib);
 
         for (intT nzs = 0; nzs < vbmat.nzcount[ib]; nzs++) //loop through nonzero blocks on this row
@@ -1004,7 +1003,6 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
 
             intT row;
             intT col;
-            std::cout << " i " << ib << " j " << jb << " row start " << row_start << " col start " << col_start << "nzs " << nzs << std::endl;
             for (intT i = 0; i < main_block_dim; i++) //loop through entries in the block
             {
                 for (intT j = 0; j < second_block_dim; j++)
@@ -1014,6 +1012,7 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
                         row = vbmat.entries_fmt == 0 ? i + row_start : j + col_start;
                         col = vbmat.entries_fmt == 0 ? j + row_start : i + col_start;
                         cmat.nzcount[row]++; //found a nonzero in this row. Added to the count
+                        std::cout << "found a nonzero:" << row << " - " << col << std::endl;
                     }
                     mab++; //procede forward in the vbmat entries array
                 }
