@@ -1010,8 +1010,8 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
                 {
                     if (mab[0] != 0)
                     {
-                        row = vbmat.entries_fmt == 0 ? i + row_start : j + col_start;
-                        col = vbmat.entries_fmt == 0 ? j + row_start : i + col_start;
+                        row = vbmat.entries_fmt == 0 ? i + row_start : j + row_start;
+                        col = vbmat.entries_fmt == 0 ? j + col_start : i + col_start;
                         cmat.nzcount[row]++; //found a nonzero in this row. Added to the count
                         std::cout << "found a nonzero:" << row << " - " << col << std::endl;
                     }
