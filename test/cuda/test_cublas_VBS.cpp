@@ -360,7 +360,7 @@ int main(int argc, char* argv[]) {
     output_couple(output_names, output_values, "A_rows", cmat_A.rows);
     output_couple(output_names, output_values, "A_cols", cmat_A.cols);
     output_couple(output_names, output_values, "A_total_nonzeros", A_nnz);
-    output_couple(output_names, output_values, "A_total_density", A_total_nonzeros*0.1/(A_cols*A_rows) );
+    output_couple(output_names, output_values, "A_total_density", A_nnz*0.1/(A_cols*A_rows) );
     output_couple(output_names, output_values, "A_blocks_density", block_density);
     output_couple(output_names, output_values, "A_entries_density", density);
     output_couple(output_names, output_values, "A_block_size", block_size);
