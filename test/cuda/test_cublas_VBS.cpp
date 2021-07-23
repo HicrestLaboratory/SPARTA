@@ -457,41 +457,42 @@ int main(int argc, char* argv[]) {
     //--------------------------------------------
     if ((algo == 1) or (algo == -1))
     {
-        //create a dense array matrix from cmat_A
- 
-
-
-        DataT* mat_A_gemm = new DataT [A_rows * A_cols]{ 0 };
- 
-        convert_to_mat(cmat_A, mat_A_gemm, mat_A_fmt);
- 
-        mat_Cgemm = new DataT[C_rows * C_cols]{ 0 };
-        int mat_Cgemm_fmt = 1;
-
-
-        algo_times.clear();
- 
-
-        for (int i = -warmup; i < experiment_reps; i++)
+        if and (A_rows * A_cols < 10000000) //avoid this step if the matrix is too big
         {
-            cublas_gemm_custom(mat_A_gemm, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
-            //only saves non-warmup runs
-            if(i >= 0) algo_times.push_back(dt);
-        }
+            //create a dense array matrix from cmat_A
 
-        mean_time = mean(algo_times);
-        std_time = std_dev(algo_times);
-        output_couple(output_names, output_values, "gemm_mean(ms)", mean_time);
-        output_couple(output_names, output_values, "gemm_std", std_time);
+            DataT* mat_A_gemm = new DataT[A_rows * A_cols]{ 0 };
 
-        if (verbose > 0)        cout << "Dense-Dense multiplication. Time taken(ms): " << mean_time << endl;
-        if (verbose > 1)
-        {
-            cout << "GEMM Matrix:" << endl;
-            matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1);
+            convert_to_mat(cmat_A, mat_A_gemm, mat_A_fmt);
+
+            mat_Cgemm = new DataT[C_rows * C_cols]{ 0 };
+            int mat_Cgemm_fmt = 1;
+
+
+            algo_times.clear();
+
+
+            for (int i = -warmup; i < experiment_reps; i++)
+            {
+                cublas_gemm_custom(mat_A_gemm, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
+                //only saves non-warmup runs
+                if (i >= 0) algo_times.push_back(dt);
+            }
+
+            mean_time = mean(algo_times);
+            std_time = std_dev(algo_times);
+            output_couple(output_names, output_values, "gemm_mean(ms)", mean_time);
+            output_couple(output_names, output_values, "gemm_std", std_time);
+
+            if (verbose > 0)        cout << "Dense-Dense multiplication. Time taken(ms): " << mean_time << endl;
+            if (verbose > 1)
+            {
+                cout << "GEMM Matrix:" << endl;
+                matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1);
+            }
+
+            delete[] mat_A_gemm;
         }
-        
-        delete[] mat_A_gemm;
     }
 
     //--------------------------------------------
