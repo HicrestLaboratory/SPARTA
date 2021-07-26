@@ -441,8 +441,8 @@ int main(int argc, char* argv[]) {
     if (verbose > 1)        matprint(mat_B, B_rows, B_cols, B_rows, mat_B_fmt);
 
     //defining the output matrix C
-	int C_rows = A_rows;
-	int C_cols = B_cols;
+	intT C_rows = A_rows;
+	intT C_cols = B_cols;
 
 
     DataT* mat_Cgemm;
@@ -455,6 +455,9 @@ int main(int argc, char* argv[]) {
     {
         if (A_rows * A_cols < 10000000) //avoid this step if the matrix is too big
         {
+
+            if (verbose > 0)        cout << "Starting dense-dense cublas multiplication" << endl;
+
             //create a dense array matrix from cmat_A
 
             DataT* mat_A_gemm = new DataT[A_rows * A_cols]{ 0 };
@@ -495,6 +498,9 @@ int main(int argc, char* argv[]) {
     //--------------------------------------------
     if ((algo == 2) or (algo == -1))
     {
+
+        if (verbose > 0)        cout << "Starting VBS-dense cublas multiplication" << endl;
+
         DataT* mat_Cblock = new DataT[C_rows * C_cols];
         int mat_Cblock_fmt = 1;
 
@@ -542,6 +548,8 @@ int main(int argc, char* argv[]) {
         }
         else
         {
+
+            if (verbose > 0)        cout << "Starting cusparse-dense cublas multiplication" << endl;
 
             DataT* mat_C_csrmm = new DataT[C_rows * C_cols];
             int mat_C_csrmm_fmt = 1;
