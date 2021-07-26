@@ -41,25 +41,25 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, intT B_cols, intT B_l
 
     cublasGemmAlgo_t cuda_algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP;
 
-    intT A_rows = vbmatA.row_part[vbmatA.block_rows];
-    intT A_cols = vbmatA.col_part[vbmatA.block_cols];
+    int A_rows = vbmatA.row_part[vbmatA.block_rows];
+    int A_cols = vbmatA.col_part[vbmatA.block_cols];
 
     intT mat_idx = 0; //keeps writing position for mat
     intT vbmat_idx = 0; //keeps reading position for vbmat 
     intT ja_count = 0; //keeps total nonzero blocks count;
 
-    intT B_rows = A_cols;
+    int B_rows = A_cols;
 
-    intT C_rows = A_rows;
-    intT C_cols = B_cols;
+    int C_rows = A_rows;
+    int C_cols = B_cols;
 
     const DataT alpha = 1.0f;
     const DataT beta = 1.0f;
    
     intT tot_nonzero_blocks = 0; //index for total nonzero blocks
 
-    intT rows_in_block, cols_in_block;
-    intT size_block, mem_size_block;
+    int rows_in_block, cols_in_block;
+    int size_block, mem_size_block;
 
     //TODO: allocate memory on device
     intT size_A = vbmatA.nztot; //total nonzero entries in vbmat
