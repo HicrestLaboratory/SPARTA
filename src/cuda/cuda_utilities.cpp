@@ -166,7 +166,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     int stream_id;
     for (int ib = 0; ib < vbmatA.block_rows; ib++)
     {
-        stream_id = vbmatA.block_rows % ib;
+        stream_id = vbmatA.block_rows % n_streams;
         cublasSetStream(handle, streams[stream_id]);
         rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib];
         checkCudaErrors(cublasGetMatrix(
