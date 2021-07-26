@@ -178,6 +178,9 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
     std::cout << "nz_tot: " << nz_tot << std::endl;
 
     vbmat.mab = new DataT[nz_tot]{ 0 };
+
+    std::cout << "nz_blocks: " << nz_blocks << std::endl;
+
     vbmat.jab = new intT[nz_blocks];
     
     intT nz_in_block = std::ceil(entries_density * size_of_block);
