@@ -93,7 +93,7 @@ int arr_print(intT* arr, intT len);
 
 int sort_permutation(intT* perm, intT* arr, intT n);
 
-int partition(intT* arr, intT start, intT end, intT step);
+int partition(intT* arr, intT start, intT end, int step);
 
 int randperm(intT* arr, intT len);
 

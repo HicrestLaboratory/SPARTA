@@ -76,8 +76,8 @@ int main(int argc, char* argv[]) {
     int verbose = 3;
 
     int input_type = 4;
-    int A_rows = 12;            //rows in the square input matrix;
-    int A_cols = 8;
+    intT A_rows = 12;            //rows in the square input matrix;
+    intT A_cols = 8;
     int mat_A_fmt = 1;          //cuda needs column-major matrices
     int block_size = 4;         //block size for variable block matrix. Rows and columns must be evenly divisible by this;
     float density = 0.5;        //density of the input matrix;
@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
 
     int n_streams = 16;         //number of streams for the custom block_based multiplication
 
-    int B_cols = 5;             //number of columns in the output matrix;
+    intT B_cols = 5;             //number of columns in the output matrix;
     float B_density = 1.;       //density of the multiplication matrix
 
     float eps = 0.5;            //this value sets how different two rows in the same block can be.
@@ -101,8 +101,8 @@ int main(int argc, char* argv[]) {
     int algo = -1;              //algorithm choice (-1: all)
     int check_correct = 0;
 
-    int* A_row_part;
-    int* A_col_part;
+    intT* A_row_part;
+    intT* A_col_part;
 
 
 
@@ -350,7 +350,7 @@ int main(int argc, char* argv[]) {
     string output_values;
 
 
-    int A_nnz = count_nnz(cmat_A);
+    intT A_nnz = count_nnz(cmat_A);
 
     output_couple(output_names, output_values, "input_type", input_type);
     output_couple(output_names, output_values, "A_rows", cmat_A.rows);
@@ -367,11 +367,11 @@ int main(int argc, char* argv[]) {
 
     int vbmat_blocks_fmt = 1;
     int vbmat_entries_fmt = 1; //cuda needs column-major matrices
-    int block_rows = cmat_A.rows / block_size;
-    int block_cols = cmat_A.cols / block_size;
+    intT block_rows = cmat_A.rows / block_size;
+    intT block_cols = cmat_A.cols / block_size;
 
-    A_row_part = new int[block_rows + 1]; //partitions have one element more for the rightmost border.
-    A_col_part = new int[block_cols + 1];
+    A_row_part = new intT[block_rows + 1]; //partitions have one element more for the rightmost border.
+    A_col_part = new intT[block_cols + 1];
     partition(A_row_part, 0, cmat_A.rows, block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
     partition(A_col_part, 0, cmat_A.cols, block_size);
 
