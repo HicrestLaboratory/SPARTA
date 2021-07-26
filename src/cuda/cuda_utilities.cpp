@@ -163,9 +163,11 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
 
 
     //let each stream copy the relevant C block from device
-    for (int ib = 0; ib < n_streams; ib++)
+    int stream_id;
+    for (int ib = 0; ib < vbmatA.block_rows; ib++)
     {
-        cublasSetStream(handle, streams[ib]); 
+        stream_id = vbmatA.block_rows % ib;
+        cublasSetStream(handle, streams[stream_id]);
         rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib];
         checkCudaErrors(cublasGetMatrix(
             rows_in_block, C_cols, sizeof(DataT), d_C + vbmatA.row_part[ib], C_rows, C + vbmatA.row_part[ib], C_lead_dim));
