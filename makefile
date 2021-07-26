@@ -140,11 +140,7 @@ clean:
 
 test_cublas_VBS : build_cuda $(CUDA_APP_DIR)/test_cublas_VBS
 
-test_cublas_ncVBS : build_cuda $(CUDA_APP_DIR)/test_cublas_ncVBS 
-
 test_AHA : build_general $(GEN_APP_DIR)/test_AHA 
-
-test_ncVBS : build_general $(GEN_APP_DIR)/test_ncVBS 
 
 test_M1vsM2 : build_general $(GEN_APP_DIR)/test_M1vsM2 
 
