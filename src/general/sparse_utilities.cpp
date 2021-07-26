@@ -181,7 +181,13 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
 
     vbmat.nztot = nz_tot;
     vbmat.mab = new DataT[nz_tot]{ 0 };
+
+    std::cout << "MAB created" << std::endl;
+
     vbmat.jab = new intT[nz_blocks];
+
+    std::cout << "jab created" << std::endl;
+
     
     intT nz_in_block = std::ceil(entries_density * size_of_block);
     //saves the indices of nonzero blocks into jab; saves the number of nz blocks per row (or col) into vbmat.nzcount;
@@ -208,6 +214,7 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
         vbmat.nzcount[i] = nzcount;
     }
 
+    return 0;
 }
 
 int matprint(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt)
