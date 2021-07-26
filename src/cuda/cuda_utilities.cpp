@@ -44,9 +44,9 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     int A_rows = vbmatA.row_part[vbmatA.block_rows];
     int A_cols = vbmatA.col_part[vbmatA.block_cols];
 
-    int mat_idx = 0; //keeps writing position for mat
-    int vbmat_idx = 0; //keeps reading position for vbmat 
-    int ja_count = 0; //keeps total nonzero blocks count;
+    intT mat_idx = 0; //keeps writing position for mat
+    intT vbmat_idx = 0; //keeps reading position for vbmat 
+    intT ja_count = 0; //keeps total nonzero blocks count;
 
     int B_rows = A_cols;
 
@@ -56,20 +56,20 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     const DataT alpha = 1.0f;
     const DataT beta = 1.0f;
    
-    int tot_nonzero_blocks = 0; //index for total nonzero blocks
+    intT tot_nonzero_blocks = 0; //index for total nonzero blocks
 
     int rows_in_block, cols_in_block;
-    unsigned int size_block, mem_size_block;
+    int size_block, mem_size_block;
 
     //TODO: allocate memory on device
-    unsigned int size_A = vbmatA.nztot; //total nonzero entries in vbmat
-    unsigned int mem_size_A = sizeof(DataT) * size_A;
+    intT size_A = vbmatA.nztot; //total nonzero entries in vbmat
+    intT mem_size_A = sizeof(DataT) * size_A;
 
-    unsigned int size_B = B_rows * B_cols;
-    unsigned int mem_size_B = sizeof(DataT) * size_B;
+    intT size_B = B_rows * B_cols;
+    intT mem_size_B = sizeof(DataT) * size_B;
 
-    unsigned int size_C = C_rows * C_cols;
-    unsigned int mem_size_C = sizeof(DataT) * size_C;
+    intT size_C = C_rows * C_cols;
+    intT mem_size_C = sizeof(DataT) * size_C;
 
     cublasHandle_t handle;
 
@@ -88,8 +88,6 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     checkCudaErrors(cublasSetMatrix(
         B_rows, B_cols, sizeof(DataT), B, B_lead_dim, d_B, B_rows));
 
-
-
     //initialize cuda events
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
@@ -99,24 +97,25 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
 
     //creates streams. Each block rows is assigned a different stream.
     
+
     if (n_streams > vbmatA.block_rows) n_streams = vbmatA.block_rows;
     cudaStream_t streams[n_streams];
-    for (int ib = 0; ib < n_streams; ib++)
+    for (intT ib = 0; ib < n_streams; ib++)
     {
         cudaStreamCreate(&(streams[ib]));
     }
-	
+
     //loop through all blocks
-    for(int jb = 0; jb < vbmatA.block_cols; jb++ )      //loop horizontally through block columns
+    for(intT jb = 0; jb < vbmatA.block_cols; jb++ )      //loop horizontally through block columns
     {
         cols_in_block = vbmatA.col_part[jb+1] - vbmatA.col_part[jb];
         const DataT* d_B_block = d_B + vbmatA.col_part[jb];    //access the block of B that is going to be multiplied with blocks of A in column jb
 
-        for(int nzs = 0; nzs < vbmatA.nzcount[jb]; nzs++)        //loop vertically through nonzero blocks
+        for(intT nzs = 0; nzs < vbmatA.nzcount[jb]; nzs++)        //loop vertically through nonzero blocks
 
         {
 
-            int ib = vbmatA.jab[tot_nonzero_blocks];             //the block row position of a nonzero block 
+            intT ib = vbmatA.jab[tot_nonzero_blocks];             //the block row position of a nonzero block 
             tot_nonzero_blocks += 1;
             rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
 
@@ -164,7 +163,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
 
 
     //let each stream copy the relevant C block from device
-    for (int ib = 0; ib < vbmatA.block_rows; ib++)
+    for (int ib = 0; ib < n_streams; ib++)
     {
         cublasSetStream(handle, streams[ib]); 
         rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib];
