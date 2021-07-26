@@ -160,8 +160,6 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
     partition(row_part, 0, rows, row_block_size); //row and block partition for creating the VBS
     partition(col_part, 0, cols, col_block_size);
 
-    std::cout << "partitions created" << std::endl;
-
     //DETERMINE THE NZ BLOCK STRUCTURE
     //(this could be probably made to use less memory by extracting indices instead of permuting the vector)
     intT nz_blocks = (intT)(block_density * block_rows * block_cols);
@@ -173,21 +171,13 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
     intT compressed_dim = (blocks_fmt == 0) ? block_cols : block_rows;
     intT nz_tot = nz_blocks * size_of_block;
 
-    std::cout << "vectors initialized" << std::endl;
-
     init_VBS(vbmat, block_rows, row_part, block_cols, col_part, blocks_fmt, entries_fmt);
 
-    std::cout << "VBS initialized" << std::endl;
-
     vbmat.nztot = nz_tot;
+
+    std::cout << "# of data: " << nz_tot << " size of data: " << nz_tot * sizeof(DataT) << std::endl;
     vbmat.mab = new DataT[nz_tot]{ 0 };
-
-    std::cout << "MAB created" << std::endl;
-
     vbmat.jab = new intT[nz_blocks];
-
-    std::cout << "jab created" << std::endl;
-
     
     intT nz_in_block = std::ceil(entries_density * size_of_block);
     //saves the indices of nonzero blocks into jab; saves the number of nz blocks per row (or col) into vbmat.nzcount;
