@@ -26,7 +26,7 @@
     intT = int
 */
 
-void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, intT B_cols, intT B_lead_dim, DataT *C, intT C_lead_dim, float &dt, int n_streams = 16){
+void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lead_dim, DataT *C, int C_lead_dim, float &dt, int n_streams = 16){
     //multiplies a VBS matrix (vbmatA) and a dense matrix (B); stores into (C)
     //vbmatA:       column-major entries storage;
     //              column-major block_storage; 
