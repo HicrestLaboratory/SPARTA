@@ -80,9 +80,6 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
     checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
 
-    std::cout << "memory device dx allocated" << std::endl;
-
-
     //copy to device the vbmat matrix (nonzero blocks are stored consecutively and in column major format)
     checkCudaErrors(cublasSetVector(
         size_A, sizeof(DataT), vbmatA.mab, 1, d_A, 1));
@@ -90,9 +87,6 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     //copy B to device (maybe more efficient to copy it block by block?)
     checkCudaErrors(cublasSetMatrix(
         B_rows, B_cols, sizeof(DataT), B, B_lead_dim, d_B, B_rows));
-
-    std::cout << "memory device A and B allocated" << std::endl;
-
 
     //initialize cuda events
     cudaEvent_t start, stop;
@@ -110,9 +104,6 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     {
         cudaStreamCreate(&(streams[ib]));
     }
-	
-    std::cout << "streams created. started multiplication" << std::endl;
-
 
     //loop through all blocks
     for(intT jb = 0; jb < vbmatA.block_cols; jb++ )      //loop horizontally through block columns
