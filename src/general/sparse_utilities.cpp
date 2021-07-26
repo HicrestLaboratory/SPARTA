@@ -281,7 +281,7 @@ returns the permutation that would sort arrary arr
     );
 }
 
-int partition(intT* arr, intT start, intT end, intT step)
+int partition(intT* arr, intT start, intT end, int step)
 {
     if (step <= 0)
     {
