@@ -172,7 +172,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
 
 
     //let each stream copy the relevant C block from device
-    for (int ib = 0; ib < vbmatA.block_rows; ib++)
+    for (int ib = 0; ib < n_streams; ib++)
     {
         cublasSetStream(handle, streams[ib]); 
         rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib];
