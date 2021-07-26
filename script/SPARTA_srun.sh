@@ -12,11 +12,11 @@
 #SBATCH --ntasks=1
 
 
-export OPTS="-w 1 -r 5 -v -1 -i 4"
+export OPTS="-w 1 -r 5 -v 1 -i 4"
 module load cuda-10.2
 module load gcc-9.3.0
 cd /home/clusterusers/pasyloslabini/SPARTA
 make clean
-make test_cublas_cusparse_comparison
+make test_cublas_VBS
 cd /home/clusterusers/pasyloslabini/SPARTA
-source ${1}  #call any script from here
+./programs/cuda/test_cublas_VBS ${OPTS} -m 32000 -k 32000 -n 1024 -p 64
