@@ -283,13 +283,8 @@ int main(int argc, char* argv[]) {
 
      //INPUT EXAMPLE 4: create a random matrix with block structure
     if (input_type == 4) {
-
-        //A_rows and density have been previously set by options. Default: n = 20, density = 0.5;
         
-        //TODO do not start with array but create directly the CSR?
-
         random_sparse_blocks_mat(vbmat_input, A_rows, A_cols, 1, 1, block_size, block_size, block_density, density);
-        matprint(vbmat_input);
         
         convert_to_CSR(vbmat_input, cmat_A, 0);
        
