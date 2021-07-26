@@ -1,6 +1,6 @@
 #pragma once
 typedef float DataT; //precision for matrix entries
-typedef int intT;
+typedef long int intT;
 
 struct CSR {
     /*--------------------------------------------------------------

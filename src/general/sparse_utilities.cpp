@@ -175,7 +175,6 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
 
     vbmat.nztot = nz_tot;
 
-    std::cout << "# of data: " << nz_tot << " size of data: " << nz_tot * sizeof(DataT) << std::endl;
     vbmat.mab = new DataT[nz_tot]{ 0 };
     vbmat.jab = new intT[nz_blocks];
     
