@@ -66,6 +66,7 @@ int random_mat(DataT* mat, intT rows, intT cols, float sparsity)
     std::random_shuffle(entries.begin(), entries.end());
     std::copy(entries.begin(), entries.end(), mat);
 
+    return 0;
 
 }
 
@@ -159,6 +160,7 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
     partition(row_part, 0, rows, row_block_size); //row and block partition for creating the VBS
     partition(col_part, 0, cols, col_block_size);
 
+    std::cout << "partitions created" << std::endl;
 
     //DETERMINE THE NZ BLOCK STRUCTURE
     //(this could be probably made to use less memory by extracting indices instead of permuting the vector)
@@ -171,7 +173,11 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
     intT compressed_dim = (blocks_fmt == 0) ? block_cols : block_rows;
     intT nz_tot = nz_blocks * size_of_block;
 
+    std::cout << "vectors initialized" << std::endl;
+
     init_VBS(vbmat, block_rows, row_part, block_cols, col_part, blocks_fmt, entries_fmt);
+
+    std::cout << "VBS initialized" << std::endl;
 
     vbmat.nztot = nz_tot;
     vbmat.mab = new DataT[nz_tot]{ 0 };
@@ -216,6 +222,8 @@ int matprint(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt)
 
         std::cout << std::endl;
     }
+
+    return 0;
 }
 
 int matprint(DataT* mat, intT rows, intT* row_part, intT row_blocks, intT cols, intT* col_part, intT col_blocks, intT lead_dim,  int fmt)
@@ -244,6 +252,7 @@ int matprint(DataT* mat, intT rows, intT* row_part, intT row_blocks, intT cols, 
         
     }
 
+    return 0;
 }
 
 int arr_print(intT* arr, intT len)
@@ -359,6 +368,10 @@ int init_VBS(VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT*
     std::copy(col_part, col_part + block_cols + 1, vbmat.col_part);
 
     vbmat.nzcount = new intT[main_dim];
+
+
+    //TODO: add conformity checks and return errors
+    return 0;
 }
 
 int  convert_to_VBS(DataT* mat, intT mat_rows, intT mat_cols, int mat_fmt, VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT *col_part, int vbmat_blocks_fmt, int vbmat_entries_fmt, int no_zero_mode)
@@ -783,6 +796,8 @@ int matprint(const VBS& vbmat)
     
     matprint(temp_mat, rows, vbmat.row_part, vbmat.block_rows, cols, vbmat.col_part, vbmat. block_cols, cols, 0);
     delete[] temp_mat;
+
+    return 0;
 }
 
 //TODO: efficient conversion CSR <-> VBS
@@ -1060,7 +1075,7 @@ int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
         }
     }
 
-
+    return 0;
 }
 
 int convert_to_CSR_ineff(const VBS& vbmat, CSR& cmat, int csr_fmt)
@@ -1086,10 +1101,14 @@ int matprint(const CSR& cmat)
     convert_to_mat(cmat, tmp_mat, 0);
     matprint(tmp_mat, cmat.rows, cmat.cols, cmat.cols, 0);
     delete[] tmp_mat;
+
+    return 0;
 }
 
 int copy(const CSR& in_cmat, CSR& out_cmat) 
 {
+    cleanCSR(out_cmat);
+
     out_cmat.fmt = in_cmat.fmt;
     out_cmat.rows = in_cmat.rows;
     out_cmat.cols = in_cmat.cols;
@@ -1113,6 +1132,7 @@ int copy(const CSR& in_cmat, CSR& out_cmat)
 
     }
 
+    return 0;
 }
 
 int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
@@ -1175,6 +1195,8 @@ int transpose(const CSR& in_cmat, CSR& out_cmat, int new_fmt)
     }
     
     delete[] counter;
+
+    return 0;
 
 }
 
@@ -1254,6 +1276,8 @@ int permute_CSR(CSR& cmat, intT* perm, int dim) {
 
         delete[] idx_perm;
     }
+
+    return 0;
 }
 
 intT count_nnz(CSR& cmat)
@@ -1304,7 +1328,6 @@ void read_mtx_format(CSR& cmat, std::string infilename, int cmat_fmt) {
     std::copy(tmp_vec.begin(), tmp_vec.end(), tmp_mat);
     convert_to_CSR(tmp_mat, rows, cols, 0, cmat, cmat_fmt);
     delete[] tmp_mat;
-
 }
 
 

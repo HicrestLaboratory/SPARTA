@@ -53,7 +53,7 @@ float std_dev(vec_d v)
     {
         s += (t - m) * (t - m);
     }
-    s = sqrt(s / v.size());
+    return sqrt(s / v.size());
 }
 
 
@@ -65,6 +65,8 @@ int output_couple(string& names, string& values, string name, myType value)
 
     names += name + " ";
     values += to_string(value) + " ";
+
+    return 0;
 }
 
 int main(int argc, char* argv[]) {
