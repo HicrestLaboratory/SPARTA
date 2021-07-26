@@ -61,8 +61,6 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     int rows_in_block, cols_in_block;
     int size_block, mem_size_block;
 
-    std::cout << "allocating memory " << std::endl;
-
     //TODO: allocate memory on device
     intT size_A = vbmatA.nztot; //total nonzero entries in vbmat
     intT mem_size_A = sizeof(DataT) * size_A;
@@ -82,7 +80,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
     checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
 
-    std::cout << "memory allocated" << std::endl;
+    std::cout << "memory device dx allocated" << std::endl;
 
 
     //copy to device the vbmat matrix (nonzero blocks are stored consecutively and in column major format)
@@ -93,6 +91,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     checkCudaErrors(cublasSetMatrix(
         B_rows, B_cols, sizeof(DataT), B, B_lead_dim, d_B, B_rows));
 
+    std::cout << "memory device A and B allocated" << std::endl;
 
 
     //initialize cuda events
@@ -104,6 +103,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
 
     //creates streams. Each block rows is assigned a different stream.
     
+
     if (n_streams > vbmatA.block_rows) n_streams = vbmatA.block_rows;
     cudaStream_t streams[n_streams];
     for (intT ib = 0; ib < n_streams; ib++)
@@ -111,6 +111,9 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
         cudaStreamCreate(&(streams[ib]));
     }
 	
+    std::cout << "streams created. started multiplication" << std::endl;
+
+
     //loop through all blocks
     for(intT jb = 0; jb < vbmatA.block_cols; jb++ )      //loop horizontally through block columns
     {
