@@ -61,6 +61,8 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     int rows_in_block, cols_in_block;
     int size_block, mem_size_block;
 
+    std::cout << "allocating memory " << std::endl;
+
     //TODO: allocate memory on device
     intT size_A = vbmatA.nztot; //total nonzero entries in vbmat
     intT mem_size_A = sizeof(DataT) * size_A;
@@ -79,6 +81,9 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     checkCudaErrors(cudaMalloc((void**)&d_A, mem_size_A));
     checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
     checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
+
+    std::cout << "memory allocated" << std::endl;
+
 
     //copy to device the vbmat matrix (nonzero blocks are stored consecutively and in column major format)
     checkCudaErrors(cublasSetVector(
