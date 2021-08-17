@@ -1357,7 +1357,7 @@ intT norm2(intT* arr, intT len)
     return norm;
 }
 
-void read_snap_format(GraphMap& gmap, std::string filename, std::string delimiter)
+void read_snap_format(GraphMap& gmap, std::string filename, std::string delimiter = " ")
 {
     /*		Read from edgelist to a graphmap
      *		TODO Error handling
@@ -1386,21 +1386,21 @@ void read_snap_format(GraphMap& gmap, std::string filename, std::string delimite
     while (infile.peek() == '#' or infile.peek() == '%') infile.ignore(2048, '\n');
 
     //TODO: check import success
-    //read the source node (row) of a new line
     while (getline(infile, temp)) {
 
-        intT del_pos = temp.find(delimiter);
-        intT del_size = delimiter.size();
+        int del_pos = temp.find(delimiter);
+        int del_size = delimiter.length();
 
         std::string first_node_string = temp.substr(0, del_pos); //retrieve the part of the string before the delimiter
         current_node = stoi(first_node_string);
+        temp.erase(0, del_pos + del_size);
 
         if (gmap.count(current_node) == 0) { //new source node encountered
             gmap[current_node] = emptyset;
         }
 
-        //get target node (column)
-        std::string second_node_string = temp.substr(del_pos + del_size); //retrieve the part of the string after the delimiter
+        del_pos = temp.find(delimiter);
+        std::string second_node_string = temp.substr(0, del_pos); //retrieve the part of the string after the delimiter
         child = stoi(second_node_string);
         gmap[current_node].insert(child);
     }
@@ -1535,4 +1535,12 @@ void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt) {
         std::copy(temp_vec.begin(), temp_vec.end(), cmat.ma[parent]); //entries = 1s. GraphMap are unweighted (for now).
     }
 
+}
+
+void read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string delimiter = " ")
+{
+    GraphMap snap_graph;
+    read_snap_format(snap_graph, filename, delimiter);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
+    MakeProper(snap_graph);
+    convert_to_CSR(snap_graph, cmat, cmat_fmt);
 }
