@@ -131,8 +131,6 @@ intT count_nnz(CSR& cmat);
 
 intT count_nnz_blocks(VBS& vbmat);
 
-void read_mtx_format(CSR& cmat, std::string infilename, int cmat_fmt);
-
 intT scalar_product(intT* pat_0, intT len_0, intT* pat_1);
 
 intT norm2(intT* arr, intT len);

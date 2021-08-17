@@ -1298,40 +1298,6 @@ intT count_nnz_blocks(VBS& vbmat)
     return nz_blocks;
 }
 
-
-void read_mtx_format(CSR& cmat, std::string infilename, int cmat_fmt) {
-    std::ifstream file(infilename);
-    intT rows, cols, num_lines;
-
-    // Ignore comments headers
-    while (file.peek() == '%') file.ignore(2048, '\n');
-
-    // Read number of rows and columns
-    file >> rows >> cols >> num_lines;
-
-    std::vector<DataT> tmp_vec(rows * rows, 0.0);
-
-    // fill the matrix with data
-    for (intT l = 0; l < num_lines; l++)
-    {
-        DataT data;
-        intT row, col;
-        file >> row >> col >> data;
-        tmp_vec[(row - 1) + (col - 1) * rows] = data;
-    }
-
-    DataT* tmp_mat = new DataT[rows * rows];
-    std::copy(tmp_vec.begin(), tmp_vec.end(), tmp_mat);
-    convert_to_CSR(tmp_mat, rows, cols, 0, cmat, cmat_fmt);
-    delete[] tmp_mat;
-}
-
-
-
-
-
-
-
 //TODO get_pattern (and other pattern related functions) can be made more efficient by storing compressed blocks instead of an array of blocks
 
 intT scalar_product(intT* pat_0, intT len_0, intT* pat_1)
