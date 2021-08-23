@@ -12,7 +12,7 @@
 #include <vector>
 #include <string>
 
-
+#include "reorderings.h"
 #include "sparse_utilities.h"
 #include "comp_mats.h"
 
@@ -106,7 +106,6 @@ int main(int argc, char* argv[]) {
             input_type = stoi(optarg);
             //  1: Random CSR
             //  2: SNAP Edgelist
-            //  3: MTX Format
             //  4: Random Variable Block matrix
             break;
 
@@ -220,16 +219,6 @@ int main(int argc, char* argv[]) {
 
             if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
             //______________________________________
-    }
-    else if (input_type == 3)
-    {
-        //INPUT EXAMPLE 3: read from MTX format 
-            //read from mtx
-        if (input_source.empty()) input_source = "testmat.mtx";
-        read_mtx_format(input_cmat, input_source, input_cmat_fmt); //read into CSR
-
-        if (verbose > 0)            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
-        //______________________________________
     }
 
     //INPUT EXAMPLE 4: create a random matrix with block structure
