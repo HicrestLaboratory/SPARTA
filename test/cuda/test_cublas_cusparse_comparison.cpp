@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
 
     int verbose = 3;
 
-    int input_type = 4;
+    int input_type = 1;
     int A_rows = 12;            //rows in the square input matrix;
     int A_cols = 8;
     int mat_A_fmt = 1;          //cuda needs column-major matrices
