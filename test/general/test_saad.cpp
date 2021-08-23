@@ -239,7 +239,9 @@ int main(int argc, char* argv[]) {
             verbose = stoi(optarg);
             break;
 
-        case 'R': //verbose
+        case 'R': //the reordering algorithm to be used:
+            //saad
+            //saad-blocks
             reorder_algo = optarg;
             break;
 
@@ -291,16 +293,6 @@ int main(int argc, char* argv[]) {
 
             if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
             //______________________________________
-    }
-    else if (input_type == 3)
-    {
-        //INPUT EXAMPLE 3: read from MTX format 
-            //read from mtx
-        if (input_source.empty()) input_source = "testmat.mtx";
-        read_mtx_format(input_cmat, input_source, input_cmat_fmt); //read into CSR
-
-        if (verbose > 0)            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
-        //______________________________________
     }
 
     //INPUT EXAMPLE 4: create a random matrix with block structure
