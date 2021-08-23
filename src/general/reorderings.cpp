@@ -761,6 +761,10 @@ int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT
 
     CSR cmat_cpy;
     copy(cmat, cmat_cpy);
+
+    matprint(cmat);
+
+    matprint(cmat_cpy);
     permute_CSR(cmat_cpy, perm, cmat_cpy.fmt);
 
     intT* row_part;

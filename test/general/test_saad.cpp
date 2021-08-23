@@ -300,7 +300,6 @@ int main(int argc, char* argv[]) {
     {
         DataT* rand_block_mat = new DataT[mat_rows * mat_cols];
 
-        //TODO do not start by array but create directly the CSR?
         //TODO arbitrary partition
 
 
@@ -314,6 +313,8 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
+
+        //TODO generate directly VBS
         random_sparse_blocks_mat(rand_block_mat, mat_rows, mat_cols, mat_fmt, input_block_size, input_block_density, input_entries_density);
 
         convert_to_CSR(rand_block_mat, mat_rows, mat_cols, mat_fmt, input_cmat, input_cmat_fmt);
