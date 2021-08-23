@@ -1103,6 +1103,8 @@ int matprint(const CSR& cmat)
 
 int copy(const CSR& in_cmat, CSR& out_cmat) 
 {
+
+    std::cout << "COPY: cleaning" << std::endl;
     cleanCSR(out_cmat);
 
     out_cmat.fmt = in_cmat.fmt;
@@ -1111,14 +1113,21 @@ int copy(const CSR& in_cmat, CSR& out_cmat)
 
     intT main_dim = (in_cmat.fmt == 0) ? in_cmat.rows : in_cmat.cols;
 
+
+
     out_cmat.nzcount = new intT[main_dim];
     out_cmat.ja = new intT* [main_dim];
     out_cmat.ma = new DataT * [main_dim];
+
+    std::cout << "COPY: copying 1" << std::endl;
 
     std::copy(in_cmat.nzcount, in_cmat.nzcount + main_dim, out_cmat.nzcount);
 
     for (intT i = 0; i < main_dim; i++)
     {
+
+        std::cout << "COPY: copying n" << i <<  std::endl;
+
         intT nzs = out_cmat.nzcount[i];
         out_cmat.ja[i] = new intT[nzs];
         out_cmat.ma[i] = new DataT[nzs];
