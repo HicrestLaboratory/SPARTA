@@ -757,16 +757,9 @@ int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT
     grp_to_partition(grouping, main_dim, main_partition); 
 
     //create a permuted CSR
-    std::cout << "permuting the CSR" << std::endl;
-
     CSR cmat_cpy;
-
-    matprint(cmat);
-
     copy(cmat, cmat_cpy);
 
-
-    matprint(cmat_cpy);
     permute_CSR(cmat_cpy, perm, cmat_cpy.fmt);
 
     intT* row_part;
@@ -789,9 +782,6 @@ int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT
         row_blocks = nB;
     }
 
-    std::cout << "converting to VBS" << std::endl;
-
-
     convert_to_VBS(cmat_cpy,
         vbmat,
         row_blocks, row_part,
@@ -800,7 +790,6 @@ int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT
 
     //cleaning
 
-    std::cout << "finished VBS creation" << std::endl;
     cleanCSR(cmat_cpy);
     delete[] perm;
     delete[] main_partition;
