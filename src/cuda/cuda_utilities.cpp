@@ -391,6 +391,23 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
         cusparseCreateDnMat(&matC, rows, B_cols, C_lead_dim, d_C,
             CUDA_R_32F, CUSPARSE_ORDER_COL));
 
+    size_t bufferSize;
+
+    checkCudaErrors(cusparseSpMM_bufferSize(
+        handle,
+        CUSPARSE_OPERATION_NON_TRANSPOSE,
+        CUSPARSE_OPERATION_NON_TRANSPOSE,
+        (void*)&alpha,
+        matA,
+        matB,
+        (void*)&beta,
+        matC,
+        CUDA_R_64F,
+        CUSPARSE_SPMM_ALG_DEFAULT,
+        &bufferSize
+    ));
+
+
     //initialize cuda events
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
