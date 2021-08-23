@@ -264,8 +264,6 @@ int main(int argc, char* argv[]) {
 
         }
 
-     //______________________________________
-
 
      //INPUT EXAMPLE 4: create a random matrix with block structure
     if (input_type == 4) {
