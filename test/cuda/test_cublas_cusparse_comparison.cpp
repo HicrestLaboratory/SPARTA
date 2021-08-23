@@ -99,7 +99,6 @@ int main(int argc, char* argv[]) {
             input_type = stoi(optarg);
             //  1: Random CSR
             //  2: SNAP Edgelist
-            //  3: MTX Format
             break;
 
         case 'f': //select source file
