@@ -781,6 +781,9 @@ int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT
         row_blocks = nB;
     }
 
+    std::cout << "converting to VBS" << std::endl;
+
+
     convert_to_VBS(cmat_cpy,
         vbmat,
         row_blocks, row_part,
