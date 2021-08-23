@@ -419,7 +419,7 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
         CUSPARSE_OPERATION_NON_TRANSPOSE,
         CUSPARSE_OPERATION_NON_TRANSPOSE,
         &alpha, matA, matB, &beta, matC, CUDA_R_32F,
-        CUSPARSE_SPMM_ALG_DEFAULT, dBuffer));
+        CUSPARSE_SPMM_ALG_DEFAULT, bufferSize));
 
     //record the elapsed time onto dt
     cudaDeviceSynchronize();
@@ -430,10 +430,9 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
     cudaEventDestroy(stop);
 
     // destroy matrix/vector descriptors
-    CHECK_CUSPARSE(cusparseDestroySpMat(matA));
-    CHECK_CUSPARSE(cusparseDestroyDnMat(matB));
-    CHECK_CUSPARSE(cusparseDestroyDnMat(matC));
-    CHECK_CUSPARSE(cusparseDestroy(handle));
+    checkCudaErrors(cusparseDestroySpMat(matA));
+    checkCudaErrors(cusparseDestroyDnMat(matB));
+    checkCudaErrors(cusparseDestroyDnMat(matC));
 
     // copy result from device to host 
     checkCudaErrors(cublasGetMatrix(C_rows, C_cols, sizeof(float), d_C, C_rows, C, C_rows));
