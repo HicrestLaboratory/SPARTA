@@ -226,7 +226,7 @@ int main(int argc, char* argv[]) {
             try
             {
                 scramble = stoi(optarg);
-                if (scramble != 1 && scramble != 2 && scramble != 3) throw 1;
+                if (scramble < 0 || scramble > 3) throw 1;
             }
             catch (...)
             {
