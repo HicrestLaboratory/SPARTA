@@ -788,6 +788,8 @@ int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT
         vbmat_blocks_fmt, vbmat_entries_fmt);
 
     //cleaning
+
+    std::cout << "finished VBS creation" << std::endl;
     cleanCSR(cmat_cpy);
     delete[] perm;
     delete[] main_partition;
