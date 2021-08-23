@@ -757,6 +757,8 @@ int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT
     grp_to_partition(grouping, main_dim, main_partition); 
 
     //create a permuted CSR
+    std::cout << "permuting the CSR" << std::endl;
+
     CSR cmat_cpy;
     copy(cmat, cmat_cpy);
     permute_CSR(cmat_cpy, perm, cmat_cpy.fmt);
