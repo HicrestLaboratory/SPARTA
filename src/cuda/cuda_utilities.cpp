@@ -419,7 +419,7 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
         CUSPARSE_OPERATION_NON_TRANSPOSE,
         CUSPARSE_OPERATION_NON_TRANSPOSE,
         &alpha, matA, matB, &beta, matC, CUDA_R_32F,
-        CUSPARSE_SPMM_ALG_DEFAULT, bufferSize));
+        CUSPARSE_SPMM_ALG_DEFAULT, &bufferSize));
 
     //record the elapsed time onto dt
     cudaDeviceSynchronize();
