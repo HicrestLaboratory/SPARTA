@@ -1104,9 +1104,6 @@ int matprint(const CSR& cmat)
 int copy(const CSR& in_cmat, CSR& out_cmat) 
 {
 
-    std::cout << "COPY: cleaning" << std::endl;
-    cleanCSR(out_cmat);
-
     out_cmat.fmt = in_cmat.fmt;
     out_cmat.rows = in_cmat.rows;
     out_cmat.cols = in_cmat.cols;
