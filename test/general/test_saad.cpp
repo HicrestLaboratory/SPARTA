@@ -427,10 +427,10 @@ int main(int argc, char* argv[]) {
         VBS vbmat_algo;
         group_to_VBS(input_cmat, hash_groups, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt);
 
-        delete[] algo_col_part;
         if (verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
         if (verbose > 1)    matprint(vbmat_algo);
 
+        delete[] algo_col_part;
 
         //size of minimum, mazimum, average height of nonzero blocks.
         intT max_block_H = 0;
