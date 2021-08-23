@@ -99,7 +99,6 @@ int main(int argc, char* argv[]) {
             input_type = stoi(optarg);
             //  1: Random CSR
             //  2: SNAP Edgelist
-            //  3: MTX Format
             break;
 
         case 'f': //select source file
@@ -196,18 +195,6 @@ int main(int argc, char* argv[]) {
 
         }
      //______________________________________
-
-
-     //INPUT EXAMPLE 3: read from MTX format
-    if (input_type == 3) 
-    {
-        //read from mtx
-        if (input_source.empty()) input_source = "testmat.mtx";
-        read_mtx_format(cmat_A, input_source, cmat_A_fmt); //read into CSR
-
-        if (verbose > 0)            cout << "IMPORTED A CSR FROM MTX FILE" << endl;
-
-    }
 
     //___________________________________________
     //*******************************************
