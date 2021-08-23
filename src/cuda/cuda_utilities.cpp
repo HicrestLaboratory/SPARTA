@@ -362,36 +362,47 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
     }
 
     cusparseHandle_t handle;
-    cusparseMatDescr_t descrA;
+    cusparseSpMatDescr_t matA;
+    cusparseDnMatDescr_t matB, matC;
 
-    checkCudaErrors(cusparseCreateMatDescr(&descrA));
     checkCudaErrors(cusparseCreate(&handle));
-    
+
+    checkCudaErrors(
+        cusparseCreateCsr(
+            &matA,
+            rows,
+            cols,
+            nnz,
+            d_RowPtr,
+            d_ColInd,
+            d_Val,
+            CUSPARSE_INDEX_32I,
+            CUSPARSE_INDEX_32I,
+            CUSPARSE_INDEX_BASE_ZERO,
+            CUDA_R_32F
+            )
+        );
+
+    checkCudaErrors(
+        cusparseCreateDnMat(&matB, cols, B_cols, B_lead_dim, d_B,
+            CUDA_R_32F, CUSPARSE_ORDER_COL));
+
+    checkCudaErrors(
+        cusparseCreateDnMat(&matC, rows, B_cols, C_lead_dim, d_C,
+            CUDA_R_32F, CUSPARSE_ORDER_COL));
+
     //initialize cuda events
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
     cudaEventRecord(start, 0);
-
-    checkCudaErrors(
-        cusparseScsrmm(handle,
-            CUSPARSE_OPERATION_NON_TRANSPOSE,
-            rows,
-            B_cols,
-            cols,
-            nnz,
-            &alpha,
-            descrA,
-            d_Val,
-            d_RowPtr,
-            d_ColInd,
-            d_B,
-            B_rows,
-            &beta,
-            d_C,
-            C_rows)
-    );
-
+    
+    
+    checkCudaErrors(cusparseSpMM(handle,
+        CUSPARSE_OPERATION_NON_TRANSPOSE,
+        CUSPARSE_OPERATION_NON_TRANSPOSE,
+        &alpha, matA, matB, &beta, matC, CUDA_R_32F,
+        CUSPARSE_SPMM_ALG_DEFAULT, dBuffer));
 
     //record the elapsed time onto dt
     cudaDeviceSynchronize();
@@ -400,6 +411,12 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
     cudaEventElapsedTime(&dt, start, stop);
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
+
+    // destroy matrix/vector descriptors
+    CHECK_CUSPARSE(cusparseDestroySpMat(matA));
+    CHECK_CUSPARSE(cusparseDestroyDnMat(matB));
+    CHECK_CUSPARSE(cusparseDestroyDnMat(matC));
+    CHECK_CUSPARSE(cusparseDestroy(handle));
 
     // copy result from device to host 
     checkCudaErrors(cublasGetMatrix(C_rows, C_cols, sizeof(float), d_C, C_rows, C, C_rows));
