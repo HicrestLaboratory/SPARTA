@@ -402,7 +402,7 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
         matB,
         (void*)&beta,
         matC,
-        CUDA_R_64F,
+        CUDA_R_32F,
         CUSPARSE_SPMM_ALG_DEFAULT,
         &bufferSize
     ));
