@@ -414,7 +414,7 @@ int main(int argc, char* argv[]) {
         intT* algo_col_part = new intT[algo_block_cols + 1]; 
         partition(algo_col_part, 0, input_cmat.cols, algo_block_size);
 
-
+        if (verbose > 0) cout << "prepared column partition" << endl;
         //run the reordering algo
         reorder_parameters params;
         params.tau = eps;
@@ -422,6 +422,9 @@ int main(int argc, char* argv[]) {
         params.algo = reorder_algo;
         intT* hash_groups = new intT[input_cmat.rows];
         saad_reordering(input_cmat, params, hash_groups);
+
+        if (verbose > 0) cout << "reordering performed" << endl;
+
 
         //create the block matrix
         VBS vbmat_algo;
