@@ -286,7 +286,7 @@ int main(int argc, char* argv[]) {
             if (input_source.empty()) input_source = "testgraph1.txt";
 
             string delimiter = "\t";
-            read_edgelist(input_source, input_cmat, input_cmat_fmt, delimiter)
+            read_edgelist(input_source, input_cmat, input_cmat_fmt, delimiter);
             if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
             //______________________________________
     }
