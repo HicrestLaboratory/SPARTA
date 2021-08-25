@@ -250,19 +250,17 @@ int main(int argc, char* argv[]) {
 
     //TEST
     //INPUT EXAMPLE 2: read graph in edgelist format into CSR
-        if (input_type == 2){
-            if (input_source.empty()) input_source = "testgraph1.txt";
+    else if (input_type == 2)
+    {
+        //TEST
+        //INPUT EXAMPLE 2: read graph in edgelist format into CSR
+        if (input_source.empty()) input_source = "testgraph1.txt";
 
-            string delimiter = " "; 
-            GraphMap snap_graph;
-            read_snap_format(snap_graph, input_source,delimiter);         //Read into a GraphMap matrix from a .txt edgelist (snap format)
-            MakeProper(snap_graph);
-            convert_to_CSR(snap_graph, cmat_A, cmat_A_fmt);
-
-            if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
-
-
-        }
+        string delimiter = "\t";
+        read_edgelist(input_source, input_cmat, input_cmat_fmt, delimiter);
+        if (verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
+        //______________________________________
+    }
 
 
      //INPUT EXAMPLE 4: create a random matrix with block structure
