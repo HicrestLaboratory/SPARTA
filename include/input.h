@@ -51,7 +51,7 @@ struct input_parameters
 
     intT A_rows = 12;            //rows in the square input matrix;
     intT A_cols = 8;
-    int cmat_A_fmt = 1;          //cuda needs column-major matrices
+    int cmat_A_fmt = 0;          //cuda needs column-major matrices
     int A_nnz = -1;              //will store the number of nonzeros
 
     
