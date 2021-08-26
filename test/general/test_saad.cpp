@@ -60,18 +60,16 @@ int main(int argc, char* argv[]) {
     {
         scramble_input(input_cmat, params);
 
-        if (params.verbose > 1) matprint(input_cmat);
-
         int vbmat_blocks_fmt = 0;
         int vbmat_entries_fmt = 0;
         intT algo_block_cols = std::ceil((float)params.A_cols / params.algo_block_size);
 
         //prepare the column partition
         intT* algo_col_part = new intT[algo_block_cols + 1]; 
-        partition(algo_col_part, 0, input_cmat.cols, params.algo_block_size);
+        partition(algo_col_part, 0, params.A_cols, params.algo_block_size);
 
         //run the reordering algo
-        intT* hash_groups = new intT[input_cmat.rows];
+        intT* hash_groups = new intT[params.A_rows];
         saad_reordering(input_cmat, params, hash_groups);
 
         cout << "reordering done" << endl;

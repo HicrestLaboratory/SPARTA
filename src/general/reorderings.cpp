@@ -578,7 +578,7 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
     {
         for (int i = 0; i < cmat.rows; i++)
         {
-            hashes[i] = row_block_hash(cmat.ja[i], cmat.nzcount[i], params.block_size);
+            hashes[i] = row_block_hash(cmat.ja[i], cmat.nzcount[i], params.algo_block_size);
         }
     }
 
@@ -619,22 +619,14 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp,
 int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*reorder_func)(CSR&, intT*, input_parameters&), bool (*sim_condition)(intT*, intT, intT*, intT, input_parameters&))
 {
 
-
-    std::cout << "starting reordering" << std::endl;
-
     intT* in_group = new intT[cmat.rows];
     reorder_func(cmat, in_group, params);
-
-    std::cout << "starting reordering" << std::endl;
-
 
     intT* perm = new intT[cmat.rows];
     sort_permutation(perm, in_group, cmat.rows);
 
     intT current_in_group = 0;
     intT current_out_group = 0;
-
-    std::cout << "starting reordering" << std::endl;
 
     intT i, j;
     for (intT ip = 0; ip < cmat.rows; ip++)
@@ -703,7 +695,7 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
 {
 
     float eps = params.eps;
-    intT block_size = params.block_size;
+    intT block_size = params.algo_block_size;
     if (len_A == 0 && len_B == 0) return true;
     if (len_A == 0 || len_B == 0) return false;
 
