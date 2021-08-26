@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
     random_mat(mat_B, B_rows, params.B_cols, params.B_density); // creates a random DataT matrix filled with 1.000 at a fixed density
 
     if (params.verbose > 0)        cout << "Random matrix B created:" << endl;
-    if (params.verbose > 1)        matprint(mat_B, params.B_rows, params.B_cols, B_rows, mat_B_fmt);
+    if (params.verbose > 1)        matprint(mat_B, B_rows, params.B_cols, B_rows, mat_B_fmt);
 
     //defining the output matrix C
 	int C_rows = params.A_rows;
@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
 
     algo_times.clear();
  
-    for (int i = -warmup; i < params.experiment_reps; i++)
+    for (int i = -params.warmup; i < params.experiment_reps; i++)
     {
         cublas_gemm_custom(mat_A_gemm, params.A_rows, params.A_cols, params.A_rows, mat_B, params.B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
         //only saves non-warmup runs
@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
         prepare_cusparse_CSR(input_cmat, csrRowPtr, csrColInd, csrVal);
         
         algo_times.clear();
-        for (int i = -warmup; i < params.experiment_reps; i++)
+        for (int i = -params.warmup; i < params.experiment_reps; i++)
         {
             cusparse_gemm_custom(params.A_rows, params.A_cols, params.A_nnz, csrRowPtr, csrColInd, csrVal, mat_B, params.B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f, dt);
             if (i >= 0) algo_times.push_back(dt);
@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
 //--------------------------------------------
 //      OUTPUT PHASE
 //--------------------------------------------
-    if ((verbose == -1) or (verbose > 1))
+    if ((params.verbose == -1) or (params.verbose > 1))
     {
         cout << output_names << endl;
         cout << output_values << endl;
