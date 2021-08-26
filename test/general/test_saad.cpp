@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
     svi max_block_vec;
     vec_d avg_height_vec;
 
-    for (int current_repetition = 0; current_repetition < experiment_reps; current_repetition++)
+    for (int current_repetition = 0; current_repetition < params.experiment_reps; current_repetition++)
     {
 
         scramble_input(input_cmat, params);
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
         intT algo_block_cols = std::ceil((float)params.A_cols / params.algo_block_size);
 
         //prepare the column partition
-        intT* algo_col_part = new intT[params.algo_block_cols + 1]; 
+        intT* algo_col_part = new intT[algo_block_cols + 1]; 
         partition(algo_col_part, 0, input_cmat.cols, params.algo_block_size);
 
         //run the reordering algo
@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
 
         //size of minimum, mazimum, average height of nonzero blocks.
         intT max_block_H = 0;
-        intT min_block_H = mat_rows;
+        intT min_block_H = params.A_rows;
         float avg_block_height = 0.;
         intT tot_nz_blocks = 0;
         for (intT i = 0; i < vbmat_algo.block_rows; i++)
@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
 
 
     //OUTPUT PHASE
-    if ((verbose == -1) or (verbose > 1))
+    if ((params.verbose == -1) or (params.verbose > 1))
     {
         cout << output_names << endl;
         cout << output_values << endl;
