@@ -68,6 +68,9 @@ int main(int argc, char* argv[]) {
         intT* algo_col_part = new intT[algo_block_cols + 1]; 
         partition(algo_col_part, 0, params.A_cols, params.algo_block_size);
 
+
+        cout << "starting reordering" << endl;
+
         //run the reordering algo
         intT* hash_groups = new intT[params.A_rows];
         saad_reordering(input_cmat, params, hash_groups);
