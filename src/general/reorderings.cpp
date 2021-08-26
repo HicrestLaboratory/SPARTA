@@ -628,6 +628,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
     intT current_in_group = 0;
     intT current_out_group = 0;
 
+    std::cout << "starting reordering" << std::endl;
 
     intT i, j;
     for (intT ip = 0; ip < cmat.rows; ip++)
