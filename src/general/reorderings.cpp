@@ -582,11 +582,19 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
         }
     }
 
+    std::cout << "hashes created" << std::endl;
+
     intT* perm = new intT[cmat.rows]{ 0 };
     sort_permutation(perm, hashes, cmat.rows);
 
+    std::cout << "permutation sorted" << std::endl;
+
+
     intT current_group = 0;
     groups[perm[0]] = current_group;
+
+    std::cout << "assigning groups" << std::endl;
+
 
     for (int ip = 1; ip < cmat.rows; ip++)
     {
@@ -618,8 +626,7 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp,
 
 int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*reorder_func)(CSR&, intT*, input_parameters&), bool (*sim_condition)(intT*, intT, intT*, intT, input_parameters&))
 {
-    matprint(cmat);
-    std::cout << "starting reordering" << std::endl;
+
     intT* in_group = new intT[cmat.rows];
     reorder_func(cmat, in_group, params);
 
