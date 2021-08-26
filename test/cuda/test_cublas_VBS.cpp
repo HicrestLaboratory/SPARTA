@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     params.cmat_A_fmt = 1;
 
     CSR cmat_A; //this will hold the CSR matrix
-
+  
     get_input_CSR(cmat_A, params);
 
     srand(params.seed);
@@ -244,6 +244,8 @@ int main(int argc, char* argv[]) {
             DataT* mat_C_csrmm = new DataT[C_rows * C_cols];
             int mat_C_csrmm_fmt = 1;
 
+
+            //TO DO: WRAP all this stuff into cusparse_gemm_custom(cmat, mat_B, B_cols, mat_C, dt)
             //prepare the cusparse CSR format
             int A_nnz = params.A_nnz;
             int* csrRowPtr = new int[A_rows + 1];
