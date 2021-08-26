@@ -124,7 +124,6 @@ int random_sparse_blocks_mat(DataT *mat, intT rows, intT cols, int fmt, intT blo
 
 }
 
-
 int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, int entries_fmt, intT row_block_size, intT col_block_size, float block_density, float entries_density)
 {
     /*
@@ -609,7 +608,6 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
 
 }
 
-//More efficient version: TODO TEST
 int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part, intT block_cols, intT* col_part, int vbmat_block_fmt, int vbmat_entries_fmt)
 {
 
@@ -795,8 +793,6 @@ int matprint(const VBS& vbmat)
 
     return 0;
 }
-
-//TODO: efficient conversion CSR <-> VBS
 
 
 //CSR utilities

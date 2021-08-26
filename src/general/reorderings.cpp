@@ -15,6 +15,7 @@
 #include "sparse_utilities.h"
 #include "comp_mats.h"
 #include "reorderings.h"
+#include "input.h"
 
 intT count_groups(intT* grp, intT grp_len)
 {
@@ -562,18 +563,18 @@ bool equal_rows(intT* cols_A, intT len_A, intT* cols_B, intT len_B)
     }
 }
 
-int hash_reordering(CSR& cmat, intT* groups, reorder_parameters &params)
+int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
 {
     intT* hashes = new intT[cmat.rows]{ 0 };
 
-    if (params.algo == "saad")
+    if (params.reorder_algo == "saad")
     {
         for (int i = 0; i < cmat.rows; i++)
         {
             hashes[i] = row_hash(cmat.ja[i], cmat.nzcount[i]);
         }
     }
-    else if (params.algo == "saad_blocks")
+    else if (params.reorder_algo == "saad_blocks")
     {
         for (int i = 0; i < cmat.rows; i++)
         {
@@ -615,7 +616,7 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp,
         }
 }
 
-int saad_reordering(CSR& cmat, reorder_parameters &params, intT* out_group, int (*reorder_func)(CSR&, intT*, reorder_parameters&), bool (*sim_condition)(intT*, intT, intT*, intT, reorder_parameters&))
+int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*reorder_func)(CSR&, intT*, input_parameters&), bool (*sim_condition)(intT*, intT, intT*, intT, input_parameters&))
 {
 
     intT* in_group = new intT[cmat.rows];
@@ -653,20 +654,20 @@ int saad_reordering(CSR& cmat, reorder_parameters &params, intT* out_group, int 
 
 }
 
-int saad_reordering(CSR& cmat, reorder_parameters& params, intT* out_group)
+int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group)
 {  
-    if (params.algo == "saad")
+    if (params.reorder_algo == "saad")
         saad_reordering(cmat, params, out_group, hash_reordering, scalar_condition);
-    else if (params.algo == "saad_blocks")
+    else if (params.reorder_algo == "saad_blocks")
         saad_reordering(cmat, params, out_group, hash_reordering, scalar_block_condition);
     else
-        std::cout << "UNKNONW ALGORITMH -->" << params.algo << "<-- in saad reordering" << std::endl;
+        std::cout << "UNKNONW ALGORITMH -->" << params.reorder_algo << "<-- in saad reordering" << std::endl;
 }
 
-bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_parameters &params)
+bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, input_parameters &params)
 {
 
-    float tau = params.tau;
+    float eps = params.eps;
     if (len_A == 0 && len_B == 0) return true;
     if (len_A == 0 || len_B == 0) return false;
 
@@ -686,15 +687,15 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorde
         }
     }
 
-    if ((std::pow(count, 2) > std::pow(tau, 2) * len_A * len_B)) return true;
+    if ((std::pow(count, 2) > std::pow(eps, 2) * len_A * len_B)) return true;
     else return false;
 
 }
 
-bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, reorder_parameters &params)
+bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, input_parameters &params)
 {
 
-    float tau = params.tau;
+    float eps = params.eps;
     intT block_size = params.block_size;
     if (len_A == 0 && len_B == 0) return true;
     if (len_A == 0 || len_B == 0) return false;
@@ -733,7 +734,7 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
         while (j < len_B && cols_B[j]/block_size < modA) j++;
     }
 
-    if ((std::pow(count, 2) > std::pow(tau, 2) * len_mod_A * len_mod_B)) return true;
+    if ((std::pow(count, 2) > std::pow(eps, 2) * len_mod_A * len_mod_B)) return true;
     else return false;
 }
 
