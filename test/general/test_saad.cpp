@@ -70,9 +70,13 @@ int main(int argc, char* argv[]) {
         intT* algo_col_part = new intT[algo_block_cols + 1]; 
         partition(algo_col_part, 0, input_cmat.cols, params.algo_block_size);
 
+        cout << "partition done" << endl;
+
         //run the reordering algo
         intT* hash_groups = new intT[input_cmat.rows];
         saad_reordering(input_cmat, params, hash_groups);
+
+        cout << "reordering done" << endl;
 
         //create the block matrix
         VBS vbmat_algo;
