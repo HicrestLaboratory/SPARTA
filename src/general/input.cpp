@@ -28,9 +28,9 @@ int output_couple_parameters(input_parameters& params, string& output_names, str
     output_couple(output_names, output_values, "reorder_algorithm", params.reorder_algo);
     output_couple(output_names, output_values, "rows", params.A_rows);
     output_couple(output_names, output_values, "cols", params.A_cols);
-    output_couple(output_names, output_values, "B_cols", B_cols);
-    output_couple(output_names, output_values, "B_density", B_density);
-    output_couple(output_names, output_values, "total_nonzeros", A_nnz);
+    output_couple(output_names, output_values, "B_cols", params.B_cols);
+    output_couple(output_names, output_values, "B_density", params.B_density);
+    output_couple(output_names, output_values, "total_nonzeros", params.A_nnz);
     output_couple(output_names, output_values, "input_blocks_density", params.block_density);
     output_couple(output_names, output_values, "input_entries_density", params.density);
     output_couple(output_names, output_values, "input_block_size", params.block_size);
@@ -70,7 +70,7 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
         case 'b': //block density
             //has only effect for example 4
             params.block_density = stof(optarg);
-            if (block_density < 0 or block_density > 1) {
+            if (params.block_density < 0 or params.block_density > 1) {
                 fprintf(stderr, "Option -b tried to set block density outside of [0,1]");
                 return 1;
             }
@@ -81,7 +81,7 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
 
         case 'e': //epsilon used for matrix reordering;
             params.eps = stof(optarg);
-            if (eps < 0. or eps > 1.) {
+            if (params.eps < 0. or params.eps > 1.) {
                 fprintf(stderr, "Option -e tried to set epsilon outside of [0,1]");
                 return 1;
             }
@@ -131,7 +131,7 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
         case 'q': //density of input matrix
             //has only effect for example 1 and 4
             params.density = stof(optarg);
-            if (density < 0 or density > 1) {
+            if (params.density < 0 or params.density > 1) {
                 fprintf(stderr, "Option -k tried to set density outside of [0,1]");
                 return 1;
             }
@@ -163,8 +163,8 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
                     //                          3: SCRAMBLE both rows and columsn
             try
             {
-                scramble = stoi(optarg);
-                if (scramble < 0 || scramble > 3) throw 1;
+                params.scramble = stoi(optarg);
+                if (params.scramble < 0 || params.scramble > 3) throw 1;
             }
             catch (...)
             {
@@ -210,7 +210,7 @@ int get_input_CSR(CSR& cmat_A, input_parameters& params)
         DataT* rand_mat = new DataT[params.A_cols * params.A_rows];
         random_mat(rand_mat, params.A_rows, params.A_cols, params.density); //generate random mat
 
-        convert_to_CSR(rand_mat, params.A_rows, params.A_cols, params.mat_A_fmt, cmat_A, params.cmat_A_fmt);
+        convert_to_CSR(rand_mat, params.A_rows, params.A_cols, params.cmat_A_fmt, cmat_A, params.cmat_A_fmt);
         delete[] rand_mat;
 
         if (params.verbose > 0) cout << "CREATED A RANDOM CSR with density = " << params.density << endl;
@@ -218,7 +218,6 @@ int get_input_CSR(CSR& cmat_A, input_parameters& params)
     //______________________________________
 
 
-    //TEST
     //INPUT EXAMPLE 2: read graph in edgelist format into CSR
     else if (params.input_type == 2)
     {
@@ -230,22 +229,24 @@ int get_input_CSR(CSR& cmat_A, input_parameters& params)
         read_edgelist(params.input_source, cmat_A, params.cmat_A_fmt, delimiter);
         if (params.verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
 
-        params.A_rows = cmat.rows;
-        params.A_cols = cmat.cols;
+        params.A_rows = cmat_A.rows;
+        params.A_cols = cmat_A.cols;
         //______________________________________
     }
 
 
-    //INPUT EXAMPLE 3: read graph in edgelist format into CSR
+    //INPUT EXAMPLE 3: read graph in MTX edgelist format into CSR
     else if (params.input_type == 3)
     {
-        //TEST
-        //INPUT EXAMPLE 2: read graph in edgelist format into CSR
+        //INPUT EXAMPLE 3: read graph in MTX edgelist format into CSR
         if (params.input_source.empty()) params.input_source = "testgraph1.txt";
 
         string delimiter = " ";
         read_edgelist(params.input_source, cmat_A, params.cmat_A_fmt, delimiter);
         if (params.verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
+
+        params.A_rows = cmat_A.rows;
+        params.A_cols = cmat_A.cols;
         //______________________________________
     }
 
@@ -304,8 +305,8 @@ int scramble_input(CSR& cmat, input_parameters& params)
     {
 
         if (params.verbose > 0) cout << "input matrix cols scrambled" << endl;
-        intT* random_cols_permutation = new intT[params.mat_cols];
-        randperm(random_cols_permutation, params.mat_cols);
+        intT* random_cols_permutation = new intT[params.A_cols];
+        randperm(random_cols_permutation, params.A_cols);
         permute_CSR(cmat, random_cols_permutation, 1);
         delete[] random_cols_permutation;
     }
