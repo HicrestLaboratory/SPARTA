@@ -26,6 +26,8 @@
 #include "cuda_utilities.h"
 #include "sparse_utilities.h"
 #include "comp_mats.h"
+#include "input.h"
+
 
 using namespace std;
 typedef std::vector<float> vec_d;
@@ -89,8 +91,8 @@ int main(int argc, char* argv[]) {
     //cmat must hold a proper CSR matrix at this point
     //******************************************
 
-    if (verbose > 0) cout << "INPUT ACQUIRED." << endl;
-    if (verbose > 1) matprint(cmat_A);
+    if (params.verbose > 0) cout << "INPUT ACQUIRED." << endl;
+    if (params.verbose > 1) matprint(cmat_A);
 
     //update rows and cols count to input values
     
@@ -122,8 +124,8 @@ int main(int argc, char* argv[]) {
     intT block_rows = A_rows / params.block_size;
     intT block_cols = A_cols / params.block_size;
 
-    A_row_part = new intT[block_rows + 1]; //partitions have one element more for the rightmost border.
-    A_col_part = new intT[block_cols + 1];
+    intT* A_row_part = new intT[block_rows + 1]; //partitions have one element more for the rightmost border.
+    intT* A_col_part = new intT[block_cols + 1];
     partition(A_row_part, 0, cmat_A.rows, params.block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
     partition(A_col_part, 0, cmat_A.cols, params.block_size);
 
@@ -184,7 +186,7 @@ int main(int argc, char* argv[]) {
         if (A_rows * A_cols < 10000000) //avoid this step if the matrix is too big
         {
 
-            if (verbose > 0)        cout << "Starting dense-dense cublas multiplication" << endl;
+            if (params.verbose > 0)        cout << "Starting dense-dense cublas multiplication" << endl;
 
             //create a dense array matrix from cmat_A
 
@@ -235,7 +237,7 @@ int main(int argc, char* argv[]) {
         algo_times.clear();
         for (int i = -params.warmup; i < params.experiment_reps; i++)
         {
-            cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt, n_streams);
+            cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt, params.n_streams);
             //only saves non-warmup runs
             if (i >= 0) algo_times.push_back(dt);
         }
