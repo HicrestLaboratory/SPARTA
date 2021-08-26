@@ -619,8 +619,14 @@ int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp,
 int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*reorder_func)(CSR&, intT*, input_parameters&), bool (*sim_condition)(intT*, intT, intT*, intT, input_parameters&))
 {
 
+
+    std::cout << "starting reordering" << std::endl;
+
     intT* in_group = new intT[cmat.rows];
     reorder_func(cmat, in_group, params);
+
+    std::cout << "starting reordering" << std::endl;
+
 
     intT* perm = new intT[cmat.rows];
     sort_permutation(perm, in_group, cmat.rows);
