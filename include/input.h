@@ -43,6 +43,8 @@ int output_couple(std::string& names, std::string& values, std::string name, myT
     values += to_string(value) + " ";
 }
 
+int output_couple(std::string& names, std::string& values, std::string name, std::string value);
+
 
 struct input_parameters
 {

@@ -37,6 +37,8 @@ int main(int argc, char* argv[]) {
 
     get_input_params(argc, argv, params);
 
+    params.cmat_A_fmt = 1;
+
     CSR input_cmat; //this will hold the CSR matrix
 
     get_input_CSR(input_cmat, params);
@@ -72,10 +74,10 @@ int main(int argc, char* argv[]) {
     float std_time;
    
     //output format
-    if (verbose > 0)        cout << "\n \n ************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl;
+    if (params.verbose > 0)        cout << "\n \n ************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl;
 
     //creating a random matrix X
-    int B_rows = params.A_cols;
+    intT B_rows = params.A_cols;
     int mat_B_fmt = 1;
 
     //TODO smart pointers for matrices
@@ -95,16 +97,16 @@ int main(int argc, char* argv[]) {
     //--------------------------------------------
     DataT* mat_A_gemm = new DataT [params.A_rows * params.A_cols]{ 0 };
  
-    convert_to_mat(input_cmat, mat_A_gemm, cmat_A_fmt);
+    convert_to_mat(input_cmat, mat_A_gemm, params.cmat_A_fmt);
  
     DataT* mat_Cgemm = new DataT[C_rows * C_cols]{ 0 };
     int mat_Cgemm_fmt = 1;
 
     algo_times.clear();
  
-    for (int i = -warmup; i < experiment_reps; i++)
+    for (int i = -warmup; i < params.experiment_reps; i++)
     {
-        cublas_gemm_custom(mat_A_gemm, params.A_rows, params.A_cols, A_rows, mat_B, params.B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
+        cublas_gemm_custom(mat_A_gemm, params.A_rows, params.A_cols, params.A_rows, mat_B, params.B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
         //only saves non-warmup runs
         if(i >= 0) algo_times.push_back(dt);
     }
@@ -144,9 +146,9 @@ int main(int argc, char* argv[]) {
         prepare_cusparse_CSR(input_cmat, csrRowPtr, csrColInd, csrVal);
         
         algo_times.clear();
-        for (int i = -warmup; i < experiment_reps; i++)
+        for (int i = -warmup; i < params.experiment_reps; i++)
         {
-            cusparse_gemm_custom(input_cmat.rows, input_cmat.cols, params.nnz, csrRowPtr, csrColInd, csrVal, mat_B, params.B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f, dt);
+            cusparse_gemm_custom(params.A_rows, params.A_cols, params.A_nnz, csrRowPtr, csrColInd, csrVal, mat_B, params.B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f, dt);
             if (i >= 0) algo_times.push_back(dt);
         }
 
@@ -156,11 +158,11 @@ int main(int argc, char* argv[]) {
         output_couple(output_names, output_values, "cusparse_spmm_std", std_time);
 
 
-        if (verbose > 0)
+        if (params.verbose > 0)
         {
             cout << "CSR-Dense cusparse multiplication. Time taken: " << mean_time << endl;
         }
-        if (verbose > 1)
+        if (params.verbose > 1)
         {
 
             cout << "CSR-dense cusparse:" << endl;
@@ -188,7 +190,7 @@ int main(int argc, char* argv[]) {
 //      CLEANING
 //--------------------------------------------
     delete[] mat_B;
-    cleanCSR(cmat_A);
+    cleanCSR(input_cmat);
 }
  
  
