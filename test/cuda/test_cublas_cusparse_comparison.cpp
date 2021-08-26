@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
 //--------------------------------------------
     if (typeid(DataT) != typeid(float))
     {
-        if (verbose > 0)         cout << "WARNING: only float supported for CUSPARSE. DataT can be changed in sparse_utilities.h" << endl;
+        if (params.verbose > 0)         cout << "WARNING: only float supported for CUSPARSE. DataT can be changed in sparse_utilities.h" << endl;
     }
     else
     {

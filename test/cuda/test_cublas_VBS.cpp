@@ -485,7 +485,7 @@ int main(int argc, char* argv[]) {
         int mat_Cblock_fmt = 1;
 
         algo_times.clear();
-        for (int i = -warmup; i < experiment_reps; i++)
+        for (int i = -params.warmup; i < params.experiment_reps; i++)
         {
             cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt, n_streams);
             //only saves non-warmup runs

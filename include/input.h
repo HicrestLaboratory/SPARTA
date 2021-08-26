@@ -40,7 +40,7 @@ int output_couple(std::string& names, std::string& values, std::string name, myT
     //used to produce output in CSV-like form;
 
     names += name + " ";
-    values += to_string(value) + " ";
+    values += std::to_string(value) + " ";
 }
 
 int output_couple(std::string& names, std::string& values, std::string name, std::string value);
