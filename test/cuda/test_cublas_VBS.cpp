@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     params.cmat_A_fmt = 1;
 
     CSR cmat_A; //this will hold the CSR matrix
-
+  
     get_input_CSR(cmat_A, params);
 
     srand(params.seed);
