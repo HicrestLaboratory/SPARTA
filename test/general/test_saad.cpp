@@ -58,8 +58,9 @@ int main(int argc, char* argv[]) {
 
     for (int current_repetition = 0; current_repetition < params.experiment_reps; current_repetition++)
     {
-
+        if (params.verbose > 1) matprint(input_cmat);
         scramble_input(input_cmat, params);
+
 
         int vbmat_blocks_fmt = 0;
         int vbmat_entries_fmt = 0;
