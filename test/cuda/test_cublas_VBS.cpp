@@ -30,46 +30,6 @@
 
 
 using namespace std;
-typedef std::vector<float> vec_d;
-typedef std::vector<string> vec_str;
-typedef std::vector<int> vec_i;
-
-float mean(vec_d v)
-{
-    //mean of a vector
-    float m = 0.;
-    for (auto t : v)
-    {
-        m += t;
-    }
-    m /= v.size();
-    return m;
-}
-
-float std_dev(vec_d v)
-{
-    //std of a vector
-    float m = mean(v);
-    float s = 0.;
-    for (auto t : v)
-    {
-        s += (t - m) * (t - m);
-    }
-    return sqrt(s / v.size());
-}
-
-
-template <class myType>
-int output_couple(string& names, string& values, string name, myType value)
-{
-    //append name to names and value to values; add spaces
-    //used to produce output in CSV-like form;
-
-    names += name + " ";
-    values += to_string(value) + " ";
-
-    return 0;
-}
 
 int main(int argc, char* argv[]) {
 
