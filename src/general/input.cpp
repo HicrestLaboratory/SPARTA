@@ -22,6 +22,8 @@ int output_couple(string& names, string& values, string name, string value)
 
 int output_couple_parameters(input_parameters& params, string& output_names, string& output_values)
 {
+    cout << fixed;
+
     output_couple(output_names, output_values, "exp_name", params.exp_name);
     output_couple(output_names, output_values, "input_type", params.input_type);
     output_couple(output_names, output_values, "input_source", params.input_source);
@@ -37,6 +39,10 @@ int output_couple_parameters(input_parameters& params, string& output_names, str
     output_couple(output_names, output_values, "algo_block_size", params.algo_block_size);
     output_couple(output_names, output_values, "epsilon", params.eps);
     output_couple(output_names, output_values, "scramble", params.scramble);
+
+    output_couple(output_names, output_values, "Warmup", params.warmup);
+    output_couple(output_names, output_values, "Repetitions", params.experiment_reps);
+    output_couple(output_names, output_values, "Algorithm", params.algo);
 }
 
 int get_input_params(int argc, char* argv[], input_parameters& params)
