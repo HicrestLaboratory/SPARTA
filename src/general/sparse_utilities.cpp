@@ -966,9 +966,6 @@ int convert_to_CSR(const DataT* in_mat, intT mat_rows, intT mat_cols, int mat_fm
 }
 
 
-
-
-//WORK IN PROGRESS. UNTESTED
 int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
 {
 
