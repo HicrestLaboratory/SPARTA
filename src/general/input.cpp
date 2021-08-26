@@ -9,6 +9,8 @@
 #include "sparse_utilities.h"
 #include "reorderings.h"
 
+using namespace std;
+
 int output_couple(string& names, string& values, string name, string value)
 {
     //append name to names and value to values; add spaces
