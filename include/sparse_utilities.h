@@ -3,6 +3,8 @@
 #include <string>
 #include <map>
 #include <set>
+#include <vector>
+
 
 typedef std::map<intT, std::set<intT> > GraphMap;
 
