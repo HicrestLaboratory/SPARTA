@@ -4,7 +4,7 @@
 #include "comp_mats.h"
 
 typedef std::vector<float> vec_d;
-typedef std::vector<string> vec_str;
+typedef std::vector<std::string> vec_str;
 
 template<class T>
 float mean(std::vector<T> v)
