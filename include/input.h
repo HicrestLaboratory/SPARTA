@@ -34,7 +34,7 @@ float std_dev(std::vector<T> v)
 
 
 template <class myType>
-int output_couple(string& names, string& values, string name, myType value)
+int output_couple(std::string& names, std::string& values, std::string name, myType value)
 {
     //append name to names and value to values; add spaces
     //used to produce output in CSV-like form;
@@ -62,12 +62,12 @@ struct input_parameters
     float density = 0.5;        //density of the input matrix;
     float block_density = 0.5;  //density inside the blocks;
 
-    string exp_name = "default";
-    string reorder_algo = "saad";
+    std::string exp_name = "default";
+    std::string reorder_algo = "saad";
 
     int algo_block_size = 4;
     
-    string input_source;
+    std::string input_source;
     int scramble = 0;           //scramble the input matrix?
     int n_streams = 16;         //number of streams for the custom block_based multiplication
 
@@ -83,7 +83,7 @@ struct input_parameters
     int check_correct = 0;      //verify correctness?
 };
 
-int output_couple_parameters(input_parameters&, string& names, string& values);
+int output_couple_parameters(input_parameters&, std::string& names, std::string& values);
 
 int get_input_params(int argc, char* argv[], input_parameters& params);
 
