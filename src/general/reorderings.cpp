@@ -582,6 +582,8 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
         }
     }
 
+    arr_print(hashes, cmat.rows);
+
     intT* perm = new intT[cmat.rows]{ 0 };
     sort_permutation(perm, hashes, cmat.rows);
 
