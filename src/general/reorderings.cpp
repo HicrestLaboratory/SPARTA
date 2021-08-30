@@ -687,7 +687,11 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
 int make_group_structure(intT* &group_structure, intT &group_structure_nzcount, intT* cols_A, intT len_A, input_parameters &params)
 {
-    if (len_A == 0) return 0;
+    if (len_A == 0) 
+    {
+        group_structure_nzcount = 0;
+        return 0;
+    }
 
     if (params.reorder_algo == "saad")
     {
