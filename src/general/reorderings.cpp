@@ -551,6 +551,7 @@ intT row_block_hash(intT* cols, intT len, intT block_size)
 bool equal_rows(intT* cols_A, intT len_A, intT* cols_B, intT len_B)
 {
     if (len_A != len_B) return false;
+    if (len_A == 0) return true;
     else
     {
         intT i = 0;
