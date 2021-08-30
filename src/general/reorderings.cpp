@@ -736,6 +736,7 @@ int update_group_structure(intT* group_structure, intT& group_structure_nzcount,
             new_group_structure[new_group_idx] = group_structure[group_idx];
             new_group_idx++;
             group_idx++;
+            intT current_block = cols_A[j] / block_size;
             while (j < len_A && cols_A[j] / block_size == current_block) j++;
         }
     }
