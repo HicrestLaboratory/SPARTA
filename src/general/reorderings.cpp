@@ -714,7 +714,7 @@ int make_group_structure(intT* &group_structure, intT &group_structure_nzcount, 
         {
             current_block = cols_A[i] / block_size;
             group_structure[group_idx] = current_block;
-            while (i < len_A && cols_A[i] % block_size == current_block) i++;
+            while (i < len_A && cols_A[i] / block_size == current_block) i++;
             group_idx++;
         }
         group_structure_nzcount = group_idx;
