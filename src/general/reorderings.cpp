@@ -642,8 +642,6 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
         std::cout << "making group structure for row " << i << std::endl;
         make_group_structure(group_structure, group_structure_nzcount, cmat.ja[i], cmat.nzcount[i], params);
-        arr_print(group_structure, group_structure_nzcount);
-
 
         //check all (groups of) rows after i; 
         for (intT jp = ip + 1; jp < cmat.rows; jp++)
@@ -665,19 +663,20 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
                 }
             }
         }
+
+        if (group_structure) delete[] group_structure;
         current_out_group++;
     }
 
 
     delete[] in_group;
-    if (group_structure) delete[] group_structure;
 
     return 0;
 
 }
 
 
-int make_group_structure(intT* group_structure, intT &group_structure_nzcount, intT* cols_A, intT len_A, input_parameters &params)
+int make_group_structure(intT* &group_structure, intT &group_structure_nzcount, intT* cols_A, intT len_A, input_parameters &params)
 {
     if (len_A == 0) return 0;
 
