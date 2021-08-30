@@ -638,6 +638,8 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
         i = perm[ip];
         if (in_group[i] != -1)
         {
+
+            std::cout << "assigning group" << i << std::endl;
             assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
 
             intT last_checked = -2; //used to jump over already seen (but unassigned) groups;
