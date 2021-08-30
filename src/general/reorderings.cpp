@@ -642,7 +642,6 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
         if (in_group[i] != -1)
         {
 
-            std::cout << "assigning group" << i << std::endl;
             assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
 
             intT last_checked = -2; //used to jump over already seen (but unassigned) groups;
@@ -675,7 +674,6 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
                 }
             }
 
-            std::cout << "deleting for row " << i << std::endl;
             if (group_structure_nzcount > 0) delete[] group_structure;
             current_out_group++;
         }
@@ -710,11 +708,11 @@ int make_group_structure(intT* &group_structure, intT &group_structure_nzcount, 
         intT block_size = params.algo_block_size;
         group_structure = new intT[len_A];
         
-        intT current_block = -1;
+        intT current_block;
         intT group_idx = 0;
         for (intT i = 0; i < len_A; i++)
         {
-            current_block = cols_A[i] % block_size;
+            current_block = cols_A[i] / block_size;
             group_structure[group_idx] = current_block;
             while (i < len_A && cols_A[i] % block_size == current_block) i++;
             group_idx++;
