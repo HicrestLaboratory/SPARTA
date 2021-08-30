@@ -709,7 +709,7 @@ int make_group_structure(intT* &group_structure, intT &group_structure_nzcount, 
     return 0;
 }
 
-int update_group_structure(intT* group_structure, intT& group_structure_nzcount, intT* cols_A, intT len_A, input_parameters& params)
+int update_group_structure(intT*&  group_structure, intT& group_structure_nzcount, intT* cols_A, intT len_A, input_parameters& params)
 {
 
     intT block_size;
