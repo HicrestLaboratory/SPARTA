@@ -60,6 +60,7 @@ int main(int argc, char* argv[]) {
     {
         scramble_input(input_cmat, params);
 
+
         int vbmat_blocks_fmt = 0;
         int vbmat_entries_fmt = 0;
         intT algo_block_cols = std::ceil((float)params.A_cols / params.algo_block_size);
