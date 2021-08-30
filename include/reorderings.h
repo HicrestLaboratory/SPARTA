@@ -43,3 +43,7 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
 
 int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt);
 
+int update_group_structure(intT* group_structure, intT& group_structure_nzcount, intT* cols_A, intT len_A, input_parameters& params);
+
+int make_group_structure(intT* group_structure, intT& group_structure_nzcount, intT* cols_A, intT len_A, input_parameters& params);
+

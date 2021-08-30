@@ -620,7 +620,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 {
 
     intT* in_group = new intT[cmat.rows];
-    reorder_func(cmat, in_group, params);
+    reorder_func(cmat, in_group, params); //creates a first grouping for rows (hash-based)
 
     intT* perm = new intT[cmat.rows];
     sort_permutation(perm, in_group, cmat.rows);
@@ -628,29 +628,122 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
     intT current_in_group = 0;
     intT current_out_group = 0;
 
+
+    intT* group_structure; //holds the nz-structure of the current group 
+    intT group_structure_nzcount;
+
     intT i, j;
     for (intT ip = 0; ip < cmat.rows; ip++)
     {
         i = perm[ip];
         if (in_group[i] != -1) assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
 
+        intT last_checked = -2; //used to jump over already seen (but unassigned) groups;
+
+        make_group_structure(group_structure, group_structure_nzcount, cmat.ja[i], cmat.nzcount[i], params);
+
         //check all (groups of) rows after i; 
         for (intT jp = ip + 1; jp < cmat.rows; jp++)
         {
             j = perm[jp];
-            if (in_group[j] != -1)
+            if (in_group[j] != -1 && in_group[j] != last_checked)
             {
-                if (sim_condition(cmat.ja[i], cmat.nzcount[i], cmat.ja[j], cmat.nzcount[j], params))
+                last_checked = in_group[j];
+
+                if (sim_condition(group_structure, group_structure_nzcount, cmat.ja[j], cmat.nzcount[j], params))
                 {
                     assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
+                    update_group_structure(group_structure, group_structure_nzcount, cmat.ja[j], cmat.nzcount[j], params);
                 }
             }
         }
         current_out_group++;
     }
 
+
+    delete[] in_group;
+    if (group_structure) delete[] group_structure;
+
     return 0;
 
+}
+
+
+int make_group_structure(intT* group_structure, intT &group_structure_nzcount, intT* cols_A, intT len_A, input_parameters &params)
+{
+    if (len_A == 0) return 0;
+
+    if (params.reorder_algo == "saad")
+    {
+        group_structure = new intT[len_A];
+        group_structure_nzcount = len_A;
+        std::copy(cols_A, len_A, group_structure);
+    }
+    else if (params.reorder_algo == "saad_blocks")
+    {
+        intT block_size = params.algo_block_size;
+        group_structure = new intT[len_A];
+        
+        intT current_block = -1;
+        intT group_idx = 0;
+        for (intT i = 0; i < len_A; i++)
+        {
+            current_block = cols_A[i] % block_size;
+            group_structure[group_idx] = current_block;
+            while (i < len_A && cols_A[i] % block_size == current_block) i++;
+            group_idx++;
+        }
+        group_structure_nzcount = group_idx;
+    }
+    else
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int update_group_structure(intT* group_structure, intT& group_structure_nzcount, intT* cols_A, intT len_A, input_parameters& params)
+{
+
+    intT block_size;
+    if (params.reorder_algo == "saad") block_size = 1;
+    else if (params.reorder_algo == "saad_blocks") block_size = params.algo_block_size;
+    else return 1; //unknown reordering algorithm
+
+    if (len_A + group_structure_nzcount == 0) return 0;
+
+    intT* new_group_structure = new intT[len_A + group_structure_nzcount];
+    intT group_idx = 0;
+    intT new_group_idx = 0;
+    intT j = 0;
+    while (group_idx < group_structure_nzcount || j < len_A)
+    {
+        if (group_idx < group_structure_nzcount && group_structure[group_idx] < cols_A[j] / block_size)
+        {
+            new_group_structure[new_group_idx] = group_structure[group_idx];
+            group_idx++;
+            new_group_idx++;
+        }
+        else if (j < len_A && group_structure[group_idx] > cols_A[j] / block_size)
+        {
+            new_group_structure[new_group_idx] = cols_A[j] / block_size;
+            new_group_idx++;
+            intT current_block = cols_A[j] / block_size;
+            while (j < len_A && cols_A[j] / block_size == current_block) j++;
+        }
+        else if (j < len_A && group_idx < group_structure_nzcount)
+        {
+            new_group_structure[new_group_idx] = group_structure[group_idx];
+            new_group_idx++;
+            group_idx++;
+            while (j < len_A && cols_A[j] / block_size == current_block) j++;
+        }
+    }
+
+    delete[] group_structure;
+    group_structure = new_group_structure;
+    group_structure_nzcount = new_group_idx;
+    return 0;
 }
 
 int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group)
@@ -691,7 +784,7 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, input_
 
 }
 
-bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, input_parameters &params)
+bool scalar_block_condition_csr(intT* cols_A, intT len_A, intT* cols_B, intT len_B, input_parameters &params)
 {
 
     float eps = params.eps;
@@ -736,6 +829,46 @@ bool scalar_block_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, 
     if ((std::pow(count, 2) > std::pow(eps, 2) * len_mod_A * len_mod_B)) return true;
     else return false;
 }
+
+bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount, intT* cols_B, intT len_B, input_parameters& params)
+{
+
+    float eps = params.eps;
+    intT block_size = params.algo_block_size;
+    if (len_A == 0 && group_structure_nzcount == 0) return true;
+    if (len_A == 0 || group_structure_nzcount == 0) return false;
+
+    intT modB;
+    intT len_mod_B = 0; //counts the size of cols_B when partitioned with block_size;
+    for (intT j = 0; j < len_B;)
+    {
+        len_mod_B++;
+        modB = cols_B[j] / block_size;
+        while (j < len_B && cols_B[j] / block_size == modB) i++;
+    }
+
+    intT group_idx = 0;
+    intT j = 0;
+    intT count = 0;
+    while (group_idx < group_structure_nzcount && j < len_B)
+    {
+        modA = group_structure[group_idx];
+        modB = cols_B[j] / block_size;
+        if (group_structure[group_idx] == modB)
+        {
+            count++;
+            modA++;
+            modB++;
+        }
+
+        while (group_idx < group_structure_nzcount && group_structure[group_idx] < modB) i++;
+        while (j < len_B && cols_B[j] / block_size < modA) j++;
+    }
+
+    if ((std::pow(count, 2) > std::pow(eps, 2) * group_structure_nzcount * len_mod_B)) return true;
+    else return false;
+}
+
 
 int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt)
 {
