@@ -635,38 +635,41 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
     for (intT ip = 0; ip < cmat.rows; ip++)
     {
         i = perm[ip];
-        if (in_group[i] != -1) assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
-
-        intT last_checked = -2; //used to jump over already seen (but unassigned) groups;
-
-        intT* group_structure; //holds the nz-structure of the current group 
-        std::cout << "making group structure for row " << i << std::endl;
-        make_group_structure(group_structure, group_structure_nzcount, cmat.ja[i], cmat.nzcount[i], params);
-        arr_print(group_structure, group_structure_nzcount);
-
-        //check all (groups of) rows after i; 
-        for (intT jp = ip + 1; jp < cmat.rows; jp++)
+        if (in_group[i] != -1)
         {
-            j = perm[jp];
-            if (in_group[j] != -1 && in_group[j] != last_checked)
+            assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
+
+            intT last_checked = -2; //used to jump over already seen (but unassigned) groups;
+
+            intT* group_structure; //holds the nz-structure of the current group 
+            std::cout << "making group structure for row " << i << std::endl;
+            make_group_structure(group_structure, group_structure_nzcount, cmat.ja[i], cmat.nzcount[i], params);
+            arr_print(group_structure, group_structure_nzcount);
+
+            //check all (groups of) rows after i; 
+            for (intT jp = ip + 1; jp < cmat.rows; jp++)
             {
-                last_checked = in_group[j];
-
-                std::cout << "---checking similarity with row " << j << std::endl;
-
-                if (sim_condition(group_structure, group_structure_nzcount, cmat.ja[j], cmat.nzcount[j], params))
+                j = perm[jp];
+                if (in_group[j] != -1 && in_group[j] != last_checked)
                 {
+                    last_checked = in_group[j];
 
-                    std::cout << "---merging with row " << j << std::endl;
+                    std::cout << "---checking similarity with row " << j << std::endl;
 
-                    assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
-                    update_group_structure(group_structure, group_structure_nzcount, cmat.ja[j], cmat.nzcount[j], params);
+                    if (sim_condition(group_structure, group_structure_nzcount, cmat.ja[j], cmat.nzcount[j], params))
+                    {
+
+                        std::cout << "---merging with row " << j << std::endl;
+
+                        assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
+                        update_group_structure(group_structure, group_structure_nzcount, cmat.ja[j], cmat.nzcount[j], params);
+                    }
                 }
             }
-        }
 
-        if (group_structure) delete[] group_structure;
-        current_out_group++;
+            if (group_structure) delete[] group_structure;
+            current_out_group++;
+        }
     }
 
 
@@ -691,7 +694,6 @@ int make_group_structure(intT* &group_structure, intT &group_structure_nzcount, 
     }
     else if (params.reorder_algo == "saad_blocks")
     {
-        std::cout << "making the structure blocks" << std::endl;
 
         intT block_size = params.algo_block_size;
         group_structure = new intT[len_A];
