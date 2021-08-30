@@ -568,8 +568,6 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
 {
     intT* hashes = new intT[cmat.rows]{ 0 };
 
-    std::cout << "starting hash reordering" << std::endl;
-
     if (params.reorder_algo == "saad")
     {
         for (int i = 0; i < cmat.rows; i++)
@@ -626,13 +624,8 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
     intT* in_group = new intT[cmat.rows];
     reorder_func(cmat, in_group, params); //creates a first grouping for rows (hash-based)
 
-    std::cout << "hash-reordered" << std::endl;
-
     intT* perm = new intT[cmat.rows];
     sort_permutation(perm, in_group, cmat.rows);
-
-    std::cout << "sort permuted" << std::endl;
-
 
     intT current_out_group = 0;
 
@@ -652,7 +645,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
             intT* group_structure; //holds the nz-structure of the current group 
             std::cout << "making group structure for row " << i << std::endl;
             make_group_structure(group_structure, group_structure_nzcount, cmat.ja[i], cmat.nzcount[i], params);
-            arr_print(group_structure, group_structure_nzcount);
+            if (group_structure) arr_print(group_structure, group_structure_nzcount);
 
             //check all (groups of) rows after i; 
             for (intT jp = ip + 1; jp < cmat.rows; jp++)
