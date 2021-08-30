@@ -646,9 +646,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
             intT last_checked = -2; //used to jump over already seen (but unassigned) groups;
 
-            std::cout << "making group structure for row " << i << std::endl;
             make_group_structure(group_structure, group_structure_nzcount, cmat.ja[i], cmat.nzcount[i], params);
-            if (group_structure) arr_print(group_structure, group_structure_nzcount);
 
             //check all (groups of) rows after i; 
             for (intT jp = ip + 1; jp < cmat.rows; jp++)
@@ -658,17 +656,10 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
                 {
                     last_checked = in_group[j];
 
-                    std::cout << "---checking similarity with row " << j << std::endl;
-
                     if (sim_condition(group_structure, group_structure_nzcount, cmat.ja[j], cmat.nzcount[j], params))
                     {
 
-                        std::cout << "---merging with row " << j << std::endl;
-
                         assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
-
-                        std::cout << "---updating group " << j << std::endl;
-
                         update_group_structure(group_structure, group_structure_nzcount, cmat.ja[j], cmat.nzcount[j], params);
                     }
                 }
@@ -799,19 +790,12 @@ int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group)
 
 bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, input_parameters &params)
 {
-    std::cout << "---------------checking scalar condition: " << std::endl;
     float eps = params.eps;
     if (len_A == 0 && len_B == 0) return true;
     if (len_A == 0 || len_B == 0) return false;
 
     intT count = 0;
     intT i = 0, j = 0;
-
-    std::cout << "-----comparing ";
-    arr_print(cols_A, len_A);
-    std::cout << "   with ";
-    arr_print(cols_B, len_B);
-    std::cout << std::endl;
 
     while (i < len_A && j < len_B)
     {
