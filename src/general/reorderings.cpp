@@ -622,8 +622,13 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
     intT* in_group = new intT[cmat.rows];
     reorder_func(cmat, in_group, params); //creates a first grouping for rows (hash-based)
 
+    std::cout << "hash-reordered" << std::endl;
+
     intT* perm = new intT[cmat.rows];
     sort_permutation(perm, in_group, cmat.rows);
+
+    std::cout << "sort permuted" << std::endl;
+
 
     intT current_out_group = 0;
 
