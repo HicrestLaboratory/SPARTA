@@ -765,14 +765,19 @@ int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group)
 
 bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, input_parameters &params)
 {
-
+    std::cout << "---------------checking scalar condition: " << std::endl;
     float eps = params.eps;
     if (len_A == 0 && len_B == 0) return true;
     if (len_A == 0 || len_B == 0) return false;
 
-
     intT count = 0;
     intT i = 0, j = 0;
+
+    std::cout << "-----comparing ";
+    arr_print(cols_A, len_A);
+    std::cout << "   with ";
+    arr_print(cols_B, len_B);
+    std::endl;
 
     while (i < len_A && j < len_B)
     {
