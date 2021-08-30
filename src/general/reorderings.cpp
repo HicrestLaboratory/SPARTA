@@ -625,7 +625,6 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
     intT* perm = new intT[cmat.rows];
     sort_permutation(perm, in_group, cmat.rows);
 
-    intT current_in_group = 0;
     intT current_out_group = 0;
 
     intT group_structure_nzcount;
@@ -662,6 +661,9 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
                         std::cout << "---merging with row " << j << std::endl;
 
                         assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
+
+                        std::cout << "---updating group " << j << std::endl;
+
                         update_group_structure(group_structure, group_structure_nzcount, cmat.ja[j], cmat.nzcount[j], params);
                     }
                 }
