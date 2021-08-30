@@ -835,8 +835,8 @@ bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount,
 
     float eps = params.eps;
     intT block_size = params.algo_block_size;
-    if (len_A == 0 && group_structure_nzcount == 0) return true;
-    if (len_A == 0 || group_structure_nzcount == 0) return false;
+    if (len_B == 0 && group_structure_nzcount == 0) return true;
+    if (len_B == 0 || group_structure_nzcount == 0) return false;
 
     intT modB;
     intT len_mod_B = 0; //counts the size of cols_B when partitioned with block_size;
@@ -844,12 +844,13 @@ bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount,
     {
         len_mod_B++;
         modB = cols_B[j] / block_size;
-        while (j < len_B && cols_B[j] / block_size == modB) i++;
+        while (j < len_B && cols_B[j] / block_size == modB) j++;
     }
 
     intT group_idx = 0;
     intT j = 0;
     intT count = 0;
+    intT modA;
     while (group_idx < group_structure_nzcount && j < len_B)
     {
         modA = group_structure[group_idx];
