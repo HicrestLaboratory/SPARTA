@@ -642,6 +642,8 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
         std::cout << "making group structure for row " << i << std::endl;
         make_group_structure(group_structure, group_structure_nzcount, cmat.ja[i], cmat.nzcount[i], params);
+        arr_print(group_structure, group_structure_nzcount);
+
 
         //check all (groups of) rows after i; 
         for (intT jp = ip + 1; jp < cmat.rows; jp++)
@@ -684,7 +686,6 @@ int make_group_structure(intT* group_structure, intT &group_structure_nzcount, i
         group_structure = new intT[len_A];
         group_structure_nzcount = len_A;
         std::copy(cols_A, cols_A + len_A, group_structure);
-        arr_print(group_structure, group_structure_nzcount);
     }
     else if (params.reorder_algo == "saad_blocks")
     {
