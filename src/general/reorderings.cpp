@@ -573,6 +573,7 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
     {
         for (int i = 0; i < cmat.rows; i++)
         {
+            std::cout << "row " << i << "hashed" << std::endl;
             hashes[i] = row_hash(cmat.ja[i], cmat.nzcount[i]);
         }
     }
