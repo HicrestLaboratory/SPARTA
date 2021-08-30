@@ -628,7 +628,6 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
     intT current_in_group = 0;
     intT current_out_group = 0;
 
-    intT* group_structure; //holds the nz-structure of the current group 
     intT group_structure_nzcount;
 
 
@@ -640,7 +639,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
         intT last_checked = -2; //used to jump over already seen (but unassigned) groups;
 
-
+        intT* group_structure; //holds the nz-structure of the current group 
         std::cout << "making group structure for row " << i << std::endl;
         make_group_structure(group_structure, group_structure_nzcount, cmat.ja[i], cmat.nzcount[i], params);
         arr_print(group_structure, group_structure_nzcount);
@@ -750,7 +749,7 @@ int update_group_structure(intT*&  group_structure, intT& group_structure_nzcoun
         }
     }
 
-    delete[] group_structure;
+    if (group_structure) delete[] group_structure;
     group_structure = new_group_structure;
     group_structure_nzcount = new_group_idx;
     return 0;
