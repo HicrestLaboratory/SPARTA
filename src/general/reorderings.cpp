@@ -676,7 +676,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
             }
 
             std::cout << "deleting for row " << i << std::endl;
-            if (group_structure) delete[] group_structure;
+            if (group_structure_nzcount > 0) delete[] group_structure;
             current_out_group++;
         }
     }
