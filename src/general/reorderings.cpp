@@ -567,6 +567,8 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
 {
     intT* hashes = new intT[cmat.rows]{ 0 };
 
+    std::cout << "starting hash reordering" << std::endl;
+
     if (params.reorder_algo == "saad")
     {
         for (int i = 0; i < cmat.rows; i++)
@@ -685,7 +687,6 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
     return 0;
 
 }
-
 
 int make_group_structure(intT* &group_structure, intT &group_structure_nzcount, intT* cols_A, intT len_A, input_parameters &params)
 {
