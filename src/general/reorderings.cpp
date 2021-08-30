@@ -777,7 +777,7 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, input_
     arr_print(cols_A, len_A);
     std::cout << "   with ";
     arr_print(cols_B, len_B);
-    std::endl;
+    std::cout << std::endl;
 
     while (i < len_A && j < len_B)
     {
