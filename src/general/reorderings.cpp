@@ -684,6 +684,7 @@ int make_group_structure(intT* group_structure, intT &group_structure_nzcount, i
         group_structure = new intT[len_A];
         group_structure_nzcount = len_A;
         std::copy(cols_A, cols_A + len_A, group_structure);
+        arr_print(group_structure, group_structure_nzcount);
     }
     else if (params.reorder_algo == "saad_blocks")
     {
