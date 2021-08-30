@@ -547,7 +547,6 @@ intT row_block_hash(intT* cols, intT len, intT block_size)
     return hash;
 }
 
-
 bool equal_rows(intT* cols_A, intT len_A, intT* cols_B, intT len_B)
 {
     if (len_A != len_B) return false;
@@ -572,7 +571,6 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
     {
         for (int i = 0; i < cmat.rows; i++)
         {
-            std::cout << "row " << i << "hashed" << std::endl;
             hashes[i] = row_hash(cmat.ja[i], cmat.nzcount[i]);
         }
     }
@@ -605,7 +603,6 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
         groups[curr] = current_group;
     }
 }
-
 
 int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp, intT new_group_idx)
 {
@@ -690,8 +687,6 @@ int make_group_structure(intT* &group_structure, intT &group_structure_nzcount, 
         group_structure = new intT[len_A];
         group_structure_nzcount = len_A;
         std::copy(cols_A, cols_A + len_A, group_structure);
-        std::cout << "making the structure" << std::endl;
-        arr_print(group_structure, group_structure_nzcount);
     }
     else if (params.reorder_algo == "saad_blocks")
     {
@@ -814,52 +809,6 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, input_
 
 }
 
-bool scalar_block_condition_csr(intT* cols_A, intT len_A, intT* cols_B, intT len_B, input_parameters &params)
-{
-
-    float eps = params.eps;
-    intT block_size = params.algo_block_size;
-    if (len_A == 0 && len_B == 0) return true;
-    if (len_A == 0 || len_B == 0) return false;
-
-    intT modA, modB;
-    intT len_mod_A = 0;
-    for(intT i = 0; i < len_A;)
-    {
-        len_mod_A++;
-        modA = cols_A[i] / block_size;
-        while (i < len_A && cols_A[i] / block_size == modA) i++;
-    }
-
-    intT len_mod_B = 0;
-    for (intT i = 0; i < len_B;)
-    {
-        len_mod_B++;
-        modB = cols_B[i] / block_size;
-        while (i < len_B && cols_B[i] / block_size == modB) i++;
-    }
-
-    intT i = 0;
-    intT j = 0;
-    intT count = 0;
-    while (i < len_A && j < len_B)
-    {
-        modA = cols_A[i] / block_size;
-        modB = cols_B[j] / block_size;
-        if (modA == modB)
-        {
-            count++;
-            modA++;
-            modB++;
-        }
-        while (i < len_A && cols_A[i]/block_size < modB) i++;
-        while (j < len_B && cols_B[j]/block_size < modA) j++;
-    }
-
-    if ((std::pow(count, 2) > std::pow(eps, 2) * len_mod_A * len_mod_B)) return true;
-    else return false;
-}
-
 bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount, intT* cols_B, intT len_B, input_parameters& params)
 {
 
@@ -899,7 +848,6 @@ bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount,
     if ((std::pow(count, 2) > std::pow(eps, 2) * group_structure_nzcount * len_mod_B)) return true;
     else return false;
 }
-
 
 int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt)
 {
