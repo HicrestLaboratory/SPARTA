@@ -732,29 +732,45 @@ int update_group_structure(intT*&  group_structure, intT& group_structure_nzcoun
     intT group_idx = 0;
     intT new_group_idx = 0;
     intT j = 0;
-    while (group_idx < group_structure_nzcount || j < len_A)
+    intT current_block = 0;
+    while (group_idx < group_structure_nzcount && j < len_A)
     {
-        if (group_idx < group_structure_nzcount && group_structure[group_idx] < cols_A[j] / block_size)
+        if (group_structure[group_idx] < cols_A[j] / block_size)
         {
             new_group_structure[new_group_idx] = group_structure[group_idx];
             group_idx++;
             new_group_idx++;
         }
-        else if (j < len_A && group_structure[group_idx] > cols_A[j] / block_size)
+        else if (group_structure[group_idx] > cols_A[j] / block_size)
         {
             new_group_structure[new_group_idx] = cols_A[j] / block_size;
             new_group_idx++;
-            intT current_block = cols_A[j] / block_size;
+            current_block = cols_A[j] / block_size;
             while (j < len_A && cols_A[j] / block_size == current_block) j++;
         }
-        else if (j < len_A && group_idx < group_structure_nzcount)
+        else if (group_idx < group_structure_nzcount)
         {
             new_group_structure[new_group_idx] = group_structure[group_idx];
             new_group_idx++;
             group_idx++;
-            intT current_block = cols_A[j] / block_size;
+            current_block = cols_A[j] / block_size;
             while (j < len_A && cols_A[j] / block_size == current_block) j++;
         }
+    }
+
+    while (group_idx < group_structure_nzcount)
+    {
+        new_group_structure[new_group_idx] = group_structure[group_idx];
+        new_group_idx++;
+        group_idx++;
+    }
+
+    while (j < len_A)
+    {
+        current_block = cols_A[j] / block_size;
+        new_group_structure[new_group_idx] = current_block;
+        new_group_idx++;
+        while (j < len_A && cols_A[j] / block_size == current_block) j++;
     }
 
     if (group_structure) delete[] group_structure;
