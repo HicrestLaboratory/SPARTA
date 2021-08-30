@@ -691,6 +691,8 @@ int make_group_structure(intT* &group_structure, intT &group_structure_nzcount, 
     }
     else if (params.reorder_algo == "saad_blocks")
     {
+        std::cout << "making the structure blocks" << std::endl;
+
         intT block_size = params.algo_block_size;
         group_structure = new intT[len_A];
         
