@@ -863,7 +863,7 @@ bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount,
             modB++;
         }
 
-        while (group_idx < group_structure_nzcount && group_structure[group_idx] < modB) i++;
+        while (group_idx < group_structure_nzcount && group_structure[group_idx] < modB) group_idx++;
         while (j < len_B && cols_B[j] / block_size < modA) j++;
     }
 
