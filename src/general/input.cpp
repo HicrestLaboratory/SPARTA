@@ -27,7 +27,7 @@ int output_couple_parameters(input_parameters& params, string& output_names, str
     output_couple(output_names, output_values, "exp_name", params.exp_name);
     output_couple(output_names, output_values, "input_type", params.input_type);
     output_couple(output_names, output_values, "input_source", params.input_source);
-    output_couple(output_names, output_values, "reorder_algorithm", params.reorder_algo);
+
     output_couple(output_names, output_values, "rows", params.A_rows);
     output_couple(output_names, output_values, "cols", params.A_cols);
     output_couple(output_names, output_values, "B_cols", params.B_cols);
@@ -36,10 +36,14 @@ int output_couple_parameters(input_parameters& params, string& output_names, str
     output_couple(output_names, output_values, "input_blocks_density", params.block_density);
     output_couple(output_names, output_values, "input_entries_density", params.density);
     output_couple(output_names, output_values, "input_block_size", params.block_size);
+
+    output_couple(output_names, output_values, "reorder_algorithm", params.reorder_algo);
     output_couple(output_names, output_values, "algo_block_size", params.algo_block_size);
     output_couple(output_names, output_values, "epsilon", params.eps);
-    output_couple(output_names, output_values, "scramble", params.scramble);
+    output_couple(output_names, output_values, "similarity_func", params.similarity_func);
+    output_couple(output_names, output_values, "hierarchic_merge", params.hierarchic_merge);
 
+    output_couple(output_names, output_values, "scramble", params.scramble);
     output_couple(output_names, output_values, "Warmup", params.warmup);
     output_couple(output_names, output_values, "Repetitions", params.experiment_reps);
     output_couple(output_names, output_values, "Algorithm", params.algo);
@@ -99,7 +103,10 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
             break;
 
         case 'F': //similarity function
-            //has only effect for example 2 and 3;
+            //ALLOWED:  -hamming (distance)
+            //          -jaccard
+            //          -scalar
+
             params.similarity_func = optarg;
             break;
 
