@@ -845,8 +845,14 @@ bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount,
         while (j < len_B && cols_B[j] / block_size < modA) j++;
     }
 
-    if ((std::pow(count, 2) > std::pow(eps, 2) * group_structure_nzcount * len_mod_B)) return true;
-    else return false;
+
+    bool result;
+    if (params.similarity_func == "hamming") result = len_mod_B + group_structure_nzcount - (2 * count) < eps* params.A_cols;
+    else if (params.similarity_func == "scalar") result = (std::pow(count, 2) > std::pow(eps, 2) * group_structure_nzcount * len_mod_B);
+    else if (params.similarity_func == "jaccard") result = (1.0 * count)/(len_mod_B + group_structure_nzcount - count) < eps * params.A_cols;
+
+
+    return result;
 }
 
 int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt)
