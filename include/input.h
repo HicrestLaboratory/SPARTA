@@ -67,7 +67,8 @@ struct input_parameters
     std::string exp_name = "default";
     std::string reorder_algo = "saad";
     std::string similarity_func = "scalar";
-
+    int hierarchic_merge= 1;         //Activate hierchical merging?
+    
     int algo_block_size = 4;
     
     std::string input_source;
