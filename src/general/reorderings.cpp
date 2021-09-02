@@ -809,7 +809,7 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, input_
     bool result;
     if (params.similarity_func == "hamming") result = len_A + len_B - (2 * count) < eps * params.A_cols;
     else if (params.similarity_func == "scalar") result = (std::pow(count, 2) > std::pow(eps, 2) * len_A * len_B);
-    else if (params.similarity_func == "jaccard") result = (1.0 * count) / (len_A + len_B - count) < eps;
+    else if (params.similarity_func == "jaccard") result = (1.0 * count) / (len_A + len_B - count) > eps;
 
     return result;
 
@@ -855,7 +855,7 @@ bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount,
     bool result;
     if (params.similarity_func == "hamming") result = len_mod_B + group_structure_nzcount - (2 * count) < eps* params.A_cols;
     else if (params.similarity_func == "scalar") result = (std::pow(count, 2) > std::pow(eps, 2) * group_structure_nzcount * len_mod_B);
-    else if (params.similarity_func == "jaccard") result = (1.0 * count)/(len_mod_B + group_structure_nzcount - count) < eps;
+    else if (params.similarity_func == "jaccard") result = (1.0 * count)/(len_mod_B + group_structure_nzcount - count) > eps;
 
     return result;
 }
