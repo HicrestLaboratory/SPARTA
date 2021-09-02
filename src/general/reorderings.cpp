@@ -715,6 +715,8 @@ int make_group_structure(intT* &group_structure, intT &group_structure_nzcount, 
 int update_group_structure(intT*&  group_structure, intT& group_structure_nzcount, intT* cols_A, intT len_A, input_parameters& params)
 {
 
+    if (params.hierarchic_merge == 0) return 0;
+
     intT block_size;
     if (params.reorder_algo == "saad") block_size = 1;
     else if (params.reorder_algo == "saad_blocks") block_size = params.algo_block_size;
@@ -804,8 +806,12 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, input_
         }
     }
 
-    if ((std::pow(count, 2) > std::pow(eps, 2) * len_A * len_B)) return true;
-    else return false;
+    bool result;
+    if (params.similarity_func == "hamming") result = len_A + len_B - (2 * count) < eps * params.A_cols;
+    else if (params.similarity_func == "scalar") result = (std::pow(count, 2) > std::pow(eps, 2) * len_A * len_B);
+    else if (params.similarity_func == "jaccard") result = (1.0 * count) / (len_A + len_B - count) < eps;
+
+    return result;
 
 }
 
@@ -845,8 +851,13 @@ bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount,
         while (j < len_B && cols_B[j] / block_size < modA) j++;
     }
 
-    if ((std::pow(count, 2) > std::pow(eps, 2) * group_structure_nzcount * len_mod_B)) return true;
-    else return false;
+
+    bool result;
+    if (params.similarity_func == "hamming") result = len_mod_B + group_structure_nzcount - (2 * count) < eps* params.A_cols;
+    else if (params.similarity_func == "scalar") result = (std::pow(count, 2) > std::pow(eps, 2) * group_structure_nzcount * len_mod_B);
+    else if (params.similarity_func == "jaccard") result = (1.0 * count)/(len_mod_B + group_structure_nzcount - count) < eps;
+
+    return result;
 }
 
 int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt)

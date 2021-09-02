@@ -66,7 +66,9 @@ struct input_parameters
 
     std::string exp_name = "default";
     std::string reorder_algo = "saad";
-
+    std::string similarity_func = "scalar";
+    int hierarchic_merge= 1;         //Activate hierchical merging?
+    
     int algo_block_size = 4;
     
     std::string input_source;
@@ -83,6 +85,7 @@ struct input_parameters
     int experiment_reps = 5;    //number of non-warmup repetitions
     int algo = -1;              //algorithm choice (-1: all)
     int check_correct = 0;      //verify correctness?
+
 };
 
 int output_couple_parameters(input_parameters&, std::string& names, std::string& values);

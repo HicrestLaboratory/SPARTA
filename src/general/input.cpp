@@ -50,7 +50,7 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
     //terminal options loop
     opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "a:b:c:i:q:e:f:m:n:p:P:r:R:k:s:v:w:S:z")) != -1)
+    while ((c = getopt(argc, argv, "a:b:c:i:q:e:f:F:m:M:n:p:P:r:R:k:s:S:v:w:z")) != -1)
         switch (c)
         {
         case 'i':// select input example
@@ -98,9 +98,18 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
             params.input_source = optarg;
             break;
 
+        case 'F': //similarity function
+            //has only effect for example 2 and 3;
+            params.similarity_func = optarg;
+            break;
+
         case 'm': //input matrix rows
             //has only effect for example 1 and 4
             params.A_rows = stoi(optarg);
+            break;
+
+        case 'M': //hierarchical merge
+            params.hierarchic_merge = stoi(optarg);
             break;
 
         case 'n': //input matrix rows
@@ -203,6 +212,8 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
         default:
             abort();
         }
+
+        if (params.reorder_algo == "saad") params.algo_block_size = 1;
 
         return 0;
 
