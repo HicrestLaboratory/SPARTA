@@ -810,7 +810,6 @@ int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group)
 bool scalar_condition(intT* cols_A, intT len_A, intT group_size_A, intT* cols_B, intT len_B, intT group_size_B, input_parameters &params)
 {
     float eps = params.eps;
-    if (eps == 0) return true;
     if (len_A == 0 && len_B == 0) return true;
     if (len_A == 0 || len_B == 0) return false;
 
@@ -843,7 +842,6 @@ bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount,
 
     float eps = params.eps;
     intT block_size = params.algo_block_size;
-    if (eps == 0) return true;
     if (len_B == 0 && group_structure_nzcount == 0) return true;
     if (len_B == 0 || group_structure_nzcount == 0) return false;
 
