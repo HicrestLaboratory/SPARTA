@@ -106,6 +106,7 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
             //ALLOWED:  -hamming (distance)
             //          -jaccard
             //          -scalar
+            //          -density
 
             params.similarity_func = optarg;
             break;
