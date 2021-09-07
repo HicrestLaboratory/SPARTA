@@ -664,7 +664,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
                     //count size of the group to be compared;
                     j_tmp = jp+1;
                     second_group_size = 1;
-                    while (j_tmp < cmat.rows && in_group[perm[j_temp]] == last_checked)
+                    while (j_tmp < cmat.rows && in_group[perm[j_tmp]] == last_checked)
                     {
                         second_group_size++;
                         j_tmp++;
