@@ -878,7 +878,7 @@ bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount,
     if (params.similarity_func == "hamming") result = len_mod_B + group_structure_nzcount - (2 * count) < eps * params.A_cols;
     else if (params.similarity_func == "scalar") result = (std::pow(count, 2) > std::pow(eps, 2) * group_structure_nzcount * len_mod_B);
     else if (params.similarity_func == "jaccard") result = (1.0 * count) / (len_mod_B + group_structure_nzcount - count) > eps;
-    else if (params.similarity_func == "density") result = (float)(group_size * group_structure_nzcount + group_size_B * len_B) / (float)((group_structure_nzcount + len_B - count) * (group_size + group_size_B));
+    else if (params.similarity_func == "density") result = ((float)(group_size * group_structure_nzcount + group_size_B * len_B) / (float)((group_structure_nzcount + len_B - count) * (group_size + group_size_B))) > eps;
 
     return result;
 }
