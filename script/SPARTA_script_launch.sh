@@ -17,6 +17,5 @@ module load cuda-10.2
 module load gcc-9.3.0
 cd /home/clusterusers/pasyloslabini/SPARTA
 make clean
-make test_cublas_cusparse_comparison
-cd /home/clusterusers/pasyloslabini/SPARTA
+make ${1}
 source ${1}  #call any script from here
