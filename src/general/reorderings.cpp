@@ -604,18 +604,21 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
     }
 }
 
-int assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp, intT new_group_idx)
+intT assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp, intT new_group_idx)
 {
+    intT group_size = 0;
     intT current_in_group = in_group[perm[jp]];
     while (jp < len && in_group[perm[jp]] == current_in_group)
         {
+            group_size++,
             in_group[perm[jp]] = -1; //flagged;
             out_group[perm[jp]] = new_group_idx;
             jp++;
         }
+    return group_size;
 }
 
-int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*reorder_func)(CSR&, intT*, input_parameters&), bool (*sim_condition)(intT*, intT, intT*, intT, input_parameters&))
+int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*reorder_func)(CSR&, intT*, input_parameters&), bool (*sim_condition)(intT*, intT, intT, intT*, intT, intT, input_parameters&))
 {
 
     intT* in_group = new intT[cmat.rows];
@@ -628,8 +631,13 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
     intT group_structure_nzcount;
 
+    intT group_size; 
+    intT second_group_size;
 
     intT i, j;
+
+    intT j_tmp;
+
     for (intT ip = 0; ip < cmat.rows; ip++)
     {
 
@@ -639,7 +647,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
         if (in_group[i] != -1)
         {
 
-            assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
+            group_size = assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
 
             intT last_checked = -2; //used to jump over already seen (but unassigned) groups;
 
@@ -653,11 +661,21 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
                 {
                     last_checked = in_group[j];
 
-                    if (sim_condition(group_structure, group_structure_nzcount, cmat.ja[j], cmat.nzcount[j], params))
+                    //count size of the group to be compared;
+                    j_tmp = jp+1;
+                    second_group_size = 1;
+                    while (j_tmp < cmat.rows && in_group[perm[j_tmp]] == last_checked)
+                    {
+                        second_group_size++;
+                        j_tmp++;
+                    }
+                    //---
+
+                    if (sim_condition(group_structure, group_structure_nzcount, group_size, cmat.ja[j], cmat.nzcount[j], second_group_size, params))
                     {
 
                         assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
-                        update_group_structure(group_structure, group_structure_nzcount, cmat.ja[j], cmat.nzcount[j], params);
+                        update_group_structure(group_structure, group_structure_nzcount, group_size, cmat.ja[j], cmat.nzcount[j], second_group_size, params);
                     }
                 }
             }
@@ -681,7 +699,6 @@ int make_group_structure(intT* &group_structure, intT &group_structure_nzcount, 
         group_structure_nzcount = 0;
         return 0;
     }
-
     if (params.reorder_algo == "saad")
     {
         group_structure = new intT[len_A];
@@ -712,8 +729,12 @@ int make_group_structure(intT* &group_structure, intT &group_structure_nzcount, 
     return 0;
 }
 
-int update_group_structure(intT*&  group_structure, intT& group_structure_nzcount, intT* cols_A, intT len_A, input_parameters& params)
+int update_group_structure(intT*&  group_structure, intT& group_structure_nzcount, intT& group_size, intT* cols_A, intT len_A, intT A_group_size, input_parameters& params)
 {
+
+    //merges a blocked compressed row (group_structure) and a compressed row (cols_A) to update the blocked compressed row. 
+
+    group_size += A_group_size;
 
     if (params.hierarchic_merge == 0) return 0;
 
@@ -772,6 +793,7 @@ int update_group_structure(intT*&  group_structure, intT& group_structure_nzcoun
     if (group_structure) delete[] group_structure;
     group_structure = new_group_structure;
     group_structure_nzcount = new_group_idx;
+
     return 0;
 }
 
@@ -785,7 +807,7 @@ int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group)
         std::cout << "UNKNONW ALGORITMH -->" << params.reorder_algo << "<-- in saad reordering" << std::endl;
 }
 
-bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, input_parameters &params)
+bool scalar_condition(intT* cols_A, intT len_A, intT group_size_A, intT* cols_B, intT len_B, intT group_size_B, input_parameters &params)
 {
     float eps = params.eps;
     if (len_A == 0 && len_B == 0) return true;
@@ -815,7 +837,7 @@ bool scalar_condition(intT* cols_A, intT len_A, intT* cols_B, intT len_B, input_
 
 }
 
-bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount, intT* cols_B, intT len_B, input_parameters& params)
+bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount, intT group_size, intT* cols_B, intT len_B, intT group_size_B, input_parameters& params)
 {
 
     float eps = params.eps;
@@ -853,9 +875,10 @@ bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount,
 
 
     bool result;
-    if (params.similarity_func == "hamming") result = len_mod_B + group_structure_nzcount - (2 * count) < eps* params.A_cols;
+    if (params.similarity_func == "hamming") result = len_mod_B + group_structure_nzcount - (2 * count) < eps * params.A_cols;
     else if (params.similarity_func == "scalar") result = (std::pow(count, 2) > std::pow(eps, 2) * group_structure_nzcount * len_mod_B);
-    else if (params.similarity_func == "jaccard") result = (1.0 * count)/(len_mod_B + group_structure_nzcount - count) > eps;
+    else if (params.similarity_func == "jaccard") result = (1.0 * count) / (len_mod_B + group_structure_nzcount - count) > eps;
+    else if (params.similarity_func == "density") result = ((float)(group_size * group_structure_nzcount + group_size_B * len_B) / ((group_structure_nzcount + len_B - count) * (group_size + group_size_B))) > eps;
 
     return result;
 }
