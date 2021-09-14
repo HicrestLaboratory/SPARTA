@@ -71,7 +71,7 @@ struct input_parameters
     
     int algo_block_size = 4;
     
-    std::string input_source;
+    std::string input_source = "NO_INPUT";
     int scramble = 0;           //scramble the input matrix?
     int n_streams = 16;         //number of streams for the custom block_based multiplication
 

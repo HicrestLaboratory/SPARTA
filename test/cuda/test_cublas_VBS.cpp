@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
     //--------------------------------------------
     //  dense-dense cublas gemm multiplication
     //--------------------------------------------
-    if ((params.algo == 1) or (params.algo == -1))
+    if ((params.algo == 1) or (params.algo == -2))
     {
         if (A_rows * A_cols < 10000000) //avoid this step if the matrix is too big
         {
