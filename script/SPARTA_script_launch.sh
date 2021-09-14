@@ -12,10 +12,7 @@
 #SBATCH --ntasks=1
 
 
-export OPTS="-w 1 -r 5 -v -1 -i 4"
-module load cuda-10.2
+module load cuda-11.4.0
 module load gcc-9.3.0
 cd /home/clusterusers/pasyloslabini/SPARTA
-make clean
-make ${1}
 source ${1}  #call any script from here
