@@ -12,10 +12,10 @@ The repository also contains code for sparse-dense matrix-matrix multiplication 
 Input sparse matrices are stored in Compressed Sparse Row (CSR) or Compressed sparse columns (CSC) format. 
 A variant of the variable Block Compressed Sparse Rows (or Columns) is used to store block-sparse matrices. 
 
-Running the code requires CUDA 10.0.
+SPARTA requires CUDA >=10.0 
 
 CUDA install
-* Donwload the cuda toolkit (SPARTA supports CUDA 10.0) and follow the instructions: https://developer.nvidia.com/cuda-downloads
+* Donwload the cuda toolkit (SPARTA supports >= CUDA 10.0) and follow the instructions: https://developer.nvidia.com/cuda-downloads
 
 # PRELIMINARY RESULTS
 We have compared our routine with cusparse_spmm and cublas_gemm, the two main CUDA routines for sparse and dense matrix multiplication.
@@ -85,7 +85,7 @@ Options for the cuda_test:
 
 * -p: size of VBS blocks
 
-* -q: density of entries (% of nonzero entries. if i = 4, % of nonzeros inside each nonzero block)
+* -q: density of entries, in-block density (% of nonzero entries. if i = 4, % of nonzeros inside each nonzero block)
 
 * -r: number of experiment repetitions
 
