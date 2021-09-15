@@ -3,7 +3,7 @@
 OPTS="-r 3 -v -1 -i 1 -s 1 -R saad-blocks -N ReorderingSynthRand"
 
 RESULTS = "results/test_reordering_blocked_synth.txt"
-: > $(RESULTS)
+: > ${RESULTS};
 
 m_shapes=(1024 2048);
 k_shapes=(1024 2048);
@@ -20,7 +20,7 @@ for m in ${m_shapes[@]}; do
         for q in ${q_value[@]}; do
 	  for F in ${F_value[@]}; do
 	    echo $m $n $e $p $P $b $q
-	    ./programs/general/test_AHA $OPTS -m $m -k $k -e $e -P $P -q $q -F $F>> $(RESULTS)
+	    ./programs/general/test_AHA $OPTS -m $m -k $k -e $e -P $P -q $q -F $F>> ${RESULTS}
           done
         done
       done
