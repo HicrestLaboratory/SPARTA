@@ -175,7 +175,7 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
 
         case 'R': //the reordering algorithm to be used:
                   //saad
-                  //saad-blocks
+                  //saad_blocks
             params.reorder_algo = optarg;
             break;
 
