@@ -16,7 +16,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Makes images from experiments")
     
-    parser.add_argument("--input-csv", default="../results/synthetic_cublas_results_ultrasparse-small.csv",
+    parser.add_argument("--input-csv", default="../results/test_cublas_results_ultrasparse.csv",
         help="file that contains the already run experiments")
     parser.add_argument("--output-dir", default="",
         help="directory where the images are saved")
@@ -69,7 +69,7 @@ numerics = ["rows",'cols',
 
 results_df[numerics] = results_df[numerics].apply(pd.to_numeric)
 
-results_df["density"] = results_df.apply(lambda x: x['total_nonzeros']/(x['rows']*x["cols"]), axis=1)
+results_df["density"] = results_df.apply(lambda x: x['input_blocks_density']*x["input_entries_density"], axis=1)
 results_df["sp_vs_cu"] = results_df.apply(lambda x: x['cusparse_spmm_mean(ms)']/x["VBSmm_mean(ms)"], axis=1)
 
 results_df["in-block-density"] = results_df.apply(lambda x: x['density']/x["input_blocks_density"], axis=1)
@@ -82,29 +82,44 @@ def winner(x):
     return win;
     
 print(results_df["input_entries_density"].unique())
+print(results_df["input_blocks_density"].unique())
+
 
 results_df["winner"] = results_df.apply(winner, axis = 1);
-q = "density < 0.1"
+q = "cols == 1024 and rows == 1024 and B_cols == 4096 and input_block_size == 64"
 results_df.query(q).plot(y = "input_blocks_density", x = "input_entries_density", kind = "scatter", c = "winner", colormap='viridis');
+plt.grid(b=True, which='major', color='#666666', linestyle='-')
+plt.minorticks_on()
+plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
 
+         
+         
+ax = plt.gca();
 #q = "cols == 1024 and B_cols == 16384 and input_blocks_density == 64  and density < 0.1"
 #results_df.query(q).plot(y = "input_blocks_density", x = "input_entries_density", kind = "scatter", c = "winner", colormap='viridis');
+
+
+#ax.set_yscale("log")
+ax.set_xscale("log")
+ax.set_xlim([0.0005, 0.3]);
+plt.show();
 
 
 plt.figure()
 ax = plt.gca();
 y = "sp_vs_cu";
-x = "input_blocks_density"
+x = "input_entries_density"
 
-cols = 4096;
+rows = 2048
+cols = 2048;
 B_cols = 4096;
 input_block_size = 64;
-density = 0.1
+input_blocks_density = 0.1
 
-q = "cols == {} and B_cols == {} and input_block_size == {} and density < {}".format(cols, B_cols, input_block_size, density)
-results_df.query(q).plot(x = x, y = y, kind = "scatter", color = "red", ax = ax);
+q = "rows == {} and cols == {} and B_cols == {} and input_block_size == {} and input_blocks_density == {}".format(rows, cols, B_cols, input_block_size, input_blocks_density)
+results_df.query(q).plot(x = x, y = y, color = "red", ax = ax);
 ax.set(ylabel='speedup vs cusparse', xlabel='density of blocks',
-       title='Comparison with cusparse \n N, K, M = 1024, {}, {} \n block size = {} \n global density = {}'.format(cols, B_cols, input_block_size, density))
+       title='Comparison with cusparse \n N, K, M = 1024, {}, {} \n block size = {} \n input_blocks_density = {}'.format(cols, B_cols, input_block_size, input_blocks_density))
 ax.axhline(1)
 
 plt.figure()
