@@ -100,6 +100,7 @@ plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linew
          
          
 ax = plt.gca();
+ax.set(ylabel="density of nonzero blocks", xlabel = "density inside blocks")
 #q = "cols == 1024 and B_cols == 16384 and input_blocks_density == 64  and density < 0.1"
 #results_df.query(q).plot(y = "input_blocks_density", x = "input_entries_density", kind = "scatter", c = "winner", colormap='viridis');
 
@@ -107,7 +108,8 @@ ax = plt.gca();
 #ax.set_yscale("log")
 ax.set_xscale("log")
 ax.set_xlim([0.0005, 0.2]);
-plt.show();
+plt.savefig("landscape.jpg", format = 'jpg', dpi=300, bbox_inches = "tight")
+
 
 
 plt.figure()
@@ -140,5 +142,38 @@ plt.minorticks_on()
 plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
          
 ax.fill_between(x, lower, upper, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
-plt.show()
+plt.savefig("sp_vs_cusparse_0.2.jpg", format = 'jpg', dpi=300, bbox_inches = "tight")
+
+
+plt.figure()
+ax = plt.gca();
+y = "sp_vs_cu";
+x = "input_entries_density"
+
+rows = 2048
+cols = 2048;
+B_cols = 8192;
+input_block_size = 64;
+input_blocks_density = 0.5
+
+q = "rows == {} and cols == {} and B_cols == {} and input_block_size == {} and input_blocks_density == {}".format(rows, cols, B_cols, input_block_size, input_blocks_density)
+results_df.query(q).plot(x = x, y = y, color = "red", ax = ax);
+ax.set(ylabel='speedup vs cusparse', xlabel='density inside blocks',
+       title='Comparison with cusparse \n N, K, M = {}, {}, {} \n block size = {} \n input_blocks_density = {}'.format(rows, cols, B_cols, input_block_size, input_blocks_density))
+ax.axhline(1)
+x = results_df.query(q)["input_entries_density"].tolist();
+y = np.array(results_df.query(q)["sp_vs_cu"].tolist());
+errors = np.array(results_df.query(q)["VBSmm_std"].tolist());
+upper = y + 3*errors;
+lower = y - 3*errors;
+
+ax.set_xscale("log")
+ax.set_xlim([0.0005, 0.2]);
+
+plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
+plt.minorticks_on()
+plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
+         
+ax.fill_between(x, lower, upper, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
+plt.savefig("sp_vs_cusparse_0.5.jpg", format = 'jpg', dpi=300, bbox_inches = "tight")
 
