@@ -70,7 +70,8 @@ struct input_parameters
     int hierarchic_merge= 1;         //Activate hierchical merging?
     
     int algo_block_size = 4;
-    
+    bool save_reordering = false; //save the grouping and blocking info obtained from reordering?
+
     std::string input_source = "NO_INPUT";
     int scramble = 0;           //scramble the input matrix?
     int n_streams = 16;         //number of streams for the custom block_based multiplication
@@ -88,7 +89,9 @@ struct input_parameters
 
 };
 
-int output_couple_parameters(input_parameters&, std::string& names, std::string& values);
+int output_couple_parameters(input_parameters& params, std::string& names, std::string& values);
+
+int save_reordering(std::string& output_file, intT* hash_groups, input_parameters& params);
 
 int get_input_params(int argc, char* argv[], input_parameters& params);
 

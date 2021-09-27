@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
 #include <unistd.h> //getopt, optarg
 
 #include "input.h"
@@ -54,7 +55,7 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
     //terminal options loop
     opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "a:b:c:i:q:e:f:F:m:M:n:p:P:r:R:k:s:S:v:w:z")) != -1)
+    while ((c = getopt(argc, argv, "a:b:B:c:i:q:e:f:F:m:M:n:p:P:r:R:k:s:S:v:w:z")) != -1)
         switch (c)
         {
         case 'i':// select input example
@@ -72,7 +73,6 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
                          3: VBS - no zeros
                          4: VBS - AH ******DEACTIVATED*******
                          5: cusparse
-
                   */
             params.algo = stoi(optarg);
             break;
@@ -85,6 +85,12 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
                 return 1;
             }
             break;
+
+        case 'B': //Save reordering and blocking info
+            if (stoi(optarg) == 0) params.save_reordering = false;
+            else params.save_reordering = true;
+            break;
+
         case 'c': //check correctness;
             params.check_correct = stoi(optarg);
             break;
@@ -307,6 +313,8 @@ int get_input_CSR(CSR& cmat_A, input_parameters& params)
     //******************************************
 
     params.A_nnz = count_nnz(cmat_A);
+    params.A_rows = cmat_A.rows;
+    params.A_cols = cmat_A.cols;
 
     return 0;
 }
@@ -335,4 +343,25 @@ int scramble_input(CSR& cmat, input_parameters& params)
         permute_CSR(cmat, random_cols_permutation, 1);
         delete[] random_cols_permutation;
     }
+}
+
+int save_reordering(std::string& output_file, intT* hash_groups, input_parameters& params)
+{
+    ofstream myfile;
+    myfile.open(output_file);
+    myfile << "Saved reordering\n";
+    myfyle << "input_source: " + params.input_source + "\n";
+    myfyle << "rows: " + params.A_rows + "\n";
+    myfyle << "cols: " + params.A_cols + "\n";
+    myfyle << "algo_block_size: " + params.algo_block_size + "\n";
+    myfyle << "reorder_algo: " + params.reorder_algo + "\n";
+    myfyle << "similarity_func: " + params.similarity_func + "\n";
+    myfyle << "eps: " + params.eps + "\n";
+    myfile << "grouping:";
+    for (i = 0; i < params.A_rows; i++)
+    {
+        myfile << " " + hash_groups[i];
+    }
+    myfile << "\n"
+    myfile.close();
 }

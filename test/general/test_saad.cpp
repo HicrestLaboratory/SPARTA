@@ -60,7 +60,6 @@ int main(int argc, char* argv[]) {
     {
         scramble_input(input_cmat, params);
 
-
         int vbmat_blocks_fmt = 0;
         int vbmat_entries_fmt = 0;
         intT algo_block_cols = std::ceil((float)params.A_cols / params.algo_block_size);
@@ -72,7 +71,10 @@ int main(int argc, char* argv[]) {
         //run the reordering algo
         intT* hash_groups = new intT[params.A_rows];
         saad_reordering(input_cmat, params, hash_groups);
-
+        
+        if (params.save_reordering)
+        {
+        }
         //create the block matrix
         VBS vbmat_algo;
         group_to_VBS(input_cmat, hash_groups, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt);
