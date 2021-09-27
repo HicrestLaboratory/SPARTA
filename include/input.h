@@ -65,7 +65,7 @@ struct input_parameters
     float block_density = 0.5;  //density inside the blocks;
 
     std::string exp_name = "default";
-    std::string reorder_algo = "saad";
+    std::string reorder_algo = "saad_blocks";
     std::string similarity_func = "scalar";
     int hierarchic_merge= 1;         //Activate hierchical merging?
     
