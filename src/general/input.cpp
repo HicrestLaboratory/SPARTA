@@ -350,13 +350,13 @@ int save_reordering(std::string& output_file, intT* hash_groups, input_parameter
     ofstream myfile;
     myfile.open(output_file);
     myfile << "Saved reordering\n";
-    myfyle << "input_source: " << params.input_source << "\n";
-    myfyle << "rows: " << params.A_rows << "\n";
-    myfyle << "cols: " << params.A_cols << "\n";
-    myfyle << "algo_block_size: " << params.algo_block_size << "\n";
-    myfyle << "reorder_algo: " << params.reorder_algo << "\n";
-    myfyle << "similarity_func: " << params.similarity_func << "\n";
-    myfyle << "eps: " << params.eps << "\n";
+    myfile << "input_source: " << params.input_source << "\n";
+    myfile << "rows: " << params.A_rows << "\n";
+    myfile << "cols: " << params.A_cols << "\n";
+    myfile << "algo_block_size: " << params.algo_block_size << "\n";
+    myfile << "reorder_algo: " << params.reorder_algo << "\n";
+    myfile << "similarity_func: " << params.similarity_func << "\n";
+    myfile << "eps: " << params.eps << "\n";
     myfile << "grouping:";
     for (intT i = 0; i < params.A_rows; i++)
     {
