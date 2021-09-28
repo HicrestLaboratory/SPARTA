@@ -3,12 +3,13 @@
 OPTS="-w 1 -r 10 -v -1 -i 2 -a 5"
 
 RESULTS="results/real_cusparse_results.txt"
-: >"${RESULTS}";
+:>"${RESULTS}";
 
 n_shapes=(1024 2048 4096 8192 16384);
 
-for f in "data/*"; do
+for f in "data/real-graphs/*"; do
 	for n in ${n_shapes[@]}; do
+		echo $f $n
             	./programs/cuda/test_cublas_VBS $OPTS -f $f -n $n>> ${RESULTS}
 	done
 done
