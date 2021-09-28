@@ -257,7 +257,7 @@ int get_input_CSR(CSR& cmat_A, input_parameters& params)
         if (params.input_source.empty()) params.input_source = "testgraph1.txt";
 
         string delimiter = "\t";
-        read_edgelist(params.input_source, cmat_A, params.cmat_A_fmt, delimiter);
+        read_edgelist(params.input_source, cmat_A, 0, delimiter);
         if (params.verbose > 0) cout << "IMPORTED A CSR FROM A SNAP EDGELIST" << endl;
 
         params.A_rows = cmat_A.rows;
