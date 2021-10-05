@@ -2,8 +2,8 @@
 
 OPTS="-r 3 -v -1 -i 4 -R saad-blocks -N ReorderingBlockedSynth"
 
-RESULTS = "results/test_reordering_blocked_synth_2.txt"
-: > ${RESULTS};
+RESULTS="results/test_reordering_blocked_synth_2.txt"
+:>${RESULTS};
 
 m_shapes=(2048);
 k_shapes=(2048);
