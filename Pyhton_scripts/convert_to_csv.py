@@ -43,15 +43,12 @@ if __name__ == "__main__":
         help="file that contains the already run experiments")
     parser.add_argument("--output-csv", default = "",
         help="file of the new csv to output")
-    parser.add_argument("--convert-to-csv", default = 0,
-        help="convert input file to csv if 1. input must be already a csv if 0");
     
 
     args = parser.parse_args()
 
     input_file = args.input_file;
     output_csv = args.output_csv;
-    convert_to_csv = int(args.convert_to_csv);
                     
-if (convert_to_csv): convert_to_CSV(input_file, output_csv);
+convert_to_CSV(input_file, output_csv);
 results_df = pd.read_csv(output_csv);
