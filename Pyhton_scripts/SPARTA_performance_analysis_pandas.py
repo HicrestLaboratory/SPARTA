@@ -73,8 +73,7 @@ results_df[numerics] = results_df[numerics].apply(pd.to_numeric)
 results_df["density"] = results_df.apply(lambda x: x['input_blocks_density']*x["input_entries_density"], axis=1)
 results_df["sp_vs_cu"] = results_df.apply(lambda x: x['cusparse_spmm_mean(ms)']/x["VBSmm_mean(ms)"], axis=1)
 results_df["combined_std"] = results_df.apply(lambda x: x["sp_vs_cu"]/((x["VBSmm_mean(ms)"]/(3*x['VBSmm_std']))**2 + (x["cusparse_spmm_mean(ms)"]/(3*x['cusparse_spmm_std']))**2)**(0.5), axis=1)
-
-
+        
 results_df["in-block-density"] = results_df.apply(lambda x: x['density']/x["input_blocks_density"], axis=1)
 def winner(x):
     win = 1;

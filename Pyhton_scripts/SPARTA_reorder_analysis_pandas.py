@@ -91,9 +91,11 @@ numerics = [
 
 results_df[numerics] = results_df[numerics].apply(pd.to_numeric)
 
-results_df["density"] = results_df.apply(lambda x: x['input_blocks_density']*x["input_entries_density"], axis=1)
+results_df["input_density"] = results_df.apply(lambda x: x['total_nonzeros']/(x["rows"]*x["cols"]), axis=1)
 
 results_df["output_in_block_density"] = results_df.apply(lambda x: x['total_nonzeros']/x["VBS_total_nonzeros"], axis=1)
+
+results_df["relative_density"] = results_df.apply(lambda x: x['output_in_block_density']/x["input_entries_density"], axis=1)
 
 
 to_display = ["input_entries_density",
@@ -113,8 +115,8 @@ for var in to_display:
 
 
 fixed = {
-        "input_entries_density": "0.01",
-              "input_blocks_density": "0.2",
+        "input_entries_density": "0.1",
+              "input_blocks_density": "0.1",
               "rows": "2048",
               "cols": "2048",
               "input_block_size":"64",
@@ -137,14 +139,14 @@ def build_query(fixed):
 
 q = build_query(fixed)
 
-results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "output_in_block_density", kind = "scatter", colormap='viridis');
-
-
+results_df.query(q).plot(x = "relative_density", y = "output_in_block_density", kind = "scatter");
 plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
 plt.minorticks_on()
 plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
+#plt.xlim(0,64)
+plt.savefig(output_dir + "block_curve.jpg", format = 'jpg', dpi=300, bbox_inches = "tight")
 
-         
+
          
 ax = plt.gca();
 ax.set(ylabel="density of nonzero blocks", xlabel = "density inside blocks")
