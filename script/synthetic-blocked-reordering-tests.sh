@@ -27,7 +27,7 @@ for m in ${m_shapes[@]}; do
 	      for s in ${s_value[@]}; do
 		for F in ${F_value[@]}; do
 		  echo $m $n $e $p $P $b $q
-	          ./programs/general/test_saad $OPTS -m $m -k $k -e $e -p $P -P $P -b $b -q $q -F $F -s $s>> ${RESULTS}
+	          ./programs/general/test_saad ${OPTS} -m $m -k $k -e $e -p $P -P $P -b $b -q $q -F $F -s $s>> ${RESULTS}
                 done
 	      done
             done

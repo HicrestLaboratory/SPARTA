@@ -13,7 +13,7 @@ for f in "data/*"; do
 		for P in ${P_value[@]}; do
 	      		for s in ${s_value[@]}; do
 				echo $f $e $P $s
-	          		./programs/general/test_AHA $OPTS -e $e -P $P -s $s -f $f >> $(RESULTS)
+	          		./programs/general/test_AHA ${OPTS} -e $e -P $P -s $s -f $f >> $(RESULTS)
 			done
 		done
 	done

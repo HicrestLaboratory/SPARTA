@@ -17,7 +17,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Makes images from experiments")
     
-    parser.add_argument("--input-csv", default="../results/test_reordering_blocked_synth.csv",
+    parser.add_argument("--input-csv", default="../results/test_reordering_blocked_synth_2.csv",
         help="file that contains the already run experiments")
     parser.add_argument("--output-dir", default="../images/",
         help="directory where the images are saved")
@@ -122,7 +122,7 @@ fixed = {
               "input_block_size":"64",
               "algo_block_size":"64",
               "epsilon": "any",
-              "similarity_func":"'scalar'",
+              "similarity_func":"'jaccard'",
               "scramble": "1"
 }
 
@@ -138,13 +138,18 @@ def build_query(fixed):
 
 
 q = build_query(fixed)
-
-results_df.query(q).plot(x = "relative_density", y = "output_in_block_density", kind = "scatter");
+results_df.query(q).size
+results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "relative_density", kind = "scatter");
 plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
 plt.minorticks_on()
 plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
-#plt.xlim(0,64)
-plt.savefig(output_dir + "block_curve.jpg", format = 'jpg', dpi=300, bbox_inches = "tight")
+plt.xlim(45,85)
+plt.ylim(0.8,1.05)
+plt.title("Reordering a scrambled blocked matrix (zoom in)")
+plt.axvline(64, alpha = 0.2, color = "red")
+plt.xlabel("Average height of nonzero blocks");
+plt.ylabel("Average density of nonzero blocks \n (relative to original blocking)");
+plt.savefig(output_dir + "example_block_curve_detail.jpg", format = 'jpg', dpi=300, bbox_inches = "tight")
 
 
          

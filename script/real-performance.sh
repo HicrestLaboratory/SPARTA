@@ -1,8 +1,8 @@
 #!/bin/bash
 
-OPTS="-w 1 -r 5 -v -1 -i 4"
+OPTS="-w 1 -r 5 -v -1 -i 2"
 
-RESULTS="results/test_cublas_results_ultrasparse.txt";
+RESULTS="results/test_cublas_results_real.txt";
 
 >"${RESULTS}";
 

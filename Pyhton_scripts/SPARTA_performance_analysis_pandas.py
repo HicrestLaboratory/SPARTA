@@ -87,6 +87,18 @@ print(results_df["input_entries_density"].unique())
 print(results_df["input_blocks_density"].unique())
 
 
+to_display = ["rows","cols", 
+              "input_entries_density",
+              "input_blocks_density",
+              "rows",
+              "cols",
+              "B_cols",
+              "input_block_size",
+              ]
+for var in to_display:
+    print(var, results_df[var].unique());
+
+
 results_df["winner"] = results_df.apply(winner, axis = 1);
 q = "cols == 2048 and rows == 2048 and B_cols == 8192 and input_block_size == 64"
 results_df.query(q).plot(y = "input_blocks_density", x = "input_entries_density", kind = "scatter", c = "winner", colormap='viridis');
