@@ -135,14 +135,14 @@ def make_heatmap(cols, rows, b_cols, block_size, save_folder):
     sns.set(font_scale=1)
     cmap = sns.diverging_palette(0,255,sep=1, as_cmap=True)
     
-    ax = sns.heatmap(heatmap_df, annot=True, linewidths=.5, cbar_kws={'label': 'speed-up vs cuSparse'}, cmap = cmap, center = 1)
+    ax = sns.heatmap(heatmap_df, annot=True, linewidths=.5, cbar_kws={'label': 'speed-up vs cuSparse'}, cmap = cmap, center = 1, vmin = 0, vmax = 5)
     bottom, top = ax.get_ylim()
     ax.set_ylim(bottom + 0.5, top - 0.5)
     
     plt.xlabel("Density inside nonzero blocks") 
     plt.ylabel("Density of nonzero blocks") 
     
-    plt.title("M,K,N = {},{},{} \n block_size = {} \n)
+    plt.title("M,K,N = {},{},{} \n block_size = {}".format(cols,rows,b_cols,block_size))
     
     savename = save_folder + "landscape_heatmap_r{}_c{}_k{}_b{}.jpg".format(rows, cols, b_cols, block_size);
     plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
