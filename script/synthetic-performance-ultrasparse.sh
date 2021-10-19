@@ -6,13 +6,13 @@ RESULTS="results/test_cublas_results_ultrasparse.txt";
 
 >"${RESULTS}";
 
-Mshapes=(1024 2048 4096 8192 16384);
-Nshapes=(1024 2048 4096 8192 16384);
-Kshapes=(1024 2048 4096 8192 16384);
+Mshapes=(2048 4096 8192);
+Nshapes=(2048 4096 8192 16384);
+Kshapes=(2048 4096 8192);
 
-Pvalue=(32 64 128 256 512 1024);
-Bvalue=(0.05 0.1 0.15 0.2 0.25 0.3 0.4 0.5);
-Qvalue=(0.001 0.005 0.01 0.05 0.1 0.15 0.2);
+Pvalue=(32 64 128);
+Bvalue=(0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5);
+Qvalue=(0.001 0.003 0.01 0.03 0.1 0.3);
 
 for m in ${Mshapes[@]}; do
   for k in ${Kshapes[@]}; do
