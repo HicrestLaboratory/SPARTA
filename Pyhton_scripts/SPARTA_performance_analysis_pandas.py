@@ -11,7 +11,9 @@ import os
 import matplotlib.pyplot as plt
 import argparse
 import numpy as np
-                    
+import seaborn as sns
+                 
+   
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
@@ -82,7 +84,9 @@ def winner(x):
     else:
         win = 2;
     return win;
-    
+
+results_df["winner"] = results_df.apply(winner, axis = 1);
+
 print(results_df["input_entries_density"].unique())
 print(results_df["input_blocks_density"].unique())
 
@@ -99,8 +103,8 @@ for var in to_display:
     print(var, results_df[var].unique());
 
 
-results_df["winner"] = results_df.apply(winner, axis = 1);
-q = "cols == 2048 and rows == 2048 and B_cols == 8192 and input_block_size == 64"
+
+q = "cols == 2048 and rows == 2048 and B_cols == 4096 and input_block_size == 64"
 results_df.query(q).plot(y = "input_blocks_density", x = "input_entries_density", kind = "scatter", c = "winner", colormap='viridis');
 
 
@@ -122,6 +126,38 @@ ax.set_xlim([0.0005, 0.2]);
 plt.savefig("landscape.jpg", format = 'jpg', dpi=300, bbox_inches = "tight")
 
 
+def make_heatmap(cols, rows, b_cols, block_size, save_folder):
+    q = "cols == {} and rows == {} and B_cols == {} and input_block_size == {}".format(cols, rows, b_cols, block_size)
+    heatmap_df = results_df.query(q)[["input_entries_density","input_blocks_density","sp_vs_cu"]]
+    heatmap_df = heatmap_df.set_index(['input_entries_density', 'input_blocks_density']).sp_vs_cu.unstack(0)
+    heatmap_df.sort_index(level=0, ascending=False, inplace=True)
+    
+    sns.set(font_scale=1)
+    cmap = sns.diverging_palette(0,255,sep=1, as_cmap=True)
+    
+    ax = sns.heatmap(heatmap_df, annot=True, linewidths=.5, cbar_kws={'label': 'speed-up vs cuSparse'}, cmap = cmap, center = 1, vmin = 0, vmax = 5)
+    bottom, top = ax.get_ylim()
+    ax.set_ylim(bottom + 0.5, top - 0.5)
+    
+    plt.xlabel("Density inside nonzero blocks") 
+    plt.ylabel("Density of nonzero blocks") 
+    
+    plt.title("M,K,N = {},{},{} \n block_size = {}".format(cols,rows,b_cols,block_size))
+    
+    savename = save_folder + "landscape_heatmap_r{}_c{}_k{}_b{}.jpg".format(rows, cols, b_cols, block_size);
+    plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
+    plt.show()
+
+for cols in [1024,2048]:
+    for rows in [1024,2048]:
+        for b_cols in [1024,2048,4096,8196]:
+            for block_size in [64,128]:
+                try:
+                    make_heatmap(cols,rows,b_cols,block_size, save_folder = "../images/performance_landscape/");
+                except:
+                    print("could not make image for cols = {}, rows = {}, B_cols = {}, block_size = {}".format(cols,rows,b_cols,block_size))
+
+
 
 plt.figure()
 ax = plt.gca();
@@ -130,9 +166,9 @@ x = "input_entries_density"
 
 rows = 2048
 cols = 2048;
-B_cols = 8192;
+B_cols = 4096;
 input_block_size = 64;
-input_blocks_density = 0.2
+input_blocks_density = 0.5
 
 q = "rows == {} and cols == {} and B_cols == {} and input_block_size == {} and input_blocks_density == {}".format(rows, cols, B_cols, input_block_size, input_blocks_density)
 results_df.query(q).plot(x = x, y = y, color = "red", ax = ax);
@@ -142,8 +178,8 @@ ax.axhline(1)
 x = results_df.query(q)["input_entries_density"].tolist();
 y = np.array(results_df.query(q)["sp_vs_cu"].tolist());
 errors = np.array(results_df.query(q)["VBSmm_std"].tolist());
-upper = y + 3*errors;
-lower = y - 3*errors;
+upper = y + errors;
+lower = y - errors;
 
 ax.set_xscale("log")
 ax.set_xlim([0.0005, 0.2]);

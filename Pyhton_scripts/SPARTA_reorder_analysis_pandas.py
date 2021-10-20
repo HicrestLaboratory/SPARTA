@@ -11,6 +11,9 @@ import os
 import matplotlib.pyplot as plt
 import argparse
 import numpy as np
+import seaborn as sns
+from scipy import interpolate
+
                     
 if __name__ == "__main__":
 
@@ -115,14 +118,14 @@ for var in to_display:
 
 
 fixed = {
-        "input_entries_density": "0.1",
-              "input_blocks_density": "0.1",
+        "input_entries_density": "0.5",
+              "input_blocks_density": "0.5",
               "rows": "2048",
               "cols": "2048",
               "input_block_size":"64",
               "algo_block_size":"64",
               "epsilon": "any",
-              "similarity_func":"'jaccard'",
+              "similarity_func":"'scalar'",
               "scramble": "1"
 }
 
@@ -143,16 +146,86 @@ results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "relative_density", k
 plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
 plt.minorticks_on()
 plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
-plt.xlim(45,85)
+plt.xlim(10,85)
 plt.ylim(0.8,1.05)
 plt.title("Reordering a scrambled blocked matrix (zoom in)")
-plt.axvline(64, alpha = 0.2, color = "red")
+#plt.axvline(64, alpha = 0.2, color = "red")
 plt.xlabel("Average height of nonzero blocks");
 plt.ylabel("Average density of nonzero blocks \n (relative to original blocking)");
 plt.savefig(output_dir + "example_block_curve_detail.jpg", format = 'jpg', dpi=300, bbox_inches = "tight")
 
 
-         
+
+#TODO interpolate to find best density for given size. Produce heatmap
+
+
+def reorder_heatmap(rows = 2048, cols = 2048, block_size = 64, similarity = "'scalar'", save_folder = "../images/reorders"):
+    
+    
+    fixed = {
+        "input_entries_density": None,
+              "input_blocks_density": None,
+              "rows": str(rows),
+              "cols": str(cols),
+              "input_block_size": str(block_size),
+              "algo_block_size": str(block_size),
+              "epsilon": "any",
+              "similarity_func": similarity,
+              "scramble": "1"
+    }
+
+    
+    heatmap_array = []
+    for input_blocks_density in results_df["input_blocks_density"].unique():
+        
+        row = []
+        for input_entries_density in results_df["input_entries_density"].unique():
+    
+            fixed["input_entries_density"] = input_entries_density;
+            fixed["input_blocks_density"] = input_blocks_density;
+            q = build_query(fixed)
+            interp_df = results_df.query(q).sort_values("VBS_avg_nzblock_height");
+            interp_df.drop_duplicates("VBS_avg_nzblock_height", inplace = True)
+            interp_df.sort_values("VBS_avg_nzblock_height", ascending = True, inplace = True)
+            xp = interp_df.query(q)["VBS_avg_nzblock_height"];
+            yp = interp_df.query(q)["relative_density"]
+            interp = np.interp(64,xp,yp)
+            row.append(interp)
+        heatmap_array.append(row)
+    
+    
+    heat_df = pd.DataFrame(heatmap_array, columns=results_df["input_entries_density"].unique())
+    heat_df.set_index(results_df["input_blocks_density"].unique(), inplace = True)
+    heat_df.sort_index(level=0, ascending=False, inplace=True)
+    
+    cmap = sns.diverging_palette(0,255,sep=1, as_cmap=True)
+    
+    plt.gca()
+    ax = sns.heatmap(heat_df, linewidths=.5, annot=True, cbar_kws={'label': 'relative density'}, cmap = cmap, center = 1, vmin = 0, vmax = 1)
+    bottom, top = ax.get_ylim()
+    ax.set_ylim(bottom + 0.5, top - 0.5)
+    plt.xlabel("Density inside nonzero blocks") 
+    plt.ylabel("Density of nonzero blocks");
+    
+    plt.title("M,N = {},{}\n block_size = {} \n similarity function = {}".format(cols,rows,block_size, similarity))
+    savename = save_folder + "reorder_heatmap_r{}_c{}_b{}_{}.jpg".format(rows, cols, block_size, similarity);
+    plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
+    plt.show()
+    
+    
+
+for cols in [2048,]:
+    for rows in [2048,]:
+        for block_size in [16,32,64]:
+            for similarity in ["'scalar'", "'jaccard'"]:
+                try:
+                    reorder_heatmap(cols,rows,block_size, similarity);
+                except:
+                    print("could not make image for cols = {}, rows = {}, block_size = {}".format(cols,rows,block_size))
+
+
+
+
 ax = plt.gca();
 ax.set(ylabel="density of nonzero blocks", xlabel = "density inside blocks")
 #q = "cols == 1024 and B_cols == 16384 and input_blocks_density == 64  and density < 0.1"
