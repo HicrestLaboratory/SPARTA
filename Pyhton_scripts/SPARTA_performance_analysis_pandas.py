@@ -102,30 +102,6 @@ to_display = ["rows","cols",
 for var in to_display:
     print(var, results_df[var].unique());
 
-
-
-q = "cols == 2048 and rows == 2048 and B_cols == 4096 and input_block_size == 64"
-results_df.query(q).plot(y = "input_blocks_density", x = "input_entries_density", kind = "scatter", c = "winner", colormap='viridis');
-
-
-plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
-plt.minorticks_on()
-plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
-
-         
-         
-ax = plt.gca();
-ax.set(ylabel="density of nonzero blocks", xlabel = "density inside blocks")
-#q = "cols == 1024 and B_cols == 16384 and input_blocks_density == 64  and density < 0.1"
-#results_df.query(q).plot(y = "input_blocks_density", x = "input_entries_density", kind = "scatter", c = "winner", colormap='viridis');
-
-
-#ax.set_yscale("log")
-ax.set_xscale("log")
-ax.set_xlim([0.0005, 0.2]);
-plt.savefig("landscape.jpg", format = 'jpg', dpi=300, bbox_inches = "tight")
-
-
 def make_heatmap(cols, rows, b_cols, block_size, save_folder):
     q = "cols == {} and rows == {} and B_cols == {} and input_block_size == {}".format(cols, rows, b_cols, block_size)
     heatmap_df = results_df.query(q)[["input_entries_density","input_blocks_density","sp_vs_cu"]]
@@ -147,6 +123,7 @@ def make_heatmap(cols, rows, b_cols, block_size, save_folder):
     savename = save_folder + "landscape_heatmap_r{}_c{}_k{}_b{}.jpg".format(rows, cols, b_cols, block_size);
     plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()
+    plt.close()
 
 for cols in [2048,4096,8192]:
     for rows in [2048,4096,8192]:
@@ -159,37 +136,58 @@ for cols in [2048,4096,8192]:
 
 
 
-plt.figure()
-ax = plt.gca();
-y = "sp_vs_cu";
-x = "input_entries_density"
 
-rows = 2048
-cols = 2048;
-B_cols = 4096;
-input_block_size = 64;
-input_blocks_density = 0.5
 
-q = "rows == {} and cols == {} and B_cols == {} and input_block_size == {} and input_blocks_density == {}".format(rows, cols, B_cols, input_block_size, input_blocks_density)
-results_df.query(q).plot(x = x, y = y, color = "red", ax = ax);
-ax.set(ylabel='speedup vs cusparse', xlabel='density inside blocks',
-       title='Comparison with cusparse \n N, K, M = {}, {}, {} \n block size = {} \n input_blocks_density = {}'.format(rows, cols, B_cols, input_block_size, input_blocks_density))
-ax.axhline(1)
-x = results_df.query(q)["input_entries_density"].tolist();
-y = np.array(results_df.query(q)["sp_vs_cu"].tolist());
-errors = np.array(results_df.query(q)["VBSmm_std"].tolist());
-upper = y + errors;
-lower = y - errors;
 
-ax.set_xscale("log")
-ax.set_xlim([0.0005, 0.2]);
+def speedup_curve(rows,cols,B_cols,b_size,b_density, save_folder = "../images/reoder_curve/"):
+        
+    plt.figure()
+    ax = plt.gca();
+    
+    y = "sp_vs_cu";
+    x = "input_entries_density"
+    q = "rows == {} and cols == {} and B_cols == {} and input_block_size == {} and input_blocks_density == {}".format(rows, cols, B_cols, b_size, b_density)
+    results_df.query(q).plot(x = x, y = y, color = "red", ax = ax);
+    ax.set(ylabel='speedup vs cusparse', xlabel='density inside blocks',
+           title='Comparison with cusparse \n N, K, M = {}, {}, {} \n block size = {} \n input_blocks_density = {}'.format(rows, cols, B_cols, b_size, b_density))
+    ax.axhline(1)
+    x = results_df.query(q)["input_entries_density"].tolist();
+    y = np.array(results_df.query(q)["sp_vs_cu"].tolist());
+    errors = np.array(results_df.query(q)["VBSmm_std"].tolist());
+    upper = y + errors;
+    lower = y - errors;
 
-plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
-plt.minorticks_on()
-plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
-         
-ax.fill_between(x, lower, upper, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
-plt.savefig("sp_vs_cusparse_0.2.jpg", format = 'jpg', dpi=300, bbox_inches = "tight")
+    ax.set_xscale("log")
+    ax.set_xlim([0.0008, 0.31]);
+    ax.set_ylim([0, 10]);
+
+    
+    plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
+    plt.minorticks_on()
+    plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
+    
+                    
+    ax.fill_between(x, lower, upper, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
+    
+    plt.title("M,K,N = {},{},{} \n block size = {} \n fraction of nonzero blocks = {}".format(rows,cols,B_cols,b_size,b_density))
+    
+    savename = save_folder + "reorder_curve_r{}_c{}_k{}_bs{}_bd{}.jpg".format(rows,cols,B_cols,b_size,b_density);                
+    
+    plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
+    
+    plt.show()
+    plt.close()
+
+
+for cols in [8192,]:
+    for rows in [8192,]:
+        for b_cols in [8192,]:
+            for block_size in [32,64,128]:
+                for b_density in [0.05, 0.2, 0.4]:
+                    try:
+                        speedup_curve(rows,cols,b_cols,block_size,b_density, save_folder = "../images/reorder_curve/");
+                    except:
+                        print("could not make image for cols = {}, rows = {}, B_cols = {}, block_size = {}".format(cols,rows,b_cols,block_size))
 
 
 plt.figure()
