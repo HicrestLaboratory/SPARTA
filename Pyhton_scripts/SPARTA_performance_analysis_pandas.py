@@ -19,7 +19,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Makes images from experiments")
     
-    parser.add_argument("--input-csv", default="../results/test_cublas_results_ultrasparse.csv",
+    parser.add_argument("--input-csv", default="../results/test_cublas_results_ultrasparse_19_10.csv",
         help="file that contains the already run experiments")
     parser.add_argument("--output-dir", default="",
         help="directory where the images are saved")
@@ -148,10 +148,10 @@ def make_heatmap(cols, rows, b_cols, block_size, save_folder):
     plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()
 
-for cols in [1024,2048]:
-    for rows in [1024,2048]:
-        for b_cols in [1024,2048,4096,8196]:
-            for block_size in [64,128]:
+for cols in [2048,4096,8192]:
+    for rows in [2048,4096,8192]:
+        for b_cols in [2048,4096,8192,16384]:
+            for block_size in [32,64,128]:
                 try:
                     make_heatmap(cols,rows,b_cols,block_size, save_folder = "../images/performance_landscape/");
                 except:
