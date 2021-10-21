@@ -159,7 +159,7 @@ plt.savefig(output_dir + "example_block_curve_detail.jpg", format = 'jpg', dpi=3
 #TODO interpolate to find best density for given size. Produce heatmap
 
 
-def reorder_heatmap(rows = 2048, cols = 2048, block_size = 64, similarity = "'scalar'", save_folder = "../images/reorders"):
+def reorder_heatmap(rows = 2048, cols = 2048, block_size = 64, similarity = "'scalar'", save_folder = "../images/reorder_landscape/"):
     
     
     fixed = {
