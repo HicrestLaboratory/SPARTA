@@ -15,7 +15,7 @@ import seaborn as sns
 from scipy import interpolate
 
 
-saad = False
+saad = True
 if saad:
     input_file = "../results/test_reordering_blocked_synth_saad_25_10.csv"
 else:
