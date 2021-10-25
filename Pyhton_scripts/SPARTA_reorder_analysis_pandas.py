@@ -14,13 +14,20 @@ import numpy as np
 import seaborn as sns
 from scipy import interpolate
 
+
+saad = True
+if saad:
+    input_file = "../results/test_reordering_blocked_synth_2_saad.csv"
+else:
+    input_file = "../results/test_reordering_blocked_synth_2.csv"
+
                     
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         description="Makes images from experiments")
     
-    parser.add_argument("--input-csv", default="../results/test_reordering_blocked_synth_2.csv",
+    parser.add_argument("--input-csv", default="../results/test_reordering_blocked_synth_2_saad.csv",
         help="file that contains the already run experiments")
     parser.add_argument("--output-dir", default="../images/",
         help="directory where the images are saved")
@@ -100,6 +107,7 @@ results_df["output_in_block_density"] = results_df.apply(lambda x: x['total_nonz
 
 results_df["relative_density"] = results_df.apply(lambda x: x['output_in_block_density']/x["input_entries_density"], axis=1)
 
+results_df = results_df[results_df["input_blocks_density"] != 0.01]
 
 to_display = ["input_entries_density",
               "input_blocks_density",
@@ -110,25 +118,11 @@ to_display = ["input_entries_density",
               "epsilon",
               "similarity_func",
               "scramble",
+              "hierarchic_merge"
         ]
 
 for var in to_display:
     print(var, results_df[var].unique());
-
-
-
-fixed = {
-        "input_entries_density": "0.5",
-              "input_blocks_density": "0.5",
-              "rows": "2048",
-              "cols": "2048",
-              "input_block_size":"64",
-              "algo_block_size":"64",
-              "epsilon": "any",
-              "similarity_func":"'scalar'",
-              "scramble": "1"
-}
-
 
 def build_query(fixed):
     #build a query from the fixed dictionary
@@ -140,26 +134,64 @@ def build_query(fixed):
     return q;
 
 
-q = build_query(fixed)
-results_df.query(q).size
-results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "relative_density", kind = "scatter");
-plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
-plt.minorticks_on()
-plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
-plt.xlim(10,85)
-plt.ylim(0.8,1.05)
-plt.title("Reordering a scrambled blocked matrix (zoom in)")
-#plt.axvline(64, alpha = 0.2, color = "red")
-plt.xlabel("Average height of nonzero blocks");
-plt.ylabel("Average density of nonzero blocks \n (relative to original blocking)");
-plt.savefig(output_dir + "example_block_curve_detail.jpg", format = 'jpg', dpi=300, bbox_inches = "tight")
 
 
+def reorder_curve(rows = 2048, cols = 2048, block_size = 64, i_density = 0.1, b_density = 0.1, similarity = "'scalar'", save_folder = "../images/reorder_curve/", name = "reorder_curve", saad = False):
+    fixed = {
+        "input_entries_density": i_density,
+        "input_blocks_density": b_density,
+        "rows": str(rows),
+        "cols": str(cols),
+        "input_block_size": str(block_size),
+        "algo_block_size": str(block_size),
+        "epsilon": "any",
+        "similarity_func": similarity,
+        "scramble": "1"
+    }
+    
+    if saad: fixed["algo_block_size"] = 1;
+
+    fixed
+    q = build_query(fixed)
+    results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "relative_density", kind = "scatter");
+    plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
+    plt.minorticks_on()
+    plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
+    plt.xlim(0,1000)
+    plt.ylim(0,2)
+    plt.axvline(block_size, alpha = 0.2, color = "red")
+    plt.axhline(1, alpha = 0.2, color = "red")
+    plt.title("M,N = {},{}\n block_size = {} \n density inside nonzero blocks = {} \n fraction of nonzero-blocks = {} \n similarity function = {}".format(cols,rows,block_size,  i_density, b_density, similarity))
+    plt.xlabel("Average height of nonzero blocks");
+    plt.ylabel("Average density inside nonzero blocks \n (relative to original blocking)");
+    
+    savename = save_folder + name + "_r{}_c{}_b{}_d{}_bd{}_{}.jpg".format(cols,rows,block_size,  i_density, b_density, similarity);
+
+    plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
+    plt.show()
+    plt.close()
+    
+    
+if saad:
+    name = "saad_reorder_curve"    
+else:
+    name = "reorder_curve";
+    
+for cols in [2048,]:
+    for rows in [2048,]:
+        for block_size in [32,64]:
+            for i_density in [0.01, 0.05, 0.1, 0.3]:
+                for b_density in [0.1,0.2,0.3,0.4,0.5]:
+                    for similarity in ["'scalar'","'jaccard'"]:
+                        try:
+                            reorder_curve(cols,rows,block_size, i_density, b_density, similarity, name = "reorder_curve", saad = saad);
+                        except:
+                            print("could not make image for cols = {}, rows = {}, block_size = {}".format(cols,rows,block_size))
 
 #TODO interpolate to find best density for given size. Produce heatmap
 
 
-def reorder_heatmap(rows = 2048, cols = 2048, block_size = 64, similarity = "'scalar'", save_folder = "../images/reorder_landscape/"):
+def reorder_heatmap(rows = 2048, cols = 2048, block_size = 64, similarity = "'scalar'", save_folder = "../images/reorder_landscape/", name = "reorder_heatmap", saad = False):
     
     
     fixed = {
@@ -174,6 +206,7 @@ def reorder_heatmap(rows = 2048, cols = 2048, block_size = 64, similarity = "'sc
               "scramble": "1"
     }
 
+    if saad: fixed["algo_block_size"] = 1;
     
     heatmap_array = []
     for input_blocks_density in results_df["input_blocks_density"].unique():
@@ -205,10 +238,10 @@ def reorder_heatmap(rows = 2048, cols = 2048, block_size = 64, similarity = "'sc
     bottom, top = ax.get_ylim()
     ax.set_ylim(bottom + 0.5, top - 0.5)
     plt.xlabel("Density inside nonzero blocks") 
-    plt.ylabel("Density of nonzero blocks");
+    plt.ylabel("Fraction of nonzero blocks");
     
     plt.title("M,N = {},{}\n block_size = {} \n similarity function = {}".format(cols,rows,block_size, similarity))
-    savename = save_folder + "reorder_heatmap_r{}_c{}_b{}_{}.jpg".format(rows, cols, block_size, similarity);
+    savename = save_folder + name + "_r{}_c{}_b{}_{}.jpg".format(rows, cols, block_size, similarity);
     plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()
     
@@ -217,9 +250,9 @@ def reorder_heatmap(rows = 2048, cols = 2048, block_size = 64, similarity = "'sc
 for cols in [2048,]:
     for rows in [2048,]:
         for block_size in [16,32,64]:
-            for similarity in ["'scalar'", "'jaccard'"]:
+            for similarity in ["'scalar'","'jaccard'"]:
                 try:
-                    reorder_heatmap(cols,rows,block_size, similarity);
+                    reorder_heatmap(cols,rows,block_size, similarity, name = "reorder_heatmap");
                 except:
                     print("could not make image for cols = {}, rows = {}, block_size = {}".format(cols,rows,block_size))
 
