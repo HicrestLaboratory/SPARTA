@@ -290,6 +290,6 @@ for cols in [2048,]:
         for block_size in [16,32,64]:
             for similarity in ["'scalar'","'jaccard'"]:
                 try:
-                    reorder_heatmap(cols,rows,block_size, similarity, name = "reorder_heatmap");
+                    reorder_heatmap(cols,rows,block_size, similarity, name = "reorder_heatmap", saad = saad);
                 except:
                     print("could not make image for cols = {}, rows = {}, block_size = {}".format(cols,rows,block_size))
