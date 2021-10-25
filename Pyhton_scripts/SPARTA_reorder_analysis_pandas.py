@@ -15,9 +15,9 @@ import seaborn as sns
 from scipy import interpolate
 
 
-saad = True
+saad = False
 if saad:
-    input_file = "../results/test_reordering_blocked_synth_2_saad.csv"
+    input_file = "../results/test_reordering_blocked_synth_saad_25_10.csv"
 else:
     input_file = "../results/test_reordering_blocked_synth_2.csv"
 
@@ -149,7 +149,9 @@ def reorder_curve(rows = 2048, cols = 2048, block_size = 64, i_density = 0.1, b_
         "scramble": "1"
     }
     
-    if saad: fixed["algo_block_size"] = 1;
+    if saad: 
+        fixed["algo_block_size"] = 1;
+        name = "reorder_curve_saad";
 
     fixed
     q = build_query(fixed)
@@ -157,8 +159,8 @@ def reorder_curve(rows = 2048, cols = 2048, block_size = 64, i_density = 0.1, b_
     plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
     plt.minorticks_on()
     plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
-    plt.xlim(0,1000)
-    plt.ylim(0,2)
+    #plt.xlim(0,1000)
+    #plt.ylim(0,2)
     plt.axvline(block_size, alpha = 0.2, color = "red")
     plt.axhline(1, alpha = 0.2, color = "red")
     plt.title("M,N = {},{}\n block_size = {} \n density inside nonzero blocks = {} \n fraction of nonzero-blocks = {} \n similarity function = {}".format(cols,rows,block_size,  i_density, b_density, similarity))
@@ -188,7 +190,41 @@ for cols in [2048,]:
                         except:
                             print("could not make image for cols = {}, rows = {}, block_size = {}".format(cols,rows,block_size))
 
-#TODO interpolate to find best density for given size. Produce heatmap
+
+def curve_comparison(rows = 2048, cols = 2048, block_size = 64, i_density = 0.1, b_density = 0.1, save_folder = "../images/reorder_curve/", name = "reorder_curve_comparison"):
+    fixed = {
+        "input_entries_density": i_density,
+        "input_blocks_density": b_density,
+        "rows": str(rows),
+        "cols": str(cols),
+        "input_block_size": str(block_size),
+        "algo_block_size": str(block_size),
+        "epsilon": "any",
+        "similarity_func": "any",
+        "scramble": "1"
+    }
+    
+    for similarity in ["'scalar'","'jaccard'"]:
+        fixed["similarity_func"] = similarity
+        q = build_query(fixed)
+        results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "relative_density", kind = "scatter", label = "similarity");
+        
+    plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
+    plt.minorticks_on()
+    plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
+    #plt.xlim(0,1000)
+    #plt.ylim(0,2)
+    plt.axvline(block_size, alpha = 0.2, color = "red")
+    plt.axhline(1, alpha = 0.2, color = "red")
+    plt.title("M,N = {},{}\n block_size = {} \n density inside nonzero blocks = {} \n fraction of nonzero-blocks = {} \n similarity function = {}".format(cols,rows,block_size,  i_density, b_density, similarity))
+    plt.xlabel("Average height of nonzero blocks");
+    plt.ylabel("Average density inside nonzero blocks \n (relative to original blocking)");
+    
+    savename = save_folder + name + "_r{}_c{}_b{}_d{}_bd{}_{}.jpg".format(cols,rows,block_size,  i_density, b_density, similarity);
+
+    plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
+    plt.show()
+    plt.close()
 
 
 def reorder_heatmap(rows = 2048, cols = 2048, block_size = 64, similarity = "'scalar'", save_folder = "../images/reorder_landscape/", name = "reorder_heatmap", saad = False):
@@ -206,7 +242,9 @@ def reorder_heatmap(rows = 2048, cols = 2048, block_size = 64, similarity = "'sc
               "scramble": "1"
     }
 
-    if saad: fixed["algo_block_size"] = 1;
+    if saad: 
+            fixed["algo_block_size"] = 1;
+            name = "reorder_heatmap_saad";
     
     heatmap_array = []
     for input_blocks_density in results_df["input_blocks_density"].unique():
@@ -255,85 +293,3 @@ for cols in [2048,]:
                     reorder_heatmap(cols,rows,block_size, similarity, name = "reorder_heatmap");
                 except:
                     print("could not make image for cols = {}, rows = {}, block_size = {}".format(cols,rows,block_size))
-
-
-
-
-ax = plt.gca();
-ax.set(ylabel="density of nonzero blocks", xlabel = "density inside blocks")
-#q = "cols == 1024 and B_cols == 16384 and input_blocks_density == 64  and density < 0.1"
-#results_df.query(q).plot(y = "input_blocks_density", x = "input_entries_density", kind = "scatter", c = "winner", colormap='viridis');
-
-
-#ax.set_yscale("log")
-ax.set_xscale("log")
-ax.set_xlim([0.0005, 0.2]);
-plt.savefig("landscape.jpg", format = 'jpg', dpi=300, bbox_inches = "tight")
-
-
-
-plt.figure()
-ax = plt.gca();
-y = "sp_vs_cu";
-x = "input_entries_density"
-
-rows = 2048
-cols = 2048;
-B_cols = 8192;
-input_block_size = 64;
-input_blocks_density = 0.2
-
-q = "rows == {} and cols == {} and B_cols == {} and input_block_size == {} and input_blocks_density == {}".format(rows, cols, B_cols, input_block_size, input_blocks_density)
-results_df.query(q).plot(x = x, y = y, color = "red", ax = ax);
-ax.set(ylabel='speedup vs cusparse', xlabel='density inside blocks',
-       title='Comparison with cusparse \n N, K, M = {}, {}, {} \n block size = {} \n input_blocks_density = {}'.format(rows, cols, B_cols, input_block_size, input_blocks_density))
-ax.axhline(1)
-x = results_df.query(q)["input_entries_density"].tolist();
-y = np.array(results_df.query(q)["sp_vs_cu"].tolist());
-errors = np.array(results_df.query(q)["VBSmm_std"].tolist());
-upper = y + 3*errors;
-lower = y - 3*errors;
-
-ax.set_xscale("log")
-ax.set_xlim([0.0005, 0.2]);
-
-plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
-plt.minorticks_on()
-plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
-         
-ax.fill_between(x, lower, upper, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
-plt.savefig("sp_vs_cusparse_0.2.jpg", format = 'jpg', dpi=300, bbox_inches = "tight")
-
-
-plt.figure()
-ax = plt.gca();
-y = "sp_vs_cu";
-x = "input_entries_density"
-
-rows = 2048
-cols = 2048;
-B_cols = 8192;
-input_block_size = 64;
-input_blocks_density = 0.5
-
-q = "rows == {} and cols == {} and B_cols == {} and input_block_size == {} and input_blocks_density == {}".format(rows, cols, B_cols, input_block_size, input_blocks_density)
-results_df.query(q).plot(x = x, y = y, color = "red", ax = ax);
-ax.set(ylabel='speedup vs cusparse', xlabel='density inside blocks',
-       title='Comparison with cusparse \n N, K, M = {}, {}, {} \n block size = {} \n input_blocks_density = {}'.format(rows, cols, B_cols, input_block_size, input_blocks_density))
-ax.axhline(1)
-x = results_df.query(q)["input_entries_density"].tolist();
-y = np.array(results_df.query(q)["sp_vs_cu"].tolist());
-errors = np.array(results_df.query(q)["VBSmm_std"].tolist());
-upper = y + 3*errors;
-lower = y - 3*errors;
-
-ax.set_xscale("log")
-ax.set_xlim([0.0005, 0.2]);
-
-plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
-plt.minorticks_on()
-plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
-         
-ax.fill_between(x, lower, upper, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
-plt.savefig("sp_vs_cusparse_0.5.jpg", format = 'jpg', dpi=300, bbox_inches = "tight")
-
