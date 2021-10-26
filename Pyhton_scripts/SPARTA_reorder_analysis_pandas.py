@@ -19,7 +19,8 @@ saad = True
 if saad:
     input_file = "../results/test_reordering_blocked_synth_saad_25_10.csv"
 else:
-    input_file = "../results/test_reordering_blocked_synth_2.csv"
+#   input_file = "../results/test_reordering_blocked_synth_2.csv"
+    input_file = "../results/real_reordering_results_25_10.csv"
 
                     
 if __name__ == "__main__":
@@ -37,7 +38,7 @@ if __name__ == "__main__":
     input_csv = args.input_csv;
     output_dir = args.output_dir;
                     
-results_df = pd.read_csv(input_csv);
+results_df = pd.read_csv(input_file);
 
 columns = ['exp_name', 
            'input_type', 
@@ -189,6 +190,49 @@ for cols in [2048,]:
                             reorder_curve(cols,rows,block_size, i_density, b_density, similarity, name = "reorder_curve", saad = saad);
                         except:
                             print("could not make image for cols = {}, rows = {}, block_size = {}".format(cols,rows,block_size))
+
+
+
+
+def real_reorder_curve(graph = None, block_size = 64, similarity = "'scalar'", save_folder = "../images/reorder_curve/", name = "real_reorder_curve", saad = False):
+    fixed = {
+        "input_source": "any",
+        "algo_block_size": str(block_size),
+        "epsilon": "any",
+        "similarity_func": similarity,
+        "scramble": "1"
+    }
+    
+    if saad: 
+        fixed["algo_block_size"] = 1;
+        name = "reorder_curve_saad";
+
+
+    graph_name = graph.split("/")[-1].split(".")[0]
+    fixed
+    q = build_query(fixed)
+    results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "output_in_block_density", kind = "scatter");
+    plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
+    plt.minorticks_on()
+    plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
+    #plt.xlim(0,1000)
+    #plt.ylim(0,2)
+    plt.title("graph: {} \n block_size = {} \n similarity function = {}".format(graph_name, block_size, similarity))
+    plt.xlabel("Average height of nonzero blocks");
+    plt.ylabel("Average density inside nonzero blocks");
+    
+    savename = save_folder + name + "{}_bs{}_{}.jpg".format(graph_name,block_size, similarity);
+
+    plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
+    plt.show()
+    plt.close()
+    
+    
+for graph in results_df["input_source"].unique():
+    for algo_block_size in results_df["algo_block_size"].unique():
+        for sim in ["'scalar'","'jaccard'"]:
+            real_reorder_curve(graph,algo_block_size,sim);
+
 
 
 def curve_comparison(rows = 2048, cols = 2048, block_size = 64, i_density = 0.1, b_density = 0.1, save_folder = "../images/reorder_curve/", name = "reorder_curve_comparison"):
