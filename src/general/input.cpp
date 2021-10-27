@@ -227,8 +227,6 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
             abort();
         }
 
-        if (params.reorder_algo == "saad") params.algo_block_size = 1;
-
         return 0;
 
 }
