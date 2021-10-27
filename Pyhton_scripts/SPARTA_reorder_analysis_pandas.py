@@ -15,7 +15,7 @@ import seaborn as sns
 from scipy import interpolate
 
 
-saad = True
+saad = False
 if saad:
     input_file = "../results/test_reordering_blocked_synth_saad_25_10.csv"
 else:
@@ -108,6 +108,9 @@ results_df["output_in_block_density"] = results_df.apply(lambda x: x['total_nonz
 
 results_df["relative_density"] = results_df.apply(lambda x: x['output_in_block_density']/x["input_entries_density"], axis=1)
 
+results_df["true_relative_density"] = results_df.apply(lambda x: x['output_in_block_density']/x["input_density"], axis=1)
+
+
 results_df = results_df[results_df["input_blocks_density"] != 0.01]
 
 to_display = ["input_entries_density",
@@ -196,7 +199,7 @@ for cols in [2048,]:
 
 def real_reorder_curve(graph = None, block_size = 64, similarity = "'scalar'", save_folder = "../images/reorder_curve/", name = "real_reorder_curve", saad = False):
     fixed = {
-        "input_source": "any",
+        "input_source": "'" + str(graph) + "'",
         "algo_block_size": str(block_size),
         "epsilon": "any",
         "similarity_func": similarity,
@@ -211,15 +214,19 @@ def real_reorder_curve(graph = None, block_size = 64, similarity = "'scalar'", s
     graph_name = graph.split("/")[-1].split(".")[0]
     fixed
     q = build_query(fixed)
-    results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "output_in_block_density", kind = "scatter");
+    results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "true_relative_density", kind = "scatter");
+    dens = str(results_df.query(q)["input_density"].unique()[0])[0:6];
+    rows = str(results_df.query(q)["rows"].unique()[0]);
+    cols = str(results_df.query(q)["cols"].unique()[0]);
+
     plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
     plt.minorticks_on()
     plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
-    #plt.xlim(0,1000)
-    #plt.ylim(0,2)
-    plt.title("graph: {} \n block_size = {} \n similarity function = {}".format(graph_name, block_size, similarity))
+    plt.xlim(0,100)
+    plt.ylim(0,20)
+    plt.title("matrix: {}, \n M, K = {},{}, \n density = {} \n block size = {} \n".format(graph_name, rows, cols, dens, block_size, similarity))
     plt.xlabel("Average height of nonzero blocks");
-    plt.ylabel("Average density inside nonzero blocks");
+    plt.ylabel("Average density inside nonzero blocks \n (relative to original density)");
     
     savename = save_folder + name + "{}_bs{}_{}.jpg".format(graph_name,block_size, similarity);
 
@@ -229,10 +236,12 @@ def real_reorder_curve(graph = None, block_size = 64, similarity = "'scalar'", s
     
     
 for graph in results_df["input_source"].unique():
-    for algo_block_size in results_df["algo_block_size"].unique():
-        for sim in ["'scalar'","'jaccard'"]:
-            real_reorder_curve(graph,algo_block_size,sim);
-
+    for algo_block_size in [64,]:
+        for sim in ["'scalar'",]:
+            try:
+                real_reorder_curve(graph,algo_block_size,sim);
+            except: 
+                print("could not process", graph)
 
 
 def curve_comparison(rows = 2048, cols = 2048, block_size = 64, i_density = 0.1, b_density = 0.1, save_folder = "../images/reorder_curve/", name = "reorder_curve_comparison"):
