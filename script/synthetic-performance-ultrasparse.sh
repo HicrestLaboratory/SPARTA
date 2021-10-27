@@ -2,7 +2,7 @@
 
 OPTS="-w 1 -r 5 -v -1 -i 4"
 
-RESULTS="results/test_cublas_results_ultrasparse.txt";
+RESULTS="results/test_cublas_results_ultrasparse_19_10.txt";
 
 >"${RESULTS}";
 
