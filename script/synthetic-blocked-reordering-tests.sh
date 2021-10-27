@@ -15,7 +15,7 @@ P_value=(32, 64, 128);
 b_value=(0.1 0.2 0.3 0.4 0.5);
 q_value=(0.01 0.02 0.05 0.1 0.2 0.5);
 
-F_value=(scalar, jaccard);
+F_value=(scalar jaccard);
 M_value=(0 1);
 
 for m in ${m_shapes[@]}; do
