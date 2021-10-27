@@ -17,10 +17,10 @@ from scipy import interpolate
 
 saad = False
 if saad:
-    input_file = "../results/test_reordering_blocked_synth_saad_25_10.csv"
+    input_file = "../results/test_reordering_blocked_synth_saad_27_10.csv"
 else:
-#   input_file = "../results/test_reordering_blocked_synth_2.csv"
-    input_file = "../results/real_reordering_results_25_10.csv"
+    input_file = "../results/test_reordering_blocked_synth_27_10.csv"
+#    input_file = "../results/real_reordering_results_25_10.csv"
 
                     
 if __name__ == "__main__":
