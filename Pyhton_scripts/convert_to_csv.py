@@ -37,7 +37,7 @@ def convert_to_CSV(filename, new_file_name):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
-        description="Makes images from experiments")
+        description="Makes csv from experiments")
     
     parser.add_argument("--input-file", default="/",
         help="file that contains the already run experiments")
@@ -51,4 +51,5 @@ if __name__ == "__main__":
     output_csv = args.output_csv;
                     
 convert_to_CSV(input_file, output_csv);
-results_df = pd.read_csv(output_csv);
+results_df = pd.read_csv(output_csv); #check that results can be read
+
