@@ -15,7 +15,7 @@ import seaborn as sns
 from scipy import interpolate
 
 
-saad = False
+saad = True
 if saad:
     input_file = "../results/test_reordering_blocked_synth_saad_27_10.csv"
 else:
@@ -154,7 +154,6 @@ def reorder_curve(rows = 2048, cols = 2048, block_size = 64, i_density = 0.1, b_
     }
     
     if saad: 
-        fixed["algo_block_size"] = 1;
         name = "reorder_curve_saad";
 
     fixed
@@ -163,8 +162,8 @@ def reorder_curve(rows = 2048, cols = 2048, block_size = 64, i_density = 0.1, b_
     plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
     plt.minorticks_on()
     plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
-    #plt.xlim(0,1000)
-    #plt.ylim(0,2)
+    plt.xlim(0,200)
+    plt.ylim(0,2)
     plt.axvline(block_size, alpha = 0.2, color = "red")
     plt.axhline(1, alpha = 0.2, color = "red")
     plt.title("M,N = {},{}\n block_size = {} \n density inside nonzero blocks = {} \n fraction of nonzero-blocks = {} \n similarity function = {}".format(cols,rows,block_size,  i_density, b_density, similarity))
@@ -177,20 +176,15 @@ def reorder_curve(rows = 2048, cols = 2048, block_size = 64, i_density = 0.1, b_
     plt.show()
     plt.close()
     
-    
-if saad:
-    name = "saad_reorder_curve"    
-else:
-    name = "reorder_curve";
-    
+
 for cols in [2048,]:
     for rows in [2048,]:
-        for block_size in [32,64]:
-            for i_density in [0.01, 0.05, 0.1, 0.3]:
+        for block_size in [64]:
+            for i_density in [0.01, 0.02, 0.05, 0.1, 0.2, 0.5]:
                 for b_density in [0.1,0.2,0.3,0.4,0.5]:
-                    for similarity in ["'scalar'","'jaccard'"]:
+                    for similarity in ["'scalar'"]:
                         try:
-                            reorder_curve(cols,rows,block_size, i_density, b_density, similarity, name = "reorder_curve", saad = saad);
+                            reorder_curve(cols,rows,block_size, i_density, b_density, similarity, saad = saad);
                         except:
                             print("could not make image for cols = {}, rows = {}, block_size = {}".format(cols,rows,block_size))
 
@@ -296,7 +290,6 @@ def reorder_heatmap(rows = 2048, cols = 2048, block_size = 64, similarity = "'sc
     }
 
     if saad: 
-            fixed["algo_block_size"] = 1;
             name = "reorder_heatmap_saad";
     
     heatmap_array = []
@@ -340,9 +333,9 @@ def reorder_heatmap(rows = 2048, cols = 2048, block_size = 64, similarity = "'sc
 
 for cols in [2048,]:
     for rows in [2048,]:
-        for block_size in [16,32,64]:
-            for similarity in ["'scalar'","'jaccard'"]:
+        for block_size in [64,]:
+            for similarity in ["'scalar'",]:
                 try:
-                    reorder_heatmap(cols,rows,block_size, similarity, name = "reorder_heatmap", saad = saad);
+                    reorder_heatmap(cols,rows,block_size, similarity, saad = saad);
                 except:
                     print("could not make image for cols = {}, rows = {}, block_size = {}".format(cols,rows,block_size))
