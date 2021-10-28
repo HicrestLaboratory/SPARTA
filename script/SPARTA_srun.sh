@@ -13,8 +13,7 @@
 
 
 export OPTS="-w 1 -r 5 -v 1 -i 4"
-module load cuda-10.2
-module load gcc-9.3.0
+module load cuda
 cd /home/clusterusers/pasyloslabini/SPARTA
 make clean
 make test_cublas_VBS
