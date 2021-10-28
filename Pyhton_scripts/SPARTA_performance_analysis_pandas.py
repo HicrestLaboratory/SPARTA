@@ -29,6 +29,9 @@ if __name__ == "__main__":
     input_csv = args.input_csv;
     output_dir = args.output_dir;
                     
+    
+    
+input_csv = "../results/a100_test01.csv"
 results_df = pd.read_csv(input_csv);
 
 columns = ['exp_name',
