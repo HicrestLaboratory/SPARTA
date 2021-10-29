@@ -30,8 +30,8 @@ if __name__ == "__main__":
     output_dir = args.output_dir;
                     
 
-name = "a100_";
-input_csv = "../results/test_cublas_results_a100.csv"
+name = "v100_";
+input_csv = "../results/test_cublas_results_v100.csv"
 results_df = pd.read_csv(input_csv);
 
 columns = ['exp_name',
@@ -142,7 +142,7 @@ for cols in [2048,4096,8192]:
 
 
 
-def speedup_curve(rows,cols,B_cols,b_size,b_density, save_folder = "../images/reoder_curve/"):
+def speedup_curve(rows,cols,B_cols,b_size,b_density, save_folder = "../images/reoder_curve/", name = ""):
         
     plt.figure()
     ax = plt.gca();
@@ -174,7 +174,7 @@ def speedup_curve(rows,cols,B_cols,b_size,b_density, save_folder = "../images/re
     
     plt.title("M,K,N = {},{},{} \n block size = {} \n fraction of nonzero blocks = {}".format(rows,cols,B_cols,b_size,b_density))
     
-    savename = save_folder + "reorder_curve_r{}_c{}_k{}_bs{}_bd{}.jpg".format(rows,cols,B_cols,b_size,b_density);                
+    savename = save_folder + name + "reorder_curve_r{}_c{}_k{}_bs{}_bd{}.jpg".format(rows,cols,B_cols,b_size,b_density);                
     
     plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     
@@ -188,6 +188,6 @@ for cols in [8192,]:
             for block_size in [32,64,128]:
                 for b_density in [0.05, 0.2, 0.4]:
                     try:
-                        speedup_curve(rows,cols,b_cols,block_size,b_density, save_folder = "../images/reorder_curve/");
+                        speedup_curve(rows,cols,b_cols,block_size,b_density, name = name, save_folder = "../images/reorder_curve/");
                     except:
                         print("could not make image for cols = {}, rows = {}, B_cols = {}, block_size = {}".format(cols,rows,b_cols,block_size))
