@@ -2,21 +2,6 @@ CXX       =g++
 CXXFLAGS  =  -fpermissive -Wl,--no-as-needed -m64 -std=c++11 -fopenmp
 INCLUDE = -I include
 
-
-#MKL------------------------------------------
-MKL_TARGET    = mkl_test 
-MKL_INCLUDE   =  -I ${MKLROOT}/include
-MKL_INCLUDE += $(INCLUDE)
-
-MKL_CXXFLAGS =
-MKL_CXXFLAGS += $(CXXFLAGS)
-
-MKL_LIBRARY   = -L ${MKLROOT}/lib/intel64
-
-MKL_LDFLAGS  = -lmkl_rt -lpthread -lm -ldl 
-#---------------------------------------------
-
-
 #cuda------------------------------------------
 CUDA_PATH ?= $(CUDA_HOME)
 #CUDA_LDFLAGS = --dynamic-linker=/lib/ld-linux-armhf.so.3
@@ -31,7 +16,7 @@ CUDA_PATH ?= $(CUDA_HOME)
 CUDA_CXXFLAGS = 
 CUDA_CXXFLAGS += -std=c++11
 CUDA_CXXFLAGS += -m64 
-CUDA_CXXFLAGS += -O3 -arch=sm_80
+CUDA_CXXFLAGS += -O3 -arch=sm_70
 #CUDA_CXXFLAGS += -isystem=$(TARGET_FS)/usr/include
 #CUDA_CXXFLAGS += -isystem=$(TARGET_FS)/usr/include/aarch64-linux-gnu
 #CUDA_CXXFLAGS += $(addprefix -Xcompiler ,$(CUDA_CXXFLAGS))
@@ -59,15 +44,6 @@ GEN_TEST_DIR = $(TEST_DIR)/general
 
 GEN_SRC = $(wildcard $(GEN_SRC_DIR)/*.cpp)
 GEN_OBJECTS = $(GEN_SRC:$(GEN_SRC_DIR)/%.cpp=$(GEN_OBJ_DIR)/%.o)
-
-
-MKL_OBJ_DIR = $(OBJ_DIR)/mkl
-MKL_APP_DIR =$(APP_DIR)/mkl
-MKL_SRC_DIR = $(SRC_DIR)/mkl
-
-MKL_SRC = $(wildcard $(MKL_SRC_DIR)/*.cpp)
-MKL_OBJECTS = $(GEN_OBJECTS) $(MKL_SRC:$(MKL_SRC_DIR)/%.cpp=$(MKL_OBJ_DIR)/%.o)
-
 
 CUDA_OBJ_DIR = $(OBJ_DIR)/cuda
 CUDA_APP_DIR =$(APP_DIR)/cuda
@@ -99,11 +75,6 @@ $(GEN_APP_DIR)/% : $(GEN_OBJ_DIR)/%.o $(GEN_OBJECTS)
 $(MKL_OBJ_DIR)/%.o : $(MKL_SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(MKL_CXXFLAGS) $(MKL_INCLUDE) $(MKL_LIBRARY) -o $@ -c $<
-
-$(MKL_APP_DIR)/$(MKL_TARGET) : $(MKL_OBJECTS)
-	@mkdir -p $(@D)
-	$(CXX) $(MKL_CXXFLAGS) $(MKL_INCLUDE) $(MKL_LDFLAGS) -o $@ $<
-
 
 $(CUDA_OBJ_DIR)/%.o : $(CUDA_SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
@@ -140,9 +111,6 @@ clean:
 
 test_cublas_VBS : build_cuda $(CUDA_APP_DIR)/test_cublas_VBS
 
-test_AHA : build_general $(GEN_APP_DIR)/test_AHA 
-
-test_M1vsM2 : build_general $(GEN_APP_DIR)/test_M1vsM2 
 
 test_saad : build_general $(GEN_APP_DIR)/test_saad
 
