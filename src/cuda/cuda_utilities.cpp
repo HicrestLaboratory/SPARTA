@@ -447,6 +447,7 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
     // Destroy the handle
     checkCudaErrors(cusparseDestroy(handle));
 
+    return 0;
 }
 
 
@@ -479,6 +480,8 @@ int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int *csrColInd, float *csrVa
         nnz += cmat.nzcount[i];
 
     }
+
+    return 0;
 }
 
 

@@ -30,6 +30,7 @@ float std_dev(std::vector<T> v)
         s += (t - m) * (t - m);
     }
     s = sqrt(s / v.size());
+    return s;
 }
 
 
@@ -41,6 +42,8 @@ int output_couple(std::string& names, std::string& values, std::string name, myT
 
     names += name + " ";
     values += std::to_string(value) + " ";
+
+    return 0;
 }
 
 int output_couple(std::string& names, std::string& values, std::string name, std::string value);
