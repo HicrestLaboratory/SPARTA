@@ -43,8 +43,6 @@ int main(int argc, char* argv[]) {
   
     get_input_CSR(cmat_A, params);
 
-    srand(params.seed);
-
     //___________________________________________
     //*******************************************
     //		END OF INPUT
