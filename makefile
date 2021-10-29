@@ -2,21 +2,6 @@ CXX       =g++
 CXXFLAGS  =  -fpermissive -Wl,--no-as-needed -m64 -std=c++11 -fopenmp
 INCLUDE = -I include
 
-
-#MKL------------------------------------------
-MKL_TARGET    = mkl_test 
-MKL_INCLUDE   =  -I ${MKLROOT}/include
-MKL_INCLUDE += $(INCLUDE)
-
-MKL_CXXFLAGS =
-MKL_CXXFLAGS += $(CXXFLAGS)
-
-MKL_LIBRARY   = -L ${MKLROOT}/lib/intel64
-
-MKL_LDFLAGS  = -lmkl_rt -lpthread -lm -ldl 
-#---------------------------------------------
-
-
 #cuda------------------------------------------
 CUDA_PATH ?= $(CUDA_HOME)
 #CUDA_LDFLAGS = --dynamic-linker=/lib/ld-linux-armhf.so.3
@@ -31,7 +16,7 @@ CUDA_PATH ?= $(CUDA_HOME)
 CUDA_CXXFLAGS = 
 CUDA_CXXFLAGS += -std=c++11
 CUDA_CXXFLAGS += -m64 
-CUDA_CXXFLAGS += -g -G 
+CUDA_CXXFLAGS += -O3 -arch=sm_70
 #CUDA_CXXFLAGS += -isystem=$(TARGET_FS)/usr/include
 #CUDA_CXXFLAGS += -isystem=$(TARGET_FS)/usr/include/aarch64-linux-gnu
 #CUDA_CXXFLAGS += $(addprefix -Xcompiler ,$(CUDA_CXXFLAGS))
