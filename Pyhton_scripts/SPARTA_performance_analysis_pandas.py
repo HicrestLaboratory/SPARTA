@@ -29,9 +29,9 @@ if __name__ == "__main__":
     input_csv = args.input_csv;
     output_dir = args.output_dir;
                     
-    
-    
-input_csv = "../results/a100_test01.csv"
+
+name = "a100_";
+input_csv = "../results/test_cublas_results_a100.csv"
 results_df = pd.read_csv(input_csv);
 
 columns = ['exp_name',
@@ -105,7 +105,7 @@ to_display = ["rows","cols",
 for var in to_display:
     print(var, results_df[var].unique());
 
-def make_heatmap(cols, rows, b_cols, block_size, save_folder):
+def make_heatmap(cols, rows, b_cols, block_size, save_folder, name = ""):
     q = "cols == {} and rows == {} and B_cols == {} and input_block_size == {}".format(cols, rows, b_cols, block_size)
     heatmap_df = results_df.query(q)[["input_entries_density","input_blocks_density","sp_vs_cu"]]
     heatmap_df = heatmap_df.set_index(['input_entries_density', 'input_blocks_density']).sp_vs_cu.unstack(0)
@@ -123,7 +123,7 @@ def make_heatmap(cols, rows, b_cols, block_size, save_folder):
     
     plt.title("M,K,N = {},{},{} \n block_size = {}".format(cols,rows,b_cols,block_size))
     
-    savename = save_folder + "landscape_heatmap_r{}_c{}_k{}_b{}.jpg".format(rows, cols, b_cols, block_size);
+    savename = save_folder + name + "landscape_heatmap_r{}_c{}_k{}_b{}.jpg".format(rows, cols, b_cols, block_size);
     plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()
     plt.close()
@@ -133,7 +133,7 @@ for cols in [2048,4096,8192]:
         for b_cols in [2048,4096,8192,16384]:
             for block_size in [32,64,128]:
                 try:
-                    make_heatmap(cols,rows,b_cols,block_size, save_folder = "../images/performance_landscape/");
+                    make_heatmap(cols,rows,b_cols,block_size, name = name, save_folder = "../images/performance_landscape/");
                 except:
                     print("could not make image for cols = {}, rows = {}, B_cols = {}, block_size = {}".format(cols,rows,b_cols,block_size))
 
