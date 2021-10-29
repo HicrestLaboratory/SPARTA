@@ -16,7 +16,7 @@ CUDA_PATH ?= $(CUDA_HOME)
 CUDA_CXXFLAGS = 
 CUDA_CXXFLAGS += -std=c++11
 CUDA_CXXFLAGS += -m64 
-CUDA_CXXFLAGS += -g -G
+CUDA_CXXFLAGS += -O3 -arch=sm_70
 #CUDA_CXXFLAGS += -isystem=$(TARGET_FS)/usr/include
 #CUDA_CXXFLAGS += -isystem=$(TARGET_FS)/usr/include/aarch64-linux-gnu
 #CUDA_CXXFLAGS += $(addprefix -Xcompiler ,$(CUDA_CXXFLAGS))
