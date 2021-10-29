@@ -20,7 +20,7 @@ for m in ${Mshapes[@]}; do
       for p in ${Pvalue[@]}; do
         for b in ${Bvalue[@]}; do
           for q in ${Qvalue[@]}; do
-          	./programs/cuda/test_cublas_VBS ${OPTS} -m $m -n $n -k $k -p $p -b $b -q\ $q >> "${RESULTS}"
+          	./programs/cuda/test_cublas_VBS ${OPTS} -m $m -n $n -k $k -p $p -b $b -q $q >> "${RESULTS}"
           done
         done
       done
