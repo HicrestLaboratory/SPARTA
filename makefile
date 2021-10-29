@@ -46,12 +46,6 @@ GEN_SRC = $(wildcard $(GEN_SRC_DIR)/*.cpp)
 GEN_OBJECTS = $(GEN_SRC:$(GEN_SRC_DIR)/%.cpp=$(GEN_OBJ_DIR)/%.o)
 
 
-MKL_OBJ_DIR = $(OBJ_DIR)/mkl
-MKL_APP_DIR =$(APP_DIR)/mkl
-MKL_SRC_DIR = $(SRC_DIR)/mkl
-
-MKL_SRC = $(wildcard $(MKL_SRC_DIR)/*.cpp)
-MKL_OBJECTS = $(GEN_OBJECTS) $(MKL_SRC:$(MKL_SRC_DIR)/%.cpp=$(MKL_OBJ_DIR)/%.o)
 
 
 CUDA_OBJ_DIR = $(OBJ_DIR)/cuda
@@ -77,18 +71,6 @@ $(GEN_OBJ_DIR)/%.o : $(GEN_TEST_DIR)/%.cpp
 $(GEN_APP_DIR)/% : $(GEN_OBJ_DIR)/%.o $(GEN_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ $?
-
-
-
-
-$(MKL_OBJ_DIR)/%.o : $(MKL_SRC_DIR)/%.cpp
-	@mkdir -p $(@D)
-	$(CXX) $(MKL_CXXFLAGS) $(MKL_INCLUDE) $(MKL_LIBRARY) -o $@ -c $<
-
-$(MKL_APP_DIR)/$(MKL_TARGET) : $(MKL_OBJECTS)
-	@mkdir -p $(@D)
-	$(CXX) $(MKL_CXXFLAGS) $(MKL_INCLUDE) $(MKL_LDFLAGS) -o $@ $<
-
 
 $(CUDA_OBJ_DIR)/%.o : $(CUDA_SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
@@ -124,10 +106,6 @@ clean:
 #------------------TESTS--------------------
 
 test_cublas_VBS : build_cuda $(CUDA_APP_DIR)/test_cublas_VBS
-
-test_AHA : build_general $(GEN_APP_DIR)/test_AHA 
-
-test_M1vsM2 : build_general $(GEN_APP_DIR)/test_M1vsM2 
 
 test_saad : build_general $(GEN_APP_DIR)/test_saad
 
