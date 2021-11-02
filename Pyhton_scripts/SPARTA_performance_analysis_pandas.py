@@ -30,8 +30,8 @@ if __name__ == "__main__":
     output_dir = args.output_dir;
                     
 
-name = "a100_";
-input_csv = "../results/test_cublas_results_a100.csv"
+name = "v100_";
+input_csv = "../results/test_cublas_results_v100.csv"
 results_df = pd.read_csv(input_csv);
 
 columns = ['exp_name',
