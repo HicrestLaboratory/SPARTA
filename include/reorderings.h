@@ -20,8 +20,6 @@ struct group_structure
 		skipped = 0;
 	}
 
-
-
 	void clean()
 	{
 		len = 0;
