@@ -18,6 +18,7 @@ struct group_structure
 		group_size = 0;
 		original_columns = 0;
 		skipped = 0;
+		structure = new intT[1];
 	}
 
 	void clean()
