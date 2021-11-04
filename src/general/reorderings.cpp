@@ -645,7 +645,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
         if (in_group[i] != -1)
         {
 
-            group_size = assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
+            assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
 
             intT last_checked = -2; //used to jump over already seen (but unassigned) groups;
 
