@@ -11,6 +11,15 @@ struct group_structure
 	intT group_size;
 	intT original_columns;
 	intT skipped = 0;
+
+	void clean()
+	{
+		if (strcuture) delete structure[];
+		len = 0;
+		group_size = 0;
+		original_columns = 0;
+		skipped = 0;
+	}
 }
 
 intT count_groups(intT* grp, intT grp_len);
@@ -41,23 +50,17 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params);
 
 intT assign_group(intT* in_group, intT* out_group, intT* perm, intT jp, intT new_group_idx);
 
-int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int(*reorder_func)(CSR&, intT*, input_parameters&), bool(*sim_condition)(intT*, intT, intT, intT*, intT, intT, input_parameters&));
+int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int(*reorder_func)(CSR&, intT*, input_parameters&), bool(*sim_condition)(group_structure& group_struct, intT*, intT, intT, input_parameters&));
 
 int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group);
 
-bool scalar_condition(intT* cols_A, intT len_A, intT group_size_A, intT* cols_B, intT len_B, intT group_size_B, input_parameters& params);
-
-bool scalar_block_condition(intT* cols_A, intT len_A, intT group_size_A, intT* cols_B, intT len_B, intT group_size_B, input_parameters &params);
+bool scalar_condition(group_structure& group_struct, intT* cols_B, intT len_B, intT group_size_B, input_parameters& params);
 
 bool scalar_block_condition(group_structure &group_struct, intT* cols_B, intT len_B, intT group_size_B, input_parameters& params);
 
 int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt);
 
-int update_group_structure(intT*& group_structure, intT& group_structure_nzcount, intT& group_size, intT* cols_A, intT len_A, intT A_group_size, input_parameters& params);
-
 int update_group_structure(group_structure& group_struct, intT* cols_A, intT len_A, intT A_group_size, input_parameters& params);
-
-int make_group_structure(intT*& group_structure, intT& group_structure_nzcount, intT* cols_A, intT len_A, input_parameters& params);
 
 int make_group_structure(group_structure& group_struct, intT* cols_A, intT len_A, input_parameters& params);
 
