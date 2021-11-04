@@ -640,9 +640,6 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
         i = perm[ip];
         group_structure group_struct; //holds the nz-structure of the current group 
-        std::cout << "cleaning struct" << std::endl;
-        group_struct.clean();
-        std::cout << "starting comparison" << std::endl;
 
         if (in_group[i] != -1)
         {

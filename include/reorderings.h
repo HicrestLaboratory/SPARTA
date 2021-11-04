@@ -11,14 +11,24 @@ struct group_structure
 	intT group_size;
 	intT original_columns;
 	intT skipped;
-
-	void clean()
+	
+	group_structure()
 	{
-		if (structure) delete[] structure;
 		len = 0;
 		group_size = 0;
 		original_columns = 0;
 		skipped = 0;
+	}
+
+
+
+	void clean()
+	{
+		len = 0;
+		group_size = 0;
+		original_columns = 0;
+		skipped = 0;
+		if (structure) delete[] structure;
 	}
 };
 
