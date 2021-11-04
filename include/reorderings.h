@@ -14,7 +14,7 @@ struct group_structure
 
 	void clean()
 	{
-		if (structure) delete structure[];
+		if (structure) delete[] structure;
 		len = 0;
 		group_size = 0;
 		original_columns = 0;
