@@ -7,9 +7,9 @@
 struct group_structure
 {
 	intT* structure;
-	intT len;
-	intT group_size;
-	intT original_columns;
+	intT len = 0;
+	intT group_size = 0;
+	intT original_columns = 0;
 	intT skipped = 0;
 
 	void clean()

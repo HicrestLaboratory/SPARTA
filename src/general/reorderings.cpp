@@ -884,7 +884,7 @@ bool scalar_block_condition(group_structure& group_struct, intT* cols_B, intT le
     if (result && params.merge_limit)
     {
         float limit_factor = (1 + 2. * ((1. - eps) / (3. - eps))); // the limit on the column number relative increase;
-        if (group_stuct.len + len_mod_B - count) > limit_factor*group_struct.original_colummns) //checks that the new number of columns is smaller than the bound
+        if ((group_struct.len + len_mod_B - count) > limit_factor*group_struct.original_columns) //checks that the new number of columns is smaller than the bound
         { 
             result = false;
             group_struct.skipped++;
@@ -897,7 +897,7 @@ int update_group_structure(group_structure& group_struct, intT* cols_A, intT len
 {
     //merges a blocked compressed row (group_structure) and a compressed row (cols_A) to update the blocked compressed row. 
 
-    group_struct.size += A_group_size;
+    group_struct.group_size += A_group_size;
 
     if (params.hierarchic_merge == 0) return 0;
 
@@ -954,8 +954,8 @@ int update_group_structure(group_structure& group_struct, intT* cols_A, intT len
         while (j < len_A && cols_A[j] / block_size == current_block) j++;
     }
 
-    if (group_struct.structure) delete[] group_struc.structure;
-    group_struct = new_group_structure;
+    if (group_struct.structure) delete[] group_struct.structure;
+    group_struct.structure = new_group_structure;
     group_structure.len = new_group_idx;
 
     return 0;
@@ -989,6 +989,7 @@ int make_group_structure(group_structure& group_struct, intT* cols_A, intT len_A
             group_idx++;
         }
         group_struct.len = group_idx;
+        group_struct.original_columns = group_idx;
     }
     else
     {
