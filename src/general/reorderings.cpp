@@ -954,7 +954,7 @@ int update_group_structure(group_structure& group_struct, intT* cols_A, intT len
 
     if (group_struct.structure) delete[] group_struct.structure;
     group_struct.structure = new_group_structure;
-    group_structure.len = new_group_idx;
+    group_struct.len = new_group_idx;
 
     return 0;
 }
