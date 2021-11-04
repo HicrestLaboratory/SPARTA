@@ -651,6 +651,8 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
             intT last_checked = -2; //used to jump over already seen (but unassigned) groups;
 
+
+            std::cout << "making group structure" << std::endl;
             make_group_structure(group_struct, cmat.ja[i], cmat.nzcount[i], params);
 
             //check all (groups of) rows after i; 
@@ -673,8 +675,12 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
                     if (sim_condition(group_struct, cmat.ja[j], cmat.nzcount[j], second_group_size, params))
                     {
+                        std::cout << "assigning group structure" << std::endl;
 
                         assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
+
+                        std::cout << "updating group structure" << std::endl;
+
                         update_group_structure(group_struct, cmat.ja[j], cmat.nzcount[j], second_group_size, params);
                     }
                 }
