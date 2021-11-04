@@ -629,9 +629,6 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
     intT current_out_group = 0;
 
-    intT group_structure_nzcount;
-
-    intT group_size; 
     intT second_group_size;
 
     intT i, j;
@@ -643,6 +640,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
         i = perm[ip];
         group_structure group_struct; //holds the nz-structure of the current group 
+        group_struct.clean();
 
         if (in_group[i] != -1)
         {
@@ -974,14 +972,12 @@ int make_group_structure(group_structure& group_struct, intT* cols_A, intT len_A
     {
 
         intT block_size = params.algo_block_size;
-        std::cout << "check 1" << std::endl;
         group_struct.structure = new intT[len_A];
 
         intT current_block;
         intT group_idx = 0;
         for (intT i = 0; i < len_A; i++)
         {
-            std::cout << "check 1" << std::endl;
             current_block = cols_A[i] / block_size;
             group_struct.structure[group_idx] = current_block;
             while (i < len_A && cols_A[i] / block_size == current_block) i++;
