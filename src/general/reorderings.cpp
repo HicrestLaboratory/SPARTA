@@ -628,7 +628,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
     sort_permutation(perm, in_group, cmat.rows);
 
     intT current_out_group = 0;
-
+   
     intT second_group_size;
 
     intT i, j;
@@ -639,6 +639,8 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
     {
 
         i = perm[ip];
+
+        std::cout << "init struct" << std::cout;
         group_structure group_struct; //holds the nz-structure of the current group 
 
         if (in_group[i] != -1)
@@ -648,6 +650,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
             intT last_checked = -2; //used to jump over already seen (but unassigned) groups;
 
+            std::cout << "making struct" << std::cout;
             make_group_structure(group_struct, cmat.ja[i], cmat.nzcount[i], params);
 
             //check all (groups of) rows after i; 
