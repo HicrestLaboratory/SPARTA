@@ -679,12 +679,10 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
                     }
                 }
             }
-
-            if (group_structure_nzcount > 0) delete[] group_structure;
             current_out_group++;
         }
 
-        group_struct.clean()
+        group_struct.clean();
     }
 
 
