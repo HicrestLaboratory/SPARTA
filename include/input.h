@@ -71,7 +71,9 @@ struct input_parameters
     std::string reorder_algo = "saad_blocks";
     std::string similarity_func = "scalar";
     int hierarchic_merge= 1;         //Activate hierchical merging?
-    
+    float merge_limit = -1;            //the merge limit. If -1, use the theoretical limit; if 0, deactivate;
+
+
     int algo_block_size = 4;
     bool save_reordering = false; //save the grouping and blocking info obtained from reordering?
 

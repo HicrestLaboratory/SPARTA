@@ -618,7 +618,7 @@ intT assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp
     return group_size;
 }
 
-int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*reorder_func)(CSR&, intT*, input_parameters&), bool (*sim_condition)(intT*, intT, intT, intT*, intT, intT, input_parameters&))
+int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*reorder_func)(CSR&, intT*, input_parameters&), bool (*sim_condition)(group_structure& group_struct, intT*, intT, intT, input_parameters&), reorder_info& info)
 {
 
     intT* in_group = new intT[cmat.rows];
@@ -628,10 +628,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
     sort_permutation(perm, in_group, cmat.rows);
 
     intT current_out_group = 0;
-
-    intT group_structure_nzcount;
-
-    intT group_size; 
+   
     intT second_group_size;
 
     intT i, j;
@@ -642,16 +639,17 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
     {
 
         i = perm[ip];
-        intT* group_structure; //holds the nz-structure of the current group 
+
+        group_structure group_struct; //holds the nz-structure of the current group 
 
         if (in_group[i] != -1)
         {
 
-            group_size = assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
+            assign_group(in_group, out_group, perm, cmat.rows, ip, current_out_group);
 
             intT last_checked = -2; //used to jump over already seen (but unassigned) groups;
 
-            make_group_structure(group_structure, group_structure_nzcount, cmat.ja[i], cmat.nzcount[i], params);
+            make_group_structure(group_struct, cmat.ja[i], cmat.nzcount[i], params);
 
             //check all (groups of) rows after i; 
             for (intT jp = ip + 1; jp < cmat.rows; jp++)
@@ -671,18 +669,20 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
                     }
                     //---
 
-                    if (sim_condition(group_structure, group_structure_nzcount, group_size, cmat.ja[j], cmat.nzcount[j], second_group_size, params))
-                    {
 
+                    info.comparisons++;
+                    if (sim_condition(group_struct, cmat.ja[j], cmat.nzcount[j], second_group_size, params))
+                    {
                         assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
-                        update_group_structure(group_structure, group_structure_nzcount, group_size, cmat.ja[j], cmat.nzcount[j], second_group_size, params);
+                        update_group_structure(group_struct, cmat.ja[j], cmat.nzcount[j], second_group_size, params);
                     }
                 }
             }
-
-            if (group_structure_nzcount > 0) delete[] group_structure;
             current_out_group++;
         }
+
+        info.skipped += group_struct.skipped;
+        group_struct.clean();
     }
 
 
@@ -692,134 +692,29 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
 }
 
-int make_group_structure(intT* &group_structure, intT &group_structure_nzcount, intT* cols_A, intT len_A, input_parameters &params)
-{
-    if (len_A == 0) 
-    {
-        group_structure_nzcount = 0;
-        return 0;
-    }
-    if (params.reorder_algo == "saad")
-    {
-        group_structure = new intT[len_A];
-        group_structure_nzcount = len_A;
-        std::copy(cols_A, cols_A + len_A, group_structure);
-    }
-    else if (params.reorder_algo == "saad_blocks")
-    {
-
-        intT block_size = params.algo_block_size;
-        group_structure = new intT[len_A];
-        
-        intT current_block;
-        intT group_idx = 0;
-        for (intT i = 0; i < len_A; i++)
-        {
-            current_block = cols_A[i] / block_size;
-            group_structure[group_idx] = current_block;
-            while (i < len_A && cols_A[i] / block_size == current_block) i++;
-            group_idx++;
-        }
-        group_structure_nzcount = group_idx;
-    }
-    else
-    {
-        return 1;
-    }
-    return 0;
-}
-
-int update_group_structure(intT*&  group_structure, intT& group_structure_nzcount, intT& group_size, intT* cols_A, intT len_A, intT A_group_size, input_parameters& params)
-{
-
-    //merges a blocked compressed row (group_structure) and a compressed row (cols_A) to update the blocked compressed row. 
-
-    group_size += A_group_size;
-
-    if (params.hierarchic_merge == 0) return 0;
-
-    intT block_size;
-    if (params.reorder_algo == "saad") block_size = 1;
-    else if (params.reorder_algo == "saad_blocks") block_size = params.algo_block_size;
-    else return 1; //unknown reordering algorithm
-
-    if (len_A + group_structure_nzcount == 0) return 0;
-
-    intT* new_group_structure = new intT[len_A + group_structure_nzcount];
-    intT group_idx = 0;
-    intT new_group_idx = 0;
-    intT j = 0;
-    intT current_block = 0;
-    while (group_idx < group_structure_nzcount && j < len_A)
-    {
-        if (group_structure[group_idx] < cols_A[j] / block_size)
-        {
-            new_group_structure[new_group_idx] = group_structure[group_idx];
-            group_idx++;
-            new_group_idx++;
-        }
-        else if (group_structure[group_idx] > cols_A[j] / block_size)
-        {
-            new_group_structure[new_group_idx] = cols_A[j] / block_size;
-            new_group_idx++;
-            current_block = cols_A[j] / block_size;
-            while (j < len_A && cols_A[j] / block_size == current_block) j++;
-        }
-        else if (group_idx < group_structure_nzcount)
-        {
-            new_group_structure[new_group_idx] = group_structure[group_idx];
-            new_group_idx++;
-            group_idx++;
-            current_block = cols_A[j] / block_size;
-            while (j < len_A && cols_A[j] / block_size == current_block) j++;
-        }
-    }
-
-    while (group_idx < group_structure_nzcount)
-    {
-        new_group_structure[new_group_idx] = group_structure[group_idx];
-        new_group_idx++;
-        group_idx++;
-    }
-
-    while (j < len_A)
-    {
-        current_block = cols_A[j] / block_size;
-        new_group_structure[new_group_idx] = current_block;
-        new_group_idx++;
-        while (j < len_A && cols_A[j] / block_size == current_block) j++;
-    }
-
-    if (group_structure) delete[] group_structure;
-    group_structure = new_group_structure;
-    group_structure_nzcount = new_group_idx;
-
-    return 0;
-}
-
-int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group)
+int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group, reorder_info& info)
 {  
     if (params.reorder_algo == "saad")
-        saad_reordering(cmat, params, out_group, hash_reordering, scalar_condition);
+        saad_reordering(cmat, params, out_group, hash_reordering, scalar_condition, info);
     else if (params.reorder_algo == "saad_blocks")
-        saad_reordering(cmat, params, out_group, hash_reordering, scalar_block_condition);
+        saad_reordering(cmat, params, out_group, hash_reordering, scalar_block_condition, info);
     else
         std::cout << "UNKNONW ALGORITMH -->" << params.reorder_algo << "<-- in saad reordering" << std::endl;
 }
 
-bool scalar_condition(intT* cols_A, intT len_A, intT group_size_A, intT* cols_B, intT len_B, intT group_size_B, input_parameters &params)
+bool scalar_condition(group_structure& group_struct, intT* cols_B, intT len_B, intT group_size_B, input_parameters& params)
 {
     float eps = params.eps;
-    if (len_A == 0 && len_B == 0) return true;
-    if (len_A == 0 || len_B == 0) return false;
+    if (group_struct.len == 0 && len_B == 0) return true;
+    if (group_struct.len == 0 || len_B == 0) return false;
 
     intT count = 0;
     intT i = 0, j = 0;
 
-    while (i < len_A && j < len_B)
+    while (i < group_struct.len && j < len_B)
     {
-        if (cols_A[i] < cols_B[j]) i++;
-        else if (cols_A[i] > cols_B[j]) j++;
+        if (group_struct.structure[i] < cols_B[j]) i++;
+        else if (group_struct.structure[i] > cols_B[j]) j++;
         else
         {
             i++;
@@ -829,15 +724,16 @@ bool scalar_condition(intT* cols_A, intT len_A, intT group_size_A, intT* cols_B,
     }
 
     bool result;
-    if (params.similarity_func == "hamming") result = len_A + len_B - (2 * count) < eps * params.A_cols;
-    else if (params.similarity_func == "scalar") result = (std::pow(count, 2) > std::pow(eps, 2) * len_A * len_B);
-    else if (params.similarity_func == "jaccard") result = (1.0 * count) / (len_A + len_B - count) > eps;
+    if (params.similarity_func == "hamming") result = group_struct.len + len_B - (2 * count) < eps * params.A_cols;
+    else if (params.similarity_func == "scalar") result = (std::pow(count, 2) > std::pow(eps, 2) * group_struct.len * len_B);
+    else if (params.similarity_func == "jaccard") result = (1.0 * count) / (group_struct.len + len_B - count) > eps;
 
     return result;
 
 }
 
-bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount, intT group_size, intT* cols_B, intT len_B, intT group_size_B, input_parameters& params)
+///DEPRECATED
+/*bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount, intT group_size, intT* cols_B, intT len_B, intT group_size_B, input_parameters& params)
 {
 
     float eps = params.eps;
@@ -882,6 +778,7 @@ bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount,
 
     return result;
 }
+*/
 
 int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt)
 {
@@ -939,4 +836,166 @@ int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT
     cleanCSR(cmat_cpy);
     delete[] perm;
     delete[] main_partition;
+}
+
+bool scalar_block_condition(group_structure& group_struct, intT* cols_B, intT len_B, intT group_size_B, input_parameters& params)
+{
+    float eps = params.eps;
+    intT block_size = params.algo_block_size;
+    if (len_B == 0 && group_struct.len == 0) return true;
+    if (len_B == 0 || group_struct.len == 0) return false;
+
+    intT modB;
+    intT len_mod_B = 0; //counts the size of cols_B when partitioned with block_size;
+    for (intT j = 0; j < len_B;)
+    {
+        len_mod_B++;
+        modB = cols_B[j] / block_size;
+        while (j < len_B && cols_B[j] / block_size == modB) j++;
+    }
+
+    intT group_idx = 0;
+    intT j = 0;
+    intT count = 0;
+    intT modA;
+    while (group_idx < group_struct.len && j < len_B)
+    {
+        modA = group_struct.structure[group_idx];
+        modB = cols_B[j] / block_size;
+        if (group_struct.structure[group_idx] == modB)
+        {
+            count++;
+            modA++;
+            modB++;
+        }
+
+        while (group_idx < group_struct.len && group_struct.structure[group_idx] < modB) group_idx++;
+        while (j < len_B && cols_B[j] / block_size < modA) j++;
+    }
+
+
+
+    bool result;
+    if (params.similarity_func == "hamming") result = len_mod_B + group_struct.len- (2 * count) < eps * params.A_cols;
+    else if (params.similarity_func == "scalar") result = (std::pow(count, 2) > std::pow(eps, 2) * group_struct.len * len_mod_B);
+    else if (params.similarity_func == "jaccard") result = (1.0 * count) / (len_mod_B + group_struct.len - count) > eps;
+
+    if (result && params.merge_limit != 0)
+    {
+        float limit_factor;
+        if (params.merge_limit == -1) limit_factor = 1 + 2. * ((1. - eps) / (3. - eps)); // the limit on the column number relative increase;
+        else limit_factor = 1 + params.merge_limit;
+
+        if ((group_struct.len + len_mod_B - count) > limit_factor * group_struct.original_columns) //checks that the new number of columns is smaller than the bound
+        {
+            result = false;
+            group_struct.skipped++;
+        }
+
+    }
+    return result;
+}
+int update_group_structure(group_structure& group_struct, intT* cols_A, intT len_A, intT A_group_size, input_parameters& params)
+{
+    //merges a blocked compressed row (group_structure) and a compressed row (cols_A) to update the blocked compressed row. 
+
+    group_struct.group_size += A_group_size;
+
+    if (params.hierarchic_merge == 0) return 0;
+
+    intT block_size;
+    if (params.reorder_algo == "saad") return 0; //do not use advanced merging for saad algorithm
+    else if (params.reorder_algo == "saad_blocks") block_size = params.algo_block_size;
+    else return 1; //unknown reordering algorithm
+
+    if (len_A + group_struct.len == 0) return 0;
+
+
+    intT* new_group_structure = new intT[len_A + group_struct.len];
+    intT group_idx = 0;
+    intT new_group_idx = 0;
+    intT j = 0;
+    intT current_block = 0;
+    while (group_idx < group_struct.len && j < len_A)
+    {
+        if (group_struct.structure[group_idx] < cols_A[j] / block_size)
+        {
+            new_group_structure[new_group_idx] = group_struct.structure[group_idx];
+            group_idx++;
+            new_group_idx++;
+        }
+        else if (group_struct.structure[group_idx] > cols_A[j] / block_size)
+        {
+            new_group_structure[new_group_idx] = cols_A[j] / block_size;
+            new_group_idx++;
+            current_block = cols_A[j] / block_size;
+            while (j < len_A && cols_A[j] / block_size == current_block) j++;
+        }
+        else if (group_idx < group_struct.len)
+        {
+            new_group_structure[new_group_idx] = group_struct.structure[group_idx];
+            new_group_idx++;
+            group_idx++;
+            current_block = cols_A[j] / block_size;
+            while (j < len_A && cols_A[j] / block_size == current_block) j++;
+        }
+    }
+
+    while (group_idx < group_struct.len)
+    {
+        new_group_structure[new_group_idx] = group_struct.structure[group_idx];
+        new_group_idx++;
+        group_idx++;
+    }
+
+    while (j < len_A)
+    {
+        current_block = cols_A[j] / block_size;
+        new_group_structure[new_group_idx] = current_block;
+        new_group_idx++;
+        while (j < len_A && cols_A[j] / block_size == current_block) j++;
+    }
+
+    if (group_struct.structure) delete[] group_struct.structure;
+    group_struct.structure = new_group_structure;
+    group_struct.len = new_group_idx;
+
+    return 0;
+}
+int make_group_structure(group_structure& group_struct, intT* cols_A, intT len_A, input_parameters& params)
+{
+    if (len_A == 0)
+    {
+        group_struct.len = 0;
+        return 0;
+    }
+    if (params.reorder_algo == "saad")
+    {
+        group_struct.structure = new intT[len_A];
+        group_struct.len = len_A;
+        std::copy(cols_A, cols_A + len_A, group_struct.structure);
+    }
+    else if (params.reorder_algo == "saad_blocks")
+    {
+
+        intT block_size = params.algo_block_size;
+        group_struct.structure = new intT[len_A];
+
+        intT current_block;
+        intT group_idx = 0;
+        for (intT i = 0; i < len_A; i++)
+        {
+            current_block = cols_A[i] / block_size;
+            group_struct.structure[group_idx] = current_block;
+            while (i < len_A && cols_A[i] / block_size == current_block) i++;
+            group_idx++;
+        }
+        group_struct.len = group_idx;
+        group_struct.original_columns = group_idx;
+    }
+    else
+    {
+        return 1;
+    }
+    return 0;
 }
