@@ -711,11 +711,10 @@ bool scalar_condition(group_structure& group_struct, intT* cols_B, intT len_B, i
     intT count = 0;
     intT i = 0, j = 0;
 
-    std::cout << "comparing!" << std::endl;
     while (i < group_struct.len && j < len_B)
     {
         if (group_struct.structure[i] < cols_B[j]) i++;
-        else if (group_struct.structure > cols_B[j]) j++;
+        else if (group_struct.structure[i] > cols_B[j]) j++;
         else
         {
             i++;
@@ -723,8 +722,6 @@ bool scalar_condition(group_structure& group_struct, intT* cols_B, intT len_B, i
             count++;
         }
     }
-
-    std::cout << "comparing!" << count << std::endl;
 
     bool result;
     if (params.similarity_func == "hamming") result = group_struct.len + len_B - (2 * count) < eps * params.A_cols;
