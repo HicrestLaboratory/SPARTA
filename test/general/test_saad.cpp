@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
         skip_vec.push_back(info.skipped);
         comparison_vec.push_back(info.comparisons);
 
-        info.clean()
+        info.clean();
         cleanVBS(vbmat_algo);
     }
     
