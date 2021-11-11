@@ -31,6 +31,24 @@ struct group_structure
 	}
 };
 
+struct reorder_info 
+{
+	int skipped;
+	int comparisons;
+
+	reorder_info()
+	{
+		skipped = 0;
+		comparisons = 0;
+	}
+
+	void clean()
+	{
+		skipped = 0;
+		comparisons = 0;
+	}
+};
+
 intT count_groups(intT* grp, intT grp_len);
 
 int grp_to_partition(intT* grp, intT grp_len, intT* partition);
@@ -59,9 +77,9 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params);
 
 intT assign_group(intT* in_group, intT* out_group, intT* perm, intT jp, intT new_group_idx);
 
-int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int(*reorder_func)(CSR&, intT*, input_parameters&), bool(*sim_condition)(group_structure& group_struct, intT*, intT, intT, input_parameters&));
+int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int(*reorder_func)(CSR&, intT*, input_parameters&), bool(*sim_condition)(group_structure& group_struct, intT*, intT, intT, input_parameters&), reorder_info& info);
 
-int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group);
+int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group, reorder_info& info);
 
 bool scalar_condition(group_structure& group_struct, intT* cols_B, intT len_B, intT group_size_B, input_parameters& params);
 

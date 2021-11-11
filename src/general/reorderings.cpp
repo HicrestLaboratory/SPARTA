@@ -618,7 +618,7 @@ intT assign_group(intT* in_group, intT* out_group, intT* perm, intT len, intT jp
     return group_size;
 }
 
-int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*reorder_func)(CSR&, intT*, input_parameters&), bool (*sim_condition)(group_structure& group_struct, intT*, intT, intT, input_parameters&))
+int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*reorder_func)(CSR&, intT*, input_parameters&), bool (*sim_condition)(group_structure& group_struct, intT*, intT, intT, input_parameters&), reorder_info& info)
 {
 
     intT* in_group = new intT[cmat.rows];
@@ -640,7 +640,6 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
         i = perm[ip];
 
-        std::cout << "init struct" << std::endl;
         group_structure group_struct; //holds the nz-structure of the current group 
 
         if (in_group[i] != -1)
@@ -650,7 +649,6 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
             intT last_checked = -2; //used to jump over already seen (but unassigned) groups;
 
-            std::cout << "making struct" << std::endl;
             make_group_structure(group_struct, cmat.ja[i], cmat.nzcount[i], params);
 
             //check all (groups of) rows after i; 
@@ -671,6 +669,8 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
                     }
                     //---
 
+
+                    info.comparisons++;
                     if (sim_condition(group_struct, cmat.ja[j], cmat.nzcount[j], second_group_size, params))
                     {
                         assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
@@ -681,6 +681,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
             current_out_group++;
         }
 
+        info.skipped += group_struct.skipped;
         group_struct.clean();
     }
 
@@ -691,13 +692,12 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
 }
 
-
-int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group)
+int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group, reorder_info& info)
 {  
     if (params.reorder_algo == "saad")
-        saad_reordering(cmat, params, out_group, hash_reordering, scalar_condition);
+        saad_reordering(cmat, params, out_group, hash_reordering, scalar_condition, info);
     else if (params.reorder_algo == "saad_blocks")
-        saad_reordering(cmat, params, out_group, hash_reordering, scalar_block_condition);
+        saad_reordering(cmat, params, out_group, hash_reordering, scalar_block_condition, info);
     else
         std::cout << "UNKNONW ALGORITMH -->" << params.reorder_algo << "<-- in saad reordering" << std::endl;
 }
@@ -732,7 +732,8 @@ bool scalar_condition(group_structure& group_struct, intT* cols_B, intT len_B, i
 
 }
 
-bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount, intT group_size, intT* cols_B, intT len_B, intT group_size_B, input_parameters& params)
+///DEPRECATED
+/*bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount, intT group_size, intT* cols_B, intT len_B, intT group_size_B, input_parameters& params)
 {
 
     float eps = params.eps;
@@ -777,6 +778,7 @@ bool scalar_block_condition(intT* group_structure, intT group_structure_nzcount,
 
     return result;
 }
+*/
 
 int group_to_VBS(CSR& cmat, intT* grouping, intT* compressed_dim_partition, intT nB, VBS& vbmat, int vbmat_blocks_fmt, int vbmat_entries_fmt)
 {
@@ -878,16 +880,19 @@ bool scalar_block_condition(group_structure& group_struct, intT* cols_B, intT le
     else if (params.similarity_func == "scalar") result = (std::pow(count, 2) > std::pow(eps, 2) * group_struct.len * len_mod_B);
     else if (params.similarity_func == "jaccard") result = (1.0 * count) / (len_mod_B + group_struct.len - count) > eps;
 
-    if (result && params.merge_limit)
+    if (result && params.merge_limit != 0)
     {
-        float limit_factor = (1 + 2. * ((1. - eps) / (3. - eps))); // the limit on the column number relative increase;
-        if ((group_struct.len + len_mod_B - count) > limit_factor*group_struct.original_columns) //checks that the new number of columns is smaller than the bound
-        { 
+        float limit_factor;
+        if (params.merge_limit == -1) limit_factor = 1 + 2. * ((1. - eps) / (3. - eps)); // the limit on the column number relative increase;
+        else limit_factor = 1 + params.merge_limit;
+
+        if ((group_struct.len + len_mod_B - count) > limit_factor * group_struct.original_columns) //checks that the new number of columns is smaller than the bound
+        {
             result = false;
             group_struct.skipped++;
         }
-    }
 
+    }
     return result;
 }
 int update_group_structure(group_structure& group_struct, intT* cols_A, intT len_A, intT A_group_size, input_parameters& params)
@@ -899,7 +904,7 @@ int update_group_structure(group_structure& group_struct, intT* cols_A, intT len
     if (params.hierarchic_merge == 0) return 0;
 
     intT block_size;
-    if (params.reorder_algo == "saad") block_size = 1;
+    if (params.reorder_algo == "saad") return 0; //do not use advanced merging for saad algorithm
     else if (params.reorder_algo == "saad_blocks") block_size = params.algo_block_size;
     else return 1; //unknown reordering algorithm
 

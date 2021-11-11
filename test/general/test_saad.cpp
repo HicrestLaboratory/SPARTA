@@ -55,6 +55,9 @@ int main(int argc, char* argv[]) {
     svi min_block_vec;
     svi max_block_vec;
     vec_d avg_height_vec;
+    vec_d skip_vec;
+    vec_d comparison_vec;
+    reorder_info info;
 
     for (int current_repetition = 0; current_repetition < params.experiment_reps; current_repetition++)
     {
@@ -70,7 +73,7 @@ int main(int argc, char* argv[]) {
 
         //run the reordering algo
         intT* hash_groups = new intT[params.A_rows];
-        saad_reordering(input_cmat, params, hash_groups);
+        saad_reordering(input_cmat, params, hash_groups, info);
         
         if (params.save_reordering)
         {
@@ -106,7 +109,10 @@ int main(int argc, char* argv[]) {
         nz_blocks_vec.push_back(tot_nz_blocks);
         min_block_vec.push_back(min_block_H);
         max_block_vec.push_back(max_block_H);
+        skip_vec.push_back(info.skipped);
+        comparison_vec.push_back(info.comparisons);
 
+        info.clean()
         cleanVBS(vbmat_algo);
     }
     
@@ -134,6 +140,9 @@ int main(int argc, char* argv[]) {
 
     output_couple(output_names, output_values, "VBS_max_block_H", mean(max_block_vec));
     output_couple(output_names, output_values, "VBS_max_block_H_error", std_dev(max_block_vec));
+
+    output_couple(output_names, output_values, "avg_skipped", mean(skip_vec));
+    output_couple(output_names, output_values, "avg_comparisons", mean(comparison_vec));
 
 
 
