@@ -1,8 +1,8 @@
 #!/bin/bash
 
-OPTS="-r 3 -v -1 -i 4 -R saad_blocks"
+OPTS="-r 1 -v -1 -i 4 -R saad_blocks"
 
-RESULTS="results/test_reordering_blocked_synth_27_10.txt"
+RESULTS="results/test_reordering_blocked_synth_12_11.txt"
 :>${RESULTS};
 
 m_shapes=(2048);
@@ -17,6 +17,8 @@ q_value=(0.01 0.02 0.05 0.1 0.2 0.5);
 
 F_value=(scalar jaccard);
 M_value=(0 1);
+l_value=(0.25 0.5 1 2);
+
 
 for m in ${m_shapes[@]}; do
   for k in ${k_shapes[@]}; do
