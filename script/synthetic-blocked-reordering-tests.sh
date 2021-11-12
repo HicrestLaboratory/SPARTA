@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OPTS="-r 1 -v -1 -i 4 -R saad_blocks"
+OPTS="-r 5 -v -1 -i 4 -R saad_blocks"
 
 RESULTS="results/test_reordering_blocked_synth_12_11.txt"
 :>${RESULTS};
