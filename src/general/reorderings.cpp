@@ -892,13 +892,10 @@ bool scalar_block_condition(group_structure& group_struct, intT* cols_B, intT le
             limit_factor = 1 + params.merge_limit;
         }
 
-
-        std::cout << "limit factor" << limit_factor << std::endl;
-
         if ((group_struct.len + len_mod_B - count) > limit_factor * group_struct.original_columns) //checks that the new number of columns is smaller than the bound
         {
             result = false;
-            group_struct.skipped++;
+            group_struct.skipped++; //count the number of lines skipped because of the merge bound
         }
 
     }
