@@ -123,6 +123,7 @@ to_display = ["input_entries_density",
               "similarity_func",
               "scramble",
               "hierarchic_merge"
+              "
         ]
 
 for var in to_display:

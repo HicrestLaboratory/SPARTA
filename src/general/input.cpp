@@ -45,6 +45,7 @@ int output_couple_parameters(input_parameters& params, string& output_names, str
     output_couple(output_names, output_values, "epsilon", params.eps);
     output_couple(output_names, output_values, "similarity_func", params.similarity_func);
     output_couple(output_names, output_values, "hierarchic_merge", params.hierarchic_merge);
+    output_couple(output_names, output_values, "merge_limit", params.merge_limit);
 
     output_couple(output_names, output_values, "scramble", params.scramble);
     output_couple(output_names, output_values, "Warmup", params.warmup);
@@ -59,7 +60,7 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
     //terminal options loop
     opterr = 0;
     char c;
-    while ((c = getopt(argc, argv, "a:b:B:c:i:q:e:f:F:m:M:n:p:P:r:R:k:s:S:v:w:z")) != -1)
+    while ((c = getopt(argc, argv, "a:b:B:c:i:q:e:f:F:l:m:M:n:p:P:r:R:k:s:S:v:w:z")) != -1)
         switch (c)
         {
         case 'i':// select input example

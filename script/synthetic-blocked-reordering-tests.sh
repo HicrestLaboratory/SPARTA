@@ -8,7 +8,7 @@ RESULTS="results/test_reordering_blocked_synth_12_11.txt"
 m_shapes=(2048);
 k_shapes=(2048);
 
-e_value=(0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9);
+e_value=(0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85 0.9 0.999);
 
 P_value=(32, 64, 128);
 
@@ -17,7 +17,7 @@ q_value=(0.01 0.02 0.05 0.1 0.2 0.5);
 
 F_value=(scalar jaccard);
 M_value=(0 1);
-l_value=(0.25 0.5 1 2);
+l_value=(-1 0.25 0.5 1 2);
 
 
 for m in ${m_shapes[@]}; do
