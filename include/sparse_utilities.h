@@ -121,6 +121,8 @@ int convert_to_CSR(const DataT* in_mat, intT mat_rows, intT mat_cols, int mat_fm
 
 int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt);
 
+int random_CSR(CSR& cmat, intT rows, intT cols, float sparsity, int cmat_fmt);
+
 int matprint(const CSR& cmat);
 
 int copy(const CSR& in_cmat, CSR& out_cmat);

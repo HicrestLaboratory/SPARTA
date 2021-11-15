@@ -814,7 +814,7 @@ int cleanCSR(CSR& cmat)
     main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
 
     for (intT i = 0; i < main_dim; i++) {
-        if (cmat.nzcount[i] > 0) {
+        if (cmat.nzcount && cmat.nzcount[i] > 0) {
             if (cmat.ma) delete[] cmat.ma[i];
             delete[] cmat.ja[i];
         }
@@ -961,7 +961,6 @@ int convert_to_CSR(const DataT* in_mat, intT mat_rows, intT mat_cols, int mat_fm
     return 0;
 }
 
-
 int convert_to_CSR(const VBS& vbmat, CSR& cmat, int csr_fmt = 0)
 {
 
@@ -1081,6 +1080,31 @@ int convert_to_CSR_ineff(const VBS& vbmat, CSR& cmat, int csr_fmt)
     delete[] mat;
 
     return 0;
+}
+
+int random_CSR(CSR& cmat, intT rows, intT cols, float sparsity, int cmat_fmt)
+{
+    cleanCSR(cmat);
+
+    cmat.rows = mat_rows;
+    cmat.cols = mat_cols;
+    cmat.fmt = cmat_fmt;
+
+    if (rows == 0 || cols == 0 || sparsity == 0) return 0;
+
+    intT nzs = (intT)(sparsity * rows * cols);
+    if (nzs < 1) nzs = 1;
+
+    intT main_dim = cmat_fmt ? cols : rows;
+    intT second_dim = cmat_fmt ? rows : cols;
+
+    cmat.nzcount = new intT[cmat_main_dim];
+    cmat.ja = new intT * [cmat_main_dim];
+    cmat.ma = new DataT * [cmat_main_dim];
+
+
+
+
 }
 
 int matprint(const CSR& cmat)
@@ -1287,6 +1311,12 @@ intT count_nnz_blocks(VBS& vbmat)
     }
     return nz_blocks;
 }
+
+
+
+
+
+
 
 //TODO get_pattern (and other pattern related functions) can be made more efficient by storing compressed blocks instead of an array of blocks
 

@@ -248,6 +248,9 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
 
 int get_input_CSR(CSR& cmat_A, input_parameters& params)
 {
+
+    std::srand(params.seed);
+
     //INPUT1: RANDOM CSR
     //create a random sparse matrix
     if (params.input_type == 1) {
