@@ -126,7 +126,7 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
         case 'l': //merge limit
                   //if -1, use the theoretical limit
             params.merge_limit = stof(optarg);
-            if (params.merge_limit < 0 && params.density != -1) {
+            if (params.merge_limit < 0 && params.merge_limit != -1) {
                 fprintf(stderr, "merge limit (option -l) must be either a positive float, -1 or 0");
                 return 1;
             }
