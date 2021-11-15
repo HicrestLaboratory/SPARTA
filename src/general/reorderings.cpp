@@ -883,8 +883,17 @@ bool scalar_block_condition(group_structure& group_struct, intT* cols_B, intT le
     if (result && params.merge_limit != 0)
     {
         float limit_factor;
-        if (params.merge_limit == -1) limit_factor = 1 + 2. * ((1. - eps) / (3. - eps)); // the limit on the column number relative increase;
-        else limit_factor = 1 + params.merge_limit;
+        if (params.merge_limit == -1)
+        {
+            limit_factor = 1 + 2. * ((1. - eps) / (3. - eps)); // the limit on the column number relative increase;
+        }
+        else
+        {
+            limit_factor = 1 + params.merge_limit;
+        }
+
+
+        std::cout << "limit factor" << limit_factor << std::endl;
 
         if ((group_struct.len + len_mod_B - count) > limit_factor * group_struct.original_columns) //checks that the new number of columns is smaller than the bound
         {
