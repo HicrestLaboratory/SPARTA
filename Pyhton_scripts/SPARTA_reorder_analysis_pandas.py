@@ -15,11 +15,11 @@ import seaborn as sns
 from scipy import interpolate
 
 
-saad = True
+saad = False
 if saad:
     input_file = "../results/test_reordering_blocked_synth_saad_27_10.csv"
 else:
-    input_file = "../results/test_reordering_blocked_synth_27_10.csv"
+    input_file = "../results/test_reordering_blocked_synth_12_11.csv"
 #    input_file = "../results/real_reordering_results_25_10.csv"
 
                     
