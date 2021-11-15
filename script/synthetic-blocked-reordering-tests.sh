@@ -17,7 +17,7 @@ q_value=(0.01 0.02 0.05 0.1 0.2 0.5);
 
 F_value=(scalar jaccard);
 M_value=(0 1);
-l_value=(-1 0.25 0.5 1 2);
+l_value=(-1 0 0.25 0.5 0.75 1 2);
 
 
 for m in ${m_shapes[@]}; do
@@ -30,7 +30,7 @@ for m in ${m_shapes[@]}; do
 		for F in ${F_value[@]}; do
 		  for l in ${l_value[@]}; do 
 		    echo $m $n $e $p $P $b $q $F $M $l
-	            ./programs/general/test_saad ${OPTS} -m $m -k $k -e $e -p $P -P $P -b $b -q $q -F $F -M $M -l $l>> ${RESULTS}
+	            ./programs/general/test_saad ${OPTS} -m $m -k $k -e $e -p $P -P $P -b $b -q $q -F $F -M $M -l $l >> ${RESULTS}
 	 	  done
                 done
 	      done
