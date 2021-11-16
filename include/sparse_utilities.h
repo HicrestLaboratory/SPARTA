@@ -111,6 +111,8 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt);
 
 int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* rowpart, intT block_cols, intT* colpart, int vbmat_block_fmt, int vbmat_entries_fmt);
 
+int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT row_block_size, intT col_block_size, int vbmat_block_fmt, int vbmat_entries_fmt);
+
 int matprint(const VBS& vbmat);
 
 int cleanCSR(CSR& cmat);

@@ -81,6 +81,8 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int(*r
 
 int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group, reorder_info& info);
 
+int saad_reordering(CSR& input_cmat, VBS& output_vbmat, intT algo_block_size, int vbmat_blocks_fmt, int vbmat_entries_fmt, input_parameters& params, reorder_info& info);
+
 bool scalar_condition(group_structure& group_struct, intT* cols_B, intT len_B, intT group_size_B, input_parameters& params);
 
 bool scalar_block_condition(group_structure &group_struct, intT* cols_B, intT len_B, intT group_size_B, input_parameters& params);

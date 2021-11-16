@@ -31,6 +31,108 @@
 
 using namespace std;
 
+
+struct Info_Collector
+{
+    svi total_area_vec;
+    svi block_rows_vec;
+    svi nz_blocks_vec;
+    svi min_block_vec;
+    svi max_block_vec;
+    vec_d avg_height_vec;
+    vec_d skip_vec;
+    vec_d comparison_vec;
+    vec_d vbs_algo_times;
+    vec_d vbs_perfect_times;
+    vec_d cusparse_times;
+
+    void collect_info_VBS(VBS& vbmat)
+    {
+        //size of minimum, mazimum, average height of nonzero blocks.
+        intT max_block_H = 0;
+        intT min_block_H = INT_MAX;
+        float avg_block_height = 0.;
+        intT tot_nz_blocks = 0;
+        for (intT i = 0; i < vbmat_algo.block_rows; i++)
+        {
+            intT b_size = vbmat_algo.row_part[i + 1] - vbmat.row_part[i];
+            avg_block_height += b_size * vbmat.nzcount[i];
+            tot_nz_blocks += vbmat.nzcount[i];
+            if (b_size > max_block_H) max_block_H = b_size;
+            if (b_size < min_block_H) min_block_H = b_size;
+        }
+        avg_block_height /= tot_nz_blocks;
+
+        //accumulate results in vectors
+        avg_height_vec.push_back(avg_block_height);
+        total_area_vec.push_back(vbmat.nztot);
+        block_rows_vec.push_back(vbmat.block_rows);
+        nz_blocks_vec.push_back(tot_nz_blocks);
+        min_block_vec.push_back(min_block_H);
+        max_block_vec.push_back(max_block_H);
+    }
+
+    void collect_info_reordering(reorder_info re_info)
+    {
+        skip_vec.push_back(re_info.skipped);
+        comparison_vec.push_back(re_info.comparisons);
+        info.clean();
+    }
+
+    void clean()
+    {
+        total_area_vec.clear();
+        block_rows_vec.clear();
+        nz_blocks_vec.clear();
+        min_block_vec.clear();
+        max_block_vec.clear();
+        avg_height_vec.clear();
+        skip_vec.clear();
+        comparison_vec.clear();
+        vbs_algo_times.clear();
+        cusparse_times.clear();
+        vbs_perfect_times.clear();
+    }
+
+    void output_all(string& output_names, string& output_values)
+    {
+        output_couple(output_names, output_values, "VBS_avg_nzblock_height", mean(avg_height_vec));
+        output_couple(output_names, output_values, "VBS_avg_nzblock_height_error", std_dev(avg_height_vec));
+
+        output_couple(output_names, output_values, "VBS_total_nonzeros", mean(total_area_vec));
+        output_couple(output_names, output_values, "VBS_total_nonzeros_error", std_dev(total_area_vec));
+
+        output_couple(output_names, output_values, "VBS_block_rows", mean(block_rows_vec));
+        output_couple(output_names, output_values, "VBS_block_rows_error", std_dev(block_rows_vec));
+
+        output_couple(output_names, output_values, "VBS_nz_blocks", mean(nz_blocks_vec));
+        output_couple(output_names, output_values, "VBS_nz_blocks_error", std_dev(nz_blocks_vec));
+
+        output_couple(output_names, output_values, "VBS_min_block_H", mean(min_block_vec));
+        output_couple(output_names, output_values, "VBS_min_block_H_error", std_dev(min_block_vec));
+
+        output_couple(output_names, output_values, "VBS_max_block_H", mean(max_block_vec));
+        output_couple(output_names, output_values, "VBS_max_block_H_error", std_dev(max_block_vec));
+
+        output_couple(output_names, output_values, "avg_skipped", mean(skip_vec));
+        output_couple(output_names, output_values, "skipped_std", std_dev(skip_vec));
+
+        output_couple(output_names, output_values, "avg_comparisons", mean(comparison_vec));
+        output_couple(output_names, output_values, "comparisons_std", std_dev(comparison_vec));
+
+
+        output_couple(output_names, output_values, "VBSmm_algo_mean(ms)", mean(vbs_algo_times));
+        output_couple(output_names, output_values, "VBSmm_algo_std", std_dev(vbs_algo_times));
+
+        output_couple(output_names, output_values, "VBSmm_perfect_mean(ms)", mean(vbs_perfect_times));
+        output_couple(output_names, output_values, "VBSmm_perfect_std", std_dev(vbs_perfect_times));
+
+        output_couple(output_names, output_values, "cusparse_spmm_mean(ms)", mean(cusparse_times));
+        output_couple(output_names, output_values, "cusparse_spmm_std", std_dev(cusparse_times));
+
+    }
+};
+
 int main(int argc, char* argv[]) {
 
     input_parameters params;
@@ -39,49 +141,17 @@ int main(int argc, char* argv[]) {
 
     params.cmat_A_fmt = 1;
 
-    CSR cmat_A; //this will hold the CSR matrix
-  
+    CSR cmat_A;
 
-    //___________________________________________
-    //*******************************************
-    //		END OF INPUT
-    //cmat must hold a proper CSR matrix at this point
-    //******************************************
-
-    if (params.verbose > 0) cout << "INPUT ACQUIRED." << endl;
-    if (params.verbose > 1) matprint(cmat_A);
-
-    //update rows and cols count to input values
-    
-    intT A_rows = params.A_rows;
-    intT A_cols = params.A_cols;
-    intT B_rows = A_cols;
-    intT B_cols = params.B_cols;
     int mat_B_fmt = 1;
-
-    intT C_rows = A_rows;
-    intT C_cols = B_cols;
-
-
     int vbmat_blocks_fmt = 1;
     int vbmat_entries_fmt = 1; //cuda needs column-major matrices
 
-    //*******************************************
-    //	 OUTPUT PARAMETERS
-    //******************************************
-
-
     string output_names;
     string output_values;
-
+    reorder_info re_info;
+    Info_Collector info_collector;
     output_couple_parameters(params, output_names, output_values);
-
-
-
-
-
-
-
 
     //*******************************************
     //	 EXPERIMENT LOOP
@@ -93,95 +163,32 @@ int main(int argc, char* argv[]) {
 
         get_input_CSR(cmat_A, params);
 
+        if (params.verbose > 0) cout << "INPUT ACQUIRED." << endl;
+        if (params.verbose > 1) matprint(cmat_A);
 
         //PREPARE THE PERFECTLY-BLOCKED VBS
         VBS vbmat_perfect;
 
+        convert_to_VBS(cmat_A,
+            vbmat_perfect,
+            params.block_size,
+            params.block_size,
+            vbmat_blocks_fmt, vbmat_entries_fmt);
 
-        intT block_rows = A_rows / params.block_size;
-        intT block_cols = A_cols / params.block_size;
-
-        intT* A_row_part = new intT[block_rows + 1]; //partitions have one element more for the rightmost border.
-        intT* A_col_part = new intT[block_cols + 1];
-        partition(A_row_part, 0, cmat_A.rows, params.block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
-        partition(A_col_part, 0, cmat_A.cols, params.block_size);
-
-        //Create a VBS with fixed block dimension (see input)
-        if (params.algo == 2 or params.algo == -1)
-        {
-
-            if ((A_rows % params.block_size != 0) or (A_cols % params.block_size != 0))
-            {
-                std::cout << "WARNING: The row or column dimension of the input matrix is not multiple of the block size " << std::endl;
-            }
-
-            convert_to_VBS(cmat_A,
-                vbmat_perfect,
-                block_rows, A_row_part,
-                block_cols, A_col_part,
-                vbmat_blocks_fmt, vbmat_entries_fmt);
-
-            if (params.verbose > 0) cout << "VBS matrix created." << endl;
-            if (params.verbose > 1) matprint(vbmat_perfect);
-        }
-
-
+        if (params.verbose > 0) cout << "VBS matrix created." << endl;
+        if (params.verbose > 1) matprint(vbmat_perfect);
 
 
         //PREPARE THE SCRAMBLED AND REORDERED VBMAT
         VBS vbmat_algo;
 
-        scramble_input(input_cmat, params);
-
-        vbmat_blocks_fmt = 1;
-        vbmat_entries_fmt = 1;
-        algo_block_cols = std::ceil((float)params.A_cols / params.algo_block_size);
-
-        //prepare the column partition
-        intT* algo_col_part = new intT[algo_block_cols + 1];
-        partition(algo_col_part, 0, params.A_cols, params.algo_block_size);
-
-        //run the reordering algo
-        intT* hash_groups = new intT[params.A_rows];
-        saad_reordering(input_cmat, params, hash_groups, info);
-
-        //create the block matrix
-        group_to_VBS(input_cmat, hash_groups, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt);
+        saad_reordering(cmat_A, vbmat_algo, params.algo_block_size, vbmat_blocks_fmt, vbmat_entries_fmt, params, re_info);
 
         if (params.verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
         if (params.verbose > 1)    matprint(vbmat_algo);
 
-        delete[] hash_groups;
-        delete[] algo_col_part;
-
-        //size of minimum, mazimum, average height of nonzero blocks.
-        intT max_block_H = 0;
-        intT min_block_H = params.A_rows;
-        float avg_block_height = 0.;
-        intT tot_nz_blocks = 0;
-        for (intT i = 0; i < vbmat_algo.block_rows; i++)
-        {
-            intT b_size = vbmat_algo.row_part[i + 1] - vbmat_algo.row_part[i];
-            avg_block_height += b_size * vbmat_algo.nzcount[i];
-            tot_nz_blocks += vbmat_algo.nzcount[i];
-            if (b_size > max_block_H) max_block_H = b_size;
-            if (b_size < min_block_H) min_block_H = b_size;
-        }
-        avg_block_height /= tot_nz_blocks;
-
-        //accumulate results in vectors
-        avg_height_vec.push_back(avg_block_height);
-        total_area_vec.push_back(vbmat_algo.nztot);
-        block_rows_vec.push_back(vbmat_algo.block_rows);
-        nz_blocks_vec.push_back(tot_nz_blocks);
-        min_block_vec.push_back(min_block_H);
-        max_block_vec.push_back(max_block_H);
-        skip_vec.push_back(info.skipped);
-        comparison_vec.push_back(info.comparisons);
-
-        info.clean();
-
-
+        info_collector.collect_info_VBS(vbmat_algo);
+        info_collector.collect_info_reordering(re_info);
 
         //*******************************************
         //         MULTIPLICATION PHASE
@@ -190,16 +197,13 @@ int main(int argc, char* argv[]) {
         //with a dense one, with benchmarks
         //******************************************
 
-        //keeps track of time
-        float dt;
-        vec_d algo_times;
-        float mean_time;
-        float std_time;
-
+        intT A_rows = params.A_rows;
+        intT A_cols = params.A_cols;
+        intT B_rows = A_cols;
+        intT B_cols = params.B_cols;
+        int mat_B_fmt = 1;
 
         if (params.verbose > 0)        cout << "\n \n ************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl;
-
-        //TODO smart pointers for matrices
 
         DataT* mat_B = new DataT[B_rows * B_cols]{ 0 };
         random_mat(mat_B, B_rows, B_cols, params.B_density); // creates a random DataT matrix filled with 1.000 at a fixed density
@@ -207,134 +211,90 @@ int main(int argc, char* argv[]) {
         if (params.verbose > 0)        std::cout << "Random matrix B created:" << std::endl;
         if (params.verbose > 1)        matprint(mat_B, B_rows, B_cols, B_rows, mat_B_fmt);
 
-        //defining the output matrix C
-
-        DataT* mat_Cgemm;
-
         //--------------------------------------------
-        //      VBS x dense cublas multiplication	
+        //      VBS perfect x dense cublas multiplication	
         //--------------------------------------------
-        if ((params.algo == 2) or (params.algo == -1))
+
+        if (params.verbose > 0)        cout << "Starting VBS-dense cublas multiplication" << endl;
+
+        DataT* mat_Cperfect_block = new DataT[C_rows * C_cols];
+
+        for (int i = -params.warmup; i < 1; i++)//do warmup runs
         {
-
-            if (params.verbose > 0)        cout << "Starting VBS-dense cublas multiplication" << endl;
-
-            DataT* mat_Cblock = new DataT[C_rows * C_cols];
-            int mat_Cblock_fmt = 1;
-
-            algo_times.clear();
-            for (int i = -params.warmup; i < params.experiment_reps; i++)
-            {
-                cublas_blockmat_multiply(vbmat_A, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt, params.n_streams);
-                //only saves non-warmup runs
-                if (i >= 0) algo_times.push_back(dt);
-            }
-
-            mean_time = mean(algo_times);
-            std_time = std_dev(algo_times);
-            output_couple(output_names, output_values, "VBSmm_mean(ms)", mean_time);
-            output_couple(output_names, output_values, "VBSmm_std", std_time);
-
-            if (params.check_correct)
-            {
-                bool vbs_check = equal(C_rows, C_cols, mat_Cgemm, C_cols, 0, mat_Cblock, C_cols, 0, 0.00001f);
-                output_couple(output_names, output_values, "vbs_check", vbs_check);
-            }
-
-            if (params.verbose > 0)
-            {
-                cout << "BlockSparse-Dense multiplication. Time taken(ms): " << mean_time << endl;
-            }
-            if (params.verbose > 1)
-            {
-
-                cout << "BLOCK RESULT" << endl;
-                matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
-            }
-
-            delete[] mat_Cblock;
-
+            float dt = 0;
+            cublas_blockmat_multiply(vbmat_algo, mat_B, B_cols, B_rows, mat_Cperfect_block, C_rows, dt, params.n_streams);
+            if (i >= 0) info_collector.vbs_perfect_times.push_back(dt);
+            if (params.verbose > 0)            cout << "BlockSparse-Dense multiplication. Time taken(ms): " << dt << endl;
         }
+
+        delete[] mat_Cperfect_block;
+        cleanVBS(vbmat_algo);
+
+
+
+        //--------------------------------------------
+        //      VBS algo x dense cublas multiplication	
+        //--------------------------------------------
+        
+        if (params.verbose > 0)        cout << "Starting VBS-dense cublas multiplication" << endl;
+
+        DataT* mat_Cblock = new DataT[C_rows * C_cols];
+
+        for (int i = -params.warmup; i < 1; i++)//do warmup runs
+        {
+            float dt = 0;
+            cublas_blockmat_multiply(vbmat_perfect, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt, params.n_streams);
+            if (i >= 0) info_collector.vbs_algo_times.push_back(dt);
+            if (params.verbose > 0)            cout << "BlockSparse-Dense multiplication. Time taken(ms): " << dt << endl;
+        }
+
+        delete[] mat_Cblock;
+        cleanVBS(vbmat_perfect);
 
         //--------------------------------------------
         //      CSR x Dense cusparse multiplication
         //--------------------------------------------
-        if ((params.algo == 5) or (params.algo == -1))
-            if (typeid(DataT) != typeid(float))
-            {
-                if (params.verbose > 0)         cout << "WARNING: only float supported for CUSPARSE. DataT can be changed in sparse_utilities.h" << endl;
-            }
-            else
-            {
+        if (typeid(DataT) != typeid(float)) cout << "WARNING: only float supported for CUSPARSE. DataT can be changed in sparse_utilities.h" << endl;
 
-                if (params.verbose > 0)        cout << "Starting cusparse-dense cublas multiplication" << endl;
+        if (params.verbose > 0) cout << "Starting cusparse-dense cublas multiplication" << endl;
 
-                DataT* mat_C_csrmm = new DataT[C_rows * C_cols];
-                int mat_C_csrmm_fmt = 1;
+        DataT* mat_C_csrmm = new DataT[C_rows * C_cols];
+        int mat_C_csrmm_fmt = 1;
 
+        //prepare the cusparse CSR format
+        int A_nnz = params.A_nnz;
+        int* csrRowPtr = new int[A_rows + 1];
+        int* csrColInd = new int[A_nnz];
+        float* csrVal = new float[A_nnz];
+        prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
 
-                //TO DO: WRAP all this stuff into cusparse_gemm_custom(cmat, mat_B, B_cols, mat_C, dt)
-                //prepare the cusparse CSR format
-                int A_nnz = params.A_nnz;
-                int* csrRowPtr = new int[A_rows + 1];
-                int* csrColInd = new int[A_nnz];
-                float* csrVal = new float[A_nnz];
-                prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
-
-                algo_times.clear();
-                for (int i = -params.warmup; i < params.experiment_reps; i++)
-                {
-                    cusparse_gemm_custom(A_rows, A_cols, A_nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f, dt);
-                    if (i >= 0) algo_times.push_back(dt);
-                }
-
-                mean_time = mean(algo_times);
-                std_time = std_dev(algo_times);
-                output_couple(output_names, output_values, "cusparse_spmm_mean(ms)", mean_time);
-                output_couple(output_names, output_values, "cusparse_spmm_std", std_time);
-
-                if (params.check_correct)
-                {
-                    bool csr_check = equal(C_rows, C_cols, mat_Cgemm, C_cols, 0, mat_C_csrmm, C_cols, 0, 0.00001f);
-                    output_couple(output_names, output_values, "csr_check", csr_check);
-                }
-
-                if (params.verbose > 0)
-                {
-                    cout << "CSR-Dense cusparse multiplication. Time taken: " << mean_time << endl;
-                }
-                if (params.verbose > 1)
-                {
-
-                    cout << "CSR-dense cusparse:" << endl;
-                    matprint(mat_C_csrmm, C_rows, C_cols, C_rows, 1);
-                }
-
-                delete[] mat_C_csrmm;
-                delete[] csrColInd;
-                delete[] csrRowPtr;
-                delete[] csrVal;
-
-
-    } 
-
-
+        for (int i = -params.warmup; i < 1; i++)
+        {
+            float dt = 0;
+            cusparse_gemm_custom(A_rows, A_cols, A_nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f, dt);
+            if (i >= 0) info_collector.cusparse_times.push_back(dt);
+            if (params.verbose > 0)          cout << "CSR-Dense cusparse multiplication. Time taken: " << dt << endl;
         }
 
+        delete[] mat_C_csrmm;
+        delete[] csrColInd;
+        delete[] csrRowPtr;
+        delete[] csrVal;
+        cleanCSR(cmat_A);
 
-    //cleaning
+        delete[] mat_B;
+
 
     //OUTPUT PHASE
+
+
+    info_collector.output_all(output_names, output_values);
+
     if ((params.verbose == -1) or (params.verbose > 1))
     {
         cout << output_names << endl;
         cout << output_values << endl;
     }
-
-    delete[] mat_B;
-    cleanCSR(cmat_A);
-    if (params.algo == 2 or params.algo == -1) cleanVBS(vbmat_A);
-
 }
  
  

@@ -778,6 +778,185 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT block_rows, intT* row_part,
     return 0;
 }
 
+int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT row_block_size, intT col_block_size, int vbmat_block_fmt, int vbmat_entries_fmt)
+{
+
+    intT mat_rows = cmat.rows;
+    intT mat_cols = cmat.cols;
+
+    intT cmat_main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
+    intT cmat_second_dim = cmat.fmt == 0 ? cmat.cols : cmat.rows;
+
+    intT total_blocks = block_rows * block_cols;
+
+    intT block_rows = mat_rows / params.block_size;
+    intT block_cols = mat_cols / params.block_size;
+
+    intT* row_part = new intT[block_rows + 1]; //partitions have one element more for the rightmost border.
+    intT* col_part = new intT[block_cols + 1];
+    partition(row_part, 0, mat_rows, row_block_size); //row and column partitions (TODO make it work when block_size does not divide rows)
+    partition(col_part, 0, mat_cols, col_block_size);
+
+    init_VBS(vbmat, block_rows, row_part, block_cols, col_part, vbmat_block_fmt, vbmat_entries_fmt);
+
+    intT vbmat_main_dim = vbmat_block_fmt == 0 ? block_rows : block_cols;
+    intT vbmat_second_dim = vbmat_block_fmt == 0 ? block_cols : block_rows;
+
+    intT** blocks_bookmark = new intT * [vbmat_main_dim]; //will identify nonzero blocks;
+    for (intT i = 0; i < vbmat_main_dim; i++)
+    {
+        blocks_bookmark[i] = new intT[vbmat_second_dim];
+        for (intT j = 0; j < vbmat_second_dim; j++)
+        {
+            blocks_bookmark[i][j] = -1;
+        }
+    }
+
+    //pointers for proper iteration depending on fmt
+    intT current_block_row = 0, current_block_col = 0;
+    intT* current_main_pos = new intT();
+    intT* current_second_pos = new intT();
+    if (vbmat_block_fmt == 0)
+    {
+        current_main_pos = &current_block_row;
+        current_second_pos = &current_block_col;
+    }
+    else
+    {
+        current_main_pos = &current_block_col;
+        current_second_pos = &current_block_row;
+    }
+
+
+    //bookmarks nonzero blocks
+    for (intT i = 0; i < cmat_main_dim; i++)
+    {
+        current_block_row = 0;
+        current_block_col = 0;
+
+        for (intT nzs = 0; nzs < cmat.nzcount[i]; nzs++)
+        {
+
+            intT j = cmat.ja[i][nzs];
+            //find vbmat block;
+            intT row = cmat.fmt == 0 ? i : j;
+            intT col = cmat.fmt == 0 ? j : i;
+
+
+            while (row >= row_part[current_block_row])
+            {
+                current_block_row++;
+            }
+
+            while (col >= col_part[current_block_col])
+            {
+                current_block_col++;
+            }
+
+            current_block_row--;
+            current_block_col--;
+
+            //flag the bookmark position (nonzero block)
+            blocks_bookmark[*current_main_pos][*current_second_pos] = -2;
+        }
+
+    }
+    //DEBUG 
+    int test = 0;
+
+
+    //counts total nonzero area and total nonzero blocks
+    intT total_area = 0;
+    intT total_nz_blocks = 0;
+    for (intT ib = 0; ib < vbmat_main_dim; ib++)
+    {
+        vbmat.nzcount[ib] = 0;
+        for (intT jb = 0; jb < vbmat_second_dim; jb++)
+        {
+            intT block_row = vbmat.blocks_fmt == 0 ? ib : jb;
+            intT block_col = vbmat.blocks_fmt == 0 ? jb : ib;
+            if (blocks_bookmark[ib][jb] == -2)
+            {
+                blocks_bookmark[ib][jb] = total_area;
+                total_area += (row_part[block_row + 1] - row_part[block_row]) * (col_part[block_col + 1] - col_part[block_col]);
+                vbmat.nzcount[ib] += 1;
+                total_nz_blocks += 1;
+            }
+        }
+    }
+
+    //assign the values to the matrix
+    vbmat.mab = new DataT[total_area]{ 0 };
+    vbmat.nztot = total_area;
+    vbmat.jab = new intT[total_nz_blocks];
+
+
+
+    //fill jab (nonzero blocks positions)
+    total_nz_blocks = 0;
+    for (intT ib = 0; ib < vbmat_main_dim; ib++)
+    {
+        for (intT jb = 0; jb < vbmat_second_dim; jb++)
+        {
+            if (blocks_bookmark[ib][jb] != -1)
+            {
+                vbmat.jab[total_nz_blocks] = jb;
+                total_nz_blocks += 1;
+            }
+        }
+    }
+
+
+    //fill vbmat nonzeros with entries from cmat
+    for (intT i = 0; i < cmat_main_dim; i++)
+    {
+        current_block_row = 0;
+        current_block_col = 0;
+
+        for (intT nzs = 0; nzs < cmat.nzcount[i]; nzs++)
+        {
+            intT j = cmat.ja[i][nzs];
+            //find vbmat block;
+            intT row = cmat.fmt == 0 ? i : j;
+            intT col = cmat.fmt == 0 ? j : i;
+
+            while (row >= row_part[current_block_row])
+            {
+                current_block_row++;
+            }
+
+            while (col >= col_part[current_block_col])
+            {
+                current_block_col++;
+            }
+            current_block_row--;
+            current_block_col--;
+
+
+            //put the value in the correct block at the correct position
+
+            intT block_start = blocks_bookmark[*current_main_pos][*current_second_pos];
+            intT block_rows = row_part[current_block_row + 1] - row_part[current_block_row];
+            intT block_cols = col_part[current_block_col + 1] - col_part[current_block_col];
+            intT relative_row_pos = row - row_part[current_block_row];
+            intT relative_col_pos = col - col_part[current_block_col];
+
+            intT block_leading_dim = vbmat.entries_fmt == 0 ? block_cols : block_rows;
+            intT block_idx = block_start + IDX(relative_row_pos, relative_col_pos, block_leading_dim, vbmat.entries_fmt);
+            vbmat.mab[block_idx] = cmat.ma[i][nzs];
+        }
+
+    }
+
+    for (intT i = 0; i < vbmat_main_dim; i++)
+    {
+        delete[] blocks_bookmark[i];
+    }
+    delete[] blocks_bookmark;
+    return 0;
+}
+
+
 int matprint(const VBS& vbmat)
 {
 

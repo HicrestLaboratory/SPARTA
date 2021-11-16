@@ -702,6 +702,30 @@ int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group, reorde
         std::cout << "UNKNONW ALGORITMH -->" << params.reorder_algo << "<-- in saad reordering" << std::endl;
 }
 
+int saad_reordering(CSR& input_cmat, VBS& output_vbmat, intT algo_block_size, int vbmat_blocks_fmt, int vbmat_entries_fmt, input_parameters& params, reorder_info& info)
+{
+    scramble_input(input_cmat, params);
+
+    vbmat_blocks_fmt = 1;
+    vbmat_entries_fmt = 1;
+    block_cols = std::ceil((float)input_cmat.cols / algo_block_size);
+
+    //prepare the column partition
+    intT* col_part = new intT[block_cols + 1];
+    partition(col_part, 0, input_cmat.cols, algo_block_size);
+
+    //run the reordering algo
+    intT* hash_groups = new intT[input_cmat.rows];
+    saad_reordering(input_cmat, params, hash_groups, info);
+
+    //create the block matrix
+    group_to_VBS(input_cmat, hash_groups, col_part, block_cols, output_vbmat, vbmat_blocks_fmt, vbmat_entries_fmt);
+
+    delete[] hash_groups;
+
+}
+
+
 bool scalar_condition(group_structure& group_struct, intT* cols_B, intT len_B, intT group_size_B, input_parameters& params)
 {
     float eps = params.eps;
