@@ -787,10 +787,11 @@ int convert_to_VBS(const CSR& cmat, VBS& vbmat, intT row_block_size, intT col_bl
     intT cmat_main_dim = cmat.fmt == 0 ? cmat.rows : cmat.cols;
     intT cmat_second_dim = cmat.fmt == 0 ? cmat.cols : cmat.rows;
 
-    intT total_blocks = block_rows * block_cols;
 
-    intT block_rows = mat_rows / params.block_size;
-    intT block_cols = mat_cols / params.block_size;
+    intT block_rows = mat_rows / row_block_size;
+    intT block_cols = mat_cols / col_block_size;
+    
+    intT total_blocks = block_rows * block_cols;
 
     intT* row_part = new intT[block_rows + 1]; //partitions have one element more for the rightmost border.
     intT* col_part = new intT[block_cols + 1];
