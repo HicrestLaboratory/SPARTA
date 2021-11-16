@@ -54,9 +54,9 @@ struct Info_Collector
         intT min_block_H = INT_MAX;
         float avg_block_height = 0.;
         intT tot_nz_blocks = 0;
-        for (intT i = 0; i < vbmat_algo.block_rows; i++)
+        for (intT i = 0; i < vbmat.block_rows; i++)
         {
-            intT b_size = vbmat_algo.row_part[i + 1] - vbmat.row_part[i];
+            intT b_size = vbmat.row_part[i + 1] - vbmat.row_part[i];
             avg_block_height += b_size * vbmat.nzcount[i];
             tot_nz_blocks += vbmat.nzcount[i];
             if (b_size > max_block_H) max_block_H = b_size;
@@ -134,7 +134,8 @@ struct Info_Collector
     }
 };
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) 
+{
 
     input_parameters params;
 
@@ -236,7 +237,7 @@ int main(int argc, char* argv[]) {
         //--------------------------------------------
         //      VBS algo x dense cublas multiplication	
         //--------------------------------------------
-        
+
         if (params.verbose > 0)        cout << "Starting VBS-dense cublas multiplication" << endl;
 
         DataT* mat_Cblock = new DataT[C_rows * C_cols];
@@ -284,10 +285,14 @@ int main(int argc, char* argv[]) {
         cleanCSR(cmat_A);
 
         delete[] mat_B;
+    }
 
 
-    //OUTPUT PHASE
 
+
+    //*******************************************
+    //	 EXPERIMENT LOOP
+    //******************************************
 
     info_collector.output_all(output_names, output_values);
 
