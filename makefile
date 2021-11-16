@@ -110,3 +110,5 @@ test_cublas_VBS : build_cuda $(CUDA_APP_DIR)/test_cublas_VBS
 test_saad : build_general $(GEN_APP_DIR)/test_saad
 
 test_cublas_cusparse_comparison : build_cuda $(CUDA_APP_DIR)/test_cublas_cusparse_comparison
+
+test_cublas_reorder : build_cuda $(CUDA_APP_DIR)/test_cublas_reorder 
