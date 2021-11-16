@@ -708,7 +708,7 @@ int saad_reordering(CSR& input_cmat, VBS& output_vbmat, intT algo_block_size, in
 
     vbmat_blocks_fmt = 1;
     vbmat_entries_fmt = 1;
-    block_cols = std::ceil((float)input_cmat.cols / algo_block_size);
+    intT block_cols = std::ceil((float)input_cmat.cols / algo_block_size);
 
     //prepare the column partition
     intT* col_part = new intT[block_cols + 1];
