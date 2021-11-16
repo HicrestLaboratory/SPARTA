@@ -8,7 +8,7 @@ RESULTS="results/mini_reordering_16_11.txt"
 m_shapes=(2048);
 k_shapes=(2048);
 
-e_value=(0.4 0.5 0.6 0.7 0.8 0.9);
+e_value=(0.3 0.35 0.4 0.45 0.5 0.55 0.6 0.65 0.7 0.75 0.8 0.85);
 
 P_value=(64);
 

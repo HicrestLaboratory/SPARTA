@@ -19,7 +19,8 @@ saad = False
 if saad:
     input_file = "../results/test_reordering_blocked_synth_saad_27_10.csv"
 else:
-    input_file = "../results/test_reordering_blocked_synth_12_11.csv"
+        input_file = "../results/mini_reordering_16_11.csv"
+    #    input_file = "../results/test_reordering_blocked_synth_12_11.csv"
 #    input_file = "../results/real_reordering_results_25_10.csv"
 
                     
@@ -211,11 +212,14 @@ def compare_reorder_curves(rows = 2048, cols = 2048, block_size = 64, i_density 
     
     fixed
     
+    fig,ax = plt.subplots();
+    
     variation_array = results_df[variation].unique();
-    for val in variation_array:
+    colors = ["r","b","m","c","g","y","o","p"];
+    for val,col in zip(variation_array, colors):
         fixed[variation] = val;
         q = build_query(fixed)
-        results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "relative_density", kind = "scatter", label = val);
+        results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "relative_density", kind = "scatter", label = val, ax = ax, color = col);
     
     plt.legend();
     plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
