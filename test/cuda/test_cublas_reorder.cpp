@@ -25,6 +25,7 @@
 
 #include "cuda_utilities.h"
 #include "sparse_utilities.h"
+#include "reorderings.h"
 #include "comp_mats.h"
 #include "input.h"
 
