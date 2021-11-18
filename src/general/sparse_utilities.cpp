@@ -205,7 +205,7 @@ int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, i
     return 0;
 }
 
-int matprint(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt, bool struct_only = false)
+int matprint(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt, bool struct_only)
 {
     for (intT i = 0; i < rows; i++)
     {
@@ -213,7 +213,7 @@ int matprint(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt, bool stru
         {
             intT idx = IDX(i, j, lead_dim, fmt);
             
-            std::string val = to_string(mat[idx]);
+            std::string val = std::to_string(mat[idx]);
             if (struct_only)
             {
                 if (mat[idx] == 0) val = "0";
@@ -228,7 +228,7 @@ int matprint(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt, bool stru
     return 0;
 }
 
-int matprint(DataT* mat, intT rows, intT* row_part, intT row_blocks, intT cols, intT* col_part, intT col_blocks, intT lead_dim,  int fmt, bool struct_only = false)
+int matprint(DataT* mat, intT rows, intT* row_part, intT row_blocks, intT cols, intT* col_part, intT col_blocks, intT lead_dim,  int fmt, bool struct_only)
 {
     for (intT ib = 0; ib < row_blocks; ib++)
     {
@@ -240,7 +240,7 @@ int matprint(DataT* mat, intT rows, intT* row_part, intT row_blocks, intT cols, 
                 for (intT j = col_part[jb]; j < col_part[jb + 1]; j++)
                 {
                     intT idx = IDX(i, j, lead_dim, fmt);
-                    std::string val = to_string(mat[idx]);
+                    std::string val = std::to_string(mat[idx]);
                     if (struct_only)
                     {
                         if (mat[idx] == 0) val = "0";
