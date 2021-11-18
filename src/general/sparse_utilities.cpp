@@ -19,6 +19,17 @@
 
 // Matrix utilities
 
+std::string print_mat_val(DataT val, bool struct_only, std::string zero_style, std::string nz_style)
+{
+    std::string val = std::to_string(mat[idx]);
+    if (struct_only)
+    {
+        if (mat[idx] == 0) val = zero_style;
+        else val = nz_style;
+    }
+    return val;
+}
+
 int is_empty(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt) {
     //check if a matrix is empty
 
@@ -212,14 +223,7 @@ int matprint(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt, bool stru
         for (intT j = 0; j < cols; j++)
         {
             intT idx = IDX(i, j, lead_dim, fmt);
-            
-            std::string val = std::to_string(mat[idx]);
-            if (struct_only)
-            {
-                if (mat[idx] == 0) val = "0";
-                else val = "X";
-            }
-            std::cout << val << " ";
+            std::cout << print_mat_val(mat[idx], struct_only) << " ";
         }
 
         std::cout << std::endl;
@@ -240,13 +244,7 @@ int matprint(DataT* mat, intT rows, intT* row_part, intT row_blocks, intT cols, 
                 for (intT j = col_part[jb]; j < col_part[jb + 1]; j++)
                 {
                     intT idx = IDX(i, j, lead_dim, fmt);
-                    std::string val = std::to_string(mat[idx]);
-                    if (struct_only)
-                    {
-                        if (mat[idx] == 0) val = "0";
-                        else val = "X";
-                    }
-                    std::cout << val << " ";
+                    std::cout << print_mat_val(mat[idx], struct_only) << " ";
                 }
 
                 std::cout << " ";
@@ -981,7 +979,7 @@ int matprint(const VBS& vbmat)
 
     convert_to_mat(vbmat, temp_mat, 0);
     
-    matprint(temp_mat, rows, vbmat.row_part, vbmat.block_rows, cols, vbmat.col_part, vbmat. block_cols, cols, 0, true);
+    matprint(temp_mat, rows, vbmat.row_part, vbmat.block_rows, cols, vbmat.col_part, vbmat. block_cols, cols, 0);
     delete[] temp_mat;
 
     return 0;

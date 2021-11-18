@@ -75,6 +75,8 @@ myType leading_dim(myType rows, myType cols, int fmt)
 	return (fmt == 0) ? cols : rows;
 }
 
+std::string print_mat_val(DataT val, bool struct_only = true, std::string zero_style = "0", std::string nz_style = "X");
+
 int is_empty(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt);
 
 int mat_cpy(DataT* in_mat, intT in_rows, intT in_cols, intT in_lead_dim, int in_fmt, DataT* out_mat, intT out_lead_dim, int out_fmt);
