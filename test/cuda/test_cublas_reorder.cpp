@@ -77,7 +77,7 @@ struct Info_Collector
     {
         skip_vec.push_back(re_info.skipped);
         comparison_vec.push_back(re_info.comparisons);
-        info.clean();
+        re_info.clean();
     }
 
     void clean()
@@ -203,6 +203,8 @@ int main(int argc, char* argv[])
         intT A_cols = params.A_cols;
         intT B_rows = A_cols;
         intT B_cols = params.B_cols;
+        intT C_rows = A_rows;
+        intT C_cols = B_cols;
         int mat_B_fmt = 1;
 
         if (params.verbose > 0)        cout << "\n \n ************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl;
