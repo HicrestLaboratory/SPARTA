@@ -29,7 +29,7 @@ std::string print_mat_val(DataT val, bool struct_only, std::string zero_style, s
     }
     else
     {
-        out = std::to_string(val)
+        out = std::to_string(val);
     }
     return out;
 }
