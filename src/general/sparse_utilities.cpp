@@ -21,12 +21,17 @@
 
 std::string print_mat_val(DataT val, bool struct_only, std::string zero_style, std::string nz_style)
 {
+    std::string out;
     if (struct_only)
     {
-        if (val == 0) val = zero_style;
-        else val = nz_style;
+        if (val == 0) out = zero_style;
+        else out = nz_style;
     }
-    return std::to_string(val);
+    else
+    {
+        out = std::to_string(val)
+    }
+    return out;
 }
 
 int is_empty(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt) {
