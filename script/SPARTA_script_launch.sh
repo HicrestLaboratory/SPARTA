@@ -3,11 +3,10 @@
 #SBATCH --job-name=sparta-test
 #SBATCH --output=sparta-test-%j.out
 #SBATCH --error=sparta-test-%j.err
-#SBATCH --time=04:00:00
+#SBATCH --time=100:00:00
 #SBATCH --partition training
 #SBATCH --gres=gpu
 #SBATCH --nodes 1
-#SBATCH --time=1:00:00
 #SBATCH --ntasks=1
 
 
