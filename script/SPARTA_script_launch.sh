@@ -15,6 +15,6 @@ cd ${HOME}/SPARTA
 params="";
 for i in "$@"; 
    do
-	params=" ${params} $d $i"
+	     params=" ${params} $d $i"
    done
 ${params} #call any script from here
