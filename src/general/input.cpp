@@ -242,8 +242,8 @@ int get_input_params(int argc, char* argv[], input_parameters& params)
             abort();
         }
 
+        srand(params.seed);
         return 0;
-
 }
 
 int get_input_CSR(CSR& cmat_A, input_parameters& params)
