@@ -181,7 +181,7 @@ int main(int argc, char* argv[])
 
 
         //PREPARE THE SCRAMBLED AND REORDERED VBMAT
-        scramble_input(input_cmat, params);
+        scramble_input(cmat_A, params);
         
         VBS vbmat_algo;
 
