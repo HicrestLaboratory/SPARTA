@@ -26,12 +26,10 @@ for m in ${m_shapes[@]}; do
           for b in ${b_value[@]}; do
             for q in ${q_value[@]}; do
 	      for n in ${n_shapes[@]}; do
-		for F in ${F_value[@]}; do
 		  for l in ${l_value[@]}; do 
 		    echo "m,n,k " $m $n $k "e,p,b,q,l " $e $P $b $q $l
 	            ./programs/general/test_saad ${OPTS} -m $m -k $k -n $n -e $e -p $P -P $P -b $b -q $q -l $l >> ${RESULTS}
 	 	  done
-                done
 	      done
             done
 	  done
