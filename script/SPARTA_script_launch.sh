@@ -14,7 +14,8 @@
 module load cuda-11.4.0
 cd ${HOME}/SPARTA
 params="";
-for i in "$@"; do
+for i in "$@"; 
+   do
 	params=" ${params} $d $i"
-done
-srun ${params} #call any script from here
+   done
+${params} #call any script from here
