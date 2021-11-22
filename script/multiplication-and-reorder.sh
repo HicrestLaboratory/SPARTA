@@ -28,7 +28,7 @@ for m in ${m_shapes[@]}; do
 	      for n in ${n_shapes[@]}; do
 		  for l in ${l_value[@]}; do 
 		    echo "m,n,k " $m $n $k "e,p,b,q,l " $e $P $b $q $l
-	            ./programs/general/test_saad ${OPTS} -m $m -k $k -n $n -e $e -p $P -P $P -b $b -q $q -l $l >> ${RESULTS}
+	            ./programs/general/test_cublas_reorder ${OPTS} -m $m -k $k -n $n -e $e -p $P -P $P -b $b -q $q -l $l >> ${RESULTS}
 	 	  done
 	      done
             done
