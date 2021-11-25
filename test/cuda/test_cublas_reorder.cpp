@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
             params.block_size,
             vbmat_blocks_fmt, vbmat_entries_fmt);
 
-        if (params.verbose > 0) cout << "VBS matrix created." << endl;
+        if (params.verbose > 0) cout << "VBS perfect matrix created." << endl;
         if (params.verbose > 1) matprint(vbmat_perfect);
 
 
