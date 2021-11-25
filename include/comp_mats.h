@@ -113,11 +113,9 @@ struct VBS {
         intT main_pos, main_block_dim, second_pos, second_block_dim;
         intT row, col, row_block_dim, col_block_dim;
 
-        intT vbmat_main_dim = vbmat.main_dim();
-        intT* b_main_ptr = vbmat.main_ptr();
-        intT* b_second_ptr = vbmat.second_ptr();
-
-        intT* jab = vbmat.jab;
+        intT vbmat_main_dim = main_dim();
+        intT* b_main_ptr = main_ptr();
+        intT* b_second_ptr = second_ptr();
 
         float total_length = 0;
         intT nz_blocks = 0;
@@ -127,9 +125,9 @@ struct VBS {
             main_pos = b_main_ptr[i];
             main_block_dim = b_main_ptr[i + 1] - main_pos;
 
-            for (intT nzs = 0; nzs < vbmat.nzcount[i]; nzs++) //iterate for all nonzero block in row i
+            for (intT nzs = 0; nzs < nzcount[i]; nzs++) //iterate for all nonzero block in row i
             {
-                intT j = jab[nz_tot]; //column of current non-zero block
+                intT j = jab[nz_blocks]; //column of current non-zero block
                 second_pos = b_second_ptr[j];
                 second_block_dim = b_second_ptr[j + 1] - second_pos;
                 nz_blocks++;
