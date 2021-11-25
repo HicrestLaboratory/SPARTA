@@ -37,8 +37,6 @@ struct Info_Collector
     svi total_area_vec;
     svi block_rows_vec;
     svi nz_blocks_vec;
-    svi min_block_vec;
-    svi max_block_vec;
     vec_d avg_height_vec;
     vec_d skip_vec;
     vec_d comparison_vec;
@@ -48,30 +46,13 @@ struct Info_Collector
 
     void collect_info_VBS(VBS& vbmat)
     {
-        //collect info for a post-reordering VBS
-
-        intT max_block_H = 0;
-        intT min_block_H = vbmat.rows();
-        float avg_block_height = 0.;
-        intT tot_nz_blocks = 0;
-        for (intT i = 0; i < vbmat.block_rows; i++)
-        {
-            intT b_size = vbmat.row_part[i + 1] - vbmat.row_part[i];
-            if (b_size < 0) cout << "WARNING! something strange happening with the vbmat matrix!" << endl;
-            avg_block_height += b_size * vbmat.nzcount[i];
-            tot_nz_blocks += vbmat.nzcount[i];
-            if (b_size > max_block_H) max_block_H = b_size;
-            if (b_size < min_block_H) min_block_H = b_size;
-        }
-        avg_block_height /= tot_nz_blocks;
+        //collect info for a post-reordering VBMAT
 
         //accumulate results in vectors
-        avg_height_vec.push_back(avg_block_height);
+        avg_height_vec.push_back(vbmat.get_avg_height());
         total_area_vec.push_back(vbmat.nztot);
         block_rows_vec.push_back(vbmat.block_rows);
         nz_blocks_vec.push_back(tot_nz_blocks);
-        min_block_vec.push_back(min_block_H);
-        max_block_vec.push_back(max_block_H);
     }
 
     void collect_info_reordering(reorder_info re_info)
@@ -85,8 +66,6 @@ struct Info_Collector
         total_area_vec.clear();
         block_rows_vec.clear();
         nz_blocks_vec.clear();
-        min_block_vec.clear();
-        max_block_vec.clear();
         avg_height_vec.clear();
         skip_vec.clear();
         comparison_vec.clear();
@@ -109,18 +88,11 @@ struct Info_Collector
         output_couple(output_names, output_values, "VBS_nz_blocks", mean(nz_blocks_vec));
         output_couple(output_names, output_values, "VBS_nz_blocks_error", std_dev(nz_blocks_vec));
 
-        output_couple(output_names, output_values, "VBS_min_block_H", mean(min_block_vec));
-        output_couple(output_names, output_values, "VBS_min_block_H_error", std_dev(min_block_vec));
-
-        output_couple(output_names, output_values, "VBS_max_block_H", mean(max_block_vec));
-        output_couple(output_names, output_values, "VBS_max_block_H_error", std_dev(max_block_vec));
-
         output_couple(output_names, output_values, "avg_skipped", mean(skip_vec));
         output_couple(output_names, output_values, "skipped_std", std_dev(skip_vec));
 
         output_couple(output_names, output_values, "avg_comparisons", mean(comparison_vec));
         output_couple(output_names, output_values, "comparisons_std", std_dev(comparison_vec));
-
 
         output_couple(output_names, output_values, "VBSmm_algo_mean(ms)", mean(vbs_algo_times));
         output_couple(output_names, output_values, "VBSmm_algo_std", std_dev(vbs_algo_times));

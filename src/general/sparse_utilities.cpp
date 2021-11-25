@@ -549,32 +549,10 @@ int convert_to_mat(const VBS& vbmat, DataT* out_mat, int out_mat_fmt)
     intT mat_idx = 0; //keeps writing position for mat
     intT vbmat_idx = 0; //keeps reading position for vbmat 
 
-    intT vbmat_main_dim, vbmat_compressed_dim;
-    intT* b_main_ptr, * b_second_ptr;
-
-    if (vbmat.blocks_fmt == 0)
-    {
-        //if Compressed Sparse Row
-        vbmat_main_dim = vbmat.block_rows;
-        vbmat_compressed_dim = vbmat.block_cols;
-
-        // assign row and column pointers respectively
-        // to counters for main and compressed dimension
-        b_main_ptr = vbmat.row_part;
-        b_second_ptr = vbmat.col_part;
-
-    }
-    else
-    {
-        //if Compressed Sparse Columns
-        vbmat_main_dim = vbmat.block_cols;
-        vbmat_compressed_dim = vbmat.block_rows;
-
-        // assign column and row pointers respectively
-        // to counters for main and compressed dimension
-        b_main_ptr = vbmat.col_part;
-        b_second_ptr = vbmat.row_part;
-    }
+    intT vbmat_main_dim = vbmat.main_dim();
+    intT vbmat_compressed_dim = vbmat.compressed_dim();
+    intT *b_main_ptr = vbmat.main_ptr();
+    intT *b_second_ptr = vbmat.second_ptr();
 
     intT* jab = vbmat.jab;
 
