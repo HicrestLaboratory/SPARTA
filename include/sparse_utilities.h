@@ -89,9 +89,9 @@ int random_sparse_blocks_mat(DataT* mat, intT rows, intT cols, int fmt, intT blo
 
 int random_sparse_blocks_mat(VBS& vbmat, intT rows, intT cols, int blocks_fmt, int entries_fmt, intT row_block_size, intT col_block_size, float block_density, float entries_density);
 
-int matprint(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt, bool struct_only = false);
+int matprint(DataT* mat, intT rows, intT cols, intT lead_dim, int fmt, bool struct_only = true);
 
-int matprint(DataT* mat, intT rows, intT* row_part, intT row_blocks, intT cols, intT* col_part, intT col_blocks, intT lead_dim, int fmt, bool struct_only = false);
+int matprint(DataT* mat, intT rows, intT* row_part, intT row_blocks, intT cols, intT* col_part, intT col_blocks, intT lead_dim, int fmt, bool struct_only = true);
 
 int arr_print(intT* arr, intT len);
 
