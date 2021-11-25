@@ -51,7 +51,7 @@ struct Info_Collector
         //collect info for a post-reordering VBS
 
         intT max_block_H = 0;
-        intT min_block_H = INT_MAX;
+        intT min_block_H = vbmat.rows();
         float avg_block_height = 0.;
         intT tot_nz_blocks = 0;
         for (intT i = 0; i < vbmat.block_rows; i++)
@@ -166,6 +166,7 @@ int main(int argc, char* argv[])
 
         if (params.verbose > 0) cout << "INPUT ACQUIRED." << endl;
         if (params.verbose > 1) matprint(cmat_A);
+
 
         //PREPARE THE PERFECTLY-BLOCKED VBS
         VBS vbmat_perfect;

@@ -704,8 +704,6 @@ int saad_reordering(CSR& cmat, input_parameters& params, intT* out_group, reorde
 
 int saad_reordering(CSR& input_cmat, VBS& output_vbmat, intT algo_block_size, int vbmat_blocks_fmt, int vbmat_entries_fmt, input_parameters& params, reorder_info& info)
 {
-    scramble_input(input_cmat, params);
-
     vbmat_blocks_fmt = 1;
     vbmat_entries_fmt = 1;
     intT block_cols = std::ceil((float)input_cmat.cols / algo_block_size);
@@ -896,8 +894,6 @@ bool scalar_block_condition(group_structure& group_struct, intT* cols_B, intT le
         while (group_idx < group_struct.len && group_struct.structure[group_idx] < modB) group_idx++;
         while (j < len_B && cols_B[j] / block_size < modA) j++;
     }
-
-
 
     bool result;
     if (params.similarity_func == "hamming") result = len_mod_B + group_struct.len- (2 * count) < eps * params.A_cols;
