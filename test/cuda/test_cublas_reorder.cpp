@@ -57,7 +57,7 @@ struct Info_Collector
         for (intT i = 0; i < vbmat.block_rows; i++)
         {
             intT b_size = vbmat.row_part[i + 1] - vbmat.row_part[i];
-            cout < to_string(b_size) < endl;
+            cout << to_string(b_size) << endl;
             avg_block_height += b_size * vbmat.nzcount[i];
             tot_nz_blocks += vbmat.nzcount[i];
             if (b_size > max_block_H) max_block_H = b_size;
