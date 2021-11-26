@@ -125,7 +125,11 @@ int main(int argc, char* argv[])
     string output_values;
     reorder_info re_info;
     Info_Collector info_collector;
+
+
+    get_input_CSR(cmat_A, params);
     output_couple_parameters(params, output_names, output_values);
+    cleanCSR(cmat_A);
 
     //*******************************************
     //	 EXPERIMENT LOOP
