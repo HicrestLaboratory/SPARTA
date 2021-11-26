@@ -2,7 +2,10 @@
 
 OPTS="-r 5 -v -1 -i 4 -R saad_blocks -s 1 -M 1 -F jaccard"
 
-RESULTS="results/test_cublas_reordering_22_11.txt"
+
+DATE=$(date +"%m-%d-%Y");
+RESULTS="results/test_cublas_reordering-${DATE}.txt"
+
 :>${RESULTS};
 
 m_shapes=(4096);
