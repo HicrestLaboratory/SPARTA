@@ -140,7 +140,7 @@ struct VBS {
         return total_length/nz_blocks;
     }
 
-    intT* nz_blocks()
+    intT nz_blocks()
     {
         intT vbmat_main_dim = main_dim();
         intT nz_blocks = 0;
