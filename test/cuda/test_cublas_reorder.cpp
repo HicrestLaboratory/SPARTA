@@ -97,8 +97,11 @@ struct Info_Collector
         output_couple(output_names, output_values, "VBSmm_algo_mean(ms)", mean(vbs_algo_times));
         output_couple(output_names, output_values, "VBSmm_algo_std", std_dev(vbs_algo_times));
 
-        output_couple(output_names, output_values, "VBSmm_perfect_mean(ms)", mean(vbs_perfect_times));
-        output_couple(output_names, output_values, "VBSmm_perfect_std", std_dev(vbs_perfect_times));
+        if (!vbs_perfect_times.empty())
+        {
+            output_couple(output_names, output_values, "VBSmm_perfect_mean(ms)", mean(vbs_perfect_times));
+            output_couple(output_names, output_values, "VBSmm_perfect_std", std_dev(vbs_perfect_times));
+        }
 
         output_couple(output_names, output_values, "cusparse_spmm_mean(ms)", mean(cusparse_times));
         output_couple(output_names, output_values, "cusparse_spmm_std", std_dev(cusparse_times));
@@ -126,7 +129,6 @@ int main(int argc, char* argv[])
     reorder_info re_info;
     Info_Collector info_collector;
 
-
     get_input_CSR(cmat_A, params);
     output_couple_parameters(params, output_names, output_values);
     cleanCSR(cmat_A);
@@ -144,19 +146,20 @@ int main(int argc, char* argv[])
         if (params.verbose > 0) cout << "INPUT ACQUIRED." << endl;
         if (params.verbose > 1) matprint(cmat_A);
 
-
         //PREPARE THE PERFECTLY-BLOCKED VBS
         VBS vbmat_perfect;
+        
+        if (params.algo == 1)
+        {
+            convert_to_VBS(cmat_A,
+                vbmat_perfect,
+                params.block_size,
+                params.block_size,
+                vbmat_blocks_fmt, vbmat_entries_fmt);
 
-        convert_to_VBS(cmat_A,
-            vbmat_perfect,
-            params.block_size,
-            params.block_size,
-            vbmat_blocks_fmt, vbmat_entries_fmt);
-
-        if (params.verbose > 0) cout << "VBS perfect matrix created." << endl;
-        if (params.verbose > 1) matprint(vbmat_perfect);
-
+            if (params.verbose > 0) cout << "VBS perfect matrix created." << endl;
+            if (params.verbose > 1) matprint(vbmat_perfect);
+        }
 
         //PREPARE THE SCRAMBLED AND REORDERED VBMAT
         scramble_input(cmat_A, params);
@@ -198,21 +201,24 @@ int main(int argc, char* argv[])
         //      VBS perfect x dense cublas multiplication	
         //--------------------------------------------
 
-        if (params.verbose > 0)        cout << "Starting VBS-dense cublas multiplication" << endl;
 
-        DataT* mat_Cperfect_block = new DataT[C_rows * C_cols];
-
-        for (int i = -params.warmup; i < 1; i++)//do warmup runs
+        if (params.algo == 1)
         {
-            float dt = 0;
-            cublas_blockmat_multiply(vbmat_algo, mat_B, B_cols, B_rows, mat_Cperfect_block, C_rows, dt, params.n_streams);
-            if (i >= 0) info_collector.vbs_perfect_times.push_back(dt);
-            if (params.verbose > 0)            cout << "BlockSparse-Dense multiplication. Time taken(ms): " << dt << endl;
+            if (params.verbose > 0)        cout << "Starting VBS-dense cublas multiplication" << endl;
+
+            DataT* mat_Cperfect_block = new DataT[C_rows * C_cols];
+
+            for (int i = -params.warmup; i < 1; i++)//do warmup runs
+            {
+                float dt = 0;
+                cublas_blockmat_multiply(vbmat_algo, mat_B, B_cols, B_rows, mat_Cperfect_block, C_rows, dt, params.n_streams);
+                if (i >= 0) info_collector.vbs_perfect_times.push_back(dt);
+                if (params.verbose > 0)            cout << "BlockSparse-Dense multiplication. Time taken(ms): " << dt << endl;
+            }
+
+            delete[] mat_Cperfect_block;
+            cleanVBS(vbmat_algo);
         }
-
-        delete[] mat_Cperfect_block;
-        cleanVBS(vbmat_algo);
-
 
 
         //--------------------------------------------
