@@ -204,20 +204,20 @@ int main(int argc, char* argv[])
 
         if (params.algo == 1)
         {
-            if (params.verbose > 0)        cout << "Starting VBS-dense cublas multiplication" << endl;
+            if (params.verbose > 0)        cout << "Starting VBS-perfect-dense cublas multiplication" << endl;
 
             DataT* mat_Cperfect_block = new DataT[C_rows * C_cols];
 
             for (int i = -params.warmup; i < 1; i++)//do warmup runs
             {
                 float dt = 0;
-                cublas_blockmat_multiply(vbmat_algo, mat_B, B_cols, B_rows, mat_Cperfect_block, C_rows, dt, params.n_streams);
+                cublas_blockmat_multiply(vbmat_perfect, mat_B, B_cols, B_rows, mat_Cperfect_block, C_rows, dt, params.n_streams);
                 if (i >= 0) info_collector.vbs_perfect_times.push_back(dt);
                 if (params.verbose > 0)            cout << "BlockSparse-Dense multiplication. Time taken(ms): " << dt << endl;
             }
 
             delete[] mat_Cperfect_block;
-            cleanVBS(vbmat_algo);
+            cleanVBS(vbmat_perfect);
         }
 
 
@@ -225,20 +225,20 @@ int main(int argc, char* argv[])
         //      VBS algo x dense cublas multiplication	
         //--------------------------------------------
 
-        if (params.verbose > 0)        cout << "Starting VBS-dense cublas multiplication" << endl;
+        if (params.verbose > 0)        cout << "Starting VBS-reordered-dense cublas multiplication" << endl;
 
         DataT* mat_Cblock = new DataT[C_rows * C_cols];
 
         for (int i = -params.warmup; i < 1; i++)//do warmup runs
         {
             float dt = 0;
-            cublas_blockmat_multiply(vbmat_perfect, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt, params.n_streams);
+            cublas_blockmat_multiply(vbmat_algo, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt, params.n_streams);
             if (i >= 0) info_collector.vbs_algo_times.push_back(dt);
             if (params.verbose > 0)            cout << "BlockSparse-Dense multiplication. Time taken(ms): " << dt << endl;
         }
 
         delete[] mat_Cblock;
-        cleanVBS(vbmat_perfect);
+        cleanVBS(vbmat_algo);
 
         //--------------------------------------------
         //      CSR x Dense cusparse multiplication
