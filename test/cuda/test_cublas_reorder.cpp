@@ -52,7 +52,7 @@ struct Info_Collector
         avg_height_vec.push_back(vbmat.get_avg_height());
         total_area_vec.push_back(vbmat.nztot);
         block_rows_vec.push_back(vbmat.block_rows);
-        nz_blocks_vec.push_back(tot_nz_blocks);
+        nz_blocks_vec.push_back(vbmat.nz_blocks);
     }
 
     void collect_info_reordering(reorder_info re_info)
