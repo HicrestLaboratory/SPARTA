@@ -15,142 +15,124 @@
 
 using namespace std;
 
+struct Info_Collector
+{
+    svi total_area_vec;
+    svi block_rows_vec;
+    svi nz_blocks_vec;
+    vec_d avg_height_vec;
+    vec_d skip_vec;
+    vec_d comparison_vec;
 
-int main(int argc, char* argv[]) {
+    void collect_info_VBS(VBS& vbmat)
+    {
+        //collect info for a post-reordering VBMAT
+
+        //accumulate results in vectors
+        avg_height_vec.push_back(vbmat.get_avg_height());
+        total_area_vec.push_back(vbmat.nztot);
+        block_rows_vec.push_back(vbmat.block_rows);
+        nz_blocks_vec.push_back(vbmat.nz_blocks());
+    }
+
+    void collect_info_reordering(reorder_info re_info)
+    {
+        skip_vec.push_back(re_info.skipped);
+        comparison_vec.push_back(re_info.comparisons);
+    }
+
+    void clean()
+    {
+        total_area_vec.clear();
+        block_rows_vec.clear();
+        nz_blocks_vec.clear();
+        avg_height_vec.clear();
+        skip_vec.clear();
+        comparison_vec.clear();
+    }
+
+    void output_all(string& output_names, string& output_values)
+    {
+        output_couple(output_names, output_values, "VBS_avg_nzblock_height", mean(avg_height_vec));
+        output_couple(output_names, output_values, "VBS_avg_nzblock_height_error", std_dev(avg_height_vec));
+
+        output_couple(output_names, output_values, "VBS_total_nonzeros", mean(total_area_vec));
+        output_couple(output_names, output_values, "VBS_total_nonzeros_error", std_dev(total_area_vec));
+
+        output_couple(output_names, output_values, "VBS_block_rows", mean(block_rows_vec));
+        output_couple(output_names, output_values, "VBS_block_rows_error", std_dev(block_rows_vec));
+
+        output_couple(output_names, output_values, "VBS_nz_blocks", mean(nz_blocks_vec));
+        output_couple(output_names, output_values, "VBS_nz_blocks_error", std_dev(nz_blocks_vec));
+
+        output_couple(output_names, output_values, "avg_skipped", mean(skip_vec));
+        output_couple(output_names, output_values, "skipped_std", std_dev(skip_vec));
+
+        output_couple(output_names, output_values, "avg_comparisons", mean(comparison_vec));
+        output_couple(output_names, output_values, "comparisons_std", std_dev(comparison_vec));
+    }
+};
+
+int main(int argc, char* argv[])
+{
 
     input_parameters params;
 
     get_input_params(argc, argv, params);
 
-    CSR input_cmat; //this will hold the CSR matrix
-    
-    srand(params.seed);
+    params.cmat_A_fmt = 0;
 
-    get_input_CSR(input_cmat, params);
+    CSR cmat_A;
 
-    //*******************************************
-    //		END OF INPUT
-    //spmat must hold a proper CSR matrix at this point
-    //******************************************
-
-    if (params.verbose > 0) cout << "INPUT ACQUIRED." << endl;
-    if (params.verbose > 1) matprint(input_cmat);
-  
-    //*******************************************
-    //	 STORE PARAMETERS 
-    //******************************************
+    int mat_B_fmt = 1;
+    int vbmat_blocks_fmt = 1;
+    int vbmat_entries_fmt = 1; //cuda needs column-major matrices
 
     string output_names;
     string output_values;
+    reorder_info re_info;
+    Info_Collector info_collector;
 
+    get_input_CSR(cmat_A, params);
     output_couple_parameters(params, output_names, output_values);
+    cleanCSR(cmat_A);
 
     //*******************************************
-    //	 RUN REORDERING EXPERIMENTS 
+    //	 EXPERIMENT LOOP
     //******************************************
 
-    svi total_area_vec;
-    svi block_rows_vec;
-    svi nz_blocks_vec;
-    svi min_block_vec;
-    svi max_block_vec;
-    vec_d avg_height_vec;
-    vec_d skip_vec;
-    vec_d comparison_vec;
-    reorder_info info;
 
     for (int current_repetition = 0; current_repetition < params.experiment_reps; current_repetition++)
     {
-        scramble_input(input_cmat, params);
 
-        int vbmat_blocks_fmt = 0;
-        int vbmat_entries_fmt = 0;
-        intT algo_block_cols = std::ceil((float)params.A_cols / params.algo_block_size);
+        get_input_CSR(cmat_A, params);
 
-        //prepare the column partition
-        intT* algo_col_part = new intT[algo_block_cols + 1]; 
-        partition(algo_col_part, 0, params.A_cols, params.algo_block_size);
+        if (params.verbose > 0) cout << "INPUT ACQUIRED." << endl;
+        if (params.verbose > 1) matprint(cmat_A);
 
-        //run the reordering algo
-        intT* hash_groups = new intT[params.A_rows];
-        saad_reordering(input_cmat, params, hash_groups, info);
-        
-        if (params.save_reordering)
-        {
-        }
-        //create the block matrix
+        //PREPARE THE SCRAMBLED AND REORDERED VBMAT
+        scramble_input(cmat_A, params);
+
         VBS vbmat_algo;
-        group_to_VBS(input_cmat, hash_groups, algo_col_part, algo_block_cols, vbmat_algo, vbmat_blocks_fmt, vbmat_entries_fmt);
+
+        saad_reordering(cmat_A, vbmat_algo, params.algo_block_size, vbmat_blocks_fmt, vbmat_entries_fmt, params, re_info);
 
         if (params.verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
         if (params.verbose > 1)    matprint(vbmat_algo);
 
-        delete[] algo_col_part;
+        info_collector.collect_info_VBS(vbmat_algo);
+        info_collector.collect_info_reordering(re_info);
 
-        //size of minimum, mazimum, average height of nonzero blocks.
-        intT max_block_H = 0;
-        intT min_block_H = params.A_rows;
-        float avg_block_height = 0.;
-        intT tot_nz_blocks = 0;
-        for (intT i = 0; i < vbmat_algo.block_rows; i++)
-        {
-            intT b_size = vbmat_algo.row_part[i + 1] - vbmat_algo.row_part[i];
-            avg_block_height += b_size * vbmat_algo.nzcount[i];
-            tot_nz_blocks += vbmat_algo.nzcount[i];
-            if (b_size > max_block_H) max_block_H = b_size;
-            if (b_size < min_block_H) min_block_H = b_size;
-        }
-        avg_block_height /= tot_nz_blocks;
-
-        //accumulate results in vectors
-        avg_height_vec.push_back(avg_block_height);
-        total_area_vec.push_back(vbmat_algo.nztot);
-        block_rows_vec.push_back(vbmat_algo.block_rows);
-        nz_blocks_vec.push_back(tot_nz_blocks);
-        min_block_vec.push_back(min_block_H);
-        max_block_vec.push_back(max_block_H);
-        skip_vec.push_back(info.skipped);
-        comparison_vec.push_back(info.comparisons);
-
-        info.clean();
-        cleanVBS(vbmat_algo);
+        cleanCSR(cmat_A);
     }
-    
-    cleanCSR(input_cmat);
-
-
-    //*******************************************
-    //	 COLLECT EXPERIMENTS RESULTS
-    //******************************************
-
-    output_couple(output_names, output_values, "VBS_avg_nzblock_height", mean(avg_height_vec));
-    output_couple(output_names, output_values, "VBS_avg_nzblock_height_error", std_dev(avg_height_vec));
-
-    output_couple(output_names, output_values, "VBS_total_nonzeros", mean(total_area_vec));
-    output_couple(output_names, output_values, "VBS_total_nonzeros_error", std_dev(total_area_vec));
-
-    output_couple(output_names, output_values, "VBS_block_rows", mean(block_rows_vec));
-    output_couple(output_names, output_values, "VBS_block_rows_error", std_dev(block_rows_vec));
-
-    output_couple(output_names, output_values, "VBS_nz_blocks", mean(nz_blocks_vec));
-    output_couple(output_names, output_values, "VBS_nz_blocks_error", std_dev(nz_blocks_vec));
-
-    output_couple(output_names, output_values, "VBS_min_block_H", mean(min_block_vec));
-    output_couple(output_names, output_values, "VBS_min_block_H_error", std_dev(min_block_vec));
-
-    output_couple(output_names, output_values, "VBS_max_block_H", mean(max_block_vec));
-    output_couple(output_names, output_values, "VBS_max_block_H_error", std_dev(max_block_vec));
-
-    output_couple(output_names, output_values, "avg_skipped", mean(skip_vec));
-    output_couple(output_names, output_values, "avg_comparisons", mean(comparison_vec));
 
 
 
-    //OUTPUT PHASE
+    info_collector.output_all(output_names, output_values);
+
     if ((params.verbose == -1) or (params.verbose > 1))
     {
         cout << output_names << endl;
         cout << output_values << endl;
     }
-
 }
