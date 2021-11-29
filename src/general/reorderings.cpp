@@ -900,6 +900,8 @@ bool scalar_block_condition(group_structure& group_struct, intT* cols_B, intT le
     else if (params.similarity_func == "scalar") result = (std::pow(count, 2) > std::pow(eps, 2) * group_struct.len * len_mod_B);
     else if (params.similarity_func == "jaccard") result = (1.0 * count) / (len_mod_B + group_struct.len - count) > eps;
 
+    std::cout << "eps: " << eps << " val" << count << std::endl;
+
     if (result && params.merge_limit != 0)
     {
         float limit_factor;
