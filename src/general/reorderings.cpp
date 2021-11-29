@@ -592,6 +592,8 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
     intT current_group = 0;
     groups[perm[0]] = current_group;
 
+    inT block_size = params.reorder_algo == "saad" ? 1 : params.algo_block_size;
+
     for (int ip = 1; ip < cmat.rows; ip++)
     {
         intT curr = perm[ip];
@@ -602,7 +604,7 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
         }
         else
         {
-            if (!check_same_pattern(cmat.ja[curr], cmat.nzcount[curr], cmat.ja[prev], cmat.nzcount[prev], 0)) current_group++;
+            if (!check_same_pattern(cmat.ja[curr], cmat.nzcount[curr], cmat.ja[prev], cmat.nzcount[prev], block_size, 0)) current_group++;
         }
         groups[curr] = current_group;
     }
