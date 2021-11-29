@@ -576,6 +576,8 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
     }
     else if (params.reorder_algo == "saad_blocks")
     {
+
+        std::cout << "saad-blocks" << std::endl;
         for (int i = 0; i < cmat.rows; i++)
         {
             hashes[i] = row_block_hash(cmat.ja[i], cmat.nzcount[i], params.algo_block_size);
