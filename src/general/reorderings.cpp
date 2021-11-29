@@ -585,7 +585,6 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
     }
 
 
-    arr_print(hashes, cmat.rows);
     intT* perm = new intT[cmat.rows]{ 0 };
     sort_permutation(perm, hashes, cmat.rows);
 
@@ -677,7 +676,6 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
 
                     info.comparisons++;
-                    std::cout << "comparing row " << i << "(group " << in_group[i] << ") with row " << j << " (group" << in_group[j] << ")" << std::endl;
                     if (sim_condition(group_struct, cmat.ja[j], cmat.nzcount[j], second_group_size, params))
                     {
                         assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
@@ -906,8 +904,6 @@ bool scalar_block_condition(group_structure& group_struct, intT* cols_B, intT le
     if (params.similarity_func == "hamming") result = len_mod_B + group_struct.len- (2 * count) < eps * params.A_cols;
     else if (params.similarity_func == "scalar") result = (std::pow(count, 2) > std::pow(eps, 2) * group_struct.len * len_mod_B);
     else if (params.similarity_func == "jaccard") result = (1.0 * count) / (len_mod_B + group_struct.len - count) > eps;
-
-    std::cout << "eps: " << eps << " val" << count << std::endl;
 
     if (result && params.merge_limit != 0)
     {
