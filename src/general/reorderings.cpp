@@ -563,6 +563,7 @@ bool equal_rows(intT* cols_A, intT len_A, intT* cols_B, intT len_B)
     }
 }
 
+
 int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
 {
     intT* hashes = new intT[cmat.rows]{ 0 };
@@ -601,7 +602,7 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
         }
         else
         {
-            if (!equal_rows(cmat.ja[curr], cmat.nzcount[curr], cmat.ja[prev], cmat.nzcount[prev])) current_group++;
+            if (!check_same_pattern(cmat.ja[curr], cmat.nzcount[curr], cmat.ja[prev], cmat.nzcount[prev], 0)) current_group++;
         }
         groups[curr] = current_group;
     }
