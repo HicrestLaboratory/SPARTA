@@ -592,7 +592,7 @@ int hash_reordering(CSR& cmat, intT* groups, input_parameters &params)
     intT current_group = 0;
     groups[perm[0]] = current_group;
 
-    inT block_size = params.reorder_algo == "saad" ? 1 : params.algo_block_size;
+    intT block_size = params.reorder_algo == "saad" ? 1 : params.algo_block_size;
 
     for (int ip = 1; ip < cmat.rows; ip++)
     {
