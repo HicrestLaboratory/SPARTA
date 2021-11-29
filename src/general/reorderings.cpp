@@ -671,7 +671,7 @@ int saad_reordering(CSR& cmat, input_parameters &params, intT* out_group, int (*
 
 
                     info.comparisons++;
-                    std::cout << "comparing row " << i << " with row " << j << std::endl;
+                    std::cout << "comparing row " << i << "(group " << in_group[ip] << ") with row " << j << " (group" << in_group[jp] << ")" << std::endl;
                     if (sim_condition(group_struct, cmat.ja[j], cmat.nzcount[j], second_group_size, params))
                     {
                         assign_group(in_group, out_group, perm, cmat.rows, jp, current_out_group);
