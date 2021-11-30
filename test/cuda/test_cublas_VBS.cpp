@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
 
     //defining the output matrix C
 
-    DataT* mat_Cgemm;
+    DataT_C* mat_Cgemm;
 
 
     //--------------------------------------------
@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
             int mat_A_fmt = 1;
             convert_to_mat(cmat_A, mat_A_gemm, mat_A_fmt);
 
-            mat_Cgemm = new DataT[C_rows * C_cols]{ 0 };
+            mat_Cgemm = new DataT_C[C_rows * C_cols]{ 0 };
             int mat_Cgemm_fmt = 1;
 
             algo_times.clear();
@@ -189,7 +189,7 @@ int main(int argc, char* argv[]) {
 
         if (params.verbose > 0)        cout << "Starting VBS-dense cublas multiplication" << endl;
 
-        DataT* mat_Cblock = new DataT[C_rows * C_cols];
+        DataT* mat_Cblock = new DataT_C[C_rows * C_cols];
         int mat_Cblock_fmt = 1;
 
         algo_times.clear();
@@ -239,7 +239,7 @@ int main(int argc, char* argv[]) {
 
             if (params.verbose > 0)        cout << "Starting cusparse-dense cublas multiplication" << endl;
 
-            DataT* mat_C_csrmm = new DataT[C_rows * C_cols];
+            DataT* mat_C_csrmm = new DataT_C[C_rows * C_cols];
             int mat_C_csrmm_fmt = 1;
 
 
@@ -248,7 +248,7 @@ int main(int argc, char* argv[]) {
             int A_nnz = params.A_nnz;
             int* csrRowPtr = new int[A_rows + 1];
             int* csrColInd = new int[A_nnz];
-            float* csrVal = new float[A_nnz];
+            DataT* csrVal = new DataT[A_nnz];
             prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
         
             algo_times.clear();

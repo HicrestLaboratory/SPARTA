@@ -26,8 +26,8 @@
     intT = int
 */
 
-void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lead_dim, DataT *C, int C_lead_dim, float &dt, int n_streams = 16){
-    //multiplies a VBS matrix (vbmatA) and a dense matrix (B); stores into (C)
+void cublas_blockmat_multiply(const VBS& vbmatA, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, float& dt, int n_streams);
+//multiplies a VBS matrix (vbmatA) and a dense matrix (B); stores into (C)
     //vbmatA:       column-major entries storage;
     //              column-major block_storage; 
     //B:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
@@ -67,8 +67,8 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
     int C_rows = A_rows;
     int C_cols = B_cols;
 
-    const DataT alpha = 1;
-    const DataT beta = 1;
+    const DataT_C alpha = 1;
+    const DataT_C beta = 1;
    
     intT tot_nonzero_blocks = 0; //index for total nonzero blocks
 
@@ -201,12 +201,7 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
 //Matrix-Matrix multiplication with cublas. A,B,C are in column-major order.
 //Matrix A and B are in host
 //Matrix d_C is in device to allow for accumulation of results
-int cublas_gemm_custom(const DataT *A, unsigned int A_rows, unsigned int A_cols, unsigned int lda,
-	const DataT *B, unsigned int B_cols, unsigned int ldb,
-	DataT *C, unsigned int ldc,
-	const DataT alpha,
-	const DataT beta,
-    float& dt)
+int cublas_gemm_custom(const DataT* A, unsigned int A_rows, unsigned int A_cols, unsigned int lda, const DataT* B, unsigned int B_cols, unsigned int ldb, DataT_C* C, unsigned int ldc, const DataT_C alpha, const DataT_C beta, float& dt)
 {
     cudaDataType_t data_type_AB;
     cudaDataType_t data_type_C;
@@ -332,10 +327,7 @@ int cublas_gemm_custom(const DataT *A, unsigned int A_rows, unsigned int A_cols,
 }
 
 
-int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrColInd, float* csrVal, float* B, int B_cols, int B_lead_dim, float* C, int C_lead_dim, 
-    const float alpha,
-    const float beta,
-    float& dt)
+int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrColInd, DataT* csrVal, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, const DataT_C alpha, const DataT_C beta, float& dt)
 {
 
     cudaDataType_t data_type_AB;
@@ -496,7 +488,7 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
 }
 
 
-int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int *csrColInd, DataT *csrVal)
+int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int* csrColInd, DataT* csrVal);
 {
     if (cmat.fmt != 0)
     {
