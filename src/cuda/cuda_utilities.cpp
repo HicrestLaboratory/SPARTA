@@ -367,13 +367,14 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
 
     // allocate device memory
     int* d_RowPtr, * d_ColInd;
-    float* d_Val;
+    DataT* d_Val;
 
     checkCudaErrors(cudaMalloc((void**)&d_RowPtr, mem_size_csrRowPtr));
     checkCudaErrors(cudaMalloc((void**)&d_ColInd, mem_size_csrColInd));
     checkCudaErrors(cudaMalloc((void**)&d_Val, mem_size_csrVal));
 
-    float * d_B, * d_C;
+    DataT* d_B;
+    DataT_C* d_C;
     checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
     checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
 
