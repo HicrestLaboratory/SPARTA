@@ -26,7 +26,7 @@
     intT = int
 */
 
-void cublas_blockmat_multiply(const VBS& vbmatA, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, float& dt, int n_streams);
+void cublas_blockmat_multiply(const VBS& vbmatA, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, float& dt, int n_streams)
 //multiplies a VBS matrix (vbmatA) and a dense matrix (B); stores into (C)
     //vbmatA:       column-major entries storage;
     //              column-major block_storage; 
@@ -488,7 +488,7 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
 }
 
 
-int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int* csrColInd, DataT* csrVal);
+int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int* csrColInd, DataT* csrVal)
 {
     if (cmat.fmt != 0)
     {
