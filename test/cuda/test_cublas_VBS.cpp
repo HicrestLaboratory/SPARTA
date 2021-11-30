@@ -189,7 +189,7 @@ int main(int argc, char* argv[]) {
 
         if (params.verbose > 0)        cout << "Starting VBS-dense cublas multiplication" << endl;
 
-        DataT* mat_Cblock = new DataT_C[C_rows * C_cols];
+        DataT_C* mat_Cblock = new DataT_C[C_rows * C_cols];
         int mat_Cblock_fmt = 1;
 
         algo_times.clear();
@@ -204,12 +204,6 @@ int main(int argc, char* argv[]) {
         std_time = std_dev(algo_times);
         output_couple(output_names, output_values, "VBSmm_mean(ms)", mean_time);
         output_couple(output_names, output_values, "VBSmm_std", std_time);
-
-        if (params.check_correct)
-        {
-            bool vbs_check = equal(C_rows, C_cols, mat_Cgemm, C_cols, 0, mat_Cblock, C_cols, 0, 0.00001f);
-            output_couple(output_names, output_values, "vbs_check", vbs_check);
-        }
 
         if (params.verbose > 0)
         {
@@ -230,11 +224,6 @@ int main(int argc, char* argv[]) {
     //      CSR x Dense cusparse multiplication
     //--------------------------------------------
     if ((params.algo == 5) or (params.algo == -1))
-        if (typeid(DataT) != typeid(float))
-        {
-            if (params.verbose > 0)         cout << "WARNING: only float supported for CUSPARSE. DataT can be changed in sparse_utilities.h" << endl;
-        }
-        else
         {
 
             if (params.verbose > 0)        cout << "Starting cusparse-dense cublas multiplication" << endl;
@@ -262,12 +251,6 @@ int main(int argc, char* argv[]) {
             std_time = std_dev(algo_times);
             output_couple(output_names, output_values, "cusparse_spmm_mean(ms)", mean_time);
             output_couple(output_names, output_values, "cusparse_spmm_std", std_time);
-
-            if (params.check_correct)
-            {
-                bool csr_check = equal(C_rows, C_cols, mat_Cgemm, C_cols, 0, mat_C_csrmm, C_cols, 0, 0.00001f);
-                output_couple(output_names, output_values, "csr_check", csr_check);
-            }
 
             if (params.verbose > 0)
             {
