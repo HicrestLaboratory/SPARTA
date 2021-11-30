@@ -206,17 +206,17 @@ int main(int argc, char* argv[])
         {
             if (params.verbose > 0)        cout << "Starting VBS-perfect-dense cublas multiplication" << endl;
 
-            DataT_C* mat_Cperfect_block = new DataT_C[C_rows * C_cols];
+            DataT_C* mat_Cblock = new DataT_C[C_rows * C_cols];
 
             for (int i = -params.warmup; i < 1; i++)//do warmup runs
             {
                 float dt = 0;
-                cublas_blockmat_multiply(vbmat_perfect, mat_B, B_cols, B_rows, mat_Cperfect_block, C_rows, dt, params.n_streams);
+                cublas_blockmat_multiply(vbmat_perfect, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt, params.n_streams);
                 if (i >= 0) info_collector.vbs_perfect_times.push_back(dt);
                 if (params.verbose > 0)            cout << "BlockSparse-Dense multiplication. Time taken(ms): " << dt << endl;
             }
 
-            delete[] mat_Cperfect_block;
+            delete[] mat_Cblock;
             cleanVBS(vbmat_perfect);
         }
 

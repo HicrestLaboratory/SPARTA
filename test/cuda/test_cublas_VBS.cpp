@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
 
             for (int i = -params.warmup; i < params.experiment_reps; i++)
             {
-                cublas_gemm_custom(mat_A_gemm, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
+                cublas_gemm_custom(mat_A_gemm, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1, 0, dt);
                 //only saves non-warmup runs
                 if (i >= 0) algo_times.push_back(dt);
             }

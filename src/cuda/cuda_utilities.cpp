@@ -42,6 +42,7 @@ void cublas_blockmat_multiply(const VBS& vbmatA, DataT* B, int B_cols, int B_lea
     {
         data_type_AB = CUDA_R_8I;
         data_type_C = CUDA_R_32I;
+        std::cout << data_type_AB << " " << data_type_C << std::endl;
     }
     else if (typeid(DataT) == typeid(float))
     {
