@@ -206,17 +206,17 @@ int main(int argc, char* argv[])
         {
             if (params.verbose > 0)        cout << "Starting VBS-perfect-dense cublas multiplication" << endl;
 
-            DataT* mat_Cperfect_block = new DataT[C_rows * C_cols];
+            DataT_C* mat_Cblock = new DataT_C[C_rows * C_cols];
 
             for (int i = -params.warmup; i < 1; i++)//do warmup runs
             {
                 float dt = 0;
-                cublas_blockmat_multiply(vbmat_perfect, mat_B, B_cols, B_rows, mat_Cperfect_block, C_rows, dt, params.n_streams);
+                cublas_blockmat_multiply(vbmat_perfect, mat_B, B_cols, B_rows, mat_Cblock, C_rows, dt, params.n_streams);
                 if (i >= 0) info_collector.vbs_perfect_times.push_back(dt);
                 if (params.verbose > 0)            cout << "BlockSparse-Dense multiplication. Time taken(ms): " << dt << endl;
             }
 
-            delete[] mat_Cperfect_block;
+            delete[] mat_Cblock;
             cleanVBS(vbmat_perfect);
         }
 
@@ -227,7 +227,7 @@ int main(int argc, char* argv[])
 
         if (params.verbose > 0)        cout << "Starting VBS-reordered-dense cublas multiplication" << endl;
 
-        DataT* mat_Cblock = new DataT[C_rows * C_cols];
+        DataT_C* mat_Cblock = new DataT_C[C_rows * C_cols];
 
         for (int i = -params.warmup; i < 1; i++)//do warmup runs
         {
@@ -243,24 +243,23 @@ int main(int argc, char* argv[])
         //--------------------------------------------
         //      CSR x Dense cusparse multiplication
         //--------------------------------------------
-        if (typeid(DataT) != typeid(float)) cout << "WARNING: only float supported for CUSPARSE. DataT can be changed in sparse_utilities.h" << endl;
 
         if (params.verbose > 0) cout << "Starting cusparse-dense cublas multiplication" << endl;
 
-        DataT* mat_C_csrmm = new DataT[C_rows * C_cols];
+        DataT_C* mat_C_csrmm = new DataT_C[C_rows * C_cols];
         int mat_C_csrmm_fmt = 1;
 
         //prepare the cusparse CSR format
         int A_nnz = params.A_nnz;
         int* csrRowPtr = new int[A_rows + 1];
         int* csrColInd = new int[A_nnz];
-        float* csrVal = new float[A_nnz];
+        DataT* csrVal = new DataT[A_nnz];
         prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
 
         for (int i = -params.warmup; i < 1; i++)
         {
             float dt = 0;
-            cusparse_gemm_custom(A_rows, A_cols, A_nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f, dt);
+            cusparse_gemm_custom(A_rows, A_cols, A_nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1, 0, dt);
             if (i >= 0) info_collector.cusparse_times.push_back(dt);
             if (params.verbose > 0)          cout << "CSR-Dense cusparse multiplication. Time taken: " << dt << endl;
         }

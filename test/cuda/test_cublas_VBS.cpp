@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
 
     //defining the output matrix C
 
-    DataT* mat_Cgemm;
+    DataT_C* mat_Cgemm;
 
 
     //--------------------------------------------
@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
             int mat_A_fmt = 1;
             convert_to_mat(cmat_A, mat_A_gemm, mat_A_fmt);
 
-            mat_Cgemm = new DataT[C_rows * C_cols]{ 0 };
+            mat_Cgemm = new DataT_C[C_rows * C_cols]{ 0 };
             int mat_Cgemm_fmt = 1;
 
             algo_times.clear();
@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
 
             for (int i = -params.warmup; i < params.experiment_reps; i++)
             {
-                cublas_gemm_custom(mat_A_gemm, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1.0f, 0.0f, dt);
+                cublas_gemm_custom(mat_A_gemm, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1, 0, dt);
                 //only saves non-warmup runs
                 if (i >= 0) algo_times.push_back(dt);
             }
@@ -172,10 +172,6 @@ int main(int argc, char* argv[]) {
             output_couple(output_names, output_values, "gemm_std", std_time);
 
             if (params.verbose > 0)        cout << "Dense-Dense multiplication. Time taken(ms): " << mean_time << endl;
-            if (params.verbose > 1)
-            {
-                matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1);
-            }
 
             delete[] mat_A_gemm;
         }
@@ -189,7 +185,7 @@ int main(int argc, char* argv[]) {
 
         if (params.verbose > 0)        cout << "Starting VBS-dense cublas multiplication" << endl;
 
-        DataT* mat_Cblock = new DataT[C_rows * C_cols];
+        DataT_C* mat_Cblock = new DataT_C[C_rows * C_cols];
         int mat_Cblock_fmt = 1;
 
         algo_times.clear();
@@ -205,23 +201,10 @@ int main(int argc, char* argv[]) {
         output_couple(output_names, output_values, "VBSmm_mean(ms)", mean_time);
         output_couple(output_names, output_values, "VBSmm_std", std_time);
 
-        if (params.check_correct)
-        {
-            bool vbs_check = equal(C_rows, C_cols, mat_Cgemm, C_cols, 0, mat_Cblock, C_cols, 0, 0.00001f);
-            output_couple(output_names, output_values, "vbs_check", vbs_check);
-        }
-
         if (params.verbose > 0)
         {
             cout << "BlockSparse-Dense multiplication. Time taken(ms): " << mean_time << endl;
         }
-        if (params.verbose > 1)
-        {
-
-            cout << "BLOCK RESULT" << endl;
-            matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
-        }
-
         delete[] mat_Cblock;
 
     }
@@ -230,16 +213,11 @@ int main(int argc, char* argv[]) {
     //      CSR x Dense cusparse multiplication
     //--------------------------------------------
     if ((params.algo == 5) or (params.algo == -1))
-        if (typeid(DataT) != typeid(float))
-        {
-            if (params.verbose > 0)         cout << "WARNING: only float supported for CUSPARSE. DataT can be changed in sparse_utilities.h" << endl;
-        }
-        else
         {
 
             if (params.verbose > 0)        cout << "Starting cusparse-dense cublas multiplication" << endl;
 
-            DataT* mat_C_csrmm = new DataT[C_rows * C_cols];
+            DataT_C* mat_C_csrmm = new DataT_C[C_rows * C_cols];
             int mat_C_csrmm_fmt = 1;
 
 
@@ -248,7 +226,7 @@ int main(int argc, char* argv[]) {
             int A_nnz = params.A_nnz;
             int* csrRowPtr = new int[A_rows + 1];
             int* csrColInd = new int[A_nnz];
-            float* csrVal = new float[A_nnz];
+            DataT* csrVal = new DataT[A_nnz];
             prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
         
             algo_times.clear();
@@ -263,21 +241,9 @@ int main(int argc, char* argv[]) {
             output_couple(output_names, output_values, "cusparse_spmm_mean(ms)", mean_time);
             output_couple(output_names, output_values, "cusparse_spmm_std", std_time);
 
-            if (params.check_correct)
-            {
-                bool csr_check = equal(C_rows, C_cols, mat_Cgemm, C_cols, 0, mat_C_csrmm, C_cols, 0, 0.00001f);
-                output_couple(output_names, output_values, "csr_check", csr_check);
-            }
-
             if (params.verbose > 0)
             {
                 cout << "CSR-Dense cusparse multiplication. Time taken: " << mean_time << endl;
-            }
-            if (params.verbose > 1)
-            {
-
-                cout << "CSR-dense cusparse:" << endl;
-                matprint(mat_C_csrmm, C_rows, C_cols, C_rows, 1);
             }
 
             delete[] mat_C_csrmm;
