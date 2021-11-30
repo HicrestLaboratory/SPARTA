@@ -254,7 +254,7 @@ int main(int argc, char* argv[])
         int A_nnz = params.A_nnz;
         int* csrRowPtr = new int[A_rows + 1];
         int* csrColInd = new int[A_nnz];
-        float* csrVal = new DataT[A_nnz];
+        DataT* csrVal = new DataT[A_nnz];
         prepare_cusparse_CSR(cmat_A, csrRowPtr, csrColInd, csrVal);
 
         for (int i = -params.warmup; i < 1; i++)
