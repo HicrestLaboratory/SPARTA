@@ -228,7 +228,7 @@ int main(int argc, char* argv[]) {
 
             if (params.verbose > 0)        cout << "Starting cusparse-dense cublas multiplication" << endl;
 
-            DataT* mat_C_csrmm = new DataT_C[C_rows * C_cols];
+            DataT_C* mat_C_csrmm = new DataT_C[C_rows * C_cols];
             int mat_C_csrmm_fmt = 1;
 
 
