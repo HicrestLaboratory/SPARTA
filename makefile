@@ -57,7 +57,7 @@ CUDA_SRC = $(wildcard $(CUDA_SRC_DIR)/*.cpp)
 CUDA_OBJECTS := $(CUDA_SRC: $(CUDA_SRC_DIR)/%.cpp=$(CUDA_OBJ_DIR)/%.o) $(GEN_OBJECTS)
 
 
-all: test_cublas_VBS test_cublas_reorder test_cublas_cusparse_comparison test_saad
+all: test_cublas_VBS test_cublas_reorder test_saad
 
 
 $(GEN_OBJ_DIR)/%.o : $(GEN_SRC_DIR)/%.cpp
