@@ -172,10 +172,6 @@ int main(int argc, char* argv[]) {
             output_couple(output_names, output_values, "gemm_std", std_time);
 
             if (params.verbose > 0)        cout << "Dense-Dense multiplication. Time taken(ms): " << mean_time << endl;
-            if (params.verbose > 1)
-            {
-                matprint(mat_Cgemm, C_rows, C_cols, C_rows, 1);
-            }
 
             delete[] mat_A_gemm;
         }
@@ -209,13 +205,6 @@ int main(int argc, char* argv[]) {
         {
             cout << "BlockSparse-Dense multiplication. Time taken(ms): " << mean_time << endl;
         }
-        if (params.verbose > 1)
-        {
-
-            cout << "BLOCK RESULT" << endl;
-            matprint(mat_Cblock, C_rows, C_cols, C_rows, 1);
-        }
-
         delete[] mat_Cblock;
 
     }
@@ -255,12 +244,6 @@ int main(int argc, char* argv[]) {
             if (params.verbose > 0)
             {
                 cout << "CSR-Dense cusparse multiplication. Time taken: " << mean_time << endl;
-            }
-            if (params.verbose > 1)
-            {
-
-                cout << "CSR-dense cusparse:" << endl;
-                matprint(mat_C_csrmm, C_rows, C_cols, C_rows, 1);
             }
 
             delete[] mat_C_csrmm;
