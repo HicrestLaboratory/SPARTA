@@ -260,7 +260,7 @@ int main(int argc, char* argv[])
         for (int i = -params.warmup; i < 1; i++)
         {
             float dt = 0;
-            cusparse_gemm_custom(A_rows, A_cols, A_nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1.0f, 0.0f, dt);
+            cusparse_gemm_custom(A_rows, A_cols, A_nnz, csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_csrmm, C_rows, 1, 0, dt);
             if (i >= 0) info_collector.cusparse_times.push_back(dt);
             if (params.verbose > 0)          cout << "CSR-Dense cusparse multiplication. Time taken: " << dt << endl;
         }
