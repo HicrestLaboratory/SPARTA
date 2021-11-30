@@ -149,15 +149,15 @@ void cublas_blockmat_multiply(const VBS &vbmatA, DataT *B, int B_cols, int B_lea
                     rows_in_block, B_cols, cols_in_block,           //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
                     &alpha,
                     d_A_block,                                      // blockA device pointer,
-                    cuda_type_AB,                                      // blockA datatype
+                    data_type_AB,                                      // blockA datatype
                     rows_in_block,                                  // blockA leading dimension
                     d_B_block,                                      // blockB device pointer
-                    cuda_type_AB,                                      // blockB datatype
+                    data_type_AB,                                      // blockB datatype
                     B_rows,                                         // leading dimension
                     &beta,
-                    d_C_block, cuda_type,                           // blockC device pointer, blockC type
+                    d_C_block, data_type_C,                           // blockC device pointer, blockC type
                     C_rows,
-                    cuda_type_C,                                      // compute_type
+                    data_type_C,                                      // compute_type
                     cuda_algo)
             );                                       
             vbmat_idx += rows_in_block * cols_in_block;
@@ -299,7 +299,7 @@ int cublas_gemm_custom(const DataT *A, unsigned int A_rows, unsigned int A_cols,
             d_B, data_type_AB, B_rows,
             &beta,
             d_C, data_type_C, C_rows,
-            cuda_type,
+            data_type_C,
             cuda_algo
             ));
 
