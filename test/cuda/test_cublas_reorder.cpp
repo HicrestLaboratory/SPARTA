@@ -243,7 +243,6 @@ int main(int argc, char* argv[])
         //--------------------------------------------
         //      CSR x Dense cusparse multiplication
         //--------------------------------------------
-        if (typeid(DataT) != typeid(float)) cout << "WARNING: only float supported for CUSPARSE. DataT can be changed in sparse_utilities.h" << endl;
 
         if (params.verbose > 0) cout << "Starting cusparse-dense cublas multiplication" << endl;
 
