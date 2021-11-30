@@ -1,5 +1,10 @@
 #pragma once
 typedef float DataT; //precision for matrix entries
+typedef float DataT_C; //precision for matrix entries
+//types for the two multiplied matrices and the result matrix. available choices are: 
+//          INT_8, INT_32
+//          FLOAT_32, FLOAT_32
+
 typedef long int intT;
 
 struct CSR {
