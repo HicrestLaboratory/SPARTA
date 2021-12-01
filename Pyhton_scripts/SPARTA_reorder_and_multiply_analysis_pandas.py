@@ -14,22 +14,13 @@ import numpy as np
 import seaborn as sns
 from scipy import interpolate
 
-
-saad = False
-if saad:
-    input_file = "../results/test_reordering_blocked_synth_saad_27_10.csv"
-else:
-        input_file = "../results/mini_reordering_16_11.csv"
-    #    input_file = "../results/test_reordering_blocked_synth_12_11.csv"
-#    input_file = "../results/real_reordering_results_25_10.csv"
-
                     
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         description="Makes images from experiments")
     
-    parser.add_argument("--input-csv", default="../results/test_reordering_blocked_synth_2_saad.csv",
+    parser.add_argument("--input-csv", default="../results/test_cublas_reordering-11-26-2021.csv",
         help="file that contains the already run experiments")
     parser.add_argument("--output-dir", default="../images/",
         help="directory where the images are saved")
@@ -39,40 +30,46 @@ if __name__ == "__main__":
     input_csv = args.input_csv;
     output_dir = args.output_dir;
                     
-results_df = pd.read_csv(input_file);
+results_df = pd.read_csv(input_csv);
 
-columns = ['exp_name', 
-           'input_type', 
-           'input_source',
-           'rows', 
-           'cols', 
-           'B_cols',
-       'B_density',
-       'total_nonzeros', 
-       'input_blocks_density',
-       'input_entries_density', 
-       'input_block_size', 
-       'reorder_algorithm',
-       'algo_block_size', 
-       'epsilon', 
-       'similarity_func', 
-       'hierarchic_merge',
-       'scramble', 
-       'Warmup', 
-       'Repetitions', 
-       'Algorithm',
-       'VBS_avg_nzblock_height', 
-       'VBS_avg_nzblock_height_error',
-       'VBS_total_nonzeros', 
-       'VBS_total_nonzeros_error', 
-       'VBS_block_rows',
-       'VBS_block_rows_error', 
-       'VBS_nz_blocks', 
-       'VBS_nz_blocks_error',
-       'VBS_min_block_H', 
-       'VBS_min_block_H_error', 
-       'VBS_max_block_H',
-       'VBS_max_block_H_error']
+columns = {'exp_name' : "experiment name",
+           'input_type': "type of input", 
+           'input_source': "input matrix", 
+           'rows' : "K", 
+           'cols': "M", 
+           'B_cols': "N",
+       'B_density': "density of B", 
+       'total_nonzeros': "total nonzeros", 
+       'input_blocks_density': "fraction of nonzero blocks",
+       'input_entries_density': "density inside nonzero blocks", 
+       'input_block_size': "block size", 
+       'reorder_algorithm': "reorder algorithm",
+       'algo_block_size': "block size", 
+       'epsilon' : "tau", 
+       'similarity_func': "similarity function", 
+       'hierarchic_merge': "hierarchic merge",
+       'merge_limit': "merge limit", 
+       'scramble': "scramble", 
+       'Warmup': "warmup experiments", 
+       'Repetitions': "number of repetitions", 
+       'Algorithm': "algo sel",
+       'VBS_avg_nzblock_height': "avg. block height in the reordered matrix",
+       'VBS_avg_nzblock_height_error': "error of the avg block height",
+       'VBS_total_nonzeros': "total nonzero area in the reordered matrix",
+       'VBS_total_nonzeros_error': "total nonzero area error", 
+       'VBS_block_rows': "block rows",
+       'VBS_block_rows_error': "block rows error", 
+       'VBS_nz_blocks': "number of nonzero blocks", 
+       'VBS_nz_blocks_error': "error on the number of nonzero blocks",
+       'avg_skipped': "avg number of skipped comparisons", 
+       'skipped_std': "error of skipped", 
+       'avg_comparisons': "avg number of row comparisons", 
+       'comparisons_std': "error in row comparisons",
+       'VBSmm_algo_mean(ms)': "time to complete a block multiplication", 
+       'VBSmm_algo_std': "error in block multiplication", 
+       'cusparse_spmm_mean(ms)': "time to complete the cusparse multiplication",
+       'cusparse_spmm_std': "error in cusparse multiplication"
+       }
 
 numerics = [
            'rows', 
@@ -95,12 +92,16 @@ numerics = [
        'VBS_total_nonzeros_error', 
        'VBS_block_rows',
        'VBS_block_rows_error', 
+       'avg_skipped', 
+       'skipped_std', 
+       'avg_comparisons', 
+       'comparisons_std',
        'VBS_nz_blocks', 
        'VBS_nz_blocks_error',
-       'VBS_min_block_H', 
-       'VBS_min_block_H_error', 
-       'VBS_max_block_H',
-       'VBS_max_block_H_error']
+       'VBSmm_algo_mean(ms)',
+       'VBSmm_algo_std',
+       'cusparse_spmm_mean(ms)',
+       'cusparse_spmm_std']
 
 results_df[numerics] = results_df[numerics].apply(pd.to_numeric)
 
@@ -115,22 +116,22 @@ results_df["relative_density"] = results_df.apply(lambda x: x['output_in_block_d
 results_df["true_relative_density"] = results_df.apply(lambda x: x['output_in_block_density']/x["input_density"], axis=1)
 
 
-#results_df = results_df[results_df["input_blocks_density"] != 0.01]
-
-to_display = ["input_entries_density",
+experimental_variables = ["input_entries_density",
               "input_blocks_density",
               "rows",
               "cols",
+              "B_cols",
               "input_block_size",
               "algo_block_size",
               "epsilon",
               "similarity_func",
               "scramble",
               "hierarchic_merge",
-              "merge_limit"
+              "merge_limit",
+              "reorder_algorithm"
         ]
 
-for var in to_display:
+for var in experimental_variables:
     print(var, results_df[var].unique());
 
 def build_query(fixed):
@@ -140,194 +141,19 @@ def build_query(fixed):
         if val != "any":
             q += k + " == " + str(val) + " and ";
     q = q[0:-5];
-    return q;
+    return q;   
 
 
 
 
-def reorder_curve(rows = 2048, cols = 2048, block_size = 64, i_density = 0.1, b_density = 0.1, similarity = "'jaccard'", save_folder = "../images/reorder_curve/", name = "reorder_curve", saad = False, hierarchic = 1, merge_limit = 0):
-    fixed = {
-        "input_entries_density": i_density,
-        "input_blocks_density": b_density,
-        "rows": str(rows),
-        "cols": str(cols),
-        "input_block_size": str(block_size),
-        "algo_block_size": str(block_size),
-        "epsilon": "any",
-        "similarity_func": similarity,
-        "scramble": "1",
-        "hierarchic_merge":str(hierarchic),
-        "merge_limit" : str(merge_limit)
-    }
-    
-    if saad: 
-        name = "reorder_curve_saad";
+def cycle_through(exceptions, func):
+    variables = [];
+    for variable in experimental_variables:
+        if not (variable in exceptions):
+            variables.append(results_df[variable].unique());
+    for 
 
-    q = build_query(fixed)
-    results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "relative_density", kind = "scatter");
-    plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
-    plt.minorticks_on()
-    plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
-    plt.xlim(0,200)
-    plt.ylim(0,2)
-    plt.axvline(block_size, alpha = 0.2, color = "red")
-    plt.axhline(1, alpha = 0.2, color = "red")
-    plt.title("M,N = {},{}\n block_size = {} \n density inside nonzero blocks = {} \n fraction of nonzero-blocks = {} \n similarity function = {}".format(cols,rows,block_size,  i_density, b_density, similarity))
-    plt.xlabel("Average height of nonzero blocks");
-    plt.ylabel("Average density inside nonzero blocks \n (relative to original blocking)");
-    
-    savename = save_folder + name + "_r{}_c{}_b{}_d{}_bd{}_{}.jpg".format(cols,rows,block_size,  i_density, b_density, similarity);
-
-    plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
-    plt.show()
-    plt.close()
-    
-
-for cols in [2048,]:
-    for rows in [2048,]:
-        for block_size in [64]:
-            for i_density in [0.01, 0.02, 0.05, 0.1, 0.2, 0.5]:
-                for b_density in [0.1,0.2,0.3,0.4,0.5]:
-                    for similarity in ["'scalar'"]:
-                        try:
-                            reorder_curve(cols,rows,block_size, i_density, b_density, similarity, saad = saad);
-                        except:
-                            print("could not make image for cols = {}, rows = {}, block_size = {}".format(cols,rows,block_size))
-
-
-def compare_reorder_curves(rows = 2048, cols = 2048, block_size = 64, i_density = 0.1, b_density = 0.1, similarity = "'jaccard'", save_folder = "../images/reorder_curve/", name = "reorder_curve_comparison_", saad = False, hierarchic = 1, merge_limit = 0, variation = "merge_limit"):
-    fixed = {
-        "input_entries_density": i_density,
-        "input_blocks_density": b_density,
-        "rows": str(rows),
-        "cols": str(cols),
-        "input_block_size": str(block_size),
-        "algo_block_size": str(block_size),
-        "epsilon": "any",
-        "similarity_func": similarity,
-        "scramble": "1",
-        "hierarchic_merge":str(hierarchic),
-        "merge_limit" : str(merge_limit)
-    }
-    
-    fixed
-    
-    fig,ax = plt.subplots();
-    
-    variation_array = results_df[variation].unique();
-    colors = ["r","b","m","c","g","y","o","p"];
-    for val,col in zip(variation_array, colors):
-        fixed[variation] = val;
-        q = build_query(fixed)
-        results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "relative_density", kind = "scatter", label = val, ax = ax, color = col);
-    
-    plt.legend();
-    plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
-    plt.minorticks_on()
-    plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
-    plt.xlim(0,200)
-    plt.ylim(0,2)
-    plt.axvline(block_size, alpha = 0.2, color = "red")
-    plt.axhline(1, alpha = 0.2, color = "red")
-    plt.title("M,N = {},{}\n block_size = {} \n density inside nonzero blocks = {} \n fraction of nonzero-blocks = {} \n similarity function = {}".format(cols,rows,block_size,  i_density, b_density, similarity))
-    plt.xlabel("Average height of nonzero blocks");
-    plt.ylabel("Average density inside nonzero blocks \n (relative to original blocking)");
-    
-    savename = save_folder + name + "_r{}_c{}_b{}_d{}_bd{}_{}_var_{}.jpg".format(cols,rows,block_size,  i_density, b_density, similarity,variation);
-
-    plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
-    plt.show()
-    plt.close()
-
-
-
-def real_reorder_curve(graph = None, block_size = 64, similarity = "'scalar'", save_folder = "../images/reorder_curve/", name = "real_reorder_curve", saad = False):
-    fixed = {
-        "input_source": "'" + str(graph) + "'",
-        "algo_block_size": str(block_size),
-        "epsilon": "any",
-        "similarity_func": similarity,
-        "scramble": "1"
-    }
-    
-    if saad: 
-        fixed["algo_block_size"] = 1;
-        name = "reorder_curve_saad";
-
-
-    graph_name = graph.split("/")[-1].split(".")[0]
-    fixed
-    q = build_query(fixed)
-    results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "true_relative_density", kind = "scatter");
-    dens = str(results_df.query(q)["input_density"].unique()[0])[0:6];
-    rows = str(results_df.query(q)["rows"].unique()[0]);
-    cols = str(results_df.query(q)["cols"].unique()[0]);
-
-    plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
-    plt.minorticks_on()
-    plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
-    plt.xlim(0,100)
-    plt.ylim(0,20)
-    plt.title("matrix: {}, \n M, K = {},{}, \n density = {} \n block size = {} \n".format(graph_name, rows, cols, dens, block_size, similarity))
-    plt.xlabel("Average height of nonzero blocks");
-    plt.ylabel("Average density inside nonzero blocks \n (relative to original density)");
-    
-    savename = save_folder + name + "{}_bs{}_{}.jpg".format(graph_name,block_size, similarity);
-
-    plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
-    plt.show()
-    plt.close()
-    
-    
-for graph in results_df["input_source"].unique():
-    for algo_block_size in [64,]:
-        for sim in ["'scalar'",]:
-            try:
-                real_reorder_curve(graph,algo_block_size,sim);
-            except: 
-                print("could not process", graph)
-
-
-def curve_comparison(rows = 2048, cols = 2048, block_size = 64, i_density = 0.1, b_density = 0.1, save_folder = "../images/reorder_curve/", name = "reorder_curve_comparison"):
-    fixed = {
-        "input_entries_density": i_density,
-        "input_blocks_density": b_density,
-        "rows": str(rows),
-        "cols": str(cols),
-        "input_block_size": str(block_size),
-        "algo_block_size": str(block_size),
-        "epsilon": "any",
-        "similarity_func": "any",
-        "scramble": "1"
-    }
-    
-    for similarity in ["'scalar'","'jaccard'"]:
-        fixed["similarity_func"] = similarity
-        q = build_query(fixed)
-        results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "relative_density", kind = "scatter", label = "similarity");
-        
-    plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
-    plt.minorticks_on()
-    plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
-    #plt.xlim(0,1000)
-    #plt.ylim(0,2)
-    plt.axvline(block_size, alpha = 0.2, color = "red")
-    plt.axhline(1, alpha = 0.2, color = "red")
-    plt.title("M,N = {},{}\n block_size = {} \n density inside nonzero blocks = {} \n fraction of nonzero-blocks = {} \n similarity function = {}".format(cols,rows,block_size,  i_density, b_density, similarity))
-    plt.xlabel("Average height of nonzero blocks");
-    plt.ylabel("Average density inside nonzero blocks \n (relative to original blocking)");
-    
-    savename = save_folder + name + "_r{}_c{}_b{}_d{}_bd{}_{}.jpg".format(cols,rows,block_size,  i_density, b_density, similarity);
-
-    plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
-    plt.show()
-    plt.close()
-
-
-def reorder_heatmap(rows = 2048, cols = 2048, block_size = 64, similarity = "'scalar'", save_folder = "../images/reorder_landscape/", name = "reorder_heatmap", saad = False):
-    
-    
-    fixed = {
+fixed = {
         "input_entries_density": None,
               "input_blocks_density": None,
               "rows": str(rows),
@@ -337,9 +163,14 @@ def reorder_heatmap(rows = 2048, cols = 2048, block_size = 64, similarity = "'sc
               "epsilon": "any",
               "similarity_func": similarity,
               "scramble": "1"
-    }
+         }
 
-    if saad: 
+def reorder_heatmap(fixed, save_folder = "../images/reorder_landscape/", name = "reorder_heatmap"):
+    
+    
+
+
+    if fixed["reorder_algorithm"] == "saad": 
             name = "reorder_heatmap_saad";
     
     heatmap_array = []
