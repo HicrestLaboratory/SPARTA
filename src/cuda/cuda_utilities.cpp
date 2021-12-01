@@ -37,7 +37,7 @@ void cublas_blockmat_multiply(const VBS& vbmatA, DataT* B, int B_cols, int B_lea
 
     cudaDataType_t data_type_AB;
     cudaDataType_t data_type_C;
-    cudaDataType_t compute_type;
+    cudaComputeType_t compute_type;
 
     if (typeid(DataT) == typeid(int8_t))
     {
@@ -209,7 +209,7 @@ int cublas_gemm_custom(const DataT* A, unsigned int A_rows, unsigned int A_cols,
 {
     cudaDataType_t data_type_AB;
     cudaDataType_t data_type_C;
-    cudaDataType_t compute_type;
+    cudaComputeType_t compute_type;
 
     if (typeid(DataT) == typeid(int8_t))
     {
