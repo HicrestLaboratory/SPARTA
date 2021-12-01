@@ -37,17 +37,19 @@ void cublas_blockmat_multiply(const VBS& vbmatA, DataT* B, int B_cols, int B_lea
 
     cudaDataType_t data_type_AB;
     cudaDataType_t data_type_C;
+    cudaDataType_t compute_type;
 
     if (typeid(DataT) == typeid(int8_t))
     {
         data_type_AB = CUDA_R_8I;
         data_type_C = CUDA_R_32I;
-        std::cout << data_type_AB << " " << data_type_C << std::endl;
+        compute_type = CUBLAS_COMPUTE_32I;
     }
     else if (typeid(DataT) == typeid(float))
     {
         data_type_AB = CUDA_R_32F;
         data_type_C = CUDA_R_32F;
+        compute_type = CUBLAS_COMPUTE_32F;
     }
     else
     {
@@ -159,7 +161,7 @@ void cublas_blockmat_multiply(const VBS& vbmatA, DataT* B, int B_cols, int B_lea
                     &beta,
                     d_C_block, data_type_C,                           // blockC device pointer, blockC type
                     C_rows,
-                    data_type_C,                                      // compute_type
+                    compute_type,                                      // compute_type
                     cuda_algo)
             );                                       
             vbmat_idx += rows_in_block * cols_in_block;
@@ -207,22 +209,24 @@ int cublas_gemm_custom(const DataT* A, unsigned int A_rows, unsigned int A_cols,
 {
     cudaDataType_t data_type_AB;
     cudaDataType_t data_type_C;
+    cudaDataType_t compute_type;
 
     if (typeid(DataT) == typeid(int8_t))
     {
         data_type_AB = CUDA_R_8I;
         data_type_C = CUDA_R_32I;
+        compute_type = CUBLAS_COMPUTE_32I;
     }
     else if (typeid(DataT) == typeid(float))
     {
         data_type_AB = CUDA_R_32F;
         data_type_C = CUDA_R_32F;
+        compute_type = CUBLAS_COMPUTE_32F;
     }
     else
     {
         std::cout << "WARNING! Unsopported multiplication type. Check comp_mats.h" << std::endl;
     }
-
 
     cublasGemmAlgo_t cuda_algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP;
 
@@ -296,7 +300,7 @@ int cublas_gemm_custom(const DataT* A, unsigned int A_rows, unsigned int A_cols,
             d_B, data_type_AB, B_rows,
             &beta,
             d_C, data_type_C, C_rows,
-            data_type_C,
+            compute_type,
             cuda_algo
             ));
 
