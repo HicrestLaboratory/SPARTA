@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import argparse
 import numpy as np
 import seaborn as sns
+import itertools as itr
 from scipy import interpolate
 
                     
@@ -105,8 +106,6 @@ numerics = [
 
 results_df[numerics] = results_df[numerics].apply(pd.to_numeric)
 
-results_df = results_df[results_df["epsilon"] < 0.85];
-
 results_df["input_density"] = results_df.apply(lambda x: x['total_nonzeros']/(x["rows"]*x["cols"]), axis=1)
 
 results_df["output_in_block_density"] = results_df.apply(lambda x: x['total_nonzeros']/x["VBS_total_nonzeros"], axis=1)
@@ -114,6 +113,8 @@ results_df["output_in_block_density"] = results_df.apply(lambda x: x['total_nonz
 results_df["relative_density"] = results_df.apply(lambda x: x['output_in_block_density']/x["input_entries_density"], axis=1)
 
 results_df["true_relative_density"] = results_df.apply(lambda x: x['output_in_block_density']/x["input_density"], axis=1)
+
+results_df["sp_vs_cu"] = results_df.apply(lambda x: x['cusparse_spmm_mean(ms)']/x["VBSmm_algo_mean(ms)"], axis=1)
 
 
 experimental_variables = ["input_entries_density",
@@ -146,47 +147,63 @@ def build_query(fixed):
 
 
 
-def cycle_through(exceptions, func):
-    variables = [];
-    for variable in experimental_variables:
-        if not (variable in exceptions):
-            variables.append(results_df[variable].unique());
-    for 
+fixed = {}
+for var in experimental_variables:
+    fixed[var] = "any";
 
-fixed = {
-        "input_entries_density": None,
-              "input_blocks_density": None,
-              "rows": str(rows),
-              "cols": str(cols),
-              "input_block_size": str(block_size),
-              "algo_block_size": str(block_size),
-              "epsilon": "any",
-              "similarity_func": similarity,
-              "scramble": "1"
-         }
 
-def reorder_heatmap(fixed, save_folder = "../images/reorder_landscape/", name = "reorder_heatmap"):
+def generate_exp_iterator(ignore = [], fixed = {}):
+    value_lists = []
+    for var in experimental_variables:
+        if (var in fixed.keys()):
+            value_lists.append([fixed[var],])
+        elif (var in ignore):
+            value_lists.append(["any",])
+        else:
+            value_lists.append(results_df[var].unique())
+            
+    return itr.product(*value_lists);
+
+
+def make_title(variables_dict, ignore = ["algo_block_size","scramble","reorder_algorithm"]):
+    q = ""
+    for k, val in variables_dict.items():
+        if val != "any" and k not in ignore: 
+            q += columns[k] + " = " + str(val) + " \n ";
+    return q;
+
+def add_to_query(var, val):
+    return " and " + var + "==" + str(val);
+
+def make_savename(name, variables_dict, ignore = ["algo_block_size",]):
+    q = name
+    for k, val in variables_dict.items():
+        if val != "any" and k not in ignore: 
+            q += "_" + k[0:2] + str(val);
+    return q + ".jpg";
+
+
+def performance_heatmap(variables_dict, save_folder = "../images/performance_landscape/", name = "reorder_and_multiply_heatmap_"):
     
     
-
-
-    if fixed["reorder_algorithm"] == "saad": 
+    if variables_dict["reorder_algorithm"] == "saad": 
             name = "reorder_heatmap_saad";
-    
+            
     heatmap_array = []
     for input_blocks_density in results_df["input_blocks_density"].unique():
         
         row = []
         for input_entries_density in results_df["input_entries_density"].unique():
-    
-            fixed["input_entries_density"] = input_entries_density;
-            fixed["input_blocks_density"] = input_blocks_density;
-            q = build_query(fixed)
+            
+            q = build_query(variables_dict)
+            q += add_to_query("input_entries_density", input_entries_density);
+            q += add_to_query("input_blocks_density", input_blocks_density);
+            
             interp_df = results_df.query(q).sort_values("VBS_avg_nzblock_height");
             interp_df.drop_duplicates("VBS_avg_nzblock_height", inplace = True)
             interp_df.sort_values("VBS_avg_nzblock_height", ascending = True, inplace = True)
             xp = interp_df.query(q)["VBS_avg_nzblock_height"];
-            yp = interp_df.query(q)["relative_density"]
+            yp = interp_df.query(q)["sp_vs_cu"]
             interp = np.interp(64,xp,yp)
             row.append(interp)
         heatmap_array.append(row)
@@ -199,24 +216,24 @@ def reorder_heatmap(fixed, save_folder = "../images/reorder_landscape/", name = 
     cmap = sns.diverging_palette(0,255,sep=1, as_cmap=True)
     
     plt.gca()
-    ax = sns.heatmap(heat_df, linewidths=.5, annot=True, cbar_kws={'label': 'relative density'}, cmap = cmap, center = 1, vmin = 0, vmax = 1)
+    ax = sns.heatmap(heat_df, linewidths=.5, annot=True, cbar_kws={'label': 'speed-up vs cusparse'}, cmap = cmap, center = 1, vmin = 0, vmax = 5)
     bottom, top = ax.get_ylim()
     ax.set_ylim(bottom + 0.5, top - 0.5)
     plt.xlabel("Density inside nonzero blocks") 
     plt.ylabel("Fraction of nonzero blocks");
     
-    plt.title("M,N = {},{}\n block_size = {} \n similarity function = {}".format(cols,rows,block_size, similarity))
-    savename = save_folder + name + "_r{}_c{}_b{}_{}.jpg".format(rows, cols, block_size, similarity);
+    plt.title(make_title(variables_dict))
+    savename = make_savename(name,variables_dict)
     plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()
+    plt.close()
     
     
 
-for cols in [2048,]:
-    for rows in [2048,]:
-        for block_size in [64,]:
-            for similarity in ["'scalar'",]:
-                try:
-                    reorder_heatmap(cols,rows,block_size, similarity, saad = saad);
-                except:
-                    print("could not make image for cols = {}, rows = {}, block_size = {}".format(cols,rows,block_size))
+ignore = ["input_entries_density","input_blocks_density"];
+fixed = {"similarity_func" : "'jaccard'", "reorder_algorithm": "'saad_blocks'"};
+for values in generate_exp_iterator(ignore = ignore, fixed = fixed):
+    variables_dict = dict(zip(experimental_variables, list(values)))
+    #try:
+    performance_heatmap(variables_dict);
+    #except:
