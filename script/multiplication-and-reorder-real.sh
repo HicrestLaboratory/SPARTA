@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OPTS="-r 5 -v -1 -i 4 -R saad_blocks -s 1 -M 1 -a 1 -F jaccard"
+OPTS="-r 5 -v -1 -i 2 -R saad_blocks -s 1 -M 1 -a 1 -F jaccard"
 DATA={1}
 
 DATE=$(date +"%m-%d-%Y");

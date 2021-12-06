@@ -165,7 +165,7 @@ def generate_exp_iterator(ignore = [], fixed = {}):
     return itr.product(*value_lists);
 
 
-def make_title(variables_dict, ignore = ["algo_block_size","scramble","reorder_algorithm"]):
+def make_title(variables_dict, ignore = ["input_block_size","scramble","reorder_algorithm"]):
     q = ""
     for k, val in variables_dict.items():
         if val != "any" and k not in ignore: 
@@ -175,7 +175,7 @@ def make_title(variables_dict, ignore = ["algo_block_size","scramble","reorder_a
 def add_to_query(var, val):
     return " and " + var + "==" + str(val);
 
-def make_savename(name, variables_dict, ignore = ["algo_block_size",]):
+def make_savename(name, variables_dict, ignore = ["input_block_size",]):
     q = name
     for k, val in variables_dict.items():
         if val != "any" and k not in ignore: 

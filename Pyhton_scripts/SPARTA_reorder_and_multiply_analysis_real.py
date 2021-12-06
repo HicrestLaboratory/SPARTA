@@ -21,7 +21,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Makes images from experiments")
     
-    parser.add_argument("--input-csv", default="../results/test_cublas_reordering-11-26-2021.csv",
+    parser.add_argument("--input-csv", default="../results/test_cublas_reordering-real-12-06-2021.csv",
         help="file that contains the already run experiments")
     parser.add_argument("--output-dir", default="../images/",
         help="directory where the images are saved")
@@ -118,6 +118,8 @@ results_df["true_relative_density"] = results_df.apply(lambda x: x['output_in_bl
 
 results_df["sp_vs_cu"] = results_df.apply(lambda x: x['cusparse_spmm_mean(ms)']/x["VBSmm_algo_mean(ms)"], axis=1)
 
+#results_df["input_source"] = results_df.apply(lambda x: x['input_source'].split("/")[-1], axis = 1)
+
 
 experimental_variables = ["input_entries_density",
               "input_blocks_density",
@@ -177,7 +179,7 @@ def make_title(variables_dict, ignore = ["algo_block_size","scramble","reorder_a
 def add_to_query(var, val):
     return " and " + var + "==" + str(val);
 
-def make_savename(name, variables_dict, ignore = ["algo_block_size",]):
+def make_savename(name, variables_dict, ignore = ["input_block_size",]):
     q = name
     for k, val in variables_dict.items():
         if val != "any" and k not in ignore: 
@@ -208,69 +210,23 @@ def bar_plot(variables_dict, save_folder = "../images/performance_real/", name =
     width = (1. - space)/len(measures);
 
     rel_pos = (-1. + space)/2
-    for mes in measures:
-            q = build_query(variables_dict)
-            results_df.query(q).bar(x = positions + rel_pos,  y = mes, width = width, label = mes, edgecolor = "black", ax = ax);
-            rel_pos += width;
+    q = build_query(variables_dict)
+    results_df.query(q).plot.bar(x = "input_source",  y = measures, width = width, edgecolor = "black", ax = ax);
+    rel_pos += width;
+     
+    plt.ylabel("multiplication time (ms)");
+    plt.xlabel("input graph");
+
+    plt.title(make_title(variables_dict, ignore = ["input_source",]))
     
     plt.show()
 
             
-    
 
-
-
-def performance_heatmap(variables_dict, save_folder = "../images/performance_landscape/", name = "reorder_and_multiply_heatmap_"):
-    
-    
-    if variables_dict["reorder_algorithm"] == "saad": 
-            name = "reorder_heatmap_saad";
-            
-    heatmap_array = []
-    for input_blocks_density in results_df["input_blocks_density"].unique():
-        
-        row = []
-        for input_entries_density in results_df["input_entries_density"].unique():
-            
-            q = build_query(variables_dict)
-            q += add_to_query("input_entries_density", input_entries_density);
-            q += add_to_query("input_blocks_density", input_blocks_density);
-            
-            interp_df = results_df.query(q).sort_values("VBS_avg_nzblock_height");
-            interp_df.drop_duplicates("VBS_avg_nzblock_height", inplace = True)
-            interp_df.sort_values("VBS_avg_nzblock_height", ascending = True, inplace = True)
-            xp = interp_df.query(q)["VBS_avg_nzblock_height"];
-            yp = interp_df.query(q)["sp_vs_cu"]
-            interp = np.interp(64,xp,yp)
-            row.append(interp)
-        heatmap_array.append(row)
-    
-    
-    heat_df = pd.DataFrame(heatmap_array, columns=results_df["input_entries_density"].unique())
-    heat_df.set_index(results_df["input_blocks_density"].unique(), inplace = True)
-    heat_df.sort_index(level=0, ascending=False, inplace=True)
-    
-    cmap = sns.diverging_palette(0,255,sep=1, as_cmap=True)
-    
-    plt.gca()
-    ax = sns.heatmap(heat_df, linewidths=.5, annot=True, cbar_kws={'label': 'speed-up vs cusparse'}, cmap = cmap, center = 1, vmin = 0, vmax = 5)
-    bottom, top = ax.get_ylim()
-    ax.set_ylim(bottom + 0.5, top - 0.5)
-    plt.xlabel("Density inside nonzero blocks") 
-    plt.ylabel("Fraction of nonzero blocks");
-    
-    plt.title(make_title(variables_dict))
-    savename = make_savename(name,variables_dict)
-    plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
-    plt.show()
-    plt.close()
-    
-    
-
-ignore = ["input_entries_density","input_blocks_density"];
+ignore = [];
 fixed = {"similarity_func" : "'jaccard'", "reorder_algorithm": "'saad_blocks'"};
 for values in generate_exp_iterator(ignore = ignore, fixed = fixed):
     variables_dict = dict(zip(experimental_variables, list(values)))
     #try:
-    performance_heatmap(variables_dict);
+    bar_plot(variables_dict);
     #except:
