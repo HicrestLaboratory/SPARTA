@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
     //******************************************
 
 
-    vector<intT> Ns = { 4096, 8192, 16384 };
+    vector<intT> Ns = { 4096, 8192, 16384, 32768 };
 
     //PREPARE THE PERFECTLY-BLOCKED VBS
     VBS vbmat_perfect;
