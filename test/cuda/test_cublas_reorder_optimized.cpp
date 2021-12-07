@@ -171,6 +171,7 @@ int main(int argc, char* argv[])
 
     for (intT N : Ns)
     {
+        cout << "N ------------------------> " << N << endl;
         params.B_cols = N;
         output_couple_parameters(params, output_names, output_values);
         info_collector.collect_info_VBS(vbmat_algo);
