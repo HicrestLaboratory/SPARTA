@@ -233,7 +233,6 @@ int main(int argc, char* argv[])
             }
 
             delete[] mat_Cblock;
-            cleanVBS(vbmat_perfect);
         }
 
 
@@ -254,7 +253,6 @@ int main(int argc, char* argv[])
         }
 
         delete[] mat_Cblock;
-        cleanVBS(vbmat_algo);
 
         //--------------------------------------------
         //      CSR x Dense cusparse multiplication
@@ -284,7 +282,6 @@ int main(int argc, char* argv[])
         delete[] csrColInd;
         delete[] csrRowPtr;
         delete[] csrVal;
-        cleanCSR(cmat_A);
 
         delete[] mat_B;
 
@@ -305,6 +302,11 @@ int main(int argc, char* argv[])
 
         info_collector.clean();
     }
+
+
+    if (params.algo == 1) cleanVBS(vbmat_perfect);
+    cleanVBS(vbmat_algo);
+    cleanCSR(cmat_A);
 }
  
  
