@@ -176,9 +176,19 @@ int main(int argc, char* argv[])
     for (intT N : Ns)
     {
         cout << "N ------------------------> " << N << endl;
+
         params.B_cols = N;
+
+        cout << "N ------------------------> " << N << endl;
+
         output_couple_parameters(params, info_collector.output_names, info_collector.output_values);
+
+        cout << "N ------------------------> " << N << endl;
+
         info_collector.collect_info_VBS(vbmat_algo);
+
+        cout << "N ------------------------> " << N << endl;
+
         info_collector.collect_info_reordering(re_info);
         //*******************************************
         //         MULTIPLICATION PHASE
