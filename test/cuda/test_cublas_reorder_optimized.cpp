@@ -78,7 +78,7 @@ struct Info_Collector
         vbs_perfect_times.clear();
     }
 
-    void output_all(string& output_names, string& output_values)
+    void output_all()
     {
         output_couple(output_names, output_values, "VBS_avg_nzblock_height", mean(avg_height_vec));
         output_couple(output_names, output_values, "VBS_avg_nzblock_height_error", std_dev(avg_height_vec));
@@ -130,8 +130,6 @@ int main(int argc, char* argv[])
     int vbmat_blocks_fmt = 1;
     int vbmat_entries_fmt = 1; //cuda needs column-major matrices
 
-    string output_names;
-    string output_values;
     reorder_info re_info;
     Info_Collector info_collector;
 
@@ -281,7 +279,7 @@ int main(int argc, char* argv[])
         //	 EXPERIMENT LOOP
         //******************************************
 
-        info_collector.output_all(output_names, output_values);
+        info_collector.output_all();
 
         if ((params.verbose == -1) or (params.verbose > 1))
         {
