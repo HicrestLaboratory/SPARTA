@@ -135,10 +135,8 @@ int main(int argc, char* argv[])
 
     if (params.verbose > 0) cout << "INPUT ACQUIRED." << endl;
     if (params.verbose > 1) matprint(cmat_A);
-
-
     output_couple_parameters(params, output_names, output_values);
-    cleanCSR(cmat_A);
+
 
     //*******************************************
     //	 EXPERIMENT LOOP
