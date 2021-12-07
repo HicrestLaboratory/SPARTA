@@ -65,8 +65,8 @@ struct Info_Collector
 
     void clean()
     {
-        string output_names = "";
-        string output_values = "";
+        output_names = "";
+        output_values = "";
         total_area_vec.clear();
         block_rows_vec.clear();
         nz_blocks_vec.clear();
