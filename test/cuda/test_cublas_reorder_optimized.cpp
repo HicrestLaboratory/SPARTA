@@ -135,7 +135,6 @@ int main(int argc, char* argv[])
 
     if (params.verbose > 0) cout << "INPUT ACQUIRED." << endl;
     if (params.verbose > 1) matprint(cmat_A);
-    output_couple_parameters(params, output_names, output_values);
 
 
     //*******************************************
@@ -172,9 +171,10 @@ int main(int argc, char* argv[])
 
     for (intT N : Ns)
     {
+        params.B_cols = N;
+        output_couple_parameters(params, output_names, output_values);
         info_collector.collect_info_VBS(vbmat_algo);
         info_collector.collect_info_reordering(re_info);
-        params.B_cols = N;
         //*******************************************
         //         MULTIPLICATION PHASE
         //___________________________________________
