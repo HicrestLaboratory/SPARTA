@@ -145,8 +145,7 @@ int main(int argc, char* argv[])
     //******************************************
 
 
-    int num_N = 4;
-    intT* Ns = new intT[num_N]{ 4096,8192,16384 };
+    vector<intT> Ns = { 4096, 8192, 16384 };
 
     //PREPARE THE PERFECTLY-BLOCKED VBS
     VBS vbmat_perfect;
