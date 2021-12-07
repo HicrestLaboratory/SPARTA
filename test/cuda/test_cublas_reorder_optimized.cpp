@@ -43,6 +43,8 @@ struct Info_Collector
     vec_d vbs_algo_times;
     vec_d vbs_perfect_times;
     vec_d cusparse_times;
+    string output_names = "";
+    string output_values = "";
 
     void collect_info_VBS(VBS& vbmat)
     {
@@ -63,6 +65,8 @@ struct Info_Collector
 
     void clean()
     {
+        string output_names = "";
+        string output_values = "";
         total_area_vec.clear();
         block_rows_vec.clear();
         nz_blocks_vec.clear();
@@ -173,7 +177,7 @@ int main(int argc, char* argv[])
     {
         cout << "N ------------------------> " << N << endl;
         params.B_cols = N;
-        output_couple_parameters(params, output_names, output_values);
+        output_couple_parameters(params, info_collector.output_names, info_collector.output_values);
         info_collector.collect_info_VBS(vbmat_algo);
         info_collector.collect_info_reordering(re_info);
         //*******************************************
@@ -285,8 +289,8 @@ int main(int argc, char* argv[])
 
         if ((params.verbose == -1) or (params.verbose > 1))
         {
-            cout << output_names << endl;
-            cout << output_values << endl;
+            cout << info_collector.output_names << endl;
+            cout << info_collector.output_values << endl;
         }
 
         info_collector.clean();
