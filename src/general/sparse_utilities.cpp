@@ -1696,7 +1696,7 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
         if (current_node != last_node) current_row = new std::vector<intT>();
         if (current_node < last_node)
         {
-            std::cout << "BAD FILE. CANNOT READ MATRIX" << std::endl;
+            std::cout << "BAD FILE. CANNOT READ MATRIX. ROW INDICES MUST BE GROWING" << std::endl;
         }
         last_node = current_node;
 
@@ -1705,7 +1705,7 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
     }
 
     cmat.fmt = cmat_fmt;
-    intT main_dim = holder.size()
+    intT main_dim = holder.size();
     intT second_dim = max_column + 1;
     cmat.rows = cmat_fmt ? second_dim : main_dim;
     cmat.cols = cmat_fmt ? main_dim : second_dim;
