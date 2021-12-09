@@ -1668,6 +1668,8 @@ void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt) {
 
 int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string delimiter = "\t")
 {
+
+    //TODO CHECK FOR ERRORS
     std::ifstream infile;
 
     infile.open(filename);
@@ -1693,7 +1695,7 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
         intT child = stoi(second_node_string);
         max_column = std::max(max_column, child);
 
-        if (current_node != i)
+        if (current_node > i)
         {
             while (i < current_node)
             {
@@ -1701,6 +1703,11 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
                 holder.push_back(new_row);
                 i++;
             }
+        }
+        else
+        {
+            std::cerr << "CANNOT READ MATRIX. INDICES MUST INCREASE" << std::endl;
+            return 1;
         }
         holder[i].push_back(child);
     }
