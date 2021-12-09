@@ -1709,7 +1709,6 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
         last_node = current_node;
 
         holder[i].push_back(child);
-        holder.push_back(current_row);
     }
 
     cmat.fmt = cmat_fmt;
