@@ -1674,7 +1674,7 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
     intT last_node = -1;
     intT current_node;
     std::string temp;
-    std::vector<std::vector<intT>> holder = new std::vector < std::vector<intT>>();
+    std::vector<std::vector<intT>> holder;
     std::vector<intT> current_row;
     intT max_column = 0;
     
