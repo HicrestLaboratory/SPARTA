@@ -1730,6 +1730,9 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
         std::cout << std::endl;
 
         cmat.nzcount[i] = row.size();
+        cmat.ja[i] = new intT[row.size()];
+        cmat.ma[i] = new_intT[row.size()];
+
         std::copy(row.begin(), row.end(), cmat.ja[i]);
         std::vector<DataT> temp_vec(row.size(), 1.);
         std::copy(temp_vec.begin(), temp_vec.end(), cmat.ma[i]); //entries = 1s. unweigthed
