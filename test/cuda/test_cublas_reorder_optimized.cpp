@@ -138,12 +138,6 @@ int main(int argc, char* argv[])
     if (params.verbose > 0) cout << "INPUT ACQUIRED." << endl;
     if (params.verbose > 1) matprint(cmat_A);
 
-
-    //*******************************************
-    //	 EXPERIMENT LOOP
-    //******************************************
-
-
     vector<intT> Ns = { 4096, 8192, 16384, 32768 };
 
     //PREPARE THE PERFECTLY-BLOCKED VBS
@@ -170,6 +164,13 @@ int main(int argc, char* argv[])
 
     if (params.verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
     if (params.verbose > 1)    matprint(vbmat_algo);
+
+
+
+    //*******************************************
+    //	 EXPERIMENT LOOP
+    //******************************************
+
 
     for (intT N : Ns)
     {
