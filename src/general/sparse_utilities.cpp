@@ -1693,7 +1693,6 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
         intT child = stoi(second_node_string);
         max_column = std::max(max_column, child);
 
-        std::cout << "current: " << current_node << " child: " << child << std::endl;
         if (current_node != i)
         {
             while (i < current_node)
@@ -1717,10 +1716,7 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
 
     for (intT i = 0; i < holder.size(); i++)
     {
-        std::cout << "row " << i << std::endl;
         auto row = holder[i];
-        for (auto elem : row)
-            std::cout << elem << " ";
         std::cout << std::endl;
 
         cmat.nzcount[i] = row.size();
