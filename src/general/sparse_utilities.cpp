@@ -1725,9 +1725,9 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
     {
         std::cout << "row " << i << std::endl;
         auto row = holder[i];
-        for (auto elem : row) :
+        for (auto elem : row)
             std::cout << elem << " ";
-        std::endl;
+        std::cout << std::endl;
 
         cmat.nzcount[i] = row.size();
         std::copy(row.begin(), row.end(), cmat.ja[i]);
