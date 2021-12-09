@@ -1731,7 +1731,7 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
 
         cmat.nzcount[i] = row.size();
         cmat.ja[i] = new intT[row.size()];
-        cmat.ma[i] = new intT[row.size()];
+        cmat.ma[i] = new DataT[row.size()];
 
         std::copy(row.begin(), row.end(), cmat.ja[i]);
         std::vector<DataT> temp_vec(row.size(), 1.);
