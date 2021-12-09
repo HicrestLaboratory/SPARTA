@@ -1677,6 +1677,7 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
     std::vector<std::vector<intT>> holder;
     std::vector<intT> current_row;
     intT max_column = 0;
+    intT i = -1; 
     
     while (infile.peek() == '#' or infile.peek() == '%') infile.ignore(2048, '\n');
     while (getline(infile, temp)) {
@@ -1690,17 +1691,23 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
         
         del_pos = temp.find(delimiter);
         std::string second_node_string = temp.substr(0, del_pos); //retrieve the part of the string after the delimiter
-        child = stoi(second_node_string);
+        intT child = stoi(second_node_string);
         max_column = std::max(max_column, child);
 
-        if (current_node != last_node) current_row = new std::vector<intT>();
+        if (current_node != last_node)
+        {
+            std::vector<intT> new_row;
+            holder.push_back(new_row);
+            i++;
+
+        }
         if (current_node < last_node)
         {
             std::cout << "BAD FILE. CANNOT READ MATRIX. ROW INDICES MUST BE GROWING" << std::endl;
         }
         last_node = current_node;
 
-        current_row.push_back(child);
+        holder[i].push_back(child);
         holder.push_back(current_row);
     }
 
