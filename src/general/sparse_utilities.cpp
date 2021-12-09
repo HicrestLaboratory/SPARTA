@@ -1666,7 +1666,67 @@ void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt) {
 
 }
 
-void read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string delimiter = " ")
+int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string delimiter = " ")
+{
+    std::ifstream infile;
+
+    infile.open(filename);
+    intT last_node = -1;
+    intT current_node;
+    std::string temp;
+    std::vector<std::vector<intT>> holder = new std::vector < std::vector<intT>>();
+    std::vector<intT> current_row;
+    intT max_column = 0;
+    
+    while (infile.peek() == '#' or infile.peek() == '%') infile.ignore(2048, '\n');
+    while (getline(infile, temp)) {
+
+        int del_pos = temp.find(delimiter);
+        int del_size = delimiter.length();
+
+        std::string first_node_string = temp.substr(0, del_pos); //retrieve the part of the string before the delimiter
+        current_node = stoi(first_node_string);
+        temp.erase(0, del_pos + del_size);
+        
+        del_pos = temp.find(delimiter);
+        std::string second_node_string = temp.substr(0, del_pos); //retrieve the part of the string after the delimiter
+        child = stoi(second_node_string);
+        max_column = std::max(max_column, child);
+
+        if (current_node != last_node) current_row = new std::vector<intT>();
+        if (current_node < last_node)
+        {
+            std::cout << "BAD FILE. CANNOT READ MATRIX" << std::endl;
+        }
+        last_node = current_node;
+
+        current_row.push_back(child);
+        holder.push_back(current_row);
+    }
+
+    cmat.fmt = cmat_fmt;
+    intT main_dim = holder.size()
+    intT second_dim = max_column + 1;
+    cmat.rows = cmat_fmt ? second_dim : main_dim;
+    cmat.cols = cmat_fmt ? main_dim : second_dim;
+    cmat.nzcount = new intT[main_dim];
+    cmat.ja = new intT * [main_dim];
+    cmat.ma = new DataT * [main_dim];
+
+    for (intT i = 0; i < holder.size(); i++)
+    {
+        auto row = holder[i];
+        cmat.nzcount[i] = row.size();
+        std::copy(row.begin(), row.end(), cmat.ja[i]);
+        std::vector<DataT> temp_vec(row.size(), 1.);
+        std::copy(temp_vec.begin(), temp_vec.end(), cmat.ma[i]); //entries = 1s. unweigthed
+    }
+
+    holder.clear();
+    return 0;
+}
+
+void read_edgelist_DEPRECATED(std::string filename, CSR& cmat, int cmat_fmt, std::string delimiter = " ")
 {
     GraphMap snap_graph;
     read_snap_format(snap_graph, filename, delimiter);         //Read into a GraphMap matrix from a .txt edgelist (snap format)

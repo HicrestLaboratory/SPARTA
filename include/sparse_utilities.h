@@ -155,5 +155,8 @@ void write_snap_format(GraphMap& gmap, std::string filename);
 
 void convert_to_CSR(const GraphMap& gmap, CSR& cmat, int cmat_fmt);
 
-void read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string delimiter);
+void read_edgelist_DEPRECATED(std::string filename, CSR& cmat, int cmat_fmt, std::string delimiter);
+
+int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string delimiter);
+
 
