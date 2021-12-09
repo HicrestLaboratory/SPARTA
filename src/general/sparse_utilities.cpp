@@ -1694,7 +1694,7 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
         intT child = stoi(second_node_string);
         max_column = std::max(max_column, child);
 
-        std::cout << "current: " << current << " child: " << child << std::endl;
+        std::cout << "current: " << current_node << " child: " << child << std::endl;
         if (current_node != last_node)
         {
             std::vector<intT> new_row;
