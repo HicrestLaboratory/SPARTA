@@ -1723,7 +1723,12 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
 
     for (intT i = 0; i < holder.size(); i++)
     {
+        std::cout << "row " << i << std::endl;
         auto row = holder[i];
+        for (auto elem : row) :
+            std::cout << elem << " ";
+        std::endl;
+
         cmat.nzcount[i] = row.size();
         std::copy(row.begin(), row.end(), cmat.ja[i]);
         std::vector<DataT> temp_vec(row.size(), 1.);
