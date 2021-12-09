@@ -1694,19 +1694,15 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
         max_column = std::max(max_column, child);
 
         std::cout << "current: " << current_node << " child: " << child << std::endl;
-        if (current_node != last_node)
+        if (current_node != i)
         {
-            std::vector<intT> new_row;
-            holder.push_back(new_row);
-            i++;
-
+            while (i < current_node)
+            {
+                std::vector<intT> new_row;
+                holder.push_back(new_row);
+                i++;
+            }
         }
-        if (current_node < last_node)
-        {
-            std::cout << "BAD FILE. CANNOT READ MATRIX. ROW INDICES MUST BE GROWING" << std::endl;
-        }
-        last_node = current_node;
-
         holder[i].push_back(child);
     }
 
