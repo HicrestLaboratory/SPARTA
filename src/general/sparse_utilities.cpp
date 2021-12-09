@@ -1695,7 +1695,7 @@ int read_edgelist(std::string filename, CSR& cmat, int cmat_fmt, std::string del
         intT child = stoi(second_node_string);
         max_column = std::max(max_column, child);
 
-        if (current_node > i)
+        if (current_node >= i)
         {
             while (i < current_node)
             {
