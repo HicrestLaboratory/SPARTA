@@ -21,7 +21,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Makes images from experiments")
     
-    parser.add_argument("--input-csv", default="../results/test_cublas_reordering-real-12-06-2021.csv",
+    parser.add_argument("--input-csv", default="../results/test_cublas_reordering-real-12-07-2021.csv",
         help="file that contains the already run experiments")
     parser.add_argument("--output-dir", default="../images/",
         help="directory where the images are saved")
@@ -101,8 +101,6 @@ numerics = [
        'VBS_nz_blocks_error',
        'VBSmm_algo_mean(ms)',
        'VBSmm_algo_std',
-       'VBSmm_perfect_mean(ms)',
-       'VBSmm_perfect_std',
        'cusparse_spmm_mean(ms)',
        'cusparse_spmm_std']
 
@@ -121,7 +119,8 @@ results_df["sp_vs_cu"] = results_df.apply(lambda x: x['cusparse_spmm_mean(ms)']/
 #results_df["input_source"] = results_df.apply(lambda x: x['input_source'].split("/")[-1], axis = 1)
 
 
-experimental_variables = ["input_entries_density",
+experimental_variables = [
+              "input_entries_density",
               "input_blocks_density",
               "rows",
               "cols",
@@ -193,7 +192,7 @@ def bar_plot(variables_dict, save_folder = "../images/performance_real/", name =
             name += "_saad";
     
     graphs = results_df["input_source"].unique();
-    measures = ['cusparse_spmm_mean(ms)','VBSmm_algo_mean(ms)','VBSmm_perfect_mean(ms)']
+    measures = ['cusparse_spmm_mean(ms)','VBSmm_algo_mean(ms)']
     
     plt.style.use('grayscale')    
     fig, ax = plt.subplots(1, figsize = (len(graphs), 4), sharex=True);
@@ -205,28 +204,64 @@ def bar_plot(variables_dict, save_folder = "../images/performance_real/", name =
     ax.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.4)
     ax.set_prop_cycle(color=[colormap(i) for i in np.linspace(0, 1,len(measures))])
 
-    positions = np.array(range(len(graphs)));
     space = 0.2;
     width = (1. - space)/len(measures);
 
-    rel_pos = (-1. + space)/2
     q = build_query(variables_dict)
     results_df.query(q).plot.bar(x = "input_source",  y = measures, width = width, edgecolor = "black", ax = ax);
-    rel_pos += width;
      
     plt.ylabel("multiplication time (ms)");
     plt.xlabel("input graph");
 
-    plt.title(make_title(variables_dict, ignore = ["input_source",]))
+
+    plt.title(make_title(variables_dict, ignore = ["scramble","input_source","input_block_size","input_blocks_density","input_entries_density"]))
     
+    savename = make_savename(name,variables_dict)
+    plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()
 
-            
 
-ignore = [];
+def reorder_curve(variables_dict, save_folder = "../images/performance_real/", name = "reorder_curve_real"):
+   
+    if variables_dict["reorder_algorithm"] == "saad": 
+            name += "_saad";
+            
+    plt.style.use('grayscale')    
+
+    q = build_query(variables_dict)
+    results_df.query(q).plot(x = "VBS_avg_nzblock_height", y = "output_in_block_density", kind = "scatter");
+    plt.grid(b=True, which='major', color='#666666', linestyle='-', alpha=0.4)
+    plt.minorticks_on()
+    plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.5)
+    #plt.xlim(0,200)
+    #plt.ylim(0,2)
+    plt.axvline(variables_dict["algo_block_size"], alpha = 0.2, color = "red")
+    plt.title(make_title(variables_dict, ignore = ["scramble","input_block_size","input_blocks_density","input_entries_density"]))
+    
+    plt.xlabel("Average height of nonzero blocks");
+    plt.ylabel("Average density inside nonzero blocks \n (relative to original blocking)");
+    
+    savename = make_savename(name,variables_dict)
+
+    #plt.savefig(savename, format = 'jpg', dpi=300, bbox_inches = "tight")
+    plt.show()
+    plt.close()
+    
+
+
+ignore = ["input_source","rows","cols"];
 fixed = {"similarity_func" : "'jaccard'", "reorder_algorithm": "'saad_blocks'"};
 for values in generate_exp_iterator(ignore = ignore, fixed = fixed):
     variables_dict = dict(zip(experimental_variables, list(values)))
     #try:
     bar_plot(variables_dict);
+    #except:
+
+
+ignore = ["cols","B_cols","epsilon"];
+fixed = {"similarity_func" : "'jaccard'", "reorder_algorithm": "'saad_blocks'"};
+for values in generate_exp_iterator(ignore = ignore, fixed = fixed):
+    variables_dict = dict(zip(experimental_variables, list(values)))
+    #try:
+    reorder_curve(variables_dict);
     #except:

@@ -136,6 +136,7 @@ int main(int argc, char* argv[])
     get_input_CSR(cmat_A, params);
 
     if (params.verbose > 0) cout << "INPUT ACQUIRED." << endl;
+    if (params.verbose > 0) cout << "M: " << cmat_A.rows << " K: " << cmat_A.cols << endl;
     if (params.verbose > 1) matprint(cmat_A);
 
     vector<intT> Ns = { 4096, 8192, 16384, 32768 };
