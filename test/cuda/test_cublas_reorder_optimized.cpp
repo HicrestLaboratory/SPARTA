@@ -196,8 +196,11 @@ int main(int argc, char* argv[])
 
         if (params.verbose > 0)        cout << "\n \n ************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl;
 
-        DataT* mat_B = new DataT[B_rows * B_cols]{ 0 };
-        random_mat(mat_B, B_rows, B_cols, params.B_density); // creates a random DataT matrix filled with 1.000 at a fixed density
+        DataT* mat_B = new DataT[B_rows * B_cols]{ 0. };
+        for (i = 0; i < B_rows * B_cols; i++)
+        {
+            mat_B[i] = 1.;
+        }
 
         if (params.verbose > 0)        std::cout << "Random matrix B created:" << std::endl;
         if (params.verbose > 1)        matprint(mat_B, B_rows, B_cols, B_rows, mat_B_fmt);
