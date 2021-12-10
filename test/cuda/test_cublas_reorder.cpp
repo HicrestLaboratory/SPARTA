@@ -191,8 +191,8 @@ int main(int argc, char* argv[])
 
         if (params.verbose > 0)        cout << "\n \n ************************** \n STARTING THE MULTIPLICATION PHASE \n" << endl;
 
-        DataT* mat_B = new DataT[B_rows * B_cols]{ 0. };
-        for (i = 0; i < B_rows * B_cols; i++)
+        DataT* mat_B = new DataT[B_rows * B_cols];
+        for (intT i = 0; i < B_rows * B_cols; i++)
         {
             mat_B[i] = 1.;
         }
