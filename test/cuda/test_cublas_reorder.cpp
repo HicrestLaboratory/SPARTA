@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
 
     get_input_params(argc, argv, params);
 
-    params.cmat_A_fmt = 1;
+    params.cmat_A_fmt = 0;
 
     CSR cmat_A;
 
