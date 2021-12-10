@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
 
 
     params.exp_name = "reorder_and_multiplication_optimized";
-    params.cmat_A_fmt = 1;
+    params.cmat_A_fmt = 0;
 
     CSR cmat_A;
 
