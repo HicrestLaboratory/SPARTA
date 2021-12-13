@@ -19,7 +19,7 @@ P_value=(64);
 b_value=(0.01 0.1 0.2 0.3 0.4);
 q_value=(0.01 0.02 0.05 0.1 0.2);
 
-l_value=(-1 0 2);
+l_value=(0);
 
 
 for m in ${m_shapes[@]}; do
