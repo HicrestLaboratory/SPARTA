@@ -709,7 +709,7 @@ bool scalar_block_condition(group_structure& group_struct, intT* cols_B, intT le
         float limit_factor;
         if (params.merge_limit == -1)
         {
-            limit_factor = 1 + 2. * ((1. - eps) / (3. - eps)); // the limit on the column number relative increase;
+            limit_factor = (1/eps) - 1; // the limit on the column number relative increase;
         }
         else
         {
