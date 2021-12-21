@@ -49,6 +49,8 @@ if __name__ == "__main__":
 
     input_file = args.input_file;
     output_csv = args.output_csv;
+    if output_csv == "":
+        output_csv = input_file.split(".")[0] + ".csv"
                     
 convert_to_CSV(input_file, output_csv);
 results_df = pd.read_csv(output_csv); #check that results can be read
