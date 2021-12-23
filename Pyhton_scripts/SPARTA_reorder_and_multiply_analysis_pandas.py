@@ -362,8 +362,6 @@ def delta_heatmap(variables_dict, save_folder = "../images/reorder_landscape/del
 def epsilon_heatmap(variables_dict, save_folder = "../images/performance_landscape/epsilon_heatmap", name = "best_epsilon_heatmap_"):
     
     
-    if os.mkdir
-    
     if variables_dict["reorder_algorithm"] == "saad": 
             name = "reorder_heatmap_saad";
             
