@@ -182,8 +182,15 @@ def make_savename(name, variables_dict, ignore = ["input_block_size",]):
             q += "_" + k[0:2] + str(val);
     return q + ".jpg";
 
+def check_directory(path):
+    # Check whether the specified path exists or not
+    isExist = os.path.exists(path)
 
-def performance_heatmap(variables_dict, save_folder = "../images/performance_landscape/", name = "reorder_and_multiply_heatmap_"):
+    if not isExist:
+  
+      os.makedirs(path)
+
+def performance_heatmap(variables_dict, save_folder = "../images/performance_landscape/performance_heatmap/", name = "reorder_and_multiply_heatmap_"):
     
     
     if variables_dict["reorder_algorithm"] == "saad": 
@@ -225,11 +232,13 @@ def performance_heatmap(variables_dict, save_folder = "../images/performance_lan
     
     plt.title(make_title(variables_dict))
     savename = make_savename(name,variables_dict)
+    
+    check_directory(save_folder);
     plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()
     plt.close()
     
-def reorder_heatmap(variables_dict, save_folder = "../images/reorder_landscape/", name = "reorder_heatmap_"):
+def reorder_heatmap(variables_dict, save_folder = "../images/reorder_landscape/reorder_heatmap/", name = "reorder_heatmap_"):
     
     
     if variables_dict["reorder_algorithm"] == "saad": 
@@ -284,12 +293,76 @@ def reorder_heatmap(variables_dict, save_folder = "../images/reorder_landscape/"
     
     plt.title(make_title(variables_dict))
     savename = make_savename(name,variables_dict)
+    
+    check_directory(save_folder);
     plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()
     plt.close()
+
+def delta_heatmap(variables_dict, save_folder = "../images/reorder_landscape/delta_heatmap/", name = "delta_heatmap_"):
     
-def epsilon_heatmap(variables_dict, save_folder = "../images/reorder_landscape/", name = "best_epsilon_heatmap_"):
+    if variables_dict["reorder_algorithm"] == "saad": 
+            name = name + "saad_";
+            
+    b_size = variables_dict["algo_block_size"]
+
+    heatmap_array = []
+    for input_blocks_density in results_df["input_blocks_density"].unique():
+        
+        row = []
+        for input_entries_density in results_df["input_entries_density"].unique():
+            
+            q = build_query(variables_dict)
+            q += add_to_query("input_entries_density", input_entries_density);
+            q += add_to_query("input_blocks_density", input_blocks_density);
+            
+            interp_df = results_df.query(q).sort_values("relative_density");
+            #interp_df.drop_duplicates("VBS_avg_nzblock_height", inplace = True)
+            interp_df.sort_values("relative_density", ascending = True, inplace = True)
+            yp = interp_df.query(q)["VBS_avg_nzblock_height"];
+            xp = interp_df.query(q)["relative_density"]
+            
+            
+            error = 0.1
+            if max(xp) < 1 - error:
+                val = 0
+            elif min(xp) > 1 + error:
+                val = 0
+            else:
+                val = int(np.interp(1,xp,yp))
+                
+            row.append(val)
+        heatmap_array.append(row)
+   
+    pd.options.display.float_format = '{:.2f}'.format
+
+    heat_df = pd.DataFrame(heatmap_array, columns=results_df["input_entries_density"].unique())
+    heat_df.set_index(results_df["input_blocks_density"].unique(), inplace = True)
+    heat_df.sort_index(level=0, ascending=False, inplace=True)
     
+    cmap = sns.diverging_palette(0,255,sep=1, as_cmap=True)
+    
+    plt.gca()
+    ax = sns.heatmap(heat_df, linewidths=.5, annot=True, cbar_kws={'label': 'relative rho after reordering'}, cmap = cmap, center = 0, vmin = 0, vmax = b_size)
+    bottom, top = ax.get_ylim()
+    ax.set_ylim(bottom + 0.5, top - 0.5)
+    plt.xlabel("Density inside nonzero blocks") 
+    plt.ylabel("Fraction of nonzero blocks");
+    
+    plt.title(make_title(variables_dict))
+    savename = make_savename(name,variables_dict)
+    
+    check_directory(save_folder);
+    plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
+    plt.show()
+    plt.close()
+
+
+
+def epsilon_heatmap(variables_dict, save_folder = "../images/performance_landscape/epsilon_heatmap", name = "best_epsilon_heatmap_"):
+    
+    
+    if os.mkdir
     
     if variables_dict["reorder_algorithm"] == "saad": 
             name = "reorder_heatmap_saad";
@@ -335,13 +408,17 @@ def epsilon_heatmap(variables_dict, save_folder = "../images/reorder_landscape/"
     plt.show()
     plt.close()
 
+
+
+
 ignore = ["input_entries_density","input_blocks_density", "epsilon", "input_block_size"];
 fixed = {"similarity_func" : "'jaccard'", "reorder_algorithm": "'saad_blocks'"};
 for values in generate_exp_iterator(ignore = ignore, fixed = fixed):
     variables_dict = dict(zip(experimental_variables, list(values)))
     try:
-        #performance_heatmap(variables_dict);
-        #epsilon_heatmap(variables_dict)
+        performance_heatmap(variables_dict);
+        epsilon_heatmap(variables_dict)
         reorder_heatmap(variables_dict)
+        delta_heatmap(variables_dict)
     except Exception as e:
         print(e, variables_dict)
