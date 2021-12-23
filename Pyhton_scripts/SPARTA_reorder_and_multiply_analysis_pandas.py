@@ -165,7 +165,7 @@ def generate_exp_iterator(ignore = [], fixed = {}):
     return itr.product(*value_lists);
 
 
-def make_title(variables_dict, ignore = ["input_block_size","scramble","reorder_algorithm"]):
+def make_title(variables_dict, ignore = ["input_block_size","scramble","reorder_algorithm","hierarchic_merge"]):
     q = ""
     for k, val in variables_dict.items():
         if val != "any" and k not in ignore: 
@@ -343,7 +343,7 @@ def delta_heatmap(variables_dict, save_folder = "../images/reorder_landscape/del
     cmap = sns.diverging_palette(0,255,sep=1, as_cmap=True)
     
     plt.gca()
-    ax = sns.heatmap(heat_df, linewidths=.5, annot=True, cbar_kws={'label': 'relative rho after reordering'}, cmap = cmap, center = 0, vmin = 0, vmax = b_size)
+    ax = sns.heatmap(heat_df, linewidths=.5, annot=True, cbar_kws={'label': 'Delta after reordering'}, cmap = cmap, center = 0, vmin = 0, vmax = b_size)
     bottom, top = ax.get_ylim()
     ax.set_ylim(bottom + 0.5, top - 0.5)
     plt.xlabel("Density inside nonzero blocks") 
