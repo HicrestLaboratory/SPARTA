@@ -165,12 +165,11 @@ def generate_exp_iterator(ignore = [], fixed = {}):
     return itr.product(*value_lists);
 
 
-def make_title(variables_dict, ignore = ["input_block_size","scramble","reorder_algorithm","hierarchic_merge"]):
+def make_title(variables_dict, to_print = ["rows","cols","algo_block_size"]):
     q = ""
-    for k, val in variables_dict.items():
-        if val != "any" and k not in ignore: 
-            q += columns[k] + " = " + str(val) + " \n ";
-    return q;
+    for k in to_print:
+            q += columns[k] + "=" + str(variables_dict[k]) + ", ";
+    return q[0:-2];
 
 def add_to_query(var, val):
     return " and " + var + "==" + str(val);
@@ -230,7 +229,7 @@ def performance_heatmap(variables_dict, save_folder = "../images/performance_lan
     plt.xlabel("Density inside nonzero blocks") 
     plt.ylabel("Fraction of nonzero blocks");
     
-    plt.title(make_title(variables_dict))
+    plt.title(make_title(variables_dict, to_print = ["rows","cols","B_cols","input_block_size"]))
     savename = make_savename(name,variables_dict)
     
     check_directory(save_folder);
@@ -400,23 +399,34 @@ def epsilon_heatmap(variables_dict, save_folder = "../images/performance_landsca
     plt.xlabel("Density inside nonzero blocks") 
     plt.ylabel("Fraction of nonzero blocks");
     
-    plt.title(make_title(variables_dict))
+    plt.title(make_title(variables_dict, to_print = ["rows","cols","B_cols","input_block_size"]))
     savename = make_savename(name,variables_dict)
     plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()
     plt.close()
 
 
+do_all_images = False;
 
-
-ignore = ["input_entries_density","input_blocks_density", "epsilon", "input_block_size"];
-fixed = {"similarity_func" : "'jaccard'", "reorder_algorithm": "'saad_blocks'"};
-for values in generate_exp_iterator(ignore = ignore, fixed = fixed):
-    variables_dict = dict(zip(experimental_variables, list(values)))
-    try:
-        performance_heatmap(variables_dict);
-        epsilon_heatmap(variables_dict)
-        reorder_heatmap(variables_dict)
-        delta_heatmap(variables_dict)
-    except Exception as e:
-        print(e, variables_dict)
+if do_all_images:
+    ignore = ["input_entries_density","input_blocks_density", "epsilon", "input_block_size"];
+    fixed = {"similarity_func" : "'jaccard'", "reorder_algorithm": "'saad_blocks'"};
+    for values in generate_exp_iterator(ignore = ignore, fixed = fixed):
+        variables_dict = dict(zip(experimental_variables, list(values)))
+        try:
+            performance_heatmap(variables_dict);
+            epsilon_heatmap(variables_dict)
+            reorder_heatmap(variables_dict)
+            delta_heatmap(variables_dict)
+        except Exception as e:
+            print(e, variables_dict)
+        
+        
+#paper images
+save_folder = "../images/paper_images/"
+variables_dict = {"rows": 8192, "cols": 8192, "B_cols": 2048, "input_block_size" : 64, "algo_block_size" : 64, "reorder_algorithm": "'saad_blocks'", "merge_limit" : -1}
+performance_heatmap(variables_dict, save_folder = save_folder);
+epsilon_heatmap(variables_dict, save_folder = save_folder)
+variables_dict = {"rows": 8192, "cols": 8192, "B_cols": 8192, "input_block_size" : 64, "algo_block_size" : 64, "reorder_algorithm": "'saad_blocks'", "merge_limit" : 0}
+reorder_heatmap(variables_dict, save_folder = save_folder)
+delta_heatmap(variables_dict, save_folder = save_folder)
