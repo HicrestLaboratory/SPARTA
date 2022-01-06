@@ -30,14 +30,26 @@ if __name__ == "__main__":
     
     parser.add_argument("--input-csv", default="../results/test_cublas_reordering-saad-12-14-2021.csv",
         help="file that contains the already run experiments")
+    parser.add_argument("--original-csv", default="../results/test_cublas_reordering-12-16-2021.csv",
+        help="file that contains the already run experiments for the original")
     parser.add_argument("--output-dir", default="../images/",
         help="directory where the images are saved")
 
     args = parser.parse_args()
 
     input_csv = args.input_csv;
+    original_csv = args.original_csv;
+
     output_dir = args.output_dir;
                     
     results_df = import_results(input_csv)
     experiment_name = "saad";
+    
+    results_df_original = import_results(original_csv)
+    
+    variables_dict = {"input_block_size" : 64, "merge_limit" : 0}  
+    variables_dict_original = {"input_block_size" : 64, "merge_limit" : 0}   
+    compare_blocking_curve(results_df, results_df_original, variables_dict, variables_dict_original, variable = "input_entries_density", name =  "blocking_curve_compare_input_entries")
+
+    
     

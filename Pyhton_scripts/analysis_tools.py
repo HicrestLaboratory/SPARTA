@@ -14,6 +14,10 @@ import itertools as itr
 from scipy import interpolate
 
 global columns, experimental_variables;
+plt.rcParams['font.size'] = 11
+
+
+
 
 experimental_variables = ["input_entries_density",
                   "input_blocks_density",
@@ -73,6 +77,8 @@ columns = {'exp_name' : "experiment name",
 
 def import_results(input_csv):
     
+    
+    print("\n \n importing from", input_csv)
     results_df = pd.read_csv(input_csv);
     
     
@@ -212,6 +218,55 @@ def blocking_curve(results_df, variables_dict, variable = "input_entries_density
     plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()
     plt.close()
+
+
+def compare_blocking_curve(this_df, that_df, this_variable_dict, that_variable_dict,variable = "input_entries_density",  save_folder = "../images/reorder_curves/", name =  "blocking_curve_input_entries"):
+    
+
+
+    marker = itr.cycle(('s','^', 'X',  'o', '*')) 
+    colors = itr.cycle(('0','0.2','0.4','0.5','0.6'))
+    
+    fig, ax = plt.subplots(1,1, figsize = (6,6))
+    plt.subplots_adjust(left = 0.1, top = 0.95, bottom = 0.15, right = 0.85)
+    
+    
+    
+    this_q = build_query(this_variable_dict)
+    that_q = build_query(that_variable_dict)
+
+    this_df_tmp = this_df.query(this_q).sort_values("VBS_avg_nzblock_height", ascending = True);
+    that_df_tmp = that_df.query(that_q).sort_values("VBS_avg_nzblock_height", ascending = True);
+    
+    print(this_df_tmp["relative_density"])
+        
+    
+    for df, name in zip([this_df_tmp, that_df_tmp],["this","that"]):
+        yp = df["relative_density"]
+        xp = df["VBS_avg_nzblock_height"]
+        print(xp,yp)
+        ax.scatter(xp,yp, marker = next(marker), label = name);
+    
+    
+    ax.axhline(1, linestyle = "--", alpha = 0.5, color = "red")
+    ax.axvline(this_variable_dict["input_block_size"], linestyle = "--", alpha = 0.5, label = "Original blocking", color = "red")
+    
+    ax.set_xlim(0,2*this_variable_dict["input_block_size"])
+    ax.legend(title = "Original in-block density")
+    plt.ylabel("Relative in-block density after reordering") 
+    plt.xlabel("Average block height after reordering");    
+    plt.title(make_title(this_variable_dict, to_print = ["rows","cols", "input_blocks_density"]))
+    
+    
+    
+    ax.set_aspect(1./ax.get_data_ratio())
+
+    savename = make_savename(name,variables_dict)
+    check_directory(save_folder);
+    plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
+    plt.show()
+    plt.close()
+
 
 
 def performance_heatmap(results_df,variables_dict, save_folder = "../images/performance_landscape/performance_heatmap/", name = "reorder_and_multiply_heatmap_"):
