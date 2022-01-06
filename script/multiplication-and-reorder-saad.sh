@@ -10,7 +10,7 @@ RESULTS="results/test_cublas_reordering-saad-${DATE}.txt"
 
 m_shapes=(8192);
 k_shapes=(8192);
-n_shapes=(2048 4096 8192);
+n_shapes=(128);
 
 e_value=(0.001 0.01 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9);
 

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-OPTS="-r 3 -v -1 -i 4 -R saad_blocks -s 1 -M 1 -F scalar"
+OPTS="-r 5 -v -1 -i 4 -R saad_blocks -s 1 -M 1 -F jaccard"
 
 
 DATE=$(date +"%m-%d-%Y");
-RESULTS="results/test_cublas_reordering-scalar-${DATE}.txt"
+RESULTS="results/test_cublas_reordering-synthetic-small-${DATE}.txt"
 
 :>${RESULTS};
 

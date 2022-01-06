@@ -37,19 +37,36 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    input_csv = args.input_csv;
-    original_csv = args.original_csv;
+    csvs = {};
+    csvs["SA"] = "../results/test_cublas_reordering-saad-12-14-2021.csv";
+    csvs["US"] = "../results/test_cublas_reordering-12-16-2021.csv";
+    csvs["non_hierarchic"] = "../results/test_cublas_reordering-non-hierarchic-12-14-2021.csv";
+    csvs["scalar"] = "../results/test_cublas_reordering-scalar-12-13-2021.csv";
 
-    output_dir = args.output_dir;
+
+    output_dir = "../images/";
                     
-    results_df = import_results(input_csv)
-    experiment_name = "saad";
     
-    results_df_original = import_results(original_csv)
+    dfs = {}
+    for name in ["SA","US"]:
+        dfs[name] = import_results(csvs[name])
+        
     
-    variables_dict = {"input_block_size" : 64, "merge_limit" : 0}  
-    variables_dict_original = {"input_block_size" : 64, "merge_limit" : 0}   
-    compare_blocking_curve(results_df, results_df_original, variables_dict, variables_dict_original, variable = "input_entries_density", name =  "blocking_curve_compare_input_entries")
+    v_dict = {
+            "US":     {"input_block_size" : 64, "merge_limit" : 0},
+            "SA":     {"input_block_size" : 64, "merge_limit" : 0}   
+            }
+     
+    compare_blocking_curve(dfs, v_dict, name =  "blocking_curve_compare_input_entries_US_SA")
 
-    
+
+    dfs = {}
+    for name in ["scalar","US"]:
+        dfs[name] = import_results(csvs[name])
+    v_dict = {
+            "US":     {"input_block_size" : 64, "merge_limit" : 0},
+            "scalar":     {"input_block_size" : 64, "merge_limit" : 0}   
+            }
+     
+    compare_blocking_curve(dfs, v_dict, name =  "blocking_curve_compare_input_entries_US_scalar")
     

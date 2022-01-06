@@ -123,6 +123,8 @@ def import_results(input_csv):
     
     results_df["relative_density"] = results_df.apply(lambda x: x['output_in_block_density']/x["input_entries_density"], axis=1)
     
+    results_df["relative_block_size"] = results_df.apply(lambda x: x['VBS_avg_nzblock_height']/x["input_block_size"], axis=1)
+
     results_df["true_relative_density"] = results_df.apply(lambda x: x['output_in_block_density']/x["input_density"], axis=1)
     
     results_df["sp_vs_cu"] = results_df.apply(lambda x: x['cusparse_spmm_mean(ms)']/x["VBSmm_algo_mean(ms)"], axis=1)
@@ -220,7 +222,7 @@ def blocking_curve(results_df, variables_dict, variable = "input_entries_density
     plt.close()
 
 
-def compare_blocking_curve(this_df, that_df, this_variable_dict, that_variable_dict,variable = "input_entries_density",  save_folder = "../images/reorder_curves/", name =  "blocking_curve_input_entries"):
+def compare_blocking_curve(df_dict, variable_dict_dict, save_folder = "../images/reorder_curves/", name =  "blocking_curve_input_entries"):
     
 
 
@@ -231,37 +233,32 @@ def compare_blocking_curve(this_df, that_df, this_variable_dict, that_variable_d
     plt.subplots_adjust(left = 0.1, top = 0.95, bottom = 0.15, right = 0.85)
     
     
+    queries = {}
+    for df_name, df in df_dict.items():
+        queries[df_name] = build_query(variable_dict_dict[df_name])        
     
-    this_q = build_query(this_variable_dict)
-    that_q = build_query(that_variable_dict)
-
-    this_df_tmp = this_df.query(this_q).sort_values("VBS_avg_nzblock_height", ascending = True);
-    that_df_tmp = that_df.query(that_q).sort_values("VBS_avg_nzblock_height", ascending = True);
-    
-    print(this_df_tmp["relative_density"])
-        
-    
-    for df, name in zip([this_df_tmp, that_df_tmp],["this","that"]):
-        yp = df["relative_density"]
-        xp = df["VBS_avg_nzblock_height"]
+    for df_name, df in df_dict.items():
+        this_df = df.query(queries[df_name]).sort_values("relative_block_size", ascending = True);
+        yp = this_df["relative_density"]
+        xp = this_df["relative_block_size"]
         print(xp,yp)
-        ax.scatter(xp,yp, marker = next(marker), label = name);
+        ax.scatter(xp,yp, marker = next(marker), label = df_name);
     
     
     ax.axhline(1, linestyle = "--", alpha = 0.5, color = "red")
-    ax.axvline(this_variable_dict["input_block_size"], linestyle = "--", alpha = 0.5, label = "Original blocking", color = "red")
+    ax.axvline(1, linestyle = "--", alpha = 0.5, label = "Original blocking", color = "red")
     
-    ax.set_xlim(0,2*this_variable_dict["input_block_size"])
+    ax.set_xlim(0,2)
     ax.legend(title = "Original in-block density")
     plt.ylabel("Relative in-block density after reordering") 
-    plt.xlabel("Average block height after reordering");    
-    plt.title(make_title(this_variable_dict, to_print = ["rows","cols", "input_blocks_density"]))
+    plt.xlabel("Relative block height after reordering");    
+    #plt.title(make_title(list(variable_dict_dict.values())[0], to_print = ["rows","cols", "input_blocks_density"]))
     
     
     
     ax.set_aspect(1./ax.get_data_ratio())
 
-    savename = make_savename(name,variables_dict)
+    savename = make_savename(name,list(variable_dict_dict.values())[0])
     check_directory(save_folder);
     plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()

@@ -1,10 +1,10 @@
 #!/bin/bash
 
-OPTS="-r 3 -v -1 -i 4 -R saad_blocks -s 1 -M 1 -F scalar"
+OPTS="-r 3 -v -1 -i 4 -R saad -s 1 -M 0 -F scalar"
 
 
 DATE=$(date +"%m-%d-%Y");
-RESULTS="results/test_cublas_reordering-scalar-${DATE}.txt"
+RESULTS="results/test_cublas_reordering-saad-${DATE}.txt"
 
 :>${RESULTS};
 
@@ -19,7 +19,7 @@ P_value=(64);
 b_value=(0.05 0.1 0.2 0.3 0.4 0.5);
 q_value=(0.005 0.01 0.02 0.05 0.1 0.2 0.5);
 
-l_value=(0);
+l_value=(-1 0 1 2 4 8 16);
 
 
 for m in ${m_shapes[@]}; do
