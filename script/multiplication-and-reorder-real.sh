@@ -2,9 +2,10 @@
 
 OPTS="-r 10 -v -1 -i 2 -R saad_blocks -s 1 -M 1 -a -1 -F jaccard"
 DATA={1}
+NAME={2}
 
 DATE=$(date +"%m-%d-%Y");
-RESULTS="results/test_cublas_reordering-real-${DATE}.txt"
+RESULTS="results/test_cublas_reordering-real-${NAME}-${DATE}.txt"
 
 :>${RESULTS};
 
