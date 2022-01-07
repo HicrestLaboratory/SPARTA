@@ -45,14 +45,14 @@ columns = {'exp_name' : "experiment name",
            'B_density': "density of B", 
            'total_nonzeros': "total nonzeros", 
            'input_blocks_density': "fraction of nonzero blocks",
-           'input_entries_density': "density inside nonzero blocks", 
+           'input_entries_density': "Original in-block density", 
            'input_block_size': "block size", 
            'reorder_algorithm': "reorder algorithm",
            'algo_block_size': "block size", 
            'epsilon' : "tau", 
            'similarity_func': "similarity function", 
            'hierarchic_merge': "hierarchic merge",
-           'merge_limit': "merge limit", 
+           'merge_limit': "Merge limit", 
            'scramble': "scramble", 
            'Warmup': "warmup experiments", 
            'Repetitions': "number of repetitions", 
@@ -128,6 +128,18 @@ def import_results(input_csv):
     results_df["true_relative_density"] = results_df.apply(lambda x: x['output_in_block_density']/x["input_density"], axis=1)
         
     results_df["sp_vs_cu"] = results_df.apply(lambda x: x['cusparse_spmm_mean(ms)']/x["VBSmm_algo_mean(ms)"], axis=1)
+    
+    
+    
+    def convert_merge_limit(x):
+        if x["merge_limit"] == -1:
+            return "'Theory'"
+        elif x["merge_limit"] == 0:
+            return "'None'"
+        else:
+            return "'" + str(x["merge_limit"]) + "'"
+    #results_df["merge_limit"] = results_df.apply(convert_merge_limit, axis=1)
+    
     
     for var in experimental_variables:
         print(var, results_df[var].unique());
@@ -223,48 +235,63 @@ def real_blocking_curve(results_df, variables_dict, variable = "input_entries_de
     plt.close()
       
       
-def blocking_curve(results_df, variables_dict, variable = "input_entries_density",  save_folder = "../images/reorder_curves/", name =  "blocking_curve_input_entries"):
+def blocking_curve(results_df, variables_dict, variable = "input_entries_density",  values = None, save_folder = "../images/reorder_curves/", name =  "blocking_curve_input_entries", labels = None, xlim = None, title = " ", savename = None):
     
     plt.rcParams['font.size'] = 10
 
 
-    marker = itr.cycle(('s','^', 'X',  'o', '*')) 
+    marker = itr.cycle(('s','^', 'X',  'o', '*',"<", ">")) 
     colors = itr.cycle(('0','0.2','0.4','0.5','0.6'))
     
     fig, ax = plt.subplots(1,1, figsize = (6,6))
     plt.subplots_adjust(left = 0.1, top = 0.95, bottom = 0.15, right = 0.85)
 
     gen_q = build_query(variables_dict)
-    for val in results_df[variable].unique():
-        #q = gen_q + add_to_query(variable, val)
-        q = gen_q
+    
+    if values == None:
+        values = results_df[variable].unique()
+        
+    if labels == None:
+        labels = values;
+
+    for i, val in enumerate(values):
+        q = gen_q + add_to_query(variable, val)
+       #q = gen_q
         this_df = results_df.query(q).sort_values("VBS_avg_nzblock_height", ascending = True);
         this_df = this_df[this_df[variable] == val]
         yp = this_df["relative_density"]
         xp = this_df["VBS_avg_nzblock_height"]
-        ax.plot(xp,yp, marker = next(marker), color = next(colors), label = val, linewidth=1.5, markersize = 10, fillstyle = "none")
+        ax.plot(xp,yp, marker = next(marker), color = next(colors), label = labels[i], linestyle="-.", linewidth=1.5, markersize = 10, fillstyle = "none")
     
     ax.axhline(1, linestyle = "--", alpha = 0.5, color = "red")
-    ax.axvline(variables_dict["algo_block_size"], linestyle = "--", alpha = 0.5, label = "Original blocking", color = "red")
-
-    ax.set_xlim(0,2*variables_dict["algo_block_size"])
-    ax.legend(title = "Original in-block density")
+    
+    
+    if "algo_block_size" in variables_dict:
+        b_size = variables_dict["algo_block_size"];
+    else:
+        b_size = 64
+    ax.axvline(b_size, linestyle = "--", alpha = 0.5, label = "Original blocking", color = "red")
+    
+    ax.set_xlim(0,2*b_size)
+    ax.legend(title = columns[variable])
     plt.ylabel("Relative in-block density after reordering") 
     plt.xlabel("Average block height after reordering");    
-    plt.title(make_title(variables_dict, to_print = ["rows","cols", "input_blocks_density"]))
-    
+    #plt.title(make_title(variables_dict, to_print = ["rows","cols", "input_blocks_density"]))
+    plt.title(title)
     
     
     ax.set_aspect(1./ax.get_data_ratio())
 
-    savename = make_savename(name,variables_dict)
+    if savename == None:
+        savename = make_savename(name,variables_dict)
+
     check_directory(save_folder);
     plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()
     plt.close()
 
 
-def compare_blocking_curve(df_dict, variable_dict_dict, save_folder = "../images/reorder_curves/", name =  "blocking_curve_input_entries"):
+def compare_blocking_points(this_df, this_name, this_dict, that_df, that_name, that_dict, save_folder = "../images/reorder_curves/", name =  "blocking_curve_input_entries"):
     
 
 
@@ -274,9 +301,13 @@ def compare_blocking_curve(df_dict, variable_dict_dict, save_folder = "../images
     fig, ax = plt.subplots(1,1, figsize = (6,6))
     plt.subplots_adjust(left = 0.1, top = 0.95, bottom = 0.15, right = 0.85)
     
+    df_dict = {this_name : this_df,
+           that_name : that_df}
+    variable_dict_dict = {this_name : this_dict,
+                          that_name: that_dict}
     
     queries = {}
-    for df_name, df in df_dict.items():
+    for df_name in [this_name, that_name]:
         queries[df_name] = build_query(variable_dict_dict[df_name])        
     
     for df_name, df in df_dict.items():
@@ -284,7 +315,7 @@ def compare_blocking_curve(df_dict, variable_dict_dict, save_folder = "../images
         yp = this_df["relative_density"]
         xp = this_df["relative_block_size"]
         print(xp,yp)
-        ax.scatter(xp,yp, marker = next(marker), label = df_name);
+        ax.scatter(xp,yp, marker = next(marker), label = df_name, linewidth=0.8, s = 50, alpha = 0.6);
     
     
     ax.axhline(1, linestyle = "--", alpha = 0.5, color = "red")
@@ -306,7 +337,50 @@ def compare_blocking_curve(df_dict, variable_dict_dict, save_folder = "../images
     plt.show()
     plt.close()
 
+def compare_blocking_curves(df_dict, b_density, e_densities, variable_dict_dict, save_folder = "../images/reorder_curves/", name =  "blocking_curve_input_entries"):
+    
 
+
+    colors = itr.cycle(("orange","blue","m"))
+    
+    fig, ax = plt.subplots(1,1, figsize = (6,6))
+    plt.subplots_adjust(left = 0.1, top = 0.95, bottom = 0.15, right = 0.85)
+    
+    
+    queries = {}
+    for df_name, df in df_dict.items():
+        queries[df_name] = build_query(variable_dict_dict[df_name])        
+    
+    for df_name, df in df_dict.items():
+        color = next(colors)
+        df.sort_values("relative_block_size", ascending = True);
+        markers = itr.cycle(('s','^', 'X',  'o', '*')) 
+        for e_den in e_densities:
+                q = queries[df_name] + add_to_query("input_entries_density", e_den) + add_to_query("input_blocks_density", b_density)
+                this_df = df.query(q)
+                yp = this_df["relative_density"]
+                xp = this_df["relative_block_size"]
+                ax.plot(xp,yp, marker = next(markers), color = color, label = df_name + " - " + str(e_den) , linewidth=0.8, alpha = 0.6);
+        
+    
+    ax.axhline(1, linestyle = "--", alpha = 0.5, color = "red")
+    ax.axvline(1, linestyle = "--", alpha = 0.5, label = "Original blocking", color = "red")
+    
+    ax.set_xlim(0,2)
+    ax.legend(title = "Original in-block density")
+    plt.ylabel("Relative in-block density after reordering") 
+    plt.xlabel("Relative block height after reordering");    
+    #plt.title(make_title(list(variable_dict_dict.values())[0], to_print = ["rows","cols", "input_blocks_density"]))
+    
+    
+    
+    ax.set_aspect(1./ax.get_data_ratio())
+
+    savename = make_savename(name,list(variable_dict_dict.values())[0])
+    check_directory(save_folder);
+    plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
+    plt.show()
+    plt.close()
 
 def bar_plot(results_df, variables_dict, save_folder = "../images/performance_real/", name = "real_barplots"):
         
@@ -400,26 +474,35 @@ def compare_heatmap(original_df, compare_df, original_variables_dict, compare_va
     
     def find_interpolated_value(df):
         interp_df = df.sort_values("VBS_avg_nzblock_height", ascending = True)
+        interp_df.drop_duplicates("VBS_avg_nzblock_height", inplace = True)
+
+        b_size = compare_variables_dict["input_block_size"]
+
         
         xp = np.array(interp_df["VBS_avg_nzblock_height"])
+        yp = np.array(interp_df["output_in_block_density"])
+
+        
         #adds the extreme value of one-block matrix
-        first_val = 1;
-        last_val = interp_df["rows"].values[0]
-        xp = np.append(first_val, xp)
-        xp = np.append(xp, last_val)
-
-        
-        yp = np.array(interp_df["relative_density"])
-        #adds the extreme values of one-block matrix and all-blocks matrix
-        first_val = 1
-        last_val = interp_df["input_density"].values[0]
-        yp = np.append(first_val, yp)
-        yp = np.append(yp, last_val)
-
-        
-        b_size = compare_variables_dict["input_block_size"]
-        val = np.interp(b_size,xp,yp)
+        if interp_df["rows"] not in xp:
+            last_val = interp_df["rows"].values[0]
+            xp = np.append(xp, last_val)
             
+            last_val = interp_df["input_density"].values[0]
+            yp = np.append(yp, last_val)  
+            
+        if 1 not in xp:
+            first_val = 1;
+            xp = np.append(first_val, xp)
+            first_val = 1;
+            yp = np.append(first_val,yp)        
+
+            
+        print("meow", xp, "meow")
+        print(yp)
+    
+        f = interpolate.interp1d(xp,yp,kind = 'slinear')
+        val = f(b_size)
         if val > 1: 
             val = 1
         return val        
@@ -427,6 +510,8 @@ def compare_heatmap(original_df, compare_df, original_variables_dict, compare_va
     heatmap_array = []
     unique_cols = []
     unique_rows = []
+    
+    compare_df = compare_df[compare_df["input_blocks_density"].isin(original_df["input_blocks_density"].unique())]
     for input_blocks_density in compare_df["input_blocks_density"].unique():
         if input_blocks_density in original_df["input_blocks_density"].unique():
         
@@ -451,8 +536,14 @@ def compare_heatmap(original_df, compare_df, original_variables_dict, compare_va
                     interp_compare_df = compare_df.query(q_c).sort_values("VBS_avg_nzblock_height", ascending = True)
                     interp_original_df = original_df.query(q_o).sort_values("VBS_avg_nzblock_height", ascending = True)
                     
+                    print("compare")
                     val_compare = find_interpolated_value(interp_compare_df);
+                    print(val_compare)
+
+                    
+                    print("original")
                     val_original = find_interpolated_value(interp_original_df);
+                    print(val_original)
                     
                     val = val_compare/val_original
                     row.append(val)

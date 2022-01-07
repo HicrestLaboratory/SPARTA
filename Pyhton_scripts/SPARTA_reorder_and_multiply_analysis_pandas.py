@@ -53,6 +53,7 @@ if __name__ == "__main__":
     variables_dict = {"rows": 8192, "cols": 8192, "B_cols": 2048, "input_block_size" : 64, "algo_block_size" : 64, "reorder_algorithm": "'saad_blocks'", "merge_limit" : -1}
     performance_heatmap(results_df, variables_dict, save_folder = save_folder);
     epsilon_heatmap(results_df, variables_dict, save_folder = save_folder)
+    
     variables_dict = {"rows": 8192, "cols": 8192, "B_cols": 8192, "input_block_size" : 64, "algo_block_size" : 64, "reorder_algorithm": "'saad_blocks'", "merge_limit" : 0}
     reorder_heatmap(results_df, variables_dict, save_folder = save_folder)
     delta_heatmap(results_df, variables_dict, save_folder = save_folder)
@@ -60,3 +61,6 @@ if __name__ == "__main__":
     
     variables_dict = {"rows": 8192, "cols": 8192, "B_cols": 8192, "input_block_size" : 64, "algo_block_size" : 64,"input_blocks_density" : 0.1, "reorder_algorithm": "'saad_blocks'", "merge_limit" : 0}
     blocking_curve(results_df, variables_dict, save_folder = save_folder)
+
+    variables_dict = {"rows": 8192, "cols": 8192, "B_cols": 8192, "input_block_size" : 64, "algo_block_size" : 64,"input_blocks_density" : 0.1, "input_entries_density" : 0.1, "reorder_algorithm": "'saad_blocks'"}
+    blocking_curve(results_df, variables_dict, variable = "merge_limit", save_folder = save_folder, labels = ["Theory", "None", "2.", "4."], title = "original in-block density = 0.1", savename = "merge_comparison")

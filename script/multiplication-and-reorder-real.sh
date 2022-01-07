@@ -1,6 +1,6 @@
 #!/bin/bash
+OPTS="-r 10 -v -1 -i 2 -R saad_blocks -s 1 -a -1 -F jaccard -M 1"
 
-OPTS="-r 10 -v -1 -i 2 -R saad_blocks -s 1 -M 1 -a -1 -F jaccard"
 DATA={1}
 NAME={2}
 
@@ -17,10 +17,10 @@ l_value=(-1 0 2 4);
 for f in ${1}*; do
   for e in ${e_value[@]}; do
     for P in ${P_value[@]}; do
-        for l in ${l_value[@]}; do 
-		echo $f $e $P $l $n $(date)
-	      	./programs/cuda/test_cublas_reorder_optimized ${OPTS} -n $n -f $f -e $e -P $P -l $l >> ${RESULTS}
-	done
+      for l in ${l_value[@]}; do 
+		echo $f $e $P $l $(date)
+	      	./programs/cuda/test_cublas_reorder_optimized ${OPTS} -f $f -e $e -P $P -l $l >> ${RESULTS}
+      done
     done
   done
 done

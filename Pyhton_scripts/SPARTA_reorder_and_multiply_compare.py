@@ -39,45 +39,64 @@ if __name__ == "__main__":
 
     csvs = {};
     csvs["SA"] = "../results/test_cublas_reordering-saad-01-07-2022.csv";
-    csvs["US"] = "../results/test_cublas_reordering-12-16-2021.csv";
+    csvs["1-SA"] = "../results/test_cublas_reordering-12-16-2021.csv";
     csvs["non_hierarchic"] = "../results/test_cublas_reordering-non-hierarchic-01-07-2022.csv";
-    csvs["scalar"] = "../results/test_cublas_reordering-scalar-12-13-2021.csv";
-
-
+    csvs["cosine"] = "../results/test_cublas_reordering-scalar-01-06-2022.csv";
+    
+    
+    
+    save_folder = "../images/paper_images/"
     output_dir = "../images/";
                     
     
     dfs = {}
-    for name in ["SA","US"]:
+    for name in csvs:
         dfs[name] = import_results(csvs[name])
-        
     
-    v_dict = {
-            "US":     {"input_block_size" : 64, "merge_limit" : 0},
-            "SA":     {"input_block_size" : 64, "merge_limit" : 0}   
-            }
-     
-    compare_blocking_curve(dfs, v_dict, name =  "blocking_curve_compare_input_entries_US_SA")
+    
+    v_dict = {}
+    v_dict["1-SA"] = {"input_block_size" : 64, "merge_limit" : 0, "B_cols" : 2048}           
+    v_dict["SA"] = {"input_block_size" : 64, "merge_limit" : 0}   
+
+    
+    
+    
+    compare_blocking_points(dfs["1-SA"], "1-SA", v_dict["1-SA"], dfs["SA"], "SA", v_dict["SA"], name =  "blocking_points_compare_input_entries_US_SA", save_folder = save_folder)
+    
+    
+    
+    v_dict["cosine"] = {"input_block_size" : 64, "merge_limit" : 0}   
+
+    compare_blocking_points(dfs["1-SA"], "jaccard", v_dict["1-SA"], dfs["cosine"], "cosine", v_dict["cosine"], name =  "blocking_curve_compare_input_entries_US_cosine", save_folder = save_folder)
 
 
     dfs = {}
-    for name in ["scalar","US"]:
+    for name in ["SA","1-SA"]:
         dfs[name] = import_results(csvs[name])
         
     v_dict = {
-            "US":     {"input_block_size" : 64, "merge_limit" : 0},
-            "scalar":     {"input_block_size" : 64, "merge_limit" : 0}   
+            "1-SA":     {"input_block_size" : 64, "merge_limit" : 0, "B_cols" : 2048},
+            "SA":     {"input_block_size" : 64, "merge_limit" : 0, "input_blocks_density": 0.1}   
             }
      
-    compare_blocking_curve(dfs, v_dict, name =  "blocking_curve_compare_input_entries_US_scalar")
+    
+    
+    compare_blocking_curves(dfs, 0.1 ,[0.01,0.1, 0.2, 0.5], v_dict, name =  "blocking_curve_compare_US_SA", save_folder = save_folder)
+    
+    blocking_curve(dfs["SA"], v_dict["SA"], values = [0.01,0.02,0.1,0.2,0.5], name = "saad_curve_motivation", save_folder = save_folder)
     
     
     dfs = {}
-    for name in ["SA","US"]:
+    for name in csvs:
         dfs[name] = import_results(csvs[name])
-    vardict = {"input_block_size" : 64, "merge_limit" : 0}
+    vardict_us = {"input_block_size" : 64, "merge_limit" : -1}
+    vardict_them = {"input_block_size" : 64, "merge_limit" : 0}
 
-    compare_heatmap(dfs["US"], dfs["SA"], vardict, vardict)
+    compare_heatmap(dfs["1-SA"], dfs["cosine"], vardict_us, vardict_them)
 
     
+    variables_dict = {"rows": 8192, "cols": 8192, "input_blocks_density" : 0.1, "merge_limit" : 0}
+    blocking_curve(dfs["SA"], variables_dict, save_folder = "../images/tests")
     
+    variables_dict = {"rows": 8192, "cols": 8192, "B_cols" : 8192, "input_blocks_density" : 0.1, "merge_limit" : 0}
+    blocking_curve(dfs["1-SA"], variables_dict, save_folder = "../images/tests")
