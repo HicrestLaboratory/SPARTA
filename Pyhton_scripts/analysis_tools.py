@@ -126,7 +126,7 @@ def import_results(input_csv):
     results_df["relative_block_size"] = results_df.apply(lambda x: x['VBS_avg_nzblock_height']/x["input_block_size"], axis=1)
 
     results_df["true_relative_density"] = results_df.apply(lambda x: x['output_in_block_density']/x["input_density"], axis=1)
-    
+        
     results_df["sp_vs_cu"] = results_df.apply(lambda x: x['cusparse_spmm_mean(ms)']/x["VBSmm_algo_mean(ms)"], axis=1)
     
     for var in experimental_variables:
@@ -145,7 +145,7 @@ def build_query(fixed):
     return q;   
 
 
-def generate_exp_iterator(ignore = [], fixed = {}):
+def generate_exp_iterator(results_df, ignore = [], fixed = {}):
     value_lists = []
     for var in experimental_variables:
         if (var in fixed.keys()):
@@ -182,6 +182,46 @@ def check_directory(path):
   
       os.makedirs(path)
       
+def real_blocking_curve(results_df, variables_dict, variable = "input_entries_density",  save_folder = "../images/reorder_curves/", name =  "blocking_curve_input_entries"):
+    
+    plt.rcParams['font.size'] = 10
+
+
+    marker = itr.cycle(('s','^', 'X',  'o', '*')) 
+    colors = itr.cycle(('0','0.2','0.4','0.5','0.6'))
+    
+    fig, ax = plt.subplots(1,1, figsize = (6,6))
+    plt.subplots_adjust(left = 0.1, top = 0.95, bottom = 0.15, right = 0.85)
+
+    gen_q = build_query(variables_dict)
+    for val in results_df[variable].unique():
+        #q = gen_q + add_to_query(variable, val)
+        q = gen_q
+        this_df = results_df.query(q).sort_values("VBS_avg_nzblock_height", ascending = True);
+        this_df = this_df[this_df[variable] == val]
+        yp = this_df["true_relative_density"]
+        xp = this_df["VBS_avg_nzblock_height"]
+        ax.plot(xp,yp, marker = next(marker), color = next(colors), label = val, linewidth=1.5, markersize = 10, fillstyle = "none")
+    
+    ax.axvline(variables_dict["algo_block_size"], linestyle = "--", alpha = 0.5, label = "Column block size", color = "red")
+
+
+    ax.set_xlim(0,2*variables_dict["algo_block_size"])
+    ax.legend(title = "Original in-block density")
+    plt.ylabel("Relative in-block density after reordering") 
+    plt.xlabel("Average block height after reordering");    
+    plt.title(make_title(variables_dict, to_print = ["rows","cols", "input_blocks_density"]))
+    
+    
+    
+    ax.set_aspect(1./ax.get_data_ratio())
+
+    savename = make_savename(name,variables_dict)
+    check_directory(save_folder);
+    plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
+    plt.show()
+    plt.close()
+      
       
 def blocking_curve(results_df, variables_dict, variable = "input_entries_density",  save_folder = "../images/reorder_curves/", name =  "blocking_curve_input_entries"):
     
@@ -196,8 +236,10 @@ def blocking_curve(results_df, variables_dict, variable = "input_entries_density
 
     gen_q = build_query(variables_dict)
     for val in results_df[variable].unique():
-        q = gen_q + add_to_query(variable, val)
+        #q = gen_q + add_to_query(variable, val)
+        q = gen_q
         this_df = results_df.query(q).sort_values("VBS_avg_nzblock_height", ascending = True);
+        this_df = this_df[this_df[variable] == val]
         yp = this_df["relative_density"]
         xp = this_df["VBS_avg_nzblock_height"]
         ax.plot(xp,yp, marker = next(marker), color = next(colors), label = val, linewidth=1.5, markersize = 10, fillstyle = "none")
@@ -263,6 +305,41 @@ def compare_blocking_curve(df_dict, variable_dict_dict, save_folder = "../images
     plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()
     plt.close()
+
+
+
+def bar_plot(results_df, variables_dict, save_folder = "../images/performance_real/", name = "real_barplots"):
+        
+    graphs = results_df["input_source"].unique();
+    measures = ['cusparse_spmm_mean(ms)','VBSmm_algo_mean(ms)']
+    
+    plt.style.use('grayscale')    
+    fig, ax = plt.subplots(1, figsize = (len(graphs), 4), sharex=True);
+
+
+    colormap = plt.cm.Greys
+    ax.tick_params(axis='x', colors='grey')
+    ax.grid(b=True, which='major', color='#999999', linestyle='-', alpha=0.3, linewidth=0.6)
+    ax.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.4)
+    ax.set_prop_cycle(color=[colormap(i) for i in np.linspace(0, 1,len(measures))])
+
+    space = 0.2;
+    width = (1. - space)/len(measures);
+
+    q = build_query(variables_dict)
+    results_df.query(q).plot.bar(x = "input_source",  y = measures, width = width, edgecolor = "black", ax = ax);
+     
+    plt.ylabel("multiplication time (ms)");
+    plt.xlabel("input graph");
+
+
+    plt.title(make_title(variables_dict,to_print = ["algo_block_size"]))
+    
+    savename = make_savename(name,variables_dict)
+    check_directory(save_folder);
+    plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
+    plt.show()
+
 
 
 
