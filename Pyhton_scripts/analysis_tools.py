@@ -390,7 +390,102 @@ def performance_heatmap(results_df,variables_dict, save_folder = "../images/perf
     plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()
     plt.close()
+
+
+def compare_heatmap(original_df, compare_df, original_variables_dict, compare_variables_dict, save_folder = "../images/reorder_landscape/reorder_heatmap/", name = "reorder_heatmap_comparison"):
+            
     
+    
+    
+    
+    def find_interpolated_value(df):
+        interp_df = df.sort_values("VBS_avg_nzblock_height", ascending = True)
+        
+        xp = np.array(interp_df["VBS_avg_nzblock_height"])
+        #adds the extreme value of one-block matrix
+        first_val = 1;
+        last_val = interp_df["rows"].values[0]
+        xp = np.append(first_val, xp)
+        xp = np.append(xp, last_val)
+
+        
+        yp = np.array(interp_df["relative_density"])
+        #adds the extreme values of one-block matrix and all-blocks matrix
+        first_val = 1
+        last_val = interp_df["input_density"].values[0]
+        yp = np.append(first_val, yp)
+        yp = np.append(yp, last_val)
+
+        
+        b_size = compare_variables_dict["input_block_size"]
+        val = np.interp(b_size,xp,yp)
+            
+        if val > 1: 
+            val = 1
+        return val        
+            
+    heatmap_array = []
+    unique_cols = []
+    unique_rows = []
+    for input_blocks_density in compare_df["input_blocks_density"].unique():
+        if input_blocks_density in original_df["input_blocks_density"].unique():
+        
+            unique_rows.append(input_blocks_density)
+            row = []
+            for input_entries_density in compare_df["input_entries_density"].unique():
+                if input_entries_density in original_df["input_blocks_density"].unique():
+    
+                    if input_entries_density not in unique_cols:
+                        unique_cols.append(input_entries_density)
+
+                    q_c = build_query(compare_variables_dict)
+                    q_c += add_to_query("input_entries_density", input_entries_density);
+                    q_c += add_to_query("input_blocks_density", input_blocks_density);
+                    
+                    q_o = build_query(original_variables_dict)
+                    q_o += add_to_query("input_entries_density", input_entries_density);
+                    q_o += add_to_query("input_blocks_density", input_blocks_density);
+                    
+                    
+                    #interp_df.drop_duplicates("VBS_avg_nzblock_height", inplace = True)
+                    interp_compare_df = compare_df.query(q_c).sort_values("VBS_avg_nzblock_height", ascending = True)
+                    interp_original_df = original_df.query(q_o).sort_values("VBS_avg_nzblock_height", ascending = True)
+                    
+                    val_compare = find_interpolated_value(interp_compare_df);
+                    val_original = find_interpolated_value(interp_original_df);
+                    
+                    val = val_compare/val_original
+                    row.append(val)
+            
+            heatmap_array.append(row)
+    
+    print(unique_cols, compare_df["input_entries_density"].unique())
+    print(unique_rows, compare_df["input_blocks_density"].unique())
+    heat_df = pd.DataFrame(heatmap_array, columns=unique_cols)
+    heat_df.set_index(compare_df["input_blocks_density"].unique(), inplace = True)
+    heat_df.sort_index(level=0, ascending=False, inplace=True)
+    
+    cmap = sns.diverging_palette(0,255,sep=1, as_cmap=True)
+    
+    plt.gca()
+    ax = sns.heatmap(heat_df, linewidths=.5, annot=True, cbar_kws={'label': 'relative rho after reordering'}, cmap = cmap, center = 0, vmin = 0, vmax = 1)
+    bottom, top = ax.get_ylim()
+    ax.set_ylim(bottom + 0.5, top - 0.5)
+    plt.xlabel("Density inside nonzero blocks") 
+    plt.ylabel("Fraction of nonzero blocks");
+    
+    #plt.title(make_title(compare_variables_dict))
+    savename = make_savename(name,compare_variables_dict)
+    
+    check_directory(save_folder);
+    #plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
+    plt.show()
+    plt.close()
+
+
+
+
+
 def reorder_heatmap(results_df, variables_dict, save_folder = "../images/reorder_landscape/reorder_heatmap/", name = "reorder_heatmap_"):
     
     
