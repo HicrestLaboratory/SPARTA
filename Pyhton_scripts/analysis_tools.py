@@ -14,7 +14,7 @@ import itertools as itr
 from scipy import interpolate
 
 global columns, experimental_variables;
-plt.rcParams['font.size'] = 11
+plt.rcParams['font.size'] = 14
 
 
 
@@ -69,9 +69,9 @@ columns = {'exp_name' : "experiment name",
            'skipped_std': "error of skipped", 
            'avg_comparisons': "avg number of row comparisons", 
            'comparisons_std': "error in row comparisons",
-           'VBSmm_algo_mean(ms)': "time to complete a block multiplication", 
+           'VBSmm_algo_mean(ms)': "1-sa + b-cuBLAS", 
            'VBSmm_algo_std': "error in block multiplication", 
-           'cusparse_spmm_mean(ms)': "time to complete the cusparse multiplication",
+           'cusparse_spmm_mean(ms)': "cuSparse spmm",
            'cusparse_spmm_std': "error in cusparse multiplication"
            }
 
@@ -179,12 +179,12 @@ def make_title(variables_dict, to_print = ["rows","cols","algo_block_size"]):
 def add_to_query(var, val):
     return " and " + var + "==" + str(val);
 
-def make_savename(name, variables_dict, ignore = ["input_block_size",]):
+def make_savename(name, variables_dict, ignore = ["input_block_size",], img_format = "jpg"):
     q = name
     for k, val in variables_dict.items():
         if val != "any" and k not in ignore: 
             q += "_" + k[0:2] + str(val);
-    return q + ".jpg";
+    return q + "." + img_format;
 
 def check_directory(path):
     # Check whether the specified path exists or not
@@ -195,9 +195,6 @@ def check_directory(path):
       os.makedirs(path)
       
 def real_blocking_curve(results_df, variables_dict, variable = "input_entries_density",  save_folder = "../images/reorder_curves/", name =  "blocking_curve_input_entries"):
-    
-    plt.rcParams['font.size'] = 10
-
 
     marker = itr.cycle(('s','^', 'X',  'o', '*')) 
     colors = itr.cycle(('0','0.2','0.4','0.5','0.6'))
@@ -237,8 +234,6 @@ def real_blocking_curve(results_df, variables_dict, variable = "input_entries_de
       
 def blocking_curve(results_df, variables_dict, variable = "input_entries_density",  values = None, save_folder = "../images/reorder_curves/", name =  "blocking_curve_input_entries", labels = None, xlim = None, title = " ", savename = None):
     
-    plt.rcParams['font.size'] = 10
-
 
     marker = itr.cycle(('s','^', 'X',  'o', '*',"<", ">")) 
     colors = itr.cycle(('0','0.2','0.4','0.5','0.6'))
@@ -273,11 +268,10 @@ def blocking_curve(results_df, variables_dict, variable = "input_entries_density
     ax.axvline(b_size, linestyle = "--", alpha = 0.5, label = "Original blocking", color = "red")
     
     ax.set_xlim(0,2*b_size)
-    ax.legend(title = columns[variable])
+    ax.legend(title = columns[variable], ncol = 2)
     plt.ylabel("Relative in-block density after reordering") 
     plt.xlabel("Average block height after reordering");    
     #plt.title(make_title(variables_dict, to_print = ["rows","cols", "input_blocks_density"]))
-    plt.title(title)
     
     
     ax.set_aspect(1./ax.get_data_ratio())
@@ -295,7 +289,7 @@ def compare_blocking_points(this_df, this_name, this_dict, that_df, that_name, t
     
 
 
-    marker = itr.cycle(('s','^', 'X',  'o', '*')) 
+    marker = itr.cycle(('^','X', 's',  'o', '*')) 
     colors = itr.cycle(('0','0.2','0.4','0.5','0.6'))
     
     fig, ax = plt.subplots(1,1, figsize = (6,6))
@@ -315,14 +309,16 @@ def compare_blocking_points(this_df, this_name, this_dict, that_df, that_name, t
         yp = this_df["relative_density"]
         xp = this_df["relative_block_size"]
         print(xp,yp)
-        ax.scatter(xp,yp, marker = next(marker), label = df_name, linewidth=0.8, s = 50, alpha = 0.6);
+        ax.scatter(xp,yp, marker = next(marker), label = df_name, linewidth=0.8, s = 50, alpha = 0.8);
     
     
     ax.axhline(1, linestyle = "--", alpha = 0.5, color = "red")
     ax.axvline(1, linestyle = "--", alpha = 0.5, label = "Original blocking", color = "red")
     
     ax.set_xlim(0,2)
-    ax.legend(title = "Original in-block density")
+    ax.set_ylim(0,2)
+
+    ax.legend(title = "Blocking algorithm")
     plt.ylabel("Relative in-block density after reordering") 
     plt.xlabel("Relative block height after reordering");    
     #plt.title(make_title(list(variable_dict_dict.values())[0], to_print = ["rows","cols", "input_blocks_density"]))
@@ -341,7 +337,8 @@ def compare_blocking_curves(df_dict, b_density, e_densities, variable_dict_dict,
     
 
 
-    colors = itr.cycle(("orange","blue","m"))
+    prop_cycle = plt.rcParams['axes.prop_cycle']
+    colors = itr.cycle(prop_cycle.by_key()['color'])
     
     fig, ax = plt.subplots(1,1, figsize = (6,6))
     plt.subplots_adjust(left = 0.1, top = 0.95, bottom = 0.15, right = 0.85)
@@ -350,24 +347,44 @@ def compare_blocking_curves(df_dict, b_density, e_densities, variable_dict_dict,
     queries = {}
     for df_name, df in df_dict.items():
         queries[df_name] = build_query(variable_dict_dict[df_name])        
-    
+        
+        
+        
+    linestyles = itr.cycle(("-.","-"))
     for df_name, df in df_dict.items():
         color = next(colors)
         df.sort_values("relative_block_size", ascending = True);
         markers = itr.cycle(('s','^', 'X',  'o', '*')) 
+        linestyle = next(linestyles)
         for e_den in e_densities:
                 q = queries[df_name] + add_to_query("input_entries_density", e_den) + add_to_query("input_blocks_density", b_density)
                 this_df = df.query(q)
                 yp = this_df["relative_density"]
                 xp = this_df["relative_block_size"]
-                ax.plot(xp,yp, marker = next(markers), color = color, label = df_name + " - " + str(e_den) , linewidth=0.8, alpha = 0.6);
+                ax.plot(xp,yp, marker = next(markers), color = color, label = None , linewidth=1.5, alpha = 0.8, markersize = 8, linestyle = linestyle);
         
+    
+    
+    markers = itr.cycle(('s','^', 'X',  'o', '*')) 
+    for density in e_densities:
+        ax.plot(100,100, marker = next(markers), color = "black", label = density, markersize = 10)
+        
+    colors = itr.cycle(prop_cycle.by_key()['color'])
+    linestyles = itr.cycle(((0,(5,10)),"-"))
+
+    for df_name in df_dict:
+        ax.plot(100,100, marker = "*", color = next(colors), label = df_name, markersize = 10, linestyle = next(linestyles))
+
     
     ax.axhline(1, linestyle = "--", alpha = 0.5, color = "red")
     ax.axvline(1, linestyle = "--", alpha = 0.5, label = "Original blocking", color = "red")
     
     ax.set_xlim(0,2)
-    ax.legend(title = "Original in-block density")
+    ax.set_ylim(0,2)
+
+    legend = ax.legend(title = "Original density (shape) \n and blocking method (color)", loc='upper center', ncol = 2, fontsize = 14)
+    plt.setp(legend.get_title(),fontsize='small')
+
     plt.ylabel("Relative in-block density after reordering") 
     plt.xlabel("Relative block height after reordering");    
     #plt.title(make_title(list(variable_dict_dict.values())[0], to_print = ["rows","cols", "input_blocks_density"]))
@@ -385,9 +402,10 @@ def compare_blocking_curves(df_dict, b_density, e_densities, variable_dict_dict,
 def bar_plot(results_df, variables_dict, save_folder = "../images/performance_real/", name = "real_barplots"):
         
     graphs = results_df["input_source"].unique();
+    print(graphs)
     measures = ['cusparse_spmm_mean(ms)','VBSmm_algo_mean(ms)']
     
-    plt.style.use('grayscale')    
+    #plt.style.use('grayscale')    
     fig, ax = plt.subplots(1, figsize = (len(graphs), 4), sharex=True);
 
 
@@ -396,7 +414,7 @@ def bar_plot(results_df, variables_dict, save_folder = "../images/performance_re
     ax.grid(b=True, which='major', color='#999999', linestyle='-', alpha=0.3, linewidth=0.6)
     ax.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.4)
     ax.set_prop_cycle(color=[colormap(i) for i in np.linspace(0, 1,len(measures))])
-
+    ax.set_facecolor('w')
     space = 0.2;
     width = (1. - space)/len(measures);
 
@@ -407,14 +425,65 @@ def bar_plot(results_df, variables_dict, save_folder = "../images/performance_re
     plt.xlabel("input graph");
 
 
-    plt.title(make_title(variables_dict,to_print = ["algo_block_size"]))
+    #plt.title(make_title(variables_dict,to_print = ["algo_block_size"]))
     
     savename = make_savename(name,variables_dict)
     check_directory(save_folder);
     plt.savefig(save_folder + savename, format = 'jpg', dpi=300, bbox_inches = "tight")
     plt.show()
 
+def bar_plot_together(results_df, variables_dict, save_folder = "../images/performance_real/", name = "real_barplots"):
+        
+    
+    
+    this_df = results_df.query(build_query(variables_dict));
+    this_df.sort_values("input_density", ascending = False, inplace = True)
+    graphs = this_df["input_source"].unique();
+    measures = ['cusparse_spmm_mean(ms)','VBSmm_algo_mean(ms)']
+    deltas = this_df["algo_block_size"].unique();
+    bars = len(deltas) + 1
+    
+    #plt.style.use('grayscale')    
+    fig, ax = plt.subplots(1, figsize = (len(graphs), 4), sharex=True);
 
+    colormap = plt.cm.Greys
+    ax.tick_params(axis='x', colors='grey')
+    ax.grid(b=True, which='major', color='#999999', linestyle='-', alpha=0.3, linewidth=0.6)
+    ax.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=0.4)
+    ax.set_prop_cycle(color=[colormap(i) for i in np.linspace(0, 1,bars)])
+    ax.set_facecolor('w')
+    space = 0.2;
+    width = (1. - space)/bars;
+    
+    positions = np.array(range(len(graphs)));
+    
+    
+    rel_pos = (-1. + space)/2
+    values = this_df[this_df["algo_block_size"] == 64]["cusparse_spmm_mean(ms)"].values
+    errors = this_df[this_df["algo_block_size"] == 64]["cusparse_spmm_std"].values
+    ax.bar(positions + rel_pos,values, yerr = errors, width = width, label = "cuSparse spmm", edgecolor = "black", lw = 0.8);
+    rel_pos += width;
+
+
+    for block_size in deltas:
+        values = this_df[this_df["algo_block_size"] == block_size]['VBSmm_algo_mean(ms)'].values
+        errors = this_df[this_df["algo_block_size"] == 64]["VBSmm_algo_std"].values
+        ax.bar(positions + rel_pos,values, yerr = errors, width = width, label = "1-SA: " + str(block_size), edgecolor = "black", lw = 0.8);
+        rel_pos += width;
+
+    labels = [x.split(".")[0] for x in graphs]
+    ax.set_xticks(positions)
+    ax.set_xticklabels(labels, rotation = 90)
+    plt.ylabel("multiplication time (ms)");
+    plt.xlabel("input graph");
+    plt.legend()
+
+    #plt.title(make_title(variables_dict,to_print = ["algo_block_size"]))
+    
+    savename = make_savename(name,variables_dict)
+    check_directory(save_folder, img_format = "pdf");
+    plt.savefig(save_folder + savename, format = 'pdf', dpi=300, bbox_inches = "tight")
+    plt.show()
 
 
 def performance_heatmap(results_df,variables_dict, save_folder = "../images/performance_landscape/performance_heatmap/", name = "reorder_and_multiply_heatmap_"):
@@ -457,7 +526,6 @@ def performance_heatmap(results_df,variables_dict, save_folder = "../images/perf
     plt.xlabel("Density inside nonzero blocks") 
     plt.ylabel("Fraction of nonzero blocks");
     
-    plt.title(make_title(variables_dict, to_print = ["rows","cols","B_cols","input_block_size"]))
     savename = make_savename(name,variables_dict)
     
     check_directory(save_folder);
@@ -630,7 +698,7 @@ def reorder_heatmap(results_df, variables_dict, save_folder = "../images/reorder
     plt.xlabel("Density inside nonzero blocks") 
     plt.ylabel("Fraction of nonzero blocks");
     
-    plt.title(make_title(variables_dict))
+    #plt.title(make_title(variables_dict))
     savename = make_savename(name,variables_dict)
     
     check_directory(save_folder);
@@ -688,7 +756,7 @@ def delta_heatmap(results_df, variables_dict, save_folder = "../images/reorder_l
     plt.xlabel("Density inside nonzero blocks") 
     plt.ylabel("Fraction of nonzero blocks");
     
-    plt.title(make_title(variables_dict))
+    #plt.title(make_title(variables_dict))
     savename = make_savename(name,variables_dict)
     
     check_directory(save_folder);

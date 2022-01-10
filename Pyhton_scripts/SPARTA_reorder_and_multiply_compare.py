@@ -48,7 +48,8 @@ if __name__ == "__main__":
     save_folder = "../images/paper_images/"
     output_dir = "../images/";
                     
-    
+    plt.rcParams['font.size'] = 16
+
     dfs = {}
     for name in csvs:
         dfs[name] = import_results(csvs[name])
@@ -61,7 +62,7 @@ if __name__ == "__main__":
     
     
     
-    compare_blocking_points(dfs["1-SA"], "1-SA", v_dict["1-SA"], dfs["SA"], "SA", v_dict["SA"], name =  "blocking_points_compare_input_entries_US_SA", save_folder = save_folder)
+    compare_blocking_points(dfs["SA"], "SA", v_dict["SA"], dfs["1-SA"], "1-SA", v_dict["1-SA"], name =  "blocking_points_compare_input_entries_US_SA", save_folder = save_folder)
     
     
     
@@ -75,15 +76,16 @@ if __name__ == "__main__":
         dfs[name] = import_results(csvs[name])
         
     v_dict = {
-            "1-SA":     {"input_block_size" : 64, "merge_limit" : 0, "B_cols" : 2048},
-            "SA":     {"input_block_size" : 64, "merge_limit" : 0, "input_blocks_density": 0.1}   
+            
+            "SA":     {"input_block_size" : 64, "merge_limit" : 0, "input_blocks_density": 0.1, "B_cols": 128},
+            "1-SA":     {"input_block_size" : 64, "merge_limit" : 0, "B_cols" : 2048}
             }
      
     
     
     compare_blocking_curves(dfs, 0.1 ,[0.01,0.1, 0.2, 0.5], v_dict, name =  "blocking_curve_compare_US_SA", save_folder = save_folder)
     
-    blocking_curve(dfs["SA"], v_dict["SA"], values = [0.01,0.02,0.1,0.2,0.5], name = "saad_curve_motivation", save_folder = save_folder)
+    blocking_curve(dfs["SA"], v_dict["SA"], values = [0.01,0.02,0.1,0.2,0.5], name = "saad_curve_motivation",  save_folder = save_folder)
     
     
     dfs = {}

@@ -36,6 +36,7 @@ results_df = import_results(input_csv)
 
 results_df["input_source"] = results_df.apply(lambda x: x['input_source'].split("/")[-1], axis = 1)
 
+plt.rcParams['font.size'] = 14
 
 do_all = False
 if do_all:
@@ -57,6 +58,9 @@ if do_all:
         #try:
         reorder_curve(variables_dict);
         #except:
-        
-variables_dict = {"algo_block_size" : 64, "reorder_algorithm": "'saad_blocks'", "merge_limit" : 0}
-real_blocking_curve(results_df, variables_dict, variable = "input_source")
+
+save_folder = "../images/paper_images/"
+
+variables_dict = {"reorder_algorithm": "'saad_blocks'", "merge_limit" : 0, "epsilon" : 0.1, "B_cols" : 16384, "hierarchic_merge": 1}
+#real_blocking_curve(results_df, variables_dict, variable = "input_source")        
+bar_plot_together(results_df, variables_dict, save_folder = save_folder);

@@ -34,6 +34,9 @@ if __name__ == "__main__":
 
     do_all_images = False;
     
+    plt.rcParams['font.size'] = 14
+
+    
     if do_all_images:
         ignore = ["input_entries_density","input_blocks_density", "epsilon", "input_block_size"];
         fixed = {"similarity_func" : "'jaccard'", "reorder_algorithm": "'saad_blocks'"};
@@ -49,15 +52,19 @@ if __name__ == "__main__":
             
             
     #paper images
+    
+    
+    
     save_folder = "../images/paper_images/"
-    variables_dict = {"rows": 8192, "cols": 8192, "B_cols": 2048, "input_block_size" : 64, "algo_block_size" : 64, "reorder_algorithm": "'saad_blocks'", "merge_limit" : -1}
-    performance_heatmap(results_df, variables_dict, save_folder = save_folder);
-    epsilon_heatmap(results_df, variables_dict, save_folder = save_folder)
+    for B_cols in [2048, 4096, 8192]:
+        variables_dict = {"rows": 8192, "cols": 8192, "B_cols": B_cols, "input_block_size" : 64, "algo_block_size" : 64, "reorder_algorithm": "'saad_blocks'", "merge_limit" : -1}
+        performance_heatmap(results_df, variables_dict, save_folder = save_folder);
+        epsilon_heatmap(results_df, variables_dict, save_folder = save_folder)
     
     variables_dict = {"rows": 8192, "cols": 8192, "B_cols": 8192, "input_block_size" : 64, "algo_block_size" : 64, "reorder_algorithm": "'saad_blocks'", "merge_limit" : 0}
     reorder_heatmap(results_df, variables_dict, save_folder = save_folder)
     delta_heatmap(results_df, variables_dict, save_folder = save_folder)
-    
+
     
     variables_dict = {"rows": 8192, "cols": 8192, "B_cols": 8192, "input_block_size" : 64, "algo_block_size" : 64,"input_blocks_density" : 0.1, "reorder_algorithm": "'saad_blocks'", "merge_limit" : 0}
     blocking_curve(results_df, variables_dict, save_folder = save_folder)
