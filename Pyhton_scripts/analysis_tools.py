@@ -440,7 +440,7 @@ def bar_plot_together(results_df, variables_dict, save_folder = "../images/perfo
     this_df.sort_values("input_density", ascending = False, inplace = True)
     graphs = this_df["input_source"].unique();
     measures = ['cusparse_spmm_mean(ms)','VBSmm_algo_mean(ms)']
-    deltas = this_df["algo_block_size"].unique();
+    deltas = np.sort(this_df["algo_block_size"].unique());
     bars = len(deltas) + 1
     
     #plt.style.use('grayscale')    
@@ -565,9 +565,6 @@ def compare_heatmap(original_df, compare_df, original_variables_dict, compare_va
             first_val = 1;
             yp = np.append(first_val,yp)        
 
-            
-        print("meow", xp, "meow")
-        print(yp)
     
         f = interpolate.interp1d(xp,yp,kind = 'slinear')
         val = f(b_size)
