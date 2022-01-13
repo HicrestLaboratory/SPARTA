@@ -61,6 +61,18 @@ if do_all:
 
 save_folder = "../images/paper_images_real/"
 
-variables_dict = {"reorder_algorithm": "'saad_blocks'", "merge_limit" : 0, "epsilon" : 0.1, "B_cols" : 4096, "hierarchic_merge": 1}
+variables_dict = {"reorder_algorithm": "'saad_blocks'", "merge_limit" : -1, "epsilon" : 0.5, "B_cols" : 4096, "hierarchic_merge": 1}
 #real_blocking_curve(results_df, variables_dict, variable = "input_source")        
-bar_plot_together(results_df, variables_dict, save_folder = save_folder);
+#bar_plot_together(results_df, variables_dict, save_folder = save_folder, name = "very_small");
+
+for graph in results_df["input_source"].unique():
+    variables_dict = {"input_source": "'" + graph + "'" , "reorder_algorithm": "'saad_blocks'", "merge_limit" : -1, "epsilon" : 0.5, "B_cols" : 4096, "hierarchic_merge": 1}
+    q = build_query(variables_dict);
+    this_df = results_df.query(q)
+    print(graph.split(".")[0], "&")
+    print(this_df["rows"].values[0], "&")
+    print(this_df["total_nonzeros"].values[0], "&")
+    print(format(this_df["input_density"].values[0],".4f"), "\\\\")
+
+
+

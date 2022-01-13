@@ -38,14 +38,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     csvs = {};
-    csvs["SA"] = "../results/test_cublas_reordering-saad-01-07-2022.csv";
-    csvs["1-SA"] = "../results/test_cublas_reordering-12-16-2021.csv";
-    csvs["non_hierarchic"] = "../results/test_cublas_reordering-non-hierarchic-01-07-2022.csv";
-    csvs["cosine"] = "../results/test_cublas_reordering-scalar-01-06-2022.csv";
+    csvs["SA"] = "../results/test_cublas_reordering-saad-01-10-2022.csv";
+    csvs["1-SA"] = "../results/test_cublas_reordering-synthetic-01-11-2022.csv";
+    csvs["non_hierarchic"] = "../results/test_cublas_reordering-non-hierarchic-01-11-2022.csv";
+    csvs["cosine"] = "../results/test_cublas_reordering-scalar-01-10-2022.csv";
     
     
     
-    save_folder = "../images/paper_images/"
+    save_folder = "../images/paper_images_new/"
     output_dir = "../images/";
                     
     plt.rcParams['font.size'] = 16
@@ -94,7 +94,8 @@ if __name__ == "__main__":
     vardict_us = {"input_block_size" : 64, "merge_limit" : -1}
     vardict_them = {"input_block_size" : 64, "merge_limit" : 0}
 
-    compare_heatmap(dfs["1-SA"], dfs["cosine"], vardict_us, vardict_them)
+    compare_heatmap(dfs["1-SA"], dfs["cosine"], vardict_us, vardict_them, save_folder = save_folder)
+    compare_heatmap(dfs["1-SA"], dfs["SA"], vardict_us, vardict_them, save_folder = save_folder)
 
     
     variables_dict = {"rows": 8192, "cols": 8192, "input_blocks_density" : 0.1, "merge_limit" : 0}
