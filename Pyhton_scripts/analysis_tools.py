@@ -481,7 +481,7 @@ def bar_plot_together(results_df, variables_dict, save_folder = "../images/perfo
     #plt.title(make_title(variables_dict,to_print = ["algo_block_size"]))
     
     savename = make_savename(name,variables_dict)
-    check_directory(save_folder, img_format = "pdf");
+    check_directory(save_folder);
     plt.savefig(save_folder + savename, format = 'pdf', dpi=300, bbox_inches = "tight")
     plt.show()
 

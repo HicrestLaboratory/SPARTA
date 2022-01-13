@@ -22,7 +22,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Makes images from experiments")
     
-    parser.add_argument("--input-csv", default="../results/test_cublas_reordering-RMAT-12-10-2021.csv",
+    parser.add_argument("--input-csv", default="../results/test_cublas_reordering-real-verysmall-01-11-2022.csv",
         help="file that contains the already run experiments")
     parser.add_argument("--output-dir", default="../images/",
         help="directory where the images are saved")
@@ -59,8 +59,8 @@ if do_all:
         reorder_curve(variables_dict);
         #except:
 
-save_folder = "../images/paper_images/"
+save_folder = "../images/paper_images_real/"
 
-variables_dict = {"reorder_algorithm": "'saad_blocks'", "merge_limit" : 0, "epsilon" : 0.1, "B_cols" : 16384, "hierarchic_merge": 1}
+variables_dict = {"reorder_algorithm": "'saad_blocks'", "merge_limit" : 0, "epsilon" : 0.1, "B_cols" : 4096, "hierarchic_merge": 1}
 #real_blocking_curve(results_df, variables_dict, variable = "input_source")        
 bar_plot_together(results_df, variables_dict, save_folder = save_folder);
