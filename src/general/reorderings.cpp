@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include <fstream> //ifstream
+#include <chrono>
+using namespace std::chrono;
 
 #include <cmath> // std::abs
 #include <string>
@@ -522,7 +524,7 @@ int saad_reordering(CSR& input_cmat, VBS& output_vbmat, intT algo_block_size, in
     saad_reordering(input_cmat, params, hash_groups, info);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
-    cerr << "REORDERING ONLY (ms)" << duration.count() << endl;
+    std::cerr << "REORDERING ONLY (ms)" << duration.count() << std::endl;
     //create the block matrix
 
     group_to_VBS(input_cmat, hash_groups, col_part, block_cols, output_vbmat, vbmat_blocks_fmt, vbmat_entries_fmt);
