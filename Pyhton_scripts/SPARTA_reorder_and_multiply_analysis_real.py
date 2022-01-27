@@ -32,47 +32,46 @@ if __name__ == "__main__":
     input_csv = args.input_csv;
     output_dir = args.output_dir;
                     
-results_df = import_results(input_csv)
+dfs = {}
+input_csv = "../results/test_cublas_reordering-real-verysmall-01-11-2022.csv"
+this_df = import_results(input_csv)
+this_df = this_df[this_df["rows"] < 15000]
+dfs["very_small"] = this_df
+input_csv = "../results/test_cublas_reordering-real-small-01-13-2022.csv"
+this_df = import_results(input_csv)
+this_df = this_df[this_df["rows"] != 21608]
+dfs["small"] = this_df[this_df["rows"] > 4000]
+#dfs["small_plus"] = this_df[this_df["rows"] > 15000]
 
-results_df["input_source"] = results_df.apply(lambda x: x['input_source'].split("/")[-1], axis = 1)
+dfs["small"].replace("movielens-10m-noRatings.el","movielens-10-nR.el",inplace = True)
+
+for df_name,df in dfs.items():
+    df["input_source"] = df.apply(lambda x: x['input_source'].split("/")[-1], axis = 1)
 
 plt.rcParams['font.size'] = 14
 
-do_all = False
-if do_all:
-    
-    ignore = ["input_source","rows","cols"];
-    fixed = {"B_cols" : 4096, "similarity_func" : "'jaccard'", "reorder_algorithm": "'saad_blocks'", "hierarchic_merge" : 1, "merge_limit" : 0};
-    for values in generate_exp_iterator(results_df, ignore = ignore, fixed = fixed):
-        variables_dict = dict(zip(experimental_variables, list(values)))
-        print(variables_dict)
-        #try:
-        bar_plot(results_df, variables_dict);
-        #except:
-    
-    
-    ignore = ["cols","B_cols","epsilon"];
-    fixed = {"similarity_func" : "'jaccard'", "reorder_algorithm": "'saad_blocks'"};
-    for values in generate_exp_iterator(ignore = ignore, fixed = fixed):
-        variables_dict = dict(zip(experimental_variables, list(values)))
-        #try:
-        reorder_curve(variables_dict);
-        #except:
-
 save_folder = "../images/paper_images_real/"
 
-variables_dict = {"reorder_algorithm": "'saad_blocks'", "merge_limit" : -1, "epsilon" : 0.5, "B_cols" : 4096, "hierarchic_merge": 1}
-#real_blocking_curve(results_df, variables_dict, variable = "input_source")        
-#bar_plot_together(results_df, variables_dict, save_folder = save_folder, name = "very_small");
+variables_dict = {"reorder_algorithm": "'saad_blocks'", "merge_limit" : 0, "epsilon" : 0.1, "B_cols" : 4096, "hierarchic_merge": 1}
+#real_blocking_curve(dfs["very_smalle"], variables_dict, variable = "input_source")        
+#bar_plot_together(dfs["very_small"], variables_dict, save_folder = save_folder, name = "very_small");
 
-for graph in results_df["input_source"].unique():
-    variables_dict = {"input_source": "'" + graph + "'" , "reorder_algorithm": "'saad_blocks'", "merge_limit" : -1, "epsilon" : 0.5, "B_cols" : 4096, "hierarchic_merge": 1}
-    q = build_query(variables_dict);
-    this_df = results_df.query(q)
-    print(graph.split(".")[0], "&")
-    print(this_df["rows"].values[0], "&")
-    print(this_df["total_nonzeros"].values[0], "&")
-    print(format(this_df["input_density"].values[0],".4f"), "\\\\")
+
+for df_name,df in dfs.items():
+    bar_plot_together(df, variables_dict, save_folder = save_folder, name = df_name);
+
+for df_name,df in dfs.items():
+    df.sort_values("rows", ascending = True, inplace = True)
+
+    for graph in df["input_source"].unique():
+        variables_dict = {"input_source": "'" + graph + "'" , "reorder_algorithm": "'saad_blocks'", "merge_limit" : 0, "epsilon" : 0.1, "B_cols" : 4096, "hierarchic_merge": 1}
+        q = build_query(variables_dict);
+        this_df = df.query(q)
+        print(graph.split(".")[0], "&")
+        
+        print(this_df["rows"].values[0], "&")
+        print(this_df["total_nonzeros"].values[0], "&")
+        print(format(this_df["input_density"].values[0]*100,".3f") + "\\%", "\\\\")
 
 
 

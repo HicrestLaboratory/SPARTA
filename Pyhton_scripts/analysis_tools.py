@@ -437,7 +437,7 @@ def bar_plot_together(results_df, variables_dict, save_folder = "../images/perfo
     
     
     this_df = results_df.query(build_query(variables_dict));
-    this_df.sort_values("input_density", ascending = False, inplace = True)
+    this_df.sort_values("rows", ascending = True, inplace = True)
     graphs = this_df["input_source"].unique();
     measures = ['cusparse_spmm_mean(ms)','VBSmm_algo_mean(ms)']
     deltas = np.sort(this_df["algo_block_size"].unique());
@@ -473,9 +473,9 @@ def bar_plot_together(results_df, variables_dict, save_folder = "../images/perfo
 
     labels = [x.split(".")[0] for x in graphs]
     ax.set_xticks(positions)
-    ax.set_xticklabels(labels, rotation = 90)
+    ax.set_xticklabels(labels)
+    fig.autofmt_xdate(rotation= 45)
     plt.ylabel("multiplication time (ms)");
-    plt.xlabel("input graph");
     plt.legend()
 
     #plt.title(make_title(variables_dict,to_print = ["algo_block_size"]))

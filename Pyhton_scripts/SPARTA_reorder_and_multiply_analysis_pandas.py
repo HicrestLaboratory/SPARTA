@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     do_all_images = False;
     
-    plt.rcParams['font.size'] = 14
+    plt.rcParams['font.size'] = 15
 
     
     if do_all_images:
