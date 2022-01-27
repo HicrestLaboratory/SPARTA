@@ -518,9 +518,13 @@ int saad_reordering(CSR& input_cmat, VBS& output_vbmat, intT algo_block_size, in
 
     //run the reordering algo
     intT* hash_groups = new intT[input_cmat.rows];
+    auto start = high_resolution_clock::now();
     saad_reordering(input_cmat, params, hash_groups, info);
-
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<milliseconds>(stop - start);
+    cerr << "REORDERING ONLY (ms)" << duration.count() << endl;
     //create the block matrix
+
     group_to_VBS(input_cmat, hash_groups, col_part, block_cols, output_vbmat, vbmat_blocks_fmt, vbmat_entries_fmt);
 
     delete[] hash_groups;

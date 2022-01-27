@@ -8,6 +8,8 @@
 #include <typeinfo>
 #include <iterator>
 #include <algorithm>
+#include <chrono>
+
 
 // Utilities and system include
 #include <assert.h>
@@ -31,6 +33,7 @@
 
 
 using namespace std;
+using namespace std::chrono;
 
 struct Info_Collector
 {
@@ -166,7 +169,12 @@ int main(int argc, char* argv[])
         
         VBS vbmat_algo;
 
+
+        auto start = high_resolution_clock::now();
         saad_reordering(cmat_A, vbmat_algo, params.algo_block_size, vbmat_blocks_fmt, vbmat_entries_fmt, params, re_info);
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<milliseconds>(stop - start);
+        cerr << "REORDERING PlUS VBR (ms)" << duration.count() << endl;
 
         if (params.verbose > 0)    cout << "VBS matrix (Asymmetric Angle Method) created:" << endl;
         if (params.verbose > 1)    matprint(vbmat_algo);
