@@ -424,7 +424,6 @@ def bar_plot(results_df, variables_dict, save_folder = "../images/performance_re
     plt.ylabel("multiplication time (ms)");
     plt.xlabel("input graph");
 
-
     #plt.title(make_title(variables_dict,to_print = ["algo_block_size"]))
     
     savename = make_savename(name,variables_dict)
@@ -436,8 +435,7 @@ def bar_plot_together(results_df, variables_dict, save_folder = "../images/perfo
         
     
     
-    this_df = results_df.query(build_query(variables_dict));
-    this_df.sort_values("rows", ascending = True, inplace = True)
+    this_df = results_df.query(build_query(variables_dict)).sort_values("rows", ascending = True);
     graphs = this_df["input_source"].unique();
     measures = ['cusparse_spmm_mean(ms)','VBSmm_algo_mean(ms)']
     deltas = np.sort(this_df["algo_block_size"].unique());
@@ -472,12 +470,15 @@ def bar_plot_together(results_df, variables_dict, save_folder = "../images/perfo
         rel_pos += width;
 
     labels = [x.split(".")[0] for x in graphs]
+    for i,l in enumerate(labels):
+        if len(l) > 15:
+            labels[i] = l.split("-")[0] + "-" + l.split("-")[1]
     ax.set_xticks(positions)
     ax.set_xticklabels(labels)
     fig.autofmt_xdate(rotation= 45)
     plt.ylabel("multiplication time (ms)");
     plt.legend()
-
+    
     #plt.title(make_title(variables_dict,to_print = ["algo_block_size"]))
     
     savename = make_savename(name,variables_dict)

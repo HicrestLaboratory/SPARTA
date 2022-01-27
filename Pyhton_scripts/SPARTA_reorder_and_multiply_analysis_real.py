@@ -31,7 +31,9 @@ if __name__ == "__main__":
 
     input_csv = args.input_csv;
     output_dir = args.output_dir;
-                    
+
+
+"""                    
 dfs = {}
 input_csv = "../results/test_cublas_reordering-real-verysmall-01-11-2022.csv"
 this_df = import_results(input_csv)
@@ -41,9 +43,28 @@ input_csv = "../results/test_cublas_reordering-real-small-01-13-2022.csv"
 this_df = import_results(input_csv)
 this_df = this_df[this_df["rows"] != 21608]
 dfs["small"] = this_df[this_df["rows"] > 4000]
+"""
+
+dfs = {}
+input_csv = "../results/test_cublas_reordering-real-verysmall-01-11-2022.csv"
+this_df_1 = import_results(input_csv)
+input_csv = "../results/test_cublas_reordering-real-small-01-13-2022.csv"
+this_df_2 = import_results(input_csv)
+this_df_merge = pd.concat([this_df_1,this_df_2])
+this_df = this_df_merge.sort_values("rows", ascending = True)
+
+
+
+dfs["small"] = this_df[this_df["rows"] < 4000]
+dfs["medium"] = this_df[this_df["rows"] > 4000]
+dfs["medium"] = dfs["medium"][dfs["medium"]["rows"] < 20000]
+dfs["big"] = this_df[this_df["rows"] > 20000]
+
+
+
 #dfs["small_plus"] = this_df[this_df["rows"] > 15000]
 
-dfs["small"].replace("movielens-10m-noRatings.el","movielens-10-nR.el",inplace = True)
+#dfs["small"].replace("movielens-10m-noRatings.el","movielens-10-nR.el",inplace = True)
 
 for df_name,df in dfs.items():
     df["input_source"] = df.apply(lambda x: x['input_source'].split("/")[-1], axis = 1)
