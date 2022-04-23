@@ -461,6 +461,8 @@ def bar_plot_together(results_df, variables_dict, save_folder = "../images/perfo
     errors = this_df[this_df["algo_block_size"] == 64]["cusparse_spmm_std"].values
     ax.bar(positions + rel_pos,values, yerr = errors, width = width, label = "cuSparse spmm", edgecolor = "black", lw = 0.8);
     rel_pos += width;
+    print(values)
+
 
 
     for block_size in deltas:
