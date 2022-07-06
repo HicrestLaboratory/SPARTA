@@ -20,6 +20,16 @@ struct CSR {
             fmt   = 0: compressed sparse rows
                     1: compressed sparse columns
     |--------------------------------------------------------------------   */
+    //insert some flags/properties
+    //shape = 
+    //0 square, nonsymmetric
+    //1 square, symmetric
+    //2 square, triangular
+    //3 square, diagonal
+    //4 rectangular
+    
+    //boolean matrix?= 0/1
+    
     intT rows;      /* number of rows                                        */
     intT cols;      /* number of cols                                        */
     intT* nzcount;  /* number of nonzero entry in each row (column)          */
