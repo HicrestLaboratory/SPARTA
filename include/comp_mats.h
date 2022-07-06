@@ -31,6 +31,10 @@ struct CSR {
 
 struct VBS {
 
+    
+       //TODO add a boolean 
+    //  FixedBlock = 1
+    //  col_part, row_part have size 1 if the matrix is fixed (e.g. the last/first element)
     /*--------------------------------------------------------------
         Variable Block Sparse (VBS) matrix.
         The matrix doesn't need to be square,
