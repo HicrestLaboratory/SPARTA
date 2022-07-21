@@ -28,7 +28,9 @@ struct CSR {
     DataT** ma;   /* pointer-to-pointer to store nonzero entries           */
     int job;
 
-    void reorder(std::vector<intT> permutation);
-    void read_from_edgelist(std::ifstream& infile, std::string delimiter, bool pattern_only);
     void clean();
+    void read_from_edgelist(std::ifstream& infile, std::string delimiter, bool pattern_only);
+    void reorder(std::vector<intT> permutation);
+    void print();
+
 };
