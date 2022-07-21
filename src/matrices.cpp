@@ -113,7 +113,6 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
 
     pos_holder.clear();
     val_holder.clear();
-    return 0;
 }
 
 void CSR::print(ofstream& outfile)
