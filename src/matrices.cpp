@@ -7,33 +7,26 @@
 
 using namespace std;
 
-void CSR::print(ofstream& outfile)
+void CSR::clean()
 {
-    //loop through rows
-    for (intT i = 0; intT i < rows; i++)
-    {
-	intT last_col = 0;
-        for (intT nzs = 0; nzs < nzcount[i]; nzs++) 
-        {
-	     
-            nz_column = ja[i][nzs]; //find column (row) index of next nonzero element
-            DataT elem = 1;
-	    if (job == 1) elem = ma[i][nzs]; //value of that element;
-	    for (intT j = last_col; j < nz_column; j++)
-	    {
-		    outfile << 0 << " ";
-	    }
-	    outfile << elem << " ";
-	    last_col = nz_column;
-        }
-	
-    	for (intT j = last_col; j < cols; j++)
-    	{
-	    outfile << 0 << " ";
-    	}	
-	outfile << endl;
-    }
+    /*----------------------------------------------------------------------
+    | Free up memory allocated for CSR structs.
+    |--------------------------------------------------------------------*/
 
+    if (rows + cols <= 1) return;
+
+    for (intT i = 0; i < rows; i++) {
+        if (nzcount[i] > 0) {
+            if (job) 
+		{
+		if (ma) delete[] ma[i];
+		}
+            delete[] ja[i];
+        }
+    }
+    if (ma) delete[] ma;
+    delete[] ja;
+    delete[] nzcount;
 }
 
 void CSR::reorder(vector<intT> permutation)
@@ -123,24 +116,34 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
     return 0;
 }
 
-void CSR::clean()
+void CSR::print(ofstream& outfile)
 {
-    /*----------------------------------------------------------------------
-    | Free up memory allocated for CSR structs.
-    |--------------------------------------------------------------------*/
-
-    if (rows + cols <= 1) return;
-
-    for (intT i = 0; i < rows; i++) {
-        if (nzcount[i] > 0) {
-            if (job) 
-		{
-		if (ma) delete[] ma[i];
-		}
-            delete[] ja[i];
+    //loop through rows
+    for (intT i = 0; intT i < rows; i++)
+    {
+	intT last_col = 0;
+        for (intT nzs = 0; nzs < nzcount[i]; nzs++) 
+        {
+	     
+            nz_column = ja[i][nzs]; //find column (row) index of next nonzero element
+            
+	    DataT elem;
+	    if (job == 1) elem = ma[i][nzs]; //value of that element;
+	    else elem = 1;
+		
+	    for (intT j = last_col; j < nz_column; j++)
+	    {
+		    outfile << 0 << " ";
+	    }
+	    outfile << elem << " ";
+	    last_col = nz_column;
         }
+	
+    	for (intT j = last_col; j < cols; j++)
+    	{
+	    outfile << 0 << " ";
+    	}	
+	outfile << endl;
     }
-    if (ma) delete[] ma;
-    delete[] ja;
-    delete[] nzcount;
+
 }
