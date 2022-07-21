@@ -1,3 +1,4 @@
+#pragma once
 #include "matrices.h"
 
 float HammingDistance(intT* row_A, intT size_A, intT* row_B, intT size_B);
