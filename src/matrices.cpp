@@ -19,7 +19,7 @@ void CSR::clean()
         if (nzcount[i] > 0) {
             if (job) 
 		{
-		if (ma) delete[] ma[i];
+		if (ma[i]) delete[] ma[i];
 		}
             delete[] ja[i];
         }
