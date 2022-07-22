@@ -87,11 +87,11 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
 
     }
 
-    rows = holder.size();
+    rows = pos_holder.size();
     cols = max_column + 1;
-    nzcount = new intT[main_dim];
-    ja = new intT * [main_dim];
-    if (not pattern_only) ma = new DataT * [main_dim];
+    nzcount = new intT[rows];
+    ja = new intT * [rows];
+    if (not pattern_only) ma = new DataT * [rows];
 
     for (intT i = 0; i < pos_holder.size(); i++)
     {
