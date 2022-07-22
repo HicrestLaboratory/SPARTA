@@ -1,5 +1,7 @@
 #pragma once
 
+#define intT	   long int
+
 #include <string>
 #include <vector>
 #include <fstream>
