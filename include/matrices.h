@@ -20,7 +20,7 @@ struct CSR {
     |       cmat  = a CSR struct
     |       rows  = # of columns of the matrix
     |       cols  = # of columns of the matrix
-            job   = 0: pattern only
+            job   = 0: sparsity pattern only (boolean matrix)
     |               1: data and pattern
     |--------------------------------------------------------------------   */
     intT rows;      /* number of rows                                        */
