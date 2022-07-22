@@ -1,11 +1,11 @@
 #pragma once
 
-#define intT	   long int
 
 #include <string>
 #include <vector>
 #include <fstream>
 
+typedef long int intT;
 typedef float DataT; //precision for input matrices entries
 typedef float DataT_C; //precision for result matrix entries
 //types for the two multiplied matrices and the result matrix. available choices are: 
