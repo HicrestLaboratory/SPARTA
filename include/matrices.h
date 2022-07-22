@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 typedef float DataT; //precision for input matrices entries
 typedef float DataT_C; //precision for result matrix entries
@@ -32,6 +33,6 @@ struct CSR {
     void clean();
     void read_from_edgelist(std::ifstream& infile, std::string delimiter, bool pattern_only);
     void reorder(std::vector<intT> permutation);
-    void print();
+    void print(ofstream& outfile);
 
 };
