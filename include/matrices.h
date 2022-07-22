@@ -10,8 +10,6 @@ typedef float DataT_C; //precision for result matrix entries
 //          INT_8, INT_32
 //          FLOAT_32, FLOAT_32
 
-typedef long int intT;
-
 struct CSR {
     /*--------------------------------------------------------------
     | Compressed sparse row (CSR) matrix format,
