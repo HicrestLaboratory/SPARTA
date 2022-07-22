@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 typedef float DataT; //precision for input matrices entries
 typedef float DataT_C; //precision for result matrix entries
