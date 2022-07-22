@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include <iostream>
+#include <fstream>
 
 typedef float DataT; //precision for input matrices entries
 typedef float DataT_C; //precision for result matrix entries
