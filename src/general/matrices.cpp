@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 
@@ -124,7 +125,7 @@ void CSR::print(ofstream& outfile)
         for (intT nzs = 0; nzs < nzcount[i]; nzs++) 
         {
 	     
-            inT nz_column = ja[i][nzs]; //find column (row) index of next nonzero element
+            intT nz_column = ja[i][nzs]; //find column (row) index of next nonzero element
             
 	        DataT elem;
 	        if (job == 1) elem = ma[i][nzs]; //value of that element;
