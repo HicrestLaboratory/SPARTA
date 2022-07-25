@@ -68,6 +68,8 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
             val = stof(val_string);
         }
 
+
+        //fill with empty lines to reach current row
         if (current_node > i)
         {
             while (i < current_node)
@@ -88,7 +90,8 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
             return;
         }
         pos_holder[i].push_back(child);
-	val_holder[i].push_back(val);
+    	if (not pattern_only) val_holder[i].push_back(val);
+        cout << val << endl;
 
     }
 
