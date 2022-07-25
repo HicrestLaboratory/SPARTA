@@ -124,18 +124,18 @@ void CSR::print(ofstream& outfile)
         for (intT nzs = 0; nzs < nzcount[i]; nzs++) 
         {
 	     
-            nz_column = ja[i][nzs]; //find column (row) index of next nonzero element
+            inT nz_column = ja[i][nzs]; //find column (row) index of next nonzero element
             
-	    DataT elem;
-	    if (job == 1) elem = ma[i][nzs]; //value of that element;
-	    else elem = 1;
+	        DataT elem;
+	        if (job == 1) elem = ma[i][nzs]; //value of that element;
+	        else elem = 1;
 		
-	    for (intT j = last_col; j < nz_column; j++)
-	    {
-		    outfile << 0 << " ";
-	    }
-	    outfile << elem << " ";
-	    last_col = nz_column;
+            for (intT j = last_col; j < nz_column; j++)
+            {
+                outfile << 0 << " ";
+            }
+            outfile << elem << " ";
+            last_col = nz_column;
         }
 	
     	for (intT j = last_col; j < cols; j++)
