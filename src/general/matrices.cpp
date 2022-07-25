@@ -141,7 +141,7 @@ void CSR::print()
 	        if (job == 1) elem = ma[i][nzs]; //value of that element;
 	        else elem = 1;
 		
-            for (intT j = last_col; j < nz_column; j++)
+            for (intT j = last_col + 1; j < nz_column; j++)
             {
                 cout << 0 << " ";
             }
