@@ -28,7 +28,7 @@ int main()
 
     intT block_size = 3;
     distanceFunction = [=](intT* A, intT a, intT*B,intT b){return HammingDistanceQuotient(A,a,B,b,block_size);};
-    float tau = 0.7;
+    tau = 0.7;
     IterativeBlockingGeneral(cmat, grouping, tau, distanceFunction);
 
     cout << "MATRIX BLOCKED WITH JACCARD: BLOCKING =" << endl;
