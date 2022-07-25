@@ -15,8 +15,6 @@ GEN_TEST_DIR = $(TEST_DIR)/general
 GEN_SRC = $(wildcard $(GEN_SRC_DIR)/*.cpp)
 GEN_OBJECTS = $(GEN_SRC:$(GEN_SRC_DIR)/%.cpp=$(GEN_OBJ_DIR)/%.o)
 
-all: test_reorder
-
 
 $(GEN_OBJ_DIR)/%.o : $(GEN_SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
@@ -43,5 +41,3 @@ build_general:
 clean:
 	-@rm -rvf $(OBJ_DIR)/*
 	-@rm -rvf $(APP_DIR)/*
-
-test_saad : build_general $(GEN_APP_DIR)/test_reorder
