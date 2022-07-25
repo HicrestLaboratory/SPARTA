@@ -1,6 +1,7 @@
 #include "similarity.h"
 #include <vector>
 #include <iostream>
+#include <math.h> //ceil
 
 using namespace std;
 
@@ -54,4 +55,46 @@ float CosineDistance(intT* row_A, intT size_A, intT* row_B, intT size_B)
 {
   cout << "NOT IMPLEMENTED YET" << endl;
   return 0;
+}
+
+
+intT HammingDistanceQuotient(intT* row_A, intT size_A, intT* row_B, intT size_B, intT stride)
+{
+  if (size_A == 0 and size_B == 0) return 0;
+
+  intT blocksize_A = ceil(size_A/stride);
+  intT blocksize_B = ceil(size_B/stride);
+
+  if (size_A == 0 or size_B == 0) return max(blocksize_A,blocksize_B);
+
+  intT i = 0;
+  intT j = 0;
+  intT count = 0;
+
+  auto blockpos_A = [&](){floor(row_A[i]/stride)}; 
+  auto blockpos_B = [&](){floor(row_B[j]/stride)};
+
+  while (i < size_A || j < size_B)
+  {
+    intT pos_A = blockpos_A();
+    intT pos_B = blockpos_B();
+
+    if (pos_A < pos_B || j >= size_B)
+    {
+      count++;
+      while(i < size_A && blockpos_A() == pos_A) i++;
+    }
+    else if (pos_A > pos_B || i >= size_A)
+    {
+      count++;
+      while(j < size_B && blockpos_B() == pos_B) j++;
+    }
+    else
+    {
+      while(i < size_A && blockpos_A() == pos_A) i++;
+      while(j < size_B && blockpos_B() == pos_B) j++;
+    }
+  }
+
+  return count;
 }

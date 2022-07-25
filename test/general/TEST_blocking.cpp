@@ -1,5 +1,6 @@
 #include "matrices.h"
 #include "blocking.h"
+#include "similarity.h"
 #include <fstream>
 #include <iostream>
 
@@ -13,21 +14,29 @@ int main()
     cmat.read_from_edgelist(fin, " ", false);
     cmat.print();
     intT* grouping = new intT[cmat.rows];
-    IterativeBlockingJaccard(cmat, grouping);
 
-    cout << "MATRIX BLOCKED: BLOCKING =" << endl;
+
+    distFunc distanceFunction = &JaccardDistance;
+    float tau = 0.7;
+    IterativeBlockingGeneral(cmat, grouping, tau, distanceFunction);
+
+    cout << "MATRIX BLOCKED WITH JACCARD: BLOCKING =" << endl;
     for (intT i = 0; i < cmat.rows; i++)
     {
         cout << grouping[i] << endl;
     }
 
-    IterativeBlockingGeneral(cmat, grouping);
+    intT block_size = 3;
+    distFunc distanceFunction = [=](intT* A, intT a, intT*B,intT b){return HammingDistanceQuotient(A,a,B,b,block_size)};
+    float tau = 0.7;
+    IterativeBlockingGeneral(cmat, grouping, tau, distanceFunction);
 
-    cout << "MATRIX BLOCKED: BLOCKING =" << endl;
+    cout << "MATRIX BLOCKED WITH JACCARD: BLOCKING =" << endl;
     for (intT i = 0; i < cmat.rows; i++)
     {
         cout << grouping[i] << endl;
     }
+
 
     cmat.clean();
 }
