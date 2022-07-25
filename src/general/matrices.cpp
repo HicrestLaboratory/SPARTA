@@ -88,6 +88,7 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
 
     }
 
+    job = pattern_only? 0 : 1;
     rows = pos_holder.size();
     cols = max_column + 1;
     nzcount = new intT[rows];
@@ -100,15 +101,15 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
         nzcount[i] = row_pos.size();
         ja[i] = new intT[row_pos.size()];
         std::copy(row_pos.begin(), row_pos.end(), ja[i]);
-	pos_holder[i].clear();
+	    pos_holder[i].clear();
 	    
 	    
 	if (not pattern_only)
 	{
-	auto row_val = val_holder[i];
-	ma[i] = new DataT[row_val.size()];
+        auto row_val = val_holder[i];
+        ma[i] = new DataT[row_val.size()];
         std::copy(row_val.begin(), row_val.end(), ma[i]);
-	val_holder[i].clear();
+	    val_holder[i].clear();
 	}
     }
 
@@ -118,6 +119,9 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
 
 void CSR::print()
 {
+
+    cout << "PRINTING A CSR MATRIX" << endl;
+    cout << "ROWS: " << rows << " COLS:" << cols << " PATTERN: " << job << endl; 
     //loop through rows
     for (intT i = 0; i < rows; i++)
     {
