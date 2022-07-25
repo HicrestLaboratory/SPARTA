@@ -63,6 +63,7 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
 	    
         if (not pattern_only)
         {
+            temp.erase(0, del_pos + del_size);
             del_pos = temp.find(delimiter);
             string val_string = temp.substr(0, del_pos); //retrieve the part of the string after the delimiter
             val = stof(val_string);
