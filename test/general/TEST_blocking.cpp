@@ -21,5 +21,13 @@ int main()
         cout << grouping[i] << endl;
     }
 
+    IterativeBlockingGeneral(cmat, grouping);
+
+    cout << "MATRIX BLOCKED: BLOCKING =" << endl;
+    for (intT i = 0; i < cmat.rows; i++)
+    {
+        cout << grouping[i] << endl;
+    }
+
     cmat.clean();
 }
