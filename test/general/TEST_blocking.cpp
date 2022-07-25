@@ -13,7 +13,7 @@ int main()
     cmat.read_from_edgelist(fin, " ", false);
     cmat.print();
     intT* grouping = new intT[cmat.rows];
-    IterativeBlockingGeneral(cmat, grouping);
+    IterativeBlockingJaccard(cmat, grouping);
 
     cout << "MATRIX BLOCKED: BLOCKING =" << endl;
     for (intT i = 0; i < cmat.rows; i++)
