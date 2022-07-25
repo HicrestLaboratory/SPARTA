@@ -32,6 +32,7 @@ void CSR::clean()
 
 void CSR::reorder(vector<intT> permutation)
 {
+    cout << "reorder function NOT IMPLEMENTED YET" << endl;
 }
 
 void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pattern_only = true)
@@ -45,10 +46,12 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
     intT max_column = 0;
     intT i = -1; 
     DataT val;
+    intT total_nonzeros;
 
     while (infile.peek() == '#' or infile.peek() == '%') infile.ignore(2048, '\n');
     while (getline(infile, temp)) {
 
+        total_nonzeros++;
         int del_pos = temp.find(delimiter);
         int del_size = delimiter.length();
 
@@ -94,29 +97,37 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
     	if (not pattern_only) val_holder[i].push_back(val);
     }
 
+
     job = pattern_only? 0 : 1;
     rows = pos_holder.size();
     cols = max_column + 1;
     nzcount = new intT[rows];
-    ja = new intT * [rows];
-    if (not pattern_only) ma = new DataT * [rows];
+    ja = new intT*[rows];
+    ja_full = new intT[total_nonzeros];
+    if (not pattern_only) 
+    {
+        ma = new DataT*[rows];
+        ma_full = new DataT[total_nonzeros];
+    }
 
+    intT current_ja_pos = 0;
     for (intT i = 0; i < pos_holder.size(); i++)
     {
         auto row_pos = pos_holder[i];
         nzcount[i] = row_pos.size();
-        ja[i] = new intT[row_pos.size()];
+        ja[i] = ja_full + current_ja_pos;
         std::copy(row_pos.begin(), row_pos.end(), ja[i]);
 	    pos_holder[i].clear();
 	    
-	    
-	if (not pattern_only)
-	{
-        auto row_val = val_holder[i];
-        ma[i] = new DataT[row_val.size()];
-        std::copy(row_val.begin(), row_val.end(), ma[i]);
-	    val_holder[i].clear();
-	}
+        if (not pattern_only)
+        {
+            auto row_val = val_holder[i];
+            ma[i] = ma_full + current_ja_pos;
+            std::copy(row_val.begin(), row_val.end(), ma[i]);
+            val_holder[i].clear();
+        }
+        current_ja_pos += nzcount[i];
+
     }
 
     pos_holder.clear();
@@ -127,7 +138,7 @@ void CSR::print()
 {
 
     cout << "PRINTING A CSR MATRIX" << endl;
-    cout << "ROWS: " << rows << " COLS:" << cols << " PATTERN: " << job << endl; 
+    cout << "ROWS:" << rows << " COLS:" << cols << " PATTERN:" << job << endl; 
     //loop through rows
     for (intT i = 0; i < rows; i++)
     {
@@ -143,7 +154,7 @@ void CSR::print()
 		
             for (intT j = last_col + 1; j < nz_column; j++)
             {
-                cout << 0 << " ";
+                cout << 0 << "\t";
             }
             cout << elem << " ";
             last_col = nz_column;
