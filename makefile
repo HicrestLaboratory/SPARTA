@@ -44,4 +44,4 @@ clean:
 	-@rm -rvf $(APP_DIR)/*
 
 
-$ % : build_general $(GEN_APP_DIR)/%
+% : build_general $(GEN_APP_DIR)/%
