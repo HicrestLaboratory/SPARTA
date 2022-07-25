@@ -147,7 +147,7 @@ void CSR::print()
 		
             for (intT j = last_col + 1; j < nz_column; j++)
             {
-                cout << 0 << "\t";
+                cout << 0 << " ";
             }
             cout << elem << " ";
             last_col = nz_column;
