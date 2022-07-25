@@ -39,7 +39,7 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
     intT max_column = 0;
     intT i = -1; 
     DataT val;
-    intT total_nonzeros;
+    intT total_nonzeros = 0;
 
     while (infile.peek() == '#' or infile.peek() == '%') infile.ignore(2048, '\n');
     while (getline(infile, temp)) {
