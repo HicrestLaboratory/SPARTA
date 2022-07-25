@@ -6,7 +6,7 @@ using namespace std;
 
 int main()
 {
-    CSR cmat = new CSR();
+    CSR cmat;
     ifstream fin;
     fin.open("data/TEST_matrix_weighted.txt");
     cmat.read_from_edgelist(fin, " ", false);
