@@ -25,7 +25,7 @@ intT HammingDistance(intT* row_A, intT size_A, intT* row_B, intT size_B)
       count++;
       i++;
     }
-    else if (row_A[j] > row_B[j])
+    else if (row_A[i] > row_B[j])
     {
       count++;
       j++;
