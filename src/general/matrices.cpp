@@ -92,8 +92,6 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
         }
         pos_holder[i].push_back(child);
     	if (not pattern_only) val_holder[i].push_back(val);
-        cout << val << endl;
-
     }
 
     job = pattern_only? 0 : 1;
