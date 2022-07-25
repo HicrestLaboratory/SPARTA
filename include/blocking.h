@@ -1,5 +1,9 @@
 #pragma once
 #include <vector>
+#include <string>
 #include "matrices.h"
 
-void saad_reordering(const CSR& cmat, intT* grouping);
+typedef int (*distFunc)(intT*,intT,intT*,intT);
+
+void IterativeBlockingJaccard(const CSR& cmat, intT* grouping);
+void IterativeBlockingGeneral(const CSR& cmat, intT* grouping, float tau, distFunc similarityFunction);

@@ -13,7 +13,7 @@ int main()
     cmat.read_from_edgelist(fin, " ", false);
     cmat.print();
     intT* grouping = new intT[cmat.rows];
-    saad_reordering(cmat, grouping);
+    IterativeBlockingGeneral(cmat, grouping);
 
     cout << "MATRIX BLOCKED: BLOCKING =" << endl;
     for (intT i = 0; i < cmat.rows; i++)
