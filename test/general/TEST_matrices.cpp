@@ -10,5 +10,5 @@ int main()
     ifstream fin;
     fin.open("data/TEST_matrix_weighted.txt");
     cmat.read_from_edgelist(fin, " ", false);
-    cmat.print(cout);
+    cmat.print();
 }
