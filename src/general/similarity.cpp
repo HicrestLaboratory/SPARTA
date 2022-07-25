@@ -19,6 +19,7 @@ intT HammingDistance(intT* row_A, intT size_A, intT* row_B, intT size_B)
 
   while (i < size_A && j < size_B)
   {
+    cout << row_A[i] << " " << row_B[j] << endl;
     if (row_A[i] < row_B[j])
     {
       count++;
