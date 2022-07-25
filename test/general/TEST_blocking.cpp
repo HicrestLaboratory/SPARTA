@@ -20,6 +20,6 @@ int main()
     {
         cout << grouping[i] << endl;
     }
-    
+
     cmat.clean();
 }

@@ -8,7 +8,6 @@ using namespace std;
 void saad_reordering(const CSR& cmat, intT* grouping)
 {
     float tau = 0.5; //TODO GRAB TAU FROM ENV OR OBJECT
-    grouping = new intT[cmat.rows];
     for (intT i = 0; i < cmat.rows; i++) grouping[i] = -1;
 
     for (intT i = 0; i < cmat.rows; i++)
