@@ -60,22 +60,25 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
         intT child = stoi(second_node_string);
         max_column = std::max(max_column, child);
 	    
-	del_pos = temp.find(delimiter);
-        string val_string = temp.substr(0, del_pos); //retrieve the part of the string after the delimiter
-        DataT val = stof(val_string);
-	    
+        if (not pattern_only)
+        {
+            del_pos = temp.find(delimiter);
+            string val_string = temp.substr(0, del_pos); //retrieve the part of the string after the delimiter
+            DataT val = stof(val_string);
+        }
+
         if (current_node > i)
         {
             while (i < current_node)
             {
                 vector<intT> new_pos_row;
-		pos_holder.push_back(new_pos_row);
-		if (not pattern_only)
-		{
-			vector<DataT> new_val_row;
-			val_holder.push_back(new_val_row);
-		}
-		i++;
+		        pos_holder.push_back(new_pos_row);
+                if (not pattern_only)
+                {
+                    vector<DataT> new_val_row;
+                    val_holder.push_back(new_val_row);
+                }
+                i++;
             }
         }
         else if (current_node < i)
