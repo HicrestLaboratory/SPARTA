@@ -28,7 +28,7 @@ struct CSR {
     intT* nzcount;  /* number of nonzero entry in each row (column)          */
     intT* ja_full;  // hosts the values of ja
     intT** ja;      /* pointer-to-pointer to store column (row) indices      */
-    DataT* ma;      //hosts the values of ma
+    DataT* ma_full;      //hosts the values of ma
     DataT** ma;   /* pointer-to-pointer to store nonzero entries           */
     int job;
 

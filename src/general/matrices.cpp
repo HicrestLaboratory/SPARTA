@@ -16,17 +16,10 @@ void CSR::clean()
 
     if (rows + cols <= 1) return;
 
-    for (intT i = 0; i < rows; i++) {
-        if (nzcount[i] > 0) {
-            if (job) 
-		{
-		if (ma[i]) delete[] ma[i];
-		}
-            delete[] ja[i];
-        }
-    }
     if (ma) delete[] ma;
+    if (ma_full) delete[] ma_full;
     delete[] ja;
+    delete[] ja_full;
     delete[] nzcount;
 }
 
@@ -115,7 +108,7 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
     {
         auto row_pos = pos_holder[i];
         nzcount[i] = row_pos.size();
-        ja[i] = ja_full + current_ja_pos;
+        ja[i] = ja_full + current_ja_pos; 
         std::copy(row_pos.begin(), row_pos.end(), ja[i]);
 	    pos_holder[i].clear();
 	    
