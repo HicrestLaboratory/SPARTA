@@ -1,6 +1,7 @@
 #import "blocking.h"
 #import "matrices.h"
 #import "similarity.h"
+#import <iostream>
 
 using namespace std;
 
