@@ -79,8 +79,8 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
         }
         else if (current_node < i)
         {
-            std::cerr << "CANNOT READ MATRIX. INDICES MUST INCREASE" << std::endl;
-            return 1;
+            cout << "CANNOT READ MATRIX. INDICES MUST INCREASE" << endl;
+            return;
         }
         pos_holder[i].push_back(child);
 	val_holder[i].push_back(val);
@@ -118,7 +118,7 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
 void CSR::print(ofstream& outfile)
 {
     //loop through rows
-    for (intT i = 0; intT i < rows; i++)
+    for (intT i = 0; i < rows; i++)
     {
 	intT last_col = 0;
         for (intT nzs = 0; nzs < nzcount[i]; nzs++) 
