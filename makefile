@@ -42,3 +42,6 @@ build_general:
 clean:
 	-@rm -rvf $(OBJ_DIR)/*
 	-@rm -rvf $(APP_DIR)/*
+
+
+$ % : build_general $(GEN_APP_DIR)/%
