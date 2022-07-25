@@ -118,7 +118,7 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
 
 void CSR::print()
 {
-    auto oufile = std::cout;
+    auto outfile = std::cout;
     //loop through rows
     for (intT i = 0; i < rows; i++)
     {
