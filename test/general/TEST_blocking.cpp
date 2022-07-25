@@ -27,7 +27,7 @@ int main()
     }
 
     intT block_size = 3;
-    distanceFunction = [=](intT* A, intT a, intT*B,intT b){return HammingDistanceQuotient(A,a,B,b,block_size);};
+    distanceFunction = &[=](intT* A, intT a, intT*B,intT b){return HammingDistanceQuotient(A,a,B,b,block_size);};
     tau = 0.7;
     IterativeBlockingGeneral(cmat, grouping, tau, distanceFunction);
 
