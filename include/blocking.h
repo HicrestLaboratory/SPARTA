@@ -2,4 +2,4 @@
 #include <vector>
 #include "matrices.h"
 
-void reordering(const CSR& cmat, intT* grouping);
+void saad_reordering(const CSR& cmat, intT* grouping);

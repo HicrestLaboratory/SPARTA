@@ -43,8 +43,8 @@ intT HammingDistance(intT* row_A, intT size_A, intT* row_B, intT size_B)
 
 float JaccardDistance(intT* row_A, intT size_A, intT* row_B, intT size_B)
 {
-  cout << "NOT IMPLEMENTED YET" << endl;
-  return 0;
+  float h = HammingDistance(row_A, size_A, row_B, size_B);
+  return 2*h/(size_A + size_B + h);
 }
 
 float CosineDistance(intT* row_A, intT size_A, intT* row_B, intT size_B)
