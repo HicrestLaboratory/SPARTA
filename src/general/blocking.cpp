@@ -19,6 +19,7 @@ void saad_reordering(const CSR& cmat, intT* grouping)
                 {
                     float dist = JaccardDistance(cmat.ja[i], cmat.nzcount[i], cmat.ja[j], cmat.nzcount[j]);
                     if (dist < tau) grouping[j] = i;
+                    cout << dist << endl;
                 }
             }
         }
