@@ -43,6 +43,9 @@ intT HammingDistance(intT* row_A, intT size_A, intT* row_B, intT size_B)
 
 float JaccardDistance(intT* row_A, intT size_A, intT* row_B, intT size_B)
 {
+  if (size_A == 0 and size_B == 0) return 0;
+  if (size_A == 0 or size_B == 0) return 1;
+
   float h = HammingDistance(row_A, size_A, row_B, size_B);
   return 2*h/(size_A + size_B + h);
 }
