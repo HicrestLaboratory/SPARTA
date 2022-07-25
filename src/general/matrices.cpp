@@ -44,7 +44,8 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
     vector<vector<DataT>> val_holder;
     intT max_column = 0;
     intT i = -1; 
-    
+    DataT val;
+
     while (infile.peek() == '#' or infile.peek() == '%') infile.ignore(2048, '\n');
     while (getline(infile, temp)) {
 
@@ -64,7 +65,7 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pat
         {
             del_pos = temp.find(delimiter);
             string val_string = temp.substr(0, del_pos); //retrieve the part of the string after the delimiter
-            DataT val = stof(val_string);
+            val = stof(val_string);
         }
 
         if (current_node > i)
