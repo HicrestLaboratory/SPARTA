@@ -2,6 +2,8 @@
 #import "matrices.h"
 #import "similarity.h"
 
+using namespace std;
+
 void saad_reordering(const CSR& cmat, intT* grouping)
 {
     float tau = 0.5; //TODO GRAB TAU FROM ENV OR OBJECT
