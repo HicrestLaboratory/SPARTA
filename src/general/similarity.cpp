@@ -71,8 +71,8 @@ intT HammingDistanceQuotient(intT* row_A, intT size_A, intT* row_B, intT size_B,
   intT j = 0;
   intT count = 0;
 
-  auto blockpos_A = [&](){floor(row_A[i]/stride)}; 
-  auto blockpos_B = [&](){floor(row_B[j]/stride)};
+  auto blockpos_A = [&](){return floor(row_A[i]/stride)}; 
+  auto blockpos_B = [&](){return floor(row_B[j]/stride)};
 
   while (i < size_A || j < size_B)
   {
