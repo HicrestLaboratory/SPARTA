@@ -27,7 +27,7 @@ void IterativeBlockingJaccard(const CSR& cmat, intT* grouping)
     }
 }
 
-void IterativeBlockingGeneral(const CSR& cmat, intT* grouping, float tau = 0.5, distFunc distanceFunction = &JaccardDistance)
+void IterativeBlockingGeneral(const CSR& cmat, intT* grouping, float tau, distFunc distanceFunction)
 {
     for (intT i = 0; i < cmat.rows; i++) grouping[i] = -1;
 
@@ -42,6 +42,7 @@ void IterativeBlockingGeneral(const CSR& cmat, intT* grouping, float tau = 0.5, 
                 {
                     float dist = distanceFunction(cmat.ja[i], cmat.nzcount[i], cmat.ja[j], cmat.nzcount[j]);
                     if (dist < tau) grouping[j] = i;
+                    cout << i << " " << j << " " << dist << endl;
                 }
             }
         }
