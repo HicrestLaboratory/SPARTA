@@ -1,16 +1,16 @@
 #pragma once
 
+
 #include <string>
 #include <vector>
 #include <fstream>
 
+typedef long int intT;
 typedef float DataT; //precision for input matrices entries
 typedef float DataT_C; //precision for result matrix entries
 //types for the two multiplied matrices and the result matrix. available choices are: 
 //          INT_8, INT_32
 //          FLOAT_32, FLOAT_32
-
-typedef long int intT;
 
 struct CSR {
     /*--------------------------------------------------------------
@@ -20,7 +20,7 @@ struct CSR {
     |       cmat  = a CSR struct
     |       rows  = # of columns of the matrix
     |       cols  = # of columns of the matrix
-            job   = 0: pattern only
+            job   = 0: sparsity pattern only (boolean matrix)
     |               1: data and pattern
     |--------------------------------------------------------------------   */
     intT rows;      /* number of rows                                        */
