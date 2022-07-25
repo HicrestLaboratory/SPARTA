@@ -36,7 +36,7 @@ struct CSR {
     int job; // 0 if the matrix is patter only; 1 otherwise
 
     void clean();
-    void read_from_edgelist(std::ifstream& infile, std::string delimiter, bool pattern_only);
+    void read_from_edgelist(std::ifstream& infile, std::string delimiter = " ", bool pattern_only = true);
     void reorder(std::vector<intT> permutation);
     void print();
 

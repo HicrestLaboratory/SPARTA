@@ -28,7 +28,7 @@ void CSR::reorder(vector<intT> permutation)
     cout << "reorder function NOT IMPLEMENTED YET" << endl;
 }
 
-void CSR::read_from_edgelist(ifstream& infile, string delimiter = "\t", bool pattern_only = true)
+void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only)
 {
 
     intT last_node = -1;
