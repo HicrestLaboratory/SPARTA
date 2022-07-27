@@ -8,3 +8,5 @@ float CosineDistance(intT* row_A, intT size_A, intT* row_B, intT size_B);
 
 
 intT HammingDistanceQuotient(intT* row_A, intT size_A, intT* row_B, intT size_B, intT stride);
+intT JaccardDistanceQuotient(intT* row_A, intT size_A, intT* row_B, intT size_B, intT stride);
+
