@@ -58,12 +58,12 @@ float CosineDistance(intT* row_A, intT size_A, intT* row_B, intT size_B)
 }
 
 
-intT HammingDistanceQuotient(intT* row_A, intT size_A, intT* row_B, intT size_B, intT stride)
+intT HammingDistanceQuotient(intT* row_A, intT size_A, intT* row_B, intT size_B, intT block_size)
 {
   if (size_A == 0 and size_B == 0) return 0;
 
-  intT blocksize_A = ceil(size_A/stride);
-  intT blocksize_B = ceil(size_B/stride);
+  intT blocksize_A = ceil(size_A/block_size);
+  intT blocksize_B = ceil(size_B/block_size);
 
   if (size_A == 0 or size_B == 0) return max(blocksize_A,blocksize_B);
 
@@ -71,8 +71,8 @@ intT HammingDistanceQuotient(intT* row_A, intT size_A, intT* row_B, intT size_B,
   intT j = 0;
   intT count = 0;
 
-  auto blockpos_A = [&](){return floor(row_A[i]/stride);}; 
-  auto blockpos_B = [&](){return floor(row_B[j]/stride);};
+  auto blockpos_A = [&](){return floor(row_A[i]/block_size);}; 
+  auto blockpos_B = [&](){return floor(row_B[j]/block_size);};
 
   while (i < size_A || j < size_B)
   {
@@ -97,4 +97,14 @@ intT HammingDistanceQuotient(intT* row_A, intT size_A, intT* row_B, intT size_B,
   }
 
   return count;
+}
+
+
+float JaccardDistanceQuotient(intT* row_A, intT size_A, intT* row_B, intT size_B, intT block_size)
+{
+  if (size_A == 0 && size_B == 0) return 0;
+  if (size_A == 0 || size_B == 0) return 1;
+
+  float h = HammingDistanceQuotient(row_A, size_A, row_B, size_B, block_size);
+  return 2*h/(size_A + size_B + h);
 }
