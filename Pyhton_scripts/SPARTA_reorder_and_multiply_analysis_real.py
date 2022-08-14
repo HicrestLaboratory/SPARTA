@@ -22,7 +22,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Makes images from experiments")
     
-    parser.add_argument("--input-csv", default="../results/test_cublas_reordering-real-verysmall-01-11-2022.csv",
+    parser.add_argument("--input-csv", default="../results/revision/test_cublas_reordering-real-small-01-13-2022.csv",
         help="file that contains the already run experiments")
     parser.add_argument("--output-dir", default="../images/",
         help="directory where the images are saved")
@@ -45,16 +45,11 @@ this_df = this_df[this_df["rows"] != 21608]
 dfs["small"] = this_df[this_df["rows"] > 4000]
 """
 
+input_csv = "../results/revision/test_cublas_reordering-real-small-01-13-2022-timing.csv"
+this_df = import_results(input_csv)
+
+
 dfs = {}
-input_csv = "../results/test_cublas_reordering-real-verysmall-01-11-2022.csv"
-this_df_1 = import_results(input_csv)
-input_csv = "../results/test_cublas_reordering-real-small-01-13-2022.csv"
-this_df_2 = import_results(input_csv)
-this_df_merge = pd.concat([this_df_1,this_df_2])
-this_df = this_df_merge.sort_values("rows", ascending = True)
-
-
-
 dfs["small"] = this_df[this_df["rows"] < 4000]
 dfs["medium"] = this_df[this_df["rows"] > 4000]
 dfs["medium"] = dfs["medium"][dfs["medium"]["rows"] < 20000]

@@ -1,0 +1,46 @@
+REORDERING ONLY (ms)29
+REORDERING ONLY (ms)29
+REORDERING ONLY (ms)15
+REORDERING ONLY (ms)15
+REORDERING ONLY (ms)6
+REORDERING ONLY (ms)6
+REORDERING ONLY (ms)52
+REORDERING ONLY (ms)52
+REORDERING ONLY (ms)131
+CUDA error at src/cuda/cuda_utilities.cpp:398 code=11(CUBLAS_STATUS_MAPPING_ERROR) "cublasSetMatrix( B_rows, B_cols, sizeof(DataT), B, B_lead_dim, d_B, B_rows)"
+REORDERING ONLY (ms)131
+CUDA error at src/cuda/cuda_utilities.cpp:398 code=11(CUBLAS_STATUS_MAPPING_ERROR) "cublasSetMatrix( B_rows, B_cols, sizeof(DataT), B, B_lead_dim, d_B, B_rows)"
+REORDERING ONLY (ms)17
+REORDERING ONLY (ms)17
+REORDERING ONLY (ms)33
+REORDERING ONLY (ms)33
+REORDERING ONLY (ms)38
+REORDERING ONLY (ms)38
+REORDERING ONLY (ms)4236
+CUDA error at src/cuda/cuda_utilities.cpp:398 code=11(CUBLAS_STATUS_MAPPING_ERROR) "cublasSetMatrix( B_rows, B_cols, sizeof(DataT), B, B_lead_dim, d_B, B_rows)"
+REORDERING ONLY (ms)4237
+CUDA error at src/cuda/cuda_utilities.cpp:398 code=11(CUBLAS_STATUS_MAPPING_ERROR) "cublasSetMatrix( B_rows, B_cols, sizeof(DataT), B, B_lead_dim, d_B, B_rows)"
+REORDERING ONLY (ms)19
+REORDERING ONLY (ms)19
+REORDERING ONLY (ms)18
+REORDERING ONLY (ms)18
+REORDERING ONLY (ms)13
+REORDERING ONLY (ms)13
+REORDERING ONLY (ms)56
+REORDERING ONLY (ms)56
+REORDERING ONLY (ms)48
+REORDERING ONLY (ms)48
+REORDERING ONLY (ms)41
+REORDERING ONLY (ms)41
+REORDERING ONLY (ms)27
+REORDERING ONLY (ms)27
+REORDERING ONLY (ms)8
+REORDERING ONLY (ms)9
+REORDERING ONLY (ms)49
+REORDERING ONLY (ms)48
+REORDERING ONLY (ms)130
+CUDA error at src/cuda/cuda_utilities.cpp:398 code=11(CUBLAS_STATUS_MAPPING_ERROR) "cublasSetMatrix( B_rows, B_cols, sizeof(DataT), B, B_lead_dim, d_B, B_rows)"
+REORDERING ONLY (ms)129
+CUDA error at src/cuda/cuda_utilities.cpp:398 code=11(CUBLAS_STATUS_MAPPING_ERROR) "cublasSetMatrix( B_rows, B_cols, sizeof(DataT), B, B_lead_dim, d_B, B_rows)"
+REORDERING ONLY (ms)35
+REORDERING ONLY (ms)35

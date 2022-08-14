@@ -42,7 +42,7 @@ columns = {'exp_name' : "experiment name",
                'rows' : "K", 
                'cols': "M", 
                'B_cols': "N",
-           'B_density': "density of B", 
+           'reorder_time': "preprocessing time", 
            'total_nonzeros': "total nonzeros", 
            'input_blocks_density': "fraction of nonzero blocks",
            'input_entries_density': "Original in-block density", 
@@ -87,7 +87,7 @@ def import_results(input_csv):
                'rows', 
                'cols', 
                'B_cols',
-           'B_density',
+           'reorder_time',
            'total_nonzeros', 
            'input_blocks_density',
            'input_entries_density', 
@@ -438,7 +438,7 @@ def bar_plot_together(results_df, variables_dict, save_folder = "../images/perfo
     this_df = results_df.query(build_query(variables_dict)).sort_values("rows", ascending = True);
     graphs = this_df["input_source"].unique();
     measures = ['cusparse_spmm_mean(ms)','VBSmm_algo_mean(ms)']
-    deltas = np.sort(this_df["algo_block_size"].unique());
+    deltas = [256,]
     bars = len(deltas) + 1
     
     #plt.style.use('grayscale')    
@@ -467,8 +467,10 @@ def bar_plot_together(results_df, variables_dict, save_folder = "../images/perfo
 
     for block_size in deltas:
         values = this_df[this_df["algo_block_size"] == block_size]['VBSmm_algo_mean(ms)'].values
-        errors = this_df[this_df["algo_block_size"] == 64]["VBSmm_algo_std"].values
-        ax.bar(positions + rel_pos,values, yerr = errors, width = width, label = "1-SA: " + str(block_size), edgecolor = "black", lw = 0.8);
+        preprocess = this_df[this_df["algo_block_size"] == block_size]['reorder_time'].values
+        errors = this_df[this_df["algo_block_size"] == block_size]["VBSmm_algo_std"].values
+        ax.bar(positions + rel_pos,values, width = width, label = "1-SA: multiplication", edgecolor = "black", lw = 0.8, bottom = preprocess);
+        ax.bar(positions + rel_pos,preprocess, width = width, label = "1-SA: preprocessing", edgecolor = "black", lw = 0.8, fill=False, hatch='/');
         rel_pos += width;
 
     labels = [x.split(".")[0] for x in graphs]
@@ -485,7 +487,7 @@ def bar_plot_together(results_df, variables_dict, save_folder = "../images/perfo
     
     savename = make_savename(name,variables_dict)
     check_directory(save_folder);
-    plt.savefig(save_folder + savename, format = 'pdf', dpi=300, bbox_inches = "tight")
+    plt.savefig(save_folder + savename, format = 'jpeg', dpi=300, bbox_inches = "tight")
     plt.show()
 
 
