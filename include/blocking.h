@@ -5,6 +5,7 @@
 #include "similarity.h"
 
 typedef float (*distFunc)(intT*,intT,intT*,intT);
+typedef float (*distFuncGroup)(intT*,intT,intT,intT*,intT,intT);
 
 
 void IterativeBlockingJaccard(const CSR& cmat, intT* grouping);
