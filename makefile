@@ -16,19 +16,19 @@ GEN_SRC = $(wildcard $(GEN_SRC_DIR)/*.cpp)
 GEN_OBJECTS = $(GEN_SRC:$(GEN_SRC_DIR)/%.cpp=$(GEN_OBJ_DIR)/%.o)
 
 
-$(GEN_OBJ_DIR)/%.o : $(GEN_SRC_DIR)/%.cpp
+$(GEN_OBJ_DIR)/%.o: $(GEN_SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<
 
-$(GEN_OBJ_DIR)/%.o : $(GEN_TEST_DIR)/%.cpp
+$(GEN_OBJ_DIR)/%.o: $(GEN_TEST_DIR)/%.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<
 
-$(GEN_APP_DIR)/% : $(GEN_OBJ_DIR)/%.o $(GEN_OBJECTS)
+$(GEN_APP_DIR)/%: $(GEN_OBJ_DIR)/%.o $(GEN_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ $?
 
-.PHONY: all build clean general
+.PHONY: all build clean gener
 
 build: build_general
 

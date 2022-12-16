@@ -1,5 +1,3 @@
-#pragma once
-
 #include "matrices.h"
 #include <string>
 #include <vector>
@@ -16,10 +14,21 @@ void CSR::clean()
 
     if (rows + cols <= 1) return;
 
-    if (ma) delete[] ma;
-    if (ma_full) delete[] ma_full;
-    delete[] ja;
-    delete[] ja_full;
+    if (ma) 
+    {
+        for(intT i = 0; i < rows; i++)
+        {
+            if (ma[i]) delete[] ma[i];
+        }
+    }
+
+    if (ja) 
+    {
+        for(intT i = 0; i < rows; i++)
+        {
+            if (ja[i]) delete[] ja[i];
+        }
+    }
     delete[] nzcount;
 }
 
@@ -96,31 +105,26 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
     cols = max_column + 1;
     nzcount = new intT[rows];
     ja = new intT*[rows];
-    ja_full = new intT[total_nonzeros];
     if (not pattern_only) 
     {
         ma = new DataT*[rows];
-        ma_full = new DataT[total_nonzeros];
     }
 
-    intT current_ja_pos = 0;
     for (intT i = 0; i < pos_holder.size(); i++)
     {
         auto row_pos = pos_holder[i];
         nzcount[i] = row_pos.size();
-        ja[i] = ja_full + current_ja_pos; 
+        ja[i] = new intT[nzcount[i]]; 
         std::copy(row_pos.begin(), row_pos.end(), ja[i]);
 	    pos_holder[i].clear();
 	    
         if (not pattern_only)
         {
             auto row_val = val_holder[i];
-            ma[i] = ma_full + current_ja_pos;
+            ma[i] = new DataT[nzcount[i]];
             std::copy(row_val.begin(), row_val.end(), ma[i]);
             val_holder[i].clear();
         }
-        current_ja_pos += nzcount[i];
-
     }
 
     pos_holder.clear();

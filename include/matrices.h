@@ -12,7 +12,8 @@ typedef float DataT_C; //precision for result matrix entries
 //          INT_8, INT_32
 //          FLOAT_32, FLOAT_32
 
-struct CSR {
+struct CSR
+{
     /*--------------------------------------------------------------
     | Compressed sparse row (CSR) matrix format,
     | generally not square
@@ -28,10 +29,6 @@ struct CSR {
     intT* nzcount;  /* number of nonzero entry in each row (column)          */
     intT** ja;      /* pointer-to-pointer to store column (row) indices      */
     DataT** ma;   /* pointer-to-pointer to store nonzero entries           */
-    
-    //arrays that contains all the values
-    DataT* ma_full;      //hosts the values of ma
-    intT* ja_full;  // hosts the values of ja
 
     int job; // 0 if the matrix is patter only; 1 otherwise
 

@@ -2,11 +2,10 @@
 #include <vector>
 #include <iostream>
 #include <math.h> //ceil
+#include "matrices.h"
 
 using namespace std;
 
-#pragma once
-#include "matrices.h"
 
 
 intT HammingDistance(intT* row_A, intT size_A, intT* row_B, intT size_B)

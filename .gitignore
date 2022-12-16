@@ -4,3 +4,6 @@
 .vscode/settings.json
 .vscode/targets.log
 *.swp
+programs/general/TEST_blocking
+programs/general/TEST_matrices
+*.json
