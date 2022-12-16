@@ -1,8 +1,11 @@
-#include "matrices.h"
 #include <string>
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <algorithm>    // std::sort
+#include <numeric> //std::iota
+#include "matrices.h"
+#include "utilities.h"
 
 using namespace std;
 
@@ -32,9 +35,29 @@ void CSR::clean()
     delete[] nzcount;
 }
 
-void CSR::reorder(vector<intT> permutation)
+void CSR::reorder(vector<intT> grouping)
 {
-    cout << "reorder function NOT IMPLEMENTED YET" << endl;
+    if (grouping.size() != rows)
+    {
+        cout << "INVALID SIZE" << endl;
+    }
+
+    auto comp = [&](int i, int j)
+    {
+        return grouping[i] < grouping[j];
+    };
+
+    vector<int> v(rows);
+    iota(v.begin(), v.end(), 0);
+    sort (v.begin(), v.end(), comp);
+    for (intT i: v)
+        {cout << i << ' ';}
+    cout << endl;
+
+    permute(ja,grouping);
+    if (job) permute(ma, grouping);
+    permute(nzcount, grouping);
+
 }
 
 void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only)

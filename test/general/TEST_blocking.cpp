@@ -23,6 +23,11 @@ int main()
     {
         cout << grouping[i] << endl;
     }
-    
+
+    cmat.print();
+
+
+    cmat.reorder(grouping);
+    cmat.print();
     cmat.clean();
 }
