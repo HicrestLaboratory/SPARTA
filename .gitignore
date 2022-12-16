@@ -3,3 +3,4 @@
 .vscode/dryrun.log
 .vscode/settings.json
 .vscode/targets.log
+*.swp
