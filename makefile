@@ -1,4 +1,3 @@
-
 CXX       =g++
 CXXFLAGS  =  -fpermissive -Wl,--no-as-needed -m64 -std=c++11 -fopenmp
 INCLUDE = -I include
