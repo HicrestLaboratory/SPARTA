@@ -47,17 +47,16 @@ void CSR::reorder(vector<intT> grouping)
         return grouping[i] < grouping[j];
     };
 
-    vector<int> v(rows);
+    vector<intT> v(rows);
     iota(v.begin(), v.end(), 0);
     sort (v.begin(), v.end(), comp);
     for (intT i: v)
         {cout << i << ' ';}
     cout << endl;
 
-    permute(ja,grouping);
-    if (job) permute(ma, grouping);
-    permute(nzcount, grouping);
-
+    permute(ja,v);
+    if (job) permute(ma, v);
+    permute(nzcount, v);
 }
 
 void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only)
@@ -154,8 +153,42 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
     val_holder.clear();
 }
 
-void CSR::print()
+void CSR::print(bool type)
 {
+    if (type > 0)
+    {
+        cout << "PRINTING A CSR MATRIX (arrays only)" << endl;
+        cout << "ROWS:" << rows << " COLS:" << cols << " PATTERN:" << job << endl; 
+        cout << "JA:" << endl;
+        for (intT i = 0; i < rows; i++)
+        {
+            cout << "--";
+            for (intT j = 0; j < nzcount[i]; j++)
+            {
+                cout << ja[i][j] << " ";
+            }
+        }
+        cout << endl;
+
+
+        cout << "MA:" << endl;
+        for (intT i = 0; i < rows; i++)
+        {
+            cout << "--";
+            for (intT j = 0; j < nzcount[i]; j++)
+            {
+                cout << ma[i][j] << " ";
+            }
+        }
+        cout << endl;
+
+        cout << "NZCOUNT:" << endl;
+        for (intT i = 0; i < rows; i++)
+        {
+                cout << nzcount[i] << " ";
+        }
+        cout << endl;
+    }
 
     cout << "PRINTING A CSR MATRIX" << endl;
     cout << "ROWS:" << rows << " COLS:" << cols << " PATTERN:" << job << endl; 

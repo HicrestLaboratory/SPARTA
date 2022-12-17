@@ -111,8 +111,9 @@ float JaccardDistanceQuotient(intT* row_A, intT size_A, intT* row_B, intT size_B
 }
 
 
-intT HammingDistanceGroup(intT* row_A, intT size_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size, bool count_zeros)
+intT HammingDistanceGroup(vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size, bool count_zeros = 0)
 {
+  intT size_A = row_A.size();
   if (size_A == 0 and size_B == 0) return 0;
 
   intT blocksize_A = ceil(size_A/block_size);
@@ -166,11 +167,12 @@ intT HammingDistanceGroup(intT* row_A, intT size_A, intT group_size_A, intT* row
 }
 
 
-float JaccardDistanceGroup(intT* row_A, intT size_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size)
+float JaccardDistanceGroup(vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size)
 {
+  intT size_A = row_A.size();
   if (size_A == 0 && size_B == 0) return 0;
   if (size_A == 0 || size_B == 0) return 1;
 
-  float h = HammingDistanceGroup(row_A, size_A, group_size_A, row_B, size_B, group_size_B, block_size, true);
+  float h = HammingDistanceGroup(row_A, group_size_A, row_B, size_B, group_size_B, block_size, true);
   return 2*h/(size_A*group_size_A + size_B*group_size_B + h);
 }

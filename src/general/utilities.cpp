@@ -4,13 +4,14 @@
 using namespace std;
 
 
-vector<intT> merge_rows(intT* A, intT sizeA, intT*B, intT sizeB)
+vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
 {
+    intT size_A = A.size();
     //A,B sparse rows (compressed indices format)
     intT i = 0;
     intT j = 0;
     vector<intT> result_vec;
-    while (i < sizeA && j < sizeB)
+    while (i < size_A && j < size_B)
     {
         if (A[i] <= A[j])
         {

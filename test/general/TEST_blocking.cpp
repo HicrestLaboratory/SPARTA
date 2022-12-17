@@ -16,18 +16,19 @@ int main()
 
     distFunc distanceFunction = &JaccardDistance;
     float tau = 0.7;
-    vector<intT> grouping = IterativeBlockingGeneral(cmat, tau, distanceFunction);
+    vector<intT> grouping_1 = IterativeBlockingGeneral(cmat, tau, distanceFunction);
 
-    cout << "MATRIX BLOCKED WITH JACCARD: BLOCKING =" << endl;
-    for (intT i = 0; i < cmat.rows; i++)
-    {
-        cout << grouping[i] << endl;
-    }
-
+    cout << "MATRIX BLOCKED WITH (BASIC) JACCARD: " << endl;
+    cmat.reorder(grouping_1);
     cmat.print();
 
 
-    cmat.reorder(grouping);
+    intT block_size = 3;
+    tau = 0.7;
+    distFuncGroup distanceFunctionGroup = JaccardDistanceGroup;
+    vector<intT> grouping_2 = IterativeBlockingPattern(cmat, tau, distanceFunctionGroup, block_size);
+    cmat.reorder(grouping_2);
+
     cmat.print();
     cmat.clean();
 }

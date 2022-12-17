@@ -1,6 +1,7 @@
 #include "blocking.h"
 #include "matrices.h"
 #include "similarity.h"
+#include "utilities.h"
 #include <vector>
 #include <iostream>
 
@@ -29,10 +30,9 @@ std::vector<intT> IterativeBlockingGeneral(const CSR& cmat, float tau, distFunc 
 }
 
 
-/*
-void IterativeBlockingPattern(const CSR& cmat, intT* grouping, float tau, distFuncGroup distanceFunction)
+std::vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncGroup distanceFunction, intT block_size)
 {
-    for (intT i = 0; i < cmat.rows; i++) grouping[i] = -1;
+    vector<intT> grouping(cmat.rows, -1);
 
     for (intT i = 0; i < cmat.rows; i++)
     {
@@ -47,17 +47,16 @@ void IterativeBlockingPattern(const CSR& cmat, intT* grouping, float tau, distFu
             {
                 if (grouping[j] == -1)
                 {
-                    float dist = distanceFunction(pattern, pattern.size(), current_group_size, cmat.ja[j], cmat.nzcount[j], 1);
+                    float dist = distanceFunction(pattern, current_group_size, cmat.ja[j], cmat.nzcount[j], 1, block_size);
                     if (dist < tau)
                     {
                         grouping[j] = i;
-                        pattern = merge_rows(pattern, pattern.size(), cmat.ja[j], cmat.nzcount[j]); //update the pattern
+                        pattern = merge_rows(pattern, cmat.ja[j], cmat.nzcount[j]); //update the pattern
                         current_group_size++;
                     }
                 }
             }
         }
     }
+    return grouping;
 }
-
-*/
