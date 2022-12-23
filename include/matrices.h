@@ -34,7 +34,7 @@ struct CSR
 
     void clean();
     void read_from_edgelist(std::ifstream& infile, std::string delimiter = " ", bool pattern_only = true);
-    void reorder(std::vector<intT> permutation);
-    void print();
+    void reorder(std::vector<intT> grouping);
+    void print(intT verbose = 0);
 
 };

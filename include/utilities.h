@@ -1,8 +1,10 @@
 #include <vector>
 #include <algorithm> //std::copy
+#include <iostream>
+
 #include "matrices.h"
 
-std::vector<intT> merge_rows(intT* A, intT sizeA, intT*B, intT sizeB);
+std::vector<intT> merge_rows(std::vector<intT> A, intT*B, intT sizeB);
 
 //permutes an array of n elements (original) according to a permutation (perm);
 template <class myType>
