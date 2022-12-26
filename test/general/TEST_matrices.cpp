@@ -10,6 +10,12 @@ int main()
     ifstream fin;
     fin.open("data/TEST_matrix_weighted.txt");
     cmat.read_from_edgelist(fin, " ", false);
-    cmat.print();
-    cmat.clean();
+    cmat.print(1);
+
+    cout << "converting to vbr" << endl;
+    VBR vbmat;
+    vector<intT> partition{0,2,5,6,9};
+    vbmat.fill_from_CSR(cmat, partition, 3);
+    vbmat.print();
+    vbmat.clean();
 }

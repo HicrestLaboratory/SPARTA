@@ -22,10 +22,8 @@ int main()
     cout << "evaluating reordering" <<endl;
     vector<intT> grouping = BEngine.ObtainPartition(cmat);
 
-    cout << "applying reordering" <<endl;
-
     cmat.reorder(grouping);
+    cmat.print(1);
 
-    cmat.print();
     cmat.clean();
 }

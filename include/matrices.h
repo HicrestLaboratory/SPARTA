@@ -38,3 +38,32 @@ struct CSR
     void print(intT verbose = 0);
 
 };
+
+struct VBR
+{
+    intT rows;
+    intT cols;
+    intT block_rows;  	            /* the block row dimension of the matrix    	        */
+    intT block_cols;	            /* the block column dimension of the matrix   	        */
+    intT* nzcount;	        /* i-th elements is the number of nonzero blocks in block-row i*/
+    intT* jab;              /* block-columns indices of nonzero blocks      */
+    intT* row_part;         /*row_part[i] is the index of the first row of the i-th block. Last element is number of rows for convenience  */
+    DataT* mab;             /* array containing all entries, block by block	        */
+    intT block_col_size;                  
+    intT nztot;              /* total number of nonzero elements in mab*/
+
+    void clean();
+    intT get_row_partition(intT row);
+    int partition_check(const std::vector<intT> &candidate_part);
+    void fill_from_CSR(const CSR& cmat,const std::vector<intT> &row_partition, intT block_size);
+    void fill_from_CSR_inplace(const CSR& cmat,const std::vector<intT> &grouping, intT block_size);
+
+    DataT* get_block_start(intT row_block_idx);
+    void print_row(intT row);
+    void print(int verbose = 0);
+    DataT* get_mab_position(intT block_row);
+    intT* get_jab_position(intT block_row);
+    intT nz_blocks();
+    intT nz_entries();
+    DataT* get_block(intT i, intT j);
+};

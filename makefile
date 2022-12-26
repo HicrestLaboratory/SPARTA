@@ -43,4 +43,4 @@ clean:
 	-@rm -rvf $(APP_DIR)/*
 
 
-TEST : build_general $(GEN_APP_DIR)/TEST_matrices $(GEN_APP_DIR)/TEST_blocking
+TEST : build_general $(GEN_APP_DIR)/TEST_matrices $(GEN_APP_DIR)/TEST_blocking $(GEN_APP_DIR)/TEST_blocking_VBR
