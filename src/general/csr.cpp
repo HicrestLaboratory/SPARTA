@@ -49,93 +49,46 @@ void CSR::reorder(vector<intT> grouping)
     permute(nzcount, v);
 }
 
-/*
-void CSR::get_VBR_stats(vector<intT> grouping, intT block_col_size = 1)
+
+vector<intT> CSR::get_VBR_nzcount(const vector<intT> &grouping, intT block_col_size)
 {
     vector<intT> row_partition = get_partition(grouping);
     vector<intT> row_permutation = get_permutation(grouping);
+    return get_VBR_nzcount(row_partition, row_permutation, block_col_size);
+}
+
+vector<intT> CSR::get_VBR_nzcount(const vector<intT> &row_partition, const vector<intT> &row_permutation, intT block_col_size)
+{
     
-    block_cols = cols/block_col_size;
-    block_rows = row_partition.size() - 1;
+    intT block_cols = cols/block_col_size;
+    intT block_rows = row_partition.size() - 1;
 
-    //partition check
 
-    if (int a = partition_check(row_partition) != 0)
-    {
-        cerr << "PARTITION CHECK ERROR: partition check failed with error " << a << endl;
-
-    }
-
-    row_part = new intT[row_partition.size()];
-    copy(row_partition.begin(),row_partition.end(), row_part);
-
-    nzcount = new intT[block_rows]{0};
-
-    vector<DataT> mab_vec;
-    vector<intT> jab_vec;
+    //stats storage
+    vector<intT> nz_block_count(row_partition.size() - 1,0);
 
     //copy data block_row by block_row
     for(intT ib = 0; ib < block_rows; ib++)
     {
         vector<bool> nonzero_flags(block_cols, false);
-        intT row_block_size = row_part[ib+1] - row_part[ib];
+        intT row_block_size = row_partition[ib+1] - row_partition[ib];
 
         //flag nonzero blocks
-        for (intT i_reordered = row_part[ib]; i_reordered < row_part[ib+1]; i_reordered++)
+        for (intT i_reordered = row_partition[ib]; i_reordered < row_partition[ib+1]; i_reordered++)
         {
             intT i = row_permutation[i_reordered];
-            for (intT nz = 0; nz < cmat.nzcount[i]; nz++)
+            for (intT nz = 0; nz < nzcount[i]; nz++)
             {
-                intT j = cmat.ja[i][nz];
+                intT j = ja[i][nz];
                 nonzero_flags[j/block_col_size] = true;
             }
         }
 
-        //fill jab vector
-        for (intT jb = 0; jb < block_cols; jb++)
-        {
-            if (nonzero_flags[jb]) jab_vec.push_back(jb);
-        }
-
         //fill nzcount
-        nzcount[ib] = std::count(nonzero_flags.begin(), nonzero_flags.end(), true);
-
-
-        //fill mab vector
-        intT current_mab_size = mab_vec.size(); 
-        mab_vec.resize(current_mab_size + nzcount[ib]*row_block_size*block_col_size, 0);
-        for (intT i_reordered = row_part[ib]; i_reordered < row_part[ib+1]; i_reordered++)
-        {
-            intT i = row_permutation[i_reordered];
-            for (intT nz = 0; nz < cmat.nzcount[i]; nz++)
-            {
-                intT j = cmat.ja[i][nz];
-                DataT d;
-                if (cmat.job == 0) d = 1;
-                else d = cmat.ma[i][nz];
-
-                //find position of d in mat
-                intT j_block_position = j/block_size;
-                intT tmp_block_count = std::count(nonzero_flags.begin(), nonzero_flags.begin() + j_block_position, true); //how many nz_blocks before current
-                intT tmp_mab_pos = current_mab_size + tmp_block_count*block_col_size*row_block_size + (i_reordered - row_part[ib])*block_col_size + j%block_size; 
-             
-                mab_vec[tmp_mab_pos] = d;
-            }
-        }
-
+        nz_block_count[ib] = std::count(nonzero_flags.begin(), nonzero_flags.end(), true);
     }
-
-    nztot = mab_vec.size();
-    jab = new intT[jab_vec.size()];
-    mab = new DataT[mab_vec.size()];
-    copy(jab_vec.begin(), jab_vec.end(),jab);
-    copy(mab_vec.begin(),mab_vec.end(), mab);
-
-
-
-
+    return nz_block_count;
 }
-*/
 
 
 void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only)

@@ -13,7 +13,7 @@ int main()
     ifstream fin;
     fin.open("data/TEST_matrix_weighted.txt");
     cmat.read_from_edgelist(fin, " ", false);
-    cmat.print(1);
+    cmat.print();
 
     BlockingEngine BEngine;
     BEngine.tau = 0.1;
@@ -21,13 +21,24 @@ int main()
     BEngine.use_groups = false;
     BEngine.use_pattern = true;
     BEngine.SetComparator(1);
+
+    //evaluate the grouping
     cout << "evaluating reordering" <<endl;
     vector<intT> grouping = BEngine.ObtainPartition(cmat);
 
+
+    cout << "create VBR from grouping;" << endl;
+    //create a VBR matrix from grouping (without reordering the original csr)
     VBR vbmat;
     vbmat.fill_from_CSR_inplace(cmat, grouping, 3);
     vbmat.print();
+    
+    vector<intT> nzcount_VBR = cmat.get_VBR_nzcount(grouping,3);
+    cout << "nzcount_VBR: "; 
+    print_vec(nzcount_VBR);
 
+    cout << "create VBR from row_partition;" << endl;
+    //create a VBR matrix from the row_partition (reordering the original csr)
     VBR vbmat2; 
     cmat.reorder(grouping);
     cmat.print();

@@ -29,162 +29,9 @@ void VBR::clean()
     block_col_size = 0;
 }
 
-
-/*
-intT VBR::get_row_partition(intT row)
-{
-    for (intT ib = 0; ib < block_rows; ib++)
-    {
-        if (row_part[i+1] > row) return i;
-    }
-    return -1;
-}
-
-
-
-DataT* VBR::get_mab_position(intT block_row)
-{
-    if (block_row > block_rows) 
-    {   
-        cerr << "nzs_in_block_row: range error" << endl;
-        return mab;
-    }
-
-    DataT* ptr = mab;
-    for (intT ib = 0; ib < block_row; ib++)
-    {
-        ptr += nzcount[ib]*(row_part[ib+1] - row_part[ib])*block_col_size; //count nonzeros in the block_row; move ptr accordingly
-    }
-    return ptr;
-}
-
-intT* VBR::get_jab_position(intT block_row)
-{
-    if (block_row > block_rows) 
-    {   
-        cerr << "nzs_in_block_row: range error" << endl;
-        return mab;
-    }
-
-    intT* ptr = jab;
-    for (intT ib = 0; ib < block_row; ib++)
-    {
-        ptr += nzcount[ib]; //count nonzeros in the block_row; move ptr accordingly
-    }
-    return ptr;
-}
-
-void VBR::print_row(intT row)
-{
-    if (row >= rows) 
-    {   
-        cerr << "VBR::print_row: i must be smaller than matrix rows" << endl;
-        return;
-    }
-
-    intT ib = get_row_partition(row);
-
-    intT row_size = row_part[ib+1] - row_part[ib];
-    DataT* mab_ptr = get_mab_position(ib);
-    intT* jab_ptr = get_jab_position(ib);
-    intT relative_row_pos = row - ib;
-
-    intT nzb = 0;
-    intT jb = 0;
-    while(nzb < nzcount[ib])
-    {
-        if (jb < jab_ptr[nzb])
-        {
-            for (intT x = 0; x < block_col_size; x++) cout << "0 ";
-            cout << "| ";
-            jb++;
-        }
-        else
-        {
-            mab_ptr += relative_row_pos*block_col_size; //explore block
-            for (intT x = 0; x < block_col_size; x++)
-            {
-                cout << mab_ptr[x] << " ";
-                mab_ptr++;
-            }
-            cout << "| ";
-
-            mab_ptr += (row_size - relative_row_pos - 1)*block_col_size;
-            jb++;
-        }
-    } 
-
-    while (jb < block_cols)
-    {
-        for (intT x = 0; x < block_col_size; x++) cout << "0 ";
-        cout << "| ";
-        jb++;
-    }
-
-    cout << endl;
-
-}
-
-void VBR::print()
-{
-    if (rows + cols <= 1) return;
-
-    intT row_size = 0;
-    intT* jab_ptr = jab;
-    DataT* mab_ptr = mab;
-    for (intT ib = 0; ib < block_rows; ib++)
-    {
-        row_size = row_part[ib+1] - row_part[ib];
-        for (intT row = 0; row < row_size; row++)
-        {
-            intT local_jab_counter = 0;
-            intT local_block_counter = 0;
-            DataT* local_mab_pointer = mab_ptr;
-
-            while (local_jab_counter < nzcount[ib])
-            {
-                intT target_block_idx = jab_ptr[local_jab_counter];
-                while (local_block_counter < target_block_idx) //print zero blocks up to the counter
-                {
-                    //print zeros blocks
-                    for (intT x = 0; x < block_col_size; x++) cout << "0 ";
-                    cout << " | ";
-                    local_block_counter;
-                }
-
-                //print the nz block
-                for (intT x = 0; x < block_col_size; x++)
-                {
-                    cout << local_mab_pointer[x] << " ";
-                    cout << " | ";
-                    local_block_counter++;
-                    local_mab_pointer += block_col_size;
-                }
-            }
-
-            //print zeros up to end<
-            while (local_block_counter < block_cols) //print zero blocks up to the counter
-            {
-                //print zeros blocks
-                for (intT x = 0; x < block_col_size; x++) cout << "0 ";
-                cout << " | ";
-                local_block_counter;
-            }
-        }
-        cout << endl;
-
-        //update all pointers
-        jab_ptr += nzcount[ib];
-        mab_ptr += nzcount[ib]*block_col_size;
-    }
-
-}
-
-*/
-
-
 DataT* VBR::get_block_start(intT row_block_idx)
 {
+    //returns the position in the mab vector where entries from a row block are stored. 
     DataT* ptr = mab;
     if (row_block_idx >= block_rows) 
     {
@@ -199,8 +46,6 @@ DataT* VBR::get_block_start(intT row_block_idx)
     return ptr;
 
 }
-
-
 
 void VBR::print(int verbose)
 {
@@ -251,9 +96,9 @@ void VBR::print(int verbose)
 }
 
 
-//checks that a vector is a valid partition; anything different than 0 is an error;
 int VBR::partition_check(const vector<intT> &candidate_part)
 {
+//checks that a vector is a valid partition; anything different than 0 is an error;
     if (candidate_part.size() == 0) return 1;
     if (candidate_part.back() != rows) return 2;
     for (intT i = 1; i < candidate_part.size(); i++) 
@@ -265,6 +110,7 @@ int VBR::partition_check(const vector<intT> &candidate_part)
 
 void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, intT block_size)
 {
+    //fill the VBR with entries from a CSR, with rows permuted and grouped according to grouping.
 
     vector<intT> row_partition = get_partition(grouping);
     vector<intT> row_permutation = get_permutation(grouping);
@@ -347,14 +193,12 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, in
     mab = new DataT[mab_vec.size()];
     copy(jab_vec.begin(), jab_vec.end(),jab);
     copy(mab_vec.begin(),mab_vec.end(), mab);
-    cout << " jab "; 
-    print_vec(jab_vec);
-    cout << " mab ";
-    print_vec(mab_vec);
 }
 
 void VBR::fill_from_CSR(const CSR& cmat,const vector<intT> &row_partition, intT block_size)
 {
+    //fill the VBR with entries from a CSR, with rows appearing in the same order and divided according to row_partition.
+
     rows = cmat.rows;
     cols = cmat.cols;
     block_col_size = block_size;

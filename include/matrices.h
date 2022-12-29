@@ -35,7 +35,19 @@ struct CSR
     void clean();
     void read_from_edgelist(std::ifstream& infile, std::string delimiter = " ", bool pattern_only = true);
     void reorder(std::vector<intT> grouping);
+    std::vector<intT> get_VBR_nzcount(const std::vector<intT> &grouping, intT block_col_size = 1);
+    std::vector<intT> get_VBR_nzcount(const std::vector<intT> &row_partition, const std::vector<intT> &row_permutation, intT block_col_size = 1);
+
     void print(intT verbose = 0);
+    intT nztot()
+    {
+        intT nztot = 0;
+        for (intT i = 0; i < rows; i++)
+        {
+            nztot += nzcount[i];
+        }
+        return nztot;
+    }
 
 };
 
