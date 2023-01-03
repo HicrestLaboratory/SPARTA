@@ -7,10 +7,9 @@ using namespace std;
 
 int main()
 {
-    CSR cmat;
     ifstream fin;
     fin.open("data/TEST_matrix_weighted.txt");
-    cmat.read_from_edgelist(fin, " ", false);
+    CSR cmat(fin, " ", false);
     cmat.print(1);
 
     BlockingEngine BEngine;
@@ -24,6 +23,4 @@ int main()
 
     cmat.reorder(grouping);
     cmat.print(1);
-
-    cmat.clean();
 }

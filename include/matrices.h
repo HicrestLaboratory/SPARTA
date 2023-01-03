@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include "input.h"
+
 
 typedef long int intT;
 typedef float DataT; //precision for input matrices entries
@@ -37,7 +39,6 @@ struct CSR
     void reorder(std::vector<intT> grouping);
     std::vector<intT> get_VBR_nzcount(const std::vector<intT> &grouping, intT block_col_size = 1);
     std::vector<intT> get_VBR_nzcount(const std::vector<intT> &row_partition, const std::vector<intT> &row_permutation, intT block_col_size = 1);
-
     void print(intT verbose = 0);
     intT nztot()
     {
@@ -47,6 +48,29 @@ struct CSR
             nztot += nzcount[i];
         }
         return nztot;
+    }
+
+
+    //constructor for edgelist data
+    CSR(std::ifstream& infile, std::string delimiter = " ", bool pattern_only = true)
+    {
+        read_from_edgelist(infile, delimiter, pattern_only);
+    }
+
+
+    //constructor from command line object
+    CSR(CLineReader &cli)
+    {
+        std::ifstream fin;
+        fin.open(cli.filename_);
+        read_from_edgelist(fin, cli.reader_delimiter_, cli.pattern_only_);
+    }
+    
+    
+    //destructor cleans all arrays
+    ~CSR()
+    {
+        clean();
     }
 
 };
@@ -64,18 +88,18 @@ struct VBR
     intT block_col_size;                  
     intT nztot;              /* total number of nonzero elements in mab*/
 
+
+    //destructor cleans all arrays
+    ~VBR()
+    {
+        clean();
+    }
+
     void clean();
-    intT get_row_partition(intT row);
+    void print(int verbose = 0);
+
     int partition_check(const std::vector<intT> &candidate_part);
     void fill_from_CSR(const CSR& cmat,const std::vector<intT> &row_partition, intT block_size);
     void fill_from_CSR_inplace(const CSR& cmat,const std::vector<intT> &grouping, intT block_size);
-
     DataT* get_block_start(intT row_block_idx);
-    void print_row(intT row);
-    void print(int verbose = 0);
-    DataT* get_mab_position(intT block_row);
-    intT* get_jab_position(intT block_row);
-    intT nz_blocks();
-    intT nz_entries();
-    DataT* get_block(intT i, intT j);
 };

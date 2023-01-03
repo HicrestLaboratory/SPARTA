@@ -7,20 +7,14 @@
 
 using namespace std;
 
-int main()
+int main(int argc, char* argv[])
 {
-    CSR cmat;
-    ifstream fin;
-    fin.open("data/TEST_matrix_weighted.txt");
-    cmat.read_from_edgelist(fin, " ", false);
+    CLineReader cli(argc, argv);
+
+    CSR cmat(cli);
     cmat.print();
 
-    BlockingEngine BEngine;
-    BEngine.tau = 0.1;
-    BEngine.block_size = 3;
-    BEngine.use_groups = false;
-    BEngine.use_pattern = true;
-    BEngine.SetComparator(1);
+    BlockingEngine BEngine(cli);
 
     //evaluate the grouping
     cout << "evaluating reordering" <<endl;
@@ -44,8 +38,4 @@ int main()
     cmat.print();
     vbmat2.fill_from_CSR(cmat, get_partition(grouping), 3);
     vbmat2.print();
-
-    vbmat.clean();
-    vbmat2.clean();
-    cmat.clean();
 }

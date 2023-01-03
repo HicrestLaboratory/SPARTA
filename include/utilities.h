@@ -1,6 +1,8 @@
 #include <vector>
 #include <algorithm> //std::copy
 #include <iostream>
+#include <numeric> //std::accumulate
+
 
 #include "matrices.h"
 
@@ -9,6 +11,16 @@ std::vector<intT> merge_rows(std::vector<intT> A, intT*B, intT sizeB);
 std::vector<intT> get_partition(const std::vector<intT> &grouping);
 
 std::vector<intT> get_permutation(const std::vector<intT> &grouping);
+
+template<typename T>
+double avg(std::vector<T> const& v) {
+    if (v.empty()) 
+    {
+        return 0;
+    }
+
+    return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
+}
 
 
 template <class MyType>

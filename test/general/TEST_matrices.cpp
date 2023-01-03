@@ -6,10 +6,9 @@ using namespace std;
 
 int main()
 {
-    CSR cmat;
     ifstream fin;
     fin.open("data/TEST_matrix_weighted.txt");
-    cmat.read_from_edgelist(fin, " ", false);
+    CSR cmat(fin, " ", false);
     cmat.print(1);
 
     cout << "converting to vbr" << endl;
@@ -17,5 +16,4 @@ int main()
     vector<intT> partition{0,2,5,6,9};
     vbmat.fill_from_CSR(cmat, partition, 3);
     vbmat.print();
-    vbmat.clean();
 }

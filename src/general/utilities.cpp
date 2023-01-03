@@ -41,6 +41,9 @@ vector<intT> get_partition(const vector<intT> &grouping)
     partition.push_back(reordered_groups.size());
     return partition;
 }
+
+
+
 vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
 {
     //A,B sparse rows (compressed indices format)

@@ -1,6 +1,7 @@
 #include "blocking.h"
 #include "matrices.h"
 #include "utilities.h"
+#include "input.h"
 #include <math.h> //ceil, floor
 #include <vector>
 #include <iostream>
@@ -50,6 +51,15 @@ std::vector<intT> BlockingEngine::ObtainPartition(const CSR& cmat)
     merge_counter = 0;
     timer = 0;
     return IterativeBlockingPattern(cmat, tau, comparator, block_size, use_groups, use_pattern, comparison_counter, merge_counter, timer);
+}
+
+BlockingEngine::BlockingEngine(CLineReader &cline)
+{       
+  tau = cline.tau_;
+  block_size = cline.block_size_;
+  use_groups = cline.sim_use_groups_;
+  use_pattern = cline.sim_use_pattern_;
+  SetComparator(cline.sim_measure_);
 }
 
 void BlockingEngine::SetComparator(int choice)

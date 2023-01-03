@@ -1,5 +1,5 @@
 CXX       =g++
-CXXFLAGS  =  -fpermissive -Wl,--no-as-needed -m64 -std=c++11 -fopenmp
+CXXFLAGS  =  -fpermissive -Wl,--no-as-needed -m64 -std=c++11
 INCLUDE = -I include
 
 OBJ_DIR = ./obj
@@ -28,9 +28,11 @@ $(GEN_APP_DIR)/%: $(GEN_OBJ_DIR)/%.o $(GEN_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ $?
 
-.PHONY: all build clean gener
+.PHONY: all build clean
 
 build: build_general
+
+all: TEST PROGRAMS
 
 build_general: 
 	@mkdir -p $(APP_DIR)
@@ -44,3 +46,5 @@ clean:
 
 
 TEST : build_general $(GEN_APP_DIR)/TEST_matrices $(GEN_APP_DIR)/TEST_blocking $(GEN_APP_DIR)/TEST_blocking_VBR
+
+#PROGRAMS: build_general $(GEN_APP_DIR)/Matrix_Blocking

@@ -17,7 +17,7 @@ void CSR::clean()
 
     if (rows + cols <= 1) return;
 
-    if (ma) 
+    if (ma && !job) 
     {
         for(intT i = 0; i < rows; i++)
         {
