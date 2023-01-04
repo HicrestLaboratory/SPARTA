@@ -23,7 +23,7 @@ struct CSR
     |       cmat  = a CSR struct
     |       rows  = # of columns of the matrix
     |       cols  = # of columns of the matrix
-            job   = 0: sparsity pattern only (boolean matrix)
+            pattern_only   = 1: sparsity pattern only (boolean matrix)
     |               1: data and pattern
     |--------------------------------------------------------------------   */
     intT rows;      /* number of rows                                        */
@@ -32,7 +32,7 @@ struct CSR
     intT** ja;      /* pointer-to-pointer to store column (row) indices      */
     DataT** ma;   /* pointer-to-pointer to store nonzero entries           */
 
-    int job; // 0 if the matrix is patter only; 1 otherwise
+    bool pattern_only; // 1 if the matrix is patter only; 0 otherwise
 
     void clean();
     void read_from_edgelist(std::ifstream& infile, std::string delimiter = " ", bool pattern_only = true);

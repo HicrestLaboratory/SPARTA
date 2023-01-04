@@ -174,7 +174,7 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, in
             {
                 intT j = cmat.ja[i][nz];
                 DataT d;
-                if (cmat.job == 0) d = 1;
+                if (cmat.pattern_only) d = 1;
                 else d = cmat.ma[i][nz];
 
                 //find position of d in mat
@@ -257,7 +257,7 @@ void VBR::fill_from_CSR(const CSR& cmat,const vector<intT> &row_partition, intT 
             {
                 intT j = cmat.ja[i][nz];
                 DataT d;
-                if (cmat.job == 0) d = 1;
+                if (cmat.pattern_only) d = 1;
                 else d = cmat.ma[i][nz];
 
                 //find position of d in mat
@@ -276,8 +276,4 @@ void VBR::fill_from_CSR(const CSR& cmat,const vector<intT> &row_partition, intT 
     mab = new DataT[mab_vec.size()];
     copy(jab_vec.begin(), jab_vec.end(),jab);
     copy(mab_vec.begin(),mab_vec.end(), mab);
-    cout << "mab: ";
-    print_vec(mab_vec);
-    cout << "jab: ";
-    print_vec(jab_vec);
 }

@@ -5,11 +5,16 @@
 #include <math.h> //ceil, floor
 #include <vector>
 #include <iostream>
+#include <chrono>
+
+using namespace std::chrono;
 
 using namespace std;
-std::vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncGroup distanceFunction,intT block_size, bool use_size, bool use_pattern, intT &comparison_counter, intT &merge_counter, float &timer)
+vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncGroup distanceFunction,intT block_size, bool use_size, bool use_pattern, intT &comparison_counter, intT &merge_counter, float &timer)
 {
     vector<intT> grouping(cmat.rows, -1); //flag each rows as ungrouped (-1)
+
+    auto start = high_resolution_clock::now();
 
     //main loop. Takes an ungrouped row (i) as a seed for a new block.
     for (intT i = 0; i < cmat.rows; i++)
@@ -18,8 +23,10 @@ std::vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncG
         {
             vector<intT> pattern;
             intT current_group_size = 1;
-            grouping[i] = i; // the group is named the same as the seed row.
+            grouping[i] = i; // the group is numbered the same as the seed row.
             pattern.insert(pattern.end(), &cmat.ja[i][0], &cmat.ja[i][cmat.nzcount[i]]); //Initialize the pattern with the seed entries.
+            //TODO check performance of std::copy instead
+
 
             //inner loop, compare each subsequent row with the current pattern
             for (intT j = i + 1; j < cmat.rows; j++)
@@ -41,16 +48,22 @@ std::vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncG
             }
         }
     }
+
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    timer = duration.count();
+
     return grouping;
 }
 
-std::vector<intT> BlockingEngine::ObtainPartition(const CSR& cmat)
+vector<intT> BlockingEngine::ObtainPartition(const CSR& cmat)
 {
     //run the blocking function and store statistics
     comparison_counter = 0;
     merge_counter = 0;
     timer = 0;
-    return IterativeBlockingPattern(cmat, tau, comparator, block_size, use_groups, use_pattern, comparison_counter, merge_counter, timer);
+    grouping_result = IterativeBlockingPattern(cmat, tau, comparator, block_size, use_groups, use_pattern, comparison_counter, merge_counter, timer);
+    return grouping_result;
 }
 
 BlockingEngine::BlockingEngine(CLineReader &cline)
@@ -60,6 +73,15 @@ BlockingEngine::BlockingEngine(CLineReader &cline)
   use_groups = cline.sim_use_groups_;
   use_pattern = cline.sim_use_pattern_;
   SetComparator(cline.sim_measure_);
+}
+
+void BlockingEngine::print()
+{
+  cout << "BLOCKING ENGINE INFO: " << endl;
+  cout << "timer: " << timer << endl;
+  cout << "comparison counter: " << comparison_counter << endl;
+  cout << "merge counter: " << merge_counter << endl;
+  cout << endl;
 }
 
 void BlockingEngine::SetComparator(int choice)
@@ -146,7 +168,6 @@ float HammingDistanceGroup(vector<intT> row_A, intT group_size_A, intT* row_B, i
 
   return count;
 }
-
 
 float JaccardDistanceGroup(vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size)
 {

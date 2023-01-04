@@ -10,7 +10,7 @@ int main()
 
     //Handle input
     
-        //Determine Blocking parameters from input
+    //Determine Blocking parameters from input
     BlockingEngine BEngine;
     BEngine.tau = 0.1;
     BEngine.block_size = 3;

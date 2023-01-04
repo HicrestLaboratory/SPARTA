@@ -16,4 +16,8 @@ int main()
     vector<intT> partition{0,2,5,6,9};
     vbmat.fill_from_CSR(cmat, partition, 3);
     vbmat.print();
+
+
+    cout << "TEST COMPLETED" << endl;
+
 }

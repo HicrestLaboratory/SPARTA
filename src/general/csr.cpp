@@ -17,7 +17,7 @@ void CSR::clean()
 
     if (rows + cols <= 1) return;
 
-    if (ma && !job) 
+    if (ma && !pattern_only) 
     {
         for(intT i = 0; i < rows; i++)
         {
@@ -45,7 +45,9 @@ void CSR::reorder(vector<intT> grouping)
     vector<intT> v = get_permutation(grouping);
 
     permute(ja,v);
-    if (job) permute(ma, v);
+
+    if (!pattern_only) permute(ma, v);
+
     permute(nzcount, v);
 }
 
@@ -93,6 +95,8 @@ vector<intT> CSR::get_VBR_nzcount(const vector<intT> &row_partition, const vecto
 
 void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only)
 {
+
+    this->pattern_only = pattern_only;
 
     intT last_node = -1;
     intT current_node;
@@ -154,7 +158,6 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
     }
 
 
-    job = pattern_only? 0 : 1;
     rows = pos_holder.size();
     cols = max_column + 1;
     nzcount = new intT[rows];
@@ -190,7 +193,11 @@ void CSR::print(intT verbose)
     if (verbose > 0)
     {
         cout << "PRINTING A CSR MATRIX (arrays only)" << endl;
-        cout << "ROWS:" << rows << " COLS:" << cols << " PATTERN:" << job << endl; 
+        cout << "ROWS: " << rows << " COLS: " << cols << " PATTERN_only: " << pattern_only << endl; 
+        cout << "NZ: " << nztot() << endl;
+    }
+    if (verbose > 1)
+    {
         cout << "JA:" << endl;
         for (intT i = 0; i < rows; i++)
         {
@@ -203,16 +210,18 @@ void CSR::print(intT verbose)
 
         }
 
-
-        cout << "MA:" << endl;
-        for (intT i = 0; i < rows; i++)
-        {
-            cout << "-- ";
-            for (intT j = 0; j < nzcount[i]; j++)
+        if (!pattern_only)
+        {        
+            cout << "MA:" << endl;
+            for (intT i = 0; i < rows; i++)
             {
-                cout << ma[i][j] << " ";
+                cout << "-- ";
+                for (intT j = 0; j < nzcount[i]; j++)
+                {
+                    cout << ma[i][j] << " ";
+                }
+                cout << endl;
             }
-            cout << endl;
         }
 
         cout << "NZCOUNT:" << endl;
@@ -221,37 +230,36 @@ void CSR::print(intT verbose)
                 cout << nzcount[i] << " ";
         }
         cout << endl;
-    }
 
-    cout << "PRINTING A CSR MATRIX" << endl;
-    cout << "ROWS:" << rows << " COLS:" << cols << " PATTERN:" << job << endl; 
-    //loop through rows
-    for (intT i = 0; i < rows; i++)
-    {
-        intT j = 0;
-        for (intT nzs = 0; nzs < nzcount[i]; nzs++) 
+        cout << "PRINTING A CSR MATRIX" << endl;
+        cout << "ROWS:" << rows << " COLS:" << cols << " PATTERN_only:" << pattern_only << endl; 
+        //loop through rows
+        for (intT i = 0; i < rows; i++)
         {
-            intT nz_column = ja[i][nzs]; //find column (row) index of next nonzero element
+            intT j = 0;
+            for (intT nzs = 0; nzs < nzcount[i]; nzs++) 
+            {
+                intT nz_column = ja[i][nzs]; //find column (row) index of next nonzero element
+                
+                DataT elem;
+                if (!pattern_only) elem = ma[i][nzs]; //value of that element;
+                else elem = 1;
             
-	        DataT elem;
-	        if (job == 1) elem = ma[i][nzs]; //value of that element;
-	        else elem = 1;
-		
-            while (j < nz_column)
+                while (j < nz_column)
+                {
+                    j++;
+                    cout << 0 << " ";
+                }
+                cout << elem << " ";
+                j++;
+            }
+            while (j < cols)
             {
                 j++;
                 cout << 0 << " ";
             }
-            cout << elem << " ";
-            j++;
-        }
-        while (j < cols)
-        {
-            j++;
-            cout << 0 << " ";
-        }
 
-	cout << endl;
+        cout << endl;
+        }
     }
-
 }

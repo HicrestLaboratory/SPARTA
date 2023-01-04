@@ -1,7 +1,7 @@
 #include <vector>
 #include "utilities.h"
 #include <numeric> //std::iota
-
+#include <fstream>
 using namespace std;
 
 
@@ -43,7 +43,7 @@ vector<intT> get_partition(const vector<intT> &grouping)
 }
 
 
-
+/*
 vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
 {
     //A,B sparse rows (compressed indices format)
@@ -67,4 +67,82 @@ vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
         }
     }
     return result;
+}
+*/
+
+
+/*
+vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
+{
+    //A,B sparse rows (compressed indices format)
+    intT i = 0;
+    intT j = 0;
+    vector<intT> result;
+    intT size_A = A.size();
+
+    result.reserve(A.size() + size_B);
+    std::merge(A.begin(), A.end(),
+            B, B + size_B,
+           result.begin());
+
+    return result;
+}
+*/
+
+vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
+{
+    //A,B sparse rows (compressed indices format)
+    intT i = 0;
+    intT j = 0;
+    vector<intT> result;
+    intT size_A = A.size();
+
+
+    for (intT i = 0; i < size_B; i++)
+    {
+        A.insert
+            ( 
+                std::upper_bound( A.begin(), A.end(), B[i] ),
+                B[i] 
+            );
+    }
+}
+
+void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bEngine, CSR &cmat, bool save_blocking)
+{
+    string header;
+    string values;
+    auto add_to_output = [&](string name, string value)
+    {
+        header += name + ","; 
+        values += value + ",";
+    };
+    add_to_output("matrix", cLine.filename_);
+    add_to_output("rows", to_string(cmat.rows));
+    add_to_output("cols", to_string(cmat.cols));
+    add_to_output("nonzeros", to_string(cmat.nztot()));
+    add_to_output("tau", to_string(cLine.tau_));
+    add_to_output("block_size", to_string(cLine.block_size_));
+    add_to_output("use_pattern", to_string(cLine.sim_use_pattern_));
+    add_to_output("sim_use_groups", to_string(cLine.sim_use_groups_));
+    add_to_output("scramble", to_string(cLine.scramble_));
+    add_to_output("sim_measure", to_string(cLine.sim_measure_));
+    add_to_output("exp_name", cLine.exp_name_);
+    add_to_output("time_to_block", to_string(bEngine.timer));
+    add_to_output("merge_counter", to_string(bEngine.merge_counter));
+    add_to_output("comparison_counter", to_string(bEngine.comparison_counter));
+
+    outfile << header << endl;
+    outfile << values << endl;
+
+    vector<intT> nzcount_VBR = cmat.get_VBR_nzcount(bEngine.grouping_result,cLine.block_size_);
+
+    outfile << "NZCOUNT ";
+    print_vec(nzcount_VBR, outfile, ",");
+
+    if (save_blocking)
+    {
+        outfile << "GROUPING ";
+        print_vec(bEngine.grouping_result, outfile, ",");
+    }
 }

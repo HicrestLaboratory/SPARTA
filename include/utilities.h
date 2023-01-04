@@ -1,10 +1,11 @@
 #include <vector>
 #include <algorithm> //std::copy
 #include <iostream>
+#include <fstream>
 #include <numeric> //std::accumulate
-
-
+#include "input.h"
 #include "matrices.h"
+#include "blocking.h"
 
 std::vector<intT> merge_rows(std::vector<intT> A, intT*B, intT sizeB);
 
@@ -23,14 +24,16 @@ double avg(std::vector<T> const& v) {
 }
 
 
+void save_blocking_data(std::ostream &outfile, CLineReader &cLine, BlockingEngine &bEngine, CSR &cmat, bool save_blocking = false);
+
 template <class MyType>
-void print_vec(std::vector<MyType> vec)
+void print_vec(std::vector<MyType> vec, std::ostream& stream = std::cout, std::string separator = " ")
 {
     for (intT i = 0; i < vec.size(); i++)
     {
-        std::cout << vec[i] << " ";
+        stream << vec[i] << separator;
     }
-    std::cout << std::endl;
+    stream << std::endl;
 }
 
 //permutes an array of n elements (original) according to a permutation (perm);

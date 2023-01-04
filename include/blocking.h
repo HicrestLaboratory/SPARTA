@@ -3,6 +3,7 @@
 #include <string>
 #include "matrices.h"
 #include "input.h"
+#include <fstream>
 
 
 typedef float (*distFunc)(intT*,intT,intT*,intT);
@@ -17,11 +18,15 @@ class BlockingEngine
         bool use_groups = 0;
         bool use_pattern = 1;
         float timer = 0;
+        //bool blocking_completed = false;
         intT comparison_counter = 0;
         intT merge_counter = 0;
         distFuncGroup comparator;
+        std::vector<intT> grouping_result;
+
         std::vector<intT> ObtainPartition(const CSR& cmat);
         void SetComparator(int choice);
+        void print();
 
         BlockingEngine(){};
         BlockingEngine(CLineReader &cline);
