@@ -71,7 +71,6 @@ vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
 */
 
 
-/*
 vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
 {
     //A,B sparse rows (compressed indices format)
@@ -87,26 +86,7 @@ vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
 
     return result;
 }
-*/
 
-vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
-{
-    //A,B sparse rows (compressed indices format)
-    intT i = 0;
-    intT j = 0;
-    vector<intT> result;
-    intT size_A = A.size();
-
-
-    for (intT i = 0; i < size_B; i++)
-    {
-        A.insert
-            ( 
-                std::upper_bound( A.begin(), A.end(), B[i] ),
-                B[i] 
-            );
-    }
-}
 
 void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bEngine, CSR &cmat, bool save_blocking)
 {
