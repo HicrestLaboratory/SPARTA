@@ -10,7 +10,7 @@
 class CLineReader
 {
     public:
-        std::string filename_ = "data/TEST_matrix_weighted.txt";
+        std::string filename_ = "data/TEST_matrix_weighted.el";
         std::string outfile_ = "results/TEST_results.txt";
         std::string exp_name_ = "";
         std::string reader_delimiter_ = " ";
@@ -22,8 +22,9 @@ class CLineReader
         
         int sim_measure_ = 1;
         int block_repetitions_ = 1;
+        int reorder_by_degree_ = 0; //-1 for ascending. 1 for descending
         int block_size_ = 1;
-        int verbose_ = 0;
+        int verbose_ = 1;
 
         float tau_ = 0.5;
 
@@ -44,7 +45,7 @@ class CLineReader
             std::cout << "sim_use_groups_: " <<  sim_use_groups_ << std::endl;
             std::cout << "sim_use_pattern_: " <<  sim_use_pattern_ << std::endl;
             std::cout << "pattern_only_: " <<  pattern_only_ << std::endl;
-            std::cout << "block_repetitions_: " <<  block_repetitions_ << std::endl;
+            std::cout << "reorder_by_degree_: " <<  reorder_by_degree_ << std::endl;
             std::cout << "tau_: " <<  tau_ << std::endl;
             std::cout << "block_size_: " <<  block_size_ << std::endl;
             std::cout << "verbose_: " <<  verbose_ << std::endl;
@@ -67,7 +68,7 @@ class CLineReader
                     case 'm': sim_measure_ = std::stoi(optarg);             break;
                     case 'n': exp_name_ = std::string(optarg);         break;
                     case 'f': filename_ = std::string(optarg);         break;
-                    case 'r': block_repetitions_ = std::stoi(optarg);       break;
+                    case 'r': reorder_by_degree_ = std::stoi(optarg);       break;
                     case 's': scramble_ = (std::stoi(optarg) == 1);         break;
                     case 't': tau_ = std::stof(optarg);                     break;
                     case 'v': verbose_ = std::stoi(optarg);                     break;

@@ -23,4 +23,8 @@ int main()
 
     cmat.reorder(grouping);
     cmat.print(1);
+
+
+    cout << "TEST COMPLETED" << endl;
+
 }

@@ -21,30 +21,18 @@ int main(int argc, char* argv[])
     
     bEngine.print();
 
-    /*
     //CREATE VBR FROM GROUPING
     if (cli.verbose_ > 0) cout << "create VBR from grouping;" << endl;
     //create a VBR matrix from grouping (without reordering the original csr)
     VBR vbmat;
     vbmat.fill_from_CSR_inplace(cmat, grouping, cli.block_size_);
     if (cli.verbose_ > 1) vbmat.print();
-    */
 
-    /*
     //GET BLOCK PROPERTIES FROM GROUPING WITHOUT CREATING VBR EXPLICITLY
     vector<intT> nzcount_VBR = cmat.get_VBR_nzcount(grouping,cli.block_size_);
     cout << "nzcount_VBR: "; 
     if (cli.verbose_ > 1) print_vec(nzcount_VBR);
-    */
 
-
-    ofstream outfile;
-    bool save_grouping = true;
-    outfile.open(cli.outfile_);
-    save_blocking_data(outfile, cli, bEngine, cmat, save_grouping);
-
-
-    /*
     //REORDER CSR, THE CREATE VBR FROM GROUPING
     if (cli.verbose_ > 0) cout << "reordering the CSR" << endl;
     //create a VBR matrix from the row_partition (reordering the original csr)
@@ -55,7 +43,6 @@ int main(int argc, char* argv[])
     if (cli.verbose_ > 0) cout << "Create VBR from reordered CSR" << endl;
     vbmat2.fill_from_CSR(cmat, get_partition(grouping), cli.block_size_);
     if (cli.verbose_ > 1) vbmat2.print();
-    */
 
     cout << "TEST COMPLETED" << endl;
 }

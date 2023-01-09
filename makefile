@@ -47,4 +47,4 @@ clean:
 
 TEST : build_general $(GEN_APP_DIR)/TEST_matrices $(GEN_APP_DIR)/TEST_blocking $(GEN_APP_DIR)/TEST_blocking_VBR
 
-#PROGRAMS: build_general $(GEN_APP_DIR)/Matrix_Blocking
+PROGRAMS: build_general $(GEN_APP_DIR)/Matrix_Blocking

@@ -51,6 +51,30 @@ void CSR::reorder(vector<intT> grouping)
     permute(nzcount, v);
 }
 
+void CSR::reorder_by_degree(bool descending)
+{
+    auto asc_comparator = [&](int i, int j)
+    {
+        return nzcount[i] < nzcount[j];
+    };
+
+    auto desc_comparator = [&](int i, int j)
+    {
+        return nzcount[i] >= nzcount[j];
+    };
+
+    vector<intT> v(rows);
+    iota(v.begin(), v.end(), 0);
+
+    if (descending) sort (v.begin(), v.end(), desc_comparator);
+    else sort (v.begin(), v.end(), asc_comparator);
+
+    permute(ja,v);
+    if (!pattern_only) permute(ma, v);
+    permute(nzcount, v);
+
+}
+
 
 vector<intT> CSR::get_VBR_nzcount(const vector<intT> &grouping, intT block_col_size)
 {

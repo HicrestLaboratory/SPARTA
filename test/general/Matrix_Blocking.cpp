@@ -1,39 +1,27 @@
 #include "matrices.h"
 #include "blocking.h"
+#include "utilities.h"
+
 #include <fstream>
 #include <iostream>
 
 using namespace std;
 
-int main()
+int main(int argc, char* argv[])
 {
+    CLineReader cli(argc, argv);
+    if (cli.verbose_ > 0) cli.print();
+    CSR cmat(cli);
+    BlockingEngine bEngine(cli);
 
-    //Handle input
-    
-    //Determine Blocking parameters from input
-    BlockingEngine BEngine;
-    BEngine.tau = 0.1;
-    BEngine.block_size = 3;
-    BEngine.use_groups = false;
-    BEngine.use_pattern = true;
-    BEngine.SetComparator(1);
+    //evaluate the grouping
+    vector<intT> grouping = bEngine.ObtainPartition(cmat); 
+    bEngine.print();
 
-    
-    //import matrix
-    ifstream fin;
-    fin.open("data/TEST_matrix_weighted.txt");
-    CSR cmat(fin, " ", false);
+    ofstream outfile;
+    bool save_grouping = true;
+    outfile.open(cli.outfile_);
+    save_blocking_data(outfile, cli, bEngine, cmat, save_grouping);
 
-
-    //determine grouping
-    cout << "evaluating reordering" <<endl;
-    vector<intT> grouping = BEngine.ObtainPartition(cmat);
-
-    //calculate statistics
-    vector<intT> nz_block_count = cmat.get_VBR_nzcount(grouping, BEngine.block_size);
-    vector<intT> partition = get_partition(grouping);
-    intT total_nonzeros = calculate_nonzeros_VBR(partition, nz_block_count, BEngine.block_size);
-
-    //save results on file
-
+    cout << "TEST COMPLETED" << endl;
 }

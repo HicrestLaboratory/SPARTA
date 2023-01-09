@@ -117,12 +117,12 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
 
     vector<intT> nzcount_VBR = cmat.get_VBR_nzcount(bEngine.grouping_result,cLine.block_size_);
 
-    outfile << "NZCOUNT ";
+    outfile << "NZCOUNT,";
     print_vec(nzcount_VBR, outfile, ",");
 
     if (save_blocking)
     {
-        outfile << "GROUPING ";
+        outfile << "GROUPING,";
         print_vec(bEngine.grouping_result, outfile, ",");
     }
 }
