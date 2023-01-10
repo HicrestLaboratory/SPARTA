@@ -86,12 +86,13 @@ vector<intT> CSR::get_VBR_nzcount(const vector<intT> &grouping, intT block_col_s
 vector<intT> CSR::get_VBR_nzcount(const vector<intT> &row_partition, const vector<intT> &row_permutation, intT block_col_size)
 {
     
-    intT block_cols = cols/block_col_size;
+    intT block_cols = cols/block_col_size + 1;
     intT block_rows = row_partition.size() - 1;
 
 
     //stats storage
     vector<intT> nz_block_count(row_partition.size() - 1,0);
+
 
     //copy data block_row by block_row
     for(intT ib = 0; ib < block_rows; ib++)

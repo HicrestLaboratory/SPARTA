@@ -82,7 +82,7 @@ vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
     result.reserve(A.size() + size_B);
     std::merge(A.begin(), A.end(),
             B, B + size_B,
-           result.begin());
+           std::back_inserter(result));
 
     return result;
 }

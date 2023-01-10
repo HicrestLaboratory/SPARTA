@@ -1,4 +1,4 @@
 matrix,rows,cols,nonzeros,tau,block_size,use_pattern,sim_use_groups,scramble,sim_measure,exp_name,time_to_block,merge_counter,comparison_counter,
-data/TEST_matrix_weighted.txt,9,9,9,0.500000,1,1,1,0,1,,38.000000,2,31,
-NZCOUNT,1,3,1,2,0,1,1,
-GROUPING,0,1,2,3,4,5,4,4,8,
+data/TEST_matrix_weighted.el,9,9,12,0.100000,100,1,1,0,1,,48.000000,7,10,
+NZCOUNT,1,0,
+GROUPING,0,0,0,0,0,0,6,6,6,

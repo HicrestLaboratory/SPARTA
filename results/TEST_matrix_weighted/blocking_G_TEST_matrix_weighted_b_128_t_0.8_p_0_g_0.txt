@@ -1,2 +1,2 @@
 matrix,rows,cols,nonzeros,tau,block_size,use_pattern,sim_use_groups,scramble,sim_measure,exp_name,time_to_block,merge_counter,comparison_counter,
-data//TEST_matrix_weighted.el,9,9,9,0.800000,128,0,0,0,1,blocking_G_TEST_matrix_weighted_b_128_t_0.8_p_0_g_0,14.000000,7,10,
+data//TEST_matrix_weighted.el,9,9,12,0.800000,128,0,0,0,1,blocking_G_TEST_matrix_weighted_b_128_t_0.8_p_0_g_0,15.000000,7,10,

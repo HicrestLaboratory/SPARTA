@@ -34,11 +34,10 @@ vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncGroup 
                 if (grouping[j] == -1)
                 {
                     comparison_counter++;
+
                     float dist = distanceFunction(pattern, current_group_size, cmat.ja[j], cmat.nzcount[j], 1, block_size);
                     if (dist < tau)
                     {
-                        cout << "merging row " << i << " and " << j << " with dist " << dist << endl;
-                        print_vec(pattern);
                         merge_counter++;
                         grouping[j] = i;
                         if (use_pattern)
