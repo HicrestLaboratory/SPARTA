@@ -3,6 +3,8 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>       //time
+#include <random>       // random
 #include <iostream>
 #include <fstream>
 #include <unistd.h> //getopt, optarg
@@ -19,10 +21,11 @@ class CLineReader
         bool sim_use_groups_ = 1;
         bool sim_use_pattern_ = 1;
         bool pattern_only_ = 0;
-        
+
+        int seed_ = 0;
         int sim_measure_ = 1;
         int block_repetitions_ = 1;
-        int reorder_by_degree_ = 0; //-1 for ascending. 1 for descending
+        int reorder_ = 0; //-1 for ascending. 1 for descending. 2 for scramble
         int block_size_ = 1;
         int verbose_ = 1;
 
@@ -45,10 +48,11 @@ class CLineReader
             std::cout << "sim_use_groups_: " <<  sim_use_groups_ << std::endl;
             std::cout << "sim_use_pattern_: " <<  sim_use_pattern_ << std::endl;
             std::cout << "pattern_only_: " <<  pattern_only_ << std::endl;
-            std::cout << "reorder_by_degree_: " <<  reorder_by_degree_ << std::endl;
+            std::cout << "reorder_by_degree_: " <<  reorder_ << std::endl;
             std::cout << "tau_: " <<  tau_ << std::endl;
             std::cout << "block_size_: " <<  block_size_ << std::endl;
             std::cout << "verbose_: " <<  verbose_ << std::endl;
+            std::cout << "seed_: " <<  seed_ << std::endl; //-1 for random
             std::cout << "___________________" << std::endl;; 
         }
 
@@ -56,23 +60,35 @@ class CLineReader
         void ParseArgs(int argc, char* argv[])
         {
             char c_opt;
-            while ((c_opt = getopt(argc, argv, "b:f:g:n:o:p:P:r:s:t:v:")) != -1)
+            while ((c_opt = getopt(argc, argv, "b:f:g:n:o:p:P:r:s:S:t:v:")) != -1)
             {
                 switch(c_opt) 
                 {
                     case 'b': block_size_ = std::stoi(optarg);              break;
                     case 'g': sim_use_groups_ = (std::stoi(optarg) == 1);   break;
-                    case 'o': outfile_ = std::string(optarg);          break;
+                    case 'o': outfile_ = std::string(optarg);               break;
                     case 'p': sim_use_pattern_ = (std::stoi(optarg) == 1);  break;
-                    case 'P': pattern_only_ = (std::stoi(optarg) == 1);  break;
+                    case 'P': pattern_only_ = (std::stoi(optarg) == 1);     break;
                     case 'm': sim_measure_ = std::stoi(optarg);             break;
-                    case 'n': exp_name_ = std::string(optarg);         break;
-                    case 'f': filename_ = std::string(optarg);         break;
-                    case 'r': reorder_by_degree_ = std::stoi(optarg);       break;
+                    case 'n': exp_name_ = std::string(optarg);              break;
+                    case 'f': filename_ = std::string(optarg);              break;
+                    case 'r': reorder_ = std::stoi(optarg);                 break;
                     case 's': scramble_ = (std::stoi(optarg) == 1);         break;
+                    case 'S': seed_ = std::stoi(optarg);                    break;
                     case 't': tau_ = std::stof(optarg);                     break;
-                    case 'v': verbose_ = std::stoi(optarg);                     break;
+                    case 'v': verbose_ = std::stoi(optarg);                 break;
                 }           
+            }
+
+            if (seed_ != 0)
+            {
+                std::srand(seed_);
+            }
+            else
+            {
+                //TODO better randomness if needed
+                std::random_device rd;
+                std::srand(rd());
             }
 
             if ((filename_ == "")) 

@@ -2,6 +2,9 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <random> //std::shuffle
+#include <stdexcept>
+
 #include <algorithm>    // std::sort
 #include <numeric> //std::iota
 #include "matrices.h"
@@ -32,23 +35,33 @@ void CSR::clean()
             if (ja[i]) delete[] ja[i];
         }
     }
-    delete[] nzcount;
+    
+    if (nzcount) delete[] nzcount;
+    
+    rows = 0;
+    cols = 0; 
+}
+
+
+void CSR::permute_rows(vector<intT> permutation)
+//permute the rows of the matrix according to "permutation"
+{   
+    if (permutation.size() != rows)
+        throw std::invalid_argument("CSR.permute_rows argument bust have same lenght as rows");
+
+    permute(ja,permutation);
+    if (!pattern_only) permute(ma, permutation);
+    permute(nzcount, permutation);
 }
 
 void CSR::reorder(vector<intT> grouping)
+//permute the rows so that row i and row j are adjacent if grouping[i] == grouping[j]
 {
     if (grouping.size() != rows)
-    {
-        cout << "INVALID SIZE" << endl;
-    }
+        throw std::invalid_argument("CSR.reorder argument bust have same lenght as rows");
 
     vector<intT> v = get_permutation(grouping);
-
-    permute(ja,v);
-
-    if (!pattern_only) permute(ma, v);
-
-    permute(nzcount, v);
+    permute_rows(v);
 }
 
 void CSR::reorder_by_degree(bool descending)
@@ -68,11 +81,18 @@ void CSR::reorder_by_degree(bool descending)
 
     if (descending) sort (v.begin(), v.end(), desc_comparator);
     else sort (v.begin(), v.end(), asc_comparator);
+    permute_rows(v);
+}
 
-    permute(ja,v);
-    if (!pattern_only) permute(ma, v);
-    permute(nzcount, v);
+void CSR::scramble()
+{
+    //randomly permute rows (TODO better randomness)
+    vector<intT> v(rows);
+    iota(v.begin(), v.end(), 0);
 
+    random_shuffle(v.begin(),v.end());
+
+    permute_rows(v);
 }
 
 
@@ -119,8 +139,8 @@ vector<intT> CSR::get_VBR_nzcount(const vector<intT> &row_partition, const vecto
 
 
 void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only)
+//reads edgelist into the CSR.
 {
-
     this->pattern_only = pattern_only;
 
     intT last_node = -1;
@@ -174,10 +194,8 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
             }
         }
         else if (current_node < i)
-        {
-            cout << "CANNOT READ MATRIX. INDICES MUST INCREASE" << endl;
-            return;
-        }
+            throw std::invalid_argument("CSR.read_from_edgelist indices must be in ascending order");
+
         pos_holder[i].push_back(child);
     	if (not pattern_only) val_holder[i].push_back(val);
     }

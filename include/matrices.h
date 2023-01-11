@@ -38,6 +38,9 @@ struct CSR
     void read_from_edgelist(std::ifstream& infile, std::string delimiter = " ", bool pattern_only = true);
     void reorder(std::vector<intT> grouping);
     void reorder_by_degree(bool descending = true);
+    void permute_rows(std::vector<intT> permutation);
+    void scramble();
+
     std::vector<intT> get_VBR_nzcount(const std::vector<intT> &grouping, intT block_col_size = 1);
     std::vector<intT> get_VBR_nzcount(const std::vector<intT> &row_partition, const std::vector<intT> &row_permutation, intT block_col_size = 1);
     void print(intT verbose = 0);
@@ -65,10 +68,17 @@ struct CSR
         std::ifstream fin;
         fin.open(cli.filename_);
         read_from_edgelist(fin, cli.reader_delimiter_, cli.pattern_only_);
-        if (cli.reorder_by_degree_ != 0)
+        switch(cli.reorder_)
         {
-            bool descending = cli.reorder_by_degree_ > 0;
-            reorder_by_degree(descending);
+            case 1:
+                reorder_by_degree(true);
+                break;
+            case -1:
+                reorder_by_degree(false);
+                break;
+            case 2:
+                scramble();
+                break;
         }
     }
     
