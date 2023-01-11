@@ -51,17 +51,18 @@ void VBR::print(int verbose)
 {
     intT* jab_ptr = jab;
     for (intT ib = 0; ib < block_rows; ib++)
+    //iterate through block-rows
     {   
         intT row_block_size = row_part[ib+1] - row_part[ib];
         DataT* data_pointer = get_block_start(ib);
 
         for (intT i = 0; i < row_block_size; i++)
+        //iterate through rows in the row-block
         {
-            
             intT jb = 0;
             for (intT nzb = 0; nzb < nzcount[ib]; nzb++)
+            //iterate through nonzero blocks in the row-block
             {
-
                 intT nz_jb = jab_ptr[nzb]; //position of nonzero block
                 while (jb < nz_jb)
                 {
@@ -79,7 +80,7 @@ void VBR::print(int verbose)
                 cout << "| ";
             }
 
-            while (jb < block_cols)
+            while (jb < block_cols && jb*block_col_size < cols)
             {
                 for (intT j = 0; j < block_col_size; j++) cout << "0 ";
                 {
@@ -119,7 +120,7 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, in
     cols = cmat.cols;
     block_col_size = block_size;
     
-    block_cols = cols/block_size;
+    block_cols = cols/block_size + 1;
     block_rows = row_partition.size() - 1;
 
     //partition check
