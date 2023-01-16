@@ -12,27 +12,27 @@
 #include <helper_cuda.h>
 
 //others
-#include<stdio.h>
+#include <stdio.h>
 #include <iostream>
 #include <typeinfo>
 
 //includes from SPARTA
 #include "cuda_utilities.h"
-#include "comp_mats.h"
-#include "sparse_utilities.h"
+#include "matrices.h"
+#include "utilities.h"
 
 /*ONLY WORKS WITH 
     DataT = float, double, int;
     intT = int
 */
 
-void cublas_blockmat_multiply(const VBS& vbmatA, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, float& dt, int n_streams)
+void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, float& dt, int n_streams)
 {
-//multiplies a VBS matrix (vbmatA) and a dense matrix (B); stores into (C)
-    //vbmatA:       column-major entries storage;
-    //              column-major block_storage; 
-    //B:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
-    //C:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+//multiplies a dense matrix (B) and a VBS matrix (vbmatA); stores B*A into (C)
+    //vbmatA:       row-major entries storage;
+    //              row-major block_storage; 
+    //B:            row-major storage; TODO: allow general storage format (implement through cublas transpose)
+    //C:            row-major storage; TODO: allow general storage format (implement through cublas transpose)
 
 
     cudaDataType_t data_type_AB;
@@ -53,33 +53,23 @@ void cublas_blockmat_multiply(const VBS& vbmatA, DataT* B, int B_cols, int B_lea
     }
     else
     {
-        std::cout << "WARNING! Unsopported multiplication type. Check comp_mats.h" << std::endl;
+        std::cout << "WARNING! Unsopported multiplication type. Modify matrices.h" << std::endl;
     }
 
 
     cublasGemmAlgo_t cuda_algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP;
 
-    int A_rows = vbmatA.row_part[vbmatA.block_rows];
-    int A_cols = vbmatA.col_part[vbmatA.block_cols];
-
-    intT mat_idx = 0; //keeps writing position for mat
-    intT vbmat_idx = 0; //keeps reading position for vbmat 
-    intT ja_count = 0; //keeps total nonzero blocks count;
+    intT A_rows = vbmatA.rows;
+    intT A_cols = vbmatA.cols;
 
     int B_rows = A_cols;
-
     int C_rows = A_rows;
     int C_cols = B_cols;
 
     const DataT_C alpha = 1;
     const DataT_C beta = 1;
-   
-    intT tot_nonzero_blocks = 0; //index for total nonzero blocks
 
-    int rows_in_block, cols_in_block;
-    int size_block, mem_size_block;
-
-    //TODO: allocate memory on device
+    //allocate memory on device
     intT size_A = vbmatA.nztot; //total nonzero entries in vbmat
     intT mem_size_A = sizeof(DataT) * size_A;
 
@@ -115,33 +105,40 @@ void cublas_blockmat_multiply(const VBS& vbmatA, DataT* B, int B_cols, int B_lea
 
     //creates streams. Each block rows is assigned a different stream.
     
-
-    if (n_streams > vbmatA.block_rows) n_streams = vbmatA.block_rows;
+    if (n_streams > vbmatA.block_cols) n_streams = vbmatA.block_cols;
     cudaStream_t streams[n_streams];
-    for (intT ib = 0; ib < n_streams; ib++)
+    for (intT jb = 0; jb < n_streams; jb++)
     {
-        cudaStreamCreate(&(streams[ib]));
+        cudaStreamCreate(&(streams[jb]));
     }
 
-    //loop through all blocks
-    for(intT jb = 0; jb < vbmatA.block_cols; jb++ )      //loop horizontally through block columns
-    {
-        cols_in_block = vbmatA.col_part[jb+1] - vbmatA.col_part[jb];
-        const DataT* d_B_block = d_B + vbmatA.col_part[jb];    //access the block of B that is going to be multiplied with blocks of A in column jb
 
-        for(intT nzs = 0; nzs < vbmatA.nzcount[jb]; nzs++)        //loop vertically through nonzero blocks
+    intT mat_idx = 0; //keeps writing position for mat
+    intT vbmat_idx = 0; //keeps reading position for vbmat 
+    intT ja_count = 0; //keeps total nonzero blocks count;
+    intT tot_nonzero_blocks = 0; //index for total nonzero blocks
+    intT rows_in_block;
+    intT size_block, mem_size_block;
+    intT* jab_loc = vbmatA.jab;
+
+    //loop through all blocks
+    for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop horizontally through block rows
+    {
+        rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
+        
+        const DataT* d_B_block = d_B + vbmatA.row_part[ib];    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
+
+        for(intT nzs = 0; nzs < vbmatA.nzcount[ib]; nzs++)        //loop horizontally through nonzero blocks
 
         {
+            intT jb = *jab_loc;             //the block row position of a nonzero block 
+            jab_loc++;
 
-            intT ib = vbmatA.jab[tot_nonzero_blocks];             //the block row position of a nonzero block 
-            tot_nonzero_blocks += 1;
-            rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
-
-            cublasSetStream(handle, streams[ib%n_streams]);               //each block row works on a different stream
+            cublasSetStream(handle, streams[jb%n_streams]);               //each block row works on a different stream
 
             //define the sub-matrices
 	        const DataT* d_A_block = d_A + vbmat_idx;           //access the block on d_A.
-            DataT* d_C_block = d_C + vbmatA.row_part[ib] ;      //access the block on d_C.
+            DataT* d_C_block = d_C + vbmatA.block_col_size*jb ;      //access the block on d_C.
 
 
 
