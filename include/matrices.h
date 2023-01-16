@@ -100,7 +100,7 @@ struct VBR
     intT* nzcount;	        /* i-th elements is the number of nonzero blocks in block-row i*/
     intT* jab;              /* block-columns indices of nonzero blocks      */
     intT* row_part;         /*row_part[i] is the index of the first row of the i-th block. Last element is number of rows for convenience  */
-    DataT* mab;             /* array containing all entries, block by block	        */
+    DataT* mab;             /* array containing all entries, block by block. Blocks are stored in row-major order, while entries in the blocks are stored in column-major format.        */
     intT block_col_size;                  
     intT nztot;              /* total number of nonzero elements in mab*/
 

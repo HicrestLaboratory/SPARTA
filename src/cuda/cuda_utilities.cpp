@@ -29,10 +29,10 @@
 void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, float& dt, int n_streams)
 {
 //multiplies a dense matrix (B) and a VBS matrix (vbmatA); stores B*A into (C)
-    //vbmatA:       row-major entries storage;
-    //              row-major block_storage; 
-    //B:            row-major storage; TODO: allow general storage format (implement through cublas transpose)
-    //C:            row-major storage; TODO: allow general storage format (implement through cublas transpose)
+    //vbmatA:       column-major entries (in-block) storage;
+    //              row-major block storage; 
+    //B:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+    //C:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
 
 
     cudaDataType_t data_type_AB;
@@ -53,7 +53,7 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
     }
     else
     {
-        std::cout << "WARNING! Unsopported multiplication type. Modify matrices.h" << std::endl;
+        std::cout << "WARNING! Unsopported multiplication type in cublas_blockmat_multiply(). Check matrices.h" << std::endl;
     }
 
 
@@ -126,19 +126,18 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
     {
         rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
         
-        const DataT* d_B_block = d_B + vbmatA.row_part[ib];    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
+        const DataT* d_B_block = d_B + B_rows*vbmatA.row_part[ib];    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
 
         for(intT nzs = 0; nzs < vbmatA.nzcount[ib]; nzs++)        //loop horizontally through nonzero blocks
 
         {
             intT jb = *jab_loc;             //the block row position of a nonzero block 
-            jab_loc++;
 
-            cublasSetStream(handle, streams[jb%n_streams]);               //each block row works on a different stream
+            cublasSetStream(handle, streams[jb%n_streams]);               //each stream handles a separate block-column
 
             //define the sub-matrices
 	        const DataT* d_A_block = d_A + vbmat_idx;           //access the block on d_A.
-            DataT* d_C_block = d_C + vbmatA.block_col_size*jb ;      //access the block on d_C.
+            DataT* d_C_block = d_C + vbmatA.block_col_size*jb*B_rows ;      //access the block on d_C.
 
 
 
@@ -161,7 +160,11 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
                     compute_type,                                      // compute_type
                     cuda_algo)
             );                                       
-            vbmat_idx += rows_in_block * cols_in_block;
+            
+            //move mab and jab pointers forward
+            vbmat_idx += rows_in_block*vbmat.block_col_size;
+            jab_loc++;
+
 	    }
 
     }

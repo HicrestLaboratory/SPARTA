@@ -74,7 +74,7 @@ void VBR::print(int verbose)
                 //print mab  slice
                 for (intT j = 0; j < block_col_size; j++) 
                 {
-                    DataT d = data_pointer[nzb*block_col_size*row_block_size + i*block_col_size + j];
+                    DataT d = data_pointer[nzb*block_col_size*row_block_size + j*row_block_size + i];
                     cout << d << " " ;
                 }    
                 cout << "| ";
@@ -181,7 +181,8 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, in
                 //find position of d in mat
                 intT j_block_position = j/block_size;
                 intT tmp_block_count = std::count(nonzero_flags.begin(), nonzero_flags.begin() + j_block_position, true); //how many nz_blocks before current
-                intT tmp_mab_pos = current_mab_size + tmp_block_count*block_col_size*row_block_size + (i_reordered - row_part[ib])*block_col_size + j%block_size; 
+                //intT tmp_mab_pos = current_mab_size + tmp_block_count*block_col_size*row_block_size + (i_reordered - row_part[ib])*block_col_size + j%block_size; 
+                intT tmp_mab_pos = current_mab_size + tmp_block_count*block_col_size*row_block_size + row_block_size*(j%block_size) + (i_reordered - row_part[ib]); //column-major format
              
                 mab_vec[tmp_mab_pos] = d;
             }
@@ -264,8 +265,9 @@ void VBR::fill_from_CSR(const CSR& cmat,const vector<intT> &row_partition, intT 
                 //find position of d in mat
                 intT j_block_position = j/block_size;
                 intT tmp_block_count = std::count(nonzero_flags.begin(), nonzero_flags.begin() + j_block_position, true); //how many nz_blocks before current
-                intT tmp_mab_pos = current_mab_size + tmp_block_count*block_col_size*row_block_size + (i - row_part[ib])*block_col_size + j%block_size; 
-             
+                //intT tmp_mab_pos = current_mab_size + tmp_block_count*block_col_size*row_block_size + (i - row_part[ib])*block_col_size + j%block_size; //row-major format
+                intT tmp_mab_pos = current_mab_size + tmp_block_count*block_col_size*row_block_size + row_block_size*(j%block_size) + (i - row_part[ib]); //column-major format
+
                 mab_vec[tmp_mab_pos] = d;
             }
         }
