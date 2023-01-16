@@ -24,10 +24,11 @@ class CLineReader
 
         int seed_ = 0;
         int sim_measure_ = 1;
-        int block_repetitions_ = 1;
         int reorder_ = 0; //-1 for ascending. 1 for descending. 2 for scramble
         int block_size_ = 1;
         int verbose_ = 1;
+        int warmup_ = 1; //how many warmup multiplications
+        int exp_repetitions_ = 5;
 
         float tau_ = 0.5;
 
@@ -53,6 +54,9 @@ class CLineReader
             std::cout << "block_size_: " <<  block_size_ << std::endl;
             std::cout << "verbose_: " <<  verbose_ << std::endl;
             std::cout << "seed_: " <<  seed_ << std::endl; //-1 for random
+            std::cout << "warmup_: " <<  warmup_ << std::endl;
+            std::cout << "exp_repetitions_: " <<  exp_repetitions_ << std::endl;
+
             std::cout << "___________________" << std::endl;; 
         }
 
@@ -60,7 +64,7 @@ class CLineReader
         void ParseArgs(int argc, char* argv[])
         {
             char c_opt;
-            while ((c_opt = getopt(argc, argv, "b:f:g:n:o:p:P:r:s:S:t:v:")) != -1)
+            while ((c_opt = getopt(argc, argv, "b:f:g:n:o:p:P:r:s:S:t:v:w:x:")) != -1)
             {
                 switch(c_opt) 
                 {
@@ -77,6 +81,9 @@ class CLineReader
                     case 'S': seed_ = std::stoi(optarg);                    break;
                     case 't': tau_ = std::stof(optarg);                     break;
                     case 'v': verbose_ = std::stoi(optarg);                 break;
+                    case 'w': warmup_ = std::stoi(optarg);                  break;
+                    case 'x': exp_repetitions_ = std::stoi(optarg);         break;
+
                 }           
             }
 

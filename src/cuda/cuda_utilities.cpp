@@ -202,6 +202,12 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
 
 }
 
+
+
+
+
+
+/*
 //Matrix-Matrix multiplication with cublas. A,B,C are in column-major order.
 //Matrix A and B are in host
 //Matrix d_C is in device to allow for accumulation of results
@@ -527,3 +533,8 @@ int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int* csrColInd, DataT* csrVa
 
     return 0;
 }
+
+
+
+
+*/
