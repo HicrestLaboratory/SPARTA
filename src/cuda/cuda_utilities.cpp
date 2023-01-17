@@ -6,6 +6,9 @@
 #include <cublas_v2.h>
 #include <cusparse_v2.h>
 
+#include "driver_types.h"
+#include "helper_cuda.h"
+
 //others
 #include <stdio.h>
 #include <iostream>
