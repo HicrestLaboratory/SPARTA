@@ -1,7 +1,7 @@
 #include "cuda_utilities.h"
 #include "matrices.h"
 #include "blocking.h"
-#include "utilies.h"
+#include "utilities.h"
 
 //keep track of time
 float dt;
@@ -9,11 +9,20 @@ vec_d algo_times;
 float mean_time;
 float std_time;
 
+
 //import CSR
 CLineReader cli(argc, argv);
 if (cli.verbose_ > 0) cli.print();
 CSR cmat_A(cli); //sparse operand
 BlockingEngine bEngine(cli);
+
+
+intT A_rows = cmat_A.rows;
+intT A_cols = cmat_A.cols;
+intT B_cols = A_rows;
+intT B_cols = 100;
+intT C_cols = A_cols;
+intT C_rows = B_rows;
 
 //dense operand
 DataT* mat_B = new DataT[B_rows * B_cols];
