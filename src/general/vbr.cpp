@@ -120,7 +120,7 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, in
     cols = cmat.cols;
     block_col_size = block_size;
     
-    block_cols = cols/block_size + 1;
+    block_cols = (cols - 1)/block_size + 1;
     block_rows = row_partition.size() - 1;
 
     //partition check
@@ -205,7 +205,7 @@ void VBR::fill_from_CSR(const CSR& cmat,const vector<intT> &row_partition, intT 
     cols = cmat.cols;
     block_col_size = block_size;
     
-    block_cols = cols/block_size + 1;
+    block_cols = (cols - 1)/block_size + 1;
     block_rows = row_partition.size() - 1;
 
 

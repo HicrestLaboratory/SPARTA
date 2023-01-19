@@ -24,7 +24,7 @@ vector<intT> get_partition(const vector<intT> &grouping)
     vector<intT> reordered_groups(grouping);
     vector<intT> partition;
 
-    sort (reordered_groups.begin(), reordered_groups.end());
+    sort(reordered_groups.begin(), reordered_groups.end());
     
     intT current_group = -1;
     intT current_size = 0;
