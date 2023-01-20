@@ -33,8 +33,8 @@ int main(int argc, char* argv[])
     //create vbamt from equally spaced row partition of cmat_A;
     VBR vbmat; 
     if (cli.verbose_ > 0) cout << "Create VBR from reordered CSR" << endl;
-    vbmat2.fill_from_CSR(cmat_A, partition, cli.block_size_);
-    if (cli.verbose_ > 1) vbmat2.print();
+    vbmat.fill_from_CSR(cmat_A, partition, cli.block_size_);
+    if (cli.verbose_ > 1) vbmat.print();
 
 
     intT A_rows = cmat_A.rows;
