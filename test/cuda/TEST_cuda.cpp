@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 
     for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
     {
-        cublas_blockmat_multiply(vbmat, mat_B, B_cols, B_rows, mat_C_VBR, C_rows, dt, 8)
+        cublas_blockmat_multiply(vbmat, mat_B, B_cols, B_rows, mat_C_VBR, C_rows, dt, 8);
         //only saves non-warmup runs
         if (i >= 0) algo_times.push_back(dt);
     }
