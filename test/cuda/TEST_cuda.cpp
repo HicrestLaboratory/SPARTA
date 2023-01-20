@@ -23,6 +23,14 @@ int main(int argc, char* argv[])
     BlockingEngine bEngine(cli);
 
 
+    VBR vbmat2; 
+    cmat.reorder(grouping);
+    if (cli.verbose_ > 1) cmat.print(cli.verbose_);
+
+    if (cli.verbose_ > 0) cout << "Create VBR from reordered CSR" << endl;
+    vbmat2.fill_from_CSR(cmat, get_partition(grouping), cli.block_size_);
+    if (cli.verbose_ > 1) vbmat2.print();
+
     intT A_rows = cmat_A.rows;
     intT A_cols = cmat_A.cols;
     intT B_cols = A_rows;

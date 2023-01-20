@@ -197,7 +197,6 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
     checkCudaErrors(cudaFree(d_B));
 
     checkCudaErrors(cublasDestroy(handle));
-
 }
 
 
