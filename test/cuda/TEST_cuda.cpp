@@ -24,13 +24,11 @@ int main(int argc, char* argv[])
 
 
     VBR vbmat2; 
-    cmat_A.reorder(grouping);
-    if (cli.verbose_ > 1) cmat.print(cli.verbose_);
+    //vector<intT> partition;
+    //for (intT i = 0; i < cmat_A;
 
-    if (cli.verbose_ > 0) cout << "Create VBR from reordered CSR" << endl;
-    vbmat2.fill_from_CSR(cmat, get_partition(grouping), cli.block_size_);
-    if (cli.verbose_ > 1) vbmat2.print();
-
+    //vbmat2.fill_from_CSR(cmat, get_partition(grouping), cli.block_size_);
+    
     intT A_rows = cmat_A.rows;
     intT A_cols = cmat_A.cols;
     intT B_cols = A_rows;
