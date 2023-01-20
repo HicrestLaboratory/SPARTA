@@ -23,12 +23,20 @@ int main(int argc, char* argv[])
     BlockingEngine bEngine(cli);
 
 
-    VBR vbmat2; 
-    //vector<intT> partition;
-    //for (intT i = 0; i < cmat_A;
+    //partition for the row of cmat_A
+    vector<intT> partition;
+    intT part_block_size = 5;
+    for (intT i = 0; i < cmat_A.rows(); i += part_block_size) partition.push_back(i);
+    partition.push_back(cmat_A.rows());
 
-    //vbmat2.fill_from_CSR(cmat, get_partition(grouping), cli.block_size_);
-    
+
+    //create vbamt from equally spaced row partition of cmat_A;
+    VBR vbmat; 
+    if (cli.verbose_ > 0) cout << "Create VBR from reordered CSR" << endl;
+    vbmat2.fill_from_CSR(cmat, partition, cli.block_size_);
+    if (cli.verbose_ > 1) vbmat2.print();
+
+
     intT A_rows = cmat_A.rows;
     intT A_cols = cmat_A.cols;
     intT B_cols = A_rows;
@@ -46,23 +54,20 @@ int main(int argc, char* argv[])
     }
 
     //******************************************
-    //****Dense by dense MULTIPLICATION PHASE***
+    //****VBR by dense MULTIPLICATION PHASE***
     //******************************************
 
 
-    //TODO convert csr cmat_A to dense mat_A_gemm
-    DataT* mat_A_gemm = new DataT[A_rows * A_cols]{ 0 };
+    DataT_C* mat_C_VBR = new DataT_C[C_rows * C_cols]{ 0 }; //will store result of dense-dense multiplication
 
-    DataT_C* mat_Cgemm = new DataT_C[C_rows * C_cols]{ 0 }; //will store result of dense-dense multiplication
+    //run the VBR-dense multiplications
 
-    //run the dense-dense multiplications TODO
-
-    //for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
-    //{
-    //    cublas_gemm_custom(mat_A_gemm, A_rows, A_cols, A_rows, mat_B, B_cols, B_rows, mat_Cgemm, C_rows, 1, 0, dt);
-    //    //only saves non-warmup runs
-    //    if (i >= 0) algo_times.push_back(dt);
-    //}
+    for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
+    {
+        cublas_blockmat_multiply(vbmat, mat_B, B_cols, B_rows, mat_C_VBR, C_rows, dt, 8)
+        //only saves non-warmup runs
+        if (i >= 0) algo_times.push_back(dt);
+    }
 
     //mean_time = mean(algo_times);
     //std_time = std_dev(algo_times);
