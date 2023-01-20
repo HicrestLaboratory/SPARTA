@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 
 
     VBR vbmat2; 
-    cmat.reorder(grouping);
+    cmat_A.reorder(grouping);
     if (cli.verbose_ > 1) cmat.print(cli.verbose_);
 
     if (cli.verbose_ > 0) cout << "Create VBR from reordered CSR" << endl;
