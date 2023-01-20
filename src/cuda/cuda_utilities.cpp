@@ -160,7 +160,7 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
             );                                       
             
             //move mab and jab pointers forward
-            vbmat_idx += rows_in_block*vbmat.block_col_size;
+            vbmatA += rows_in_block*vbmatA.block_col_size;
             jab_loc++;
 
 	    }
