@@ -26,8 +26,8 @@ int main(int argc, char* argv[])
     //partition for the row of cmat_A
     vector<intT> partition;
     intT part_block_size = 5;
-    for (intT i = 0; i < cmat_A.rows(); i += part_block_size) partition.push_back(i);
-    partition.push_back(cmat_A.rows());
+    for (intT i = 0; i < cmat_A.rows; i += part_block_size) partition.push_back(i);
+    partition.push_back(cmat_A.rows);
 
 
     //create vbamt from equally spaced row partition of cmat_A;
