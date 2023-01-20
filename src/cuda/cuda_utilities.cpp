@@ -144,7 +144,7 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
             checkCudaErrors(
                 cublasGemmEx(
                     handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                    rows_in_block, B_cols, cols_in_block,           //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+                    rows_in_block, B_cols, vbmatA.block_col_size,           //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
                     &alpha,
                     d_A_block,                                      // blockA device pointer,
                     data_type_AB,                                      // blockA datatype
@@ -160,7 +160,7 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
             );                                       
             
             //move mab and jab pointers forward
-            vbmatA += rows_in_block*vbmatA.block_col_size;
+            vbmat_idx += rows_in_block*vbmatA.block_col_size;
             jab_loc++;
 
 	    }
