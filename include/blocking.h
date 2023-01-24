@@ -15,16 +15,22 @@ class BlockingEngine
     public:
         float tau = 0.5;
         int block_size = 1;
-        bool use_groups = 0;
-        bool use_pattern = 1;
+
         float timer = 0;
+        
+        bool use_groups = false;
+        bool use_pattern = true;
+        bool structured_sparsity = true;
+
+        int structured_m = 2;
+        int structured_n = 4;
         //bool blocking_completed = false;
         intT comparison_counter = 0;
         intT merge_counter = 0;
         distFuncGroup comparator;
         std::vector<intT> grouping_result;
 
-        std::vector<intT> ObtainPartition(const CSR& cmat);
+        std::vector<intT> GetGrouping(const CSR& cmat);
         void SetComparator(int choice);
         void print();
 

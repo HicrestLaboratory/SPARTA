@@ -43,39 +43,85 @@ vector<intT> get_partition(const vector<intT> &grouping)
 }
 
 
-/*
-vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
+bool check_structured_sparsity(vector<intT>& structured_sparsity_pattern, vector<intT>& structured_sparsity_column_counter, intT* row, intT row_len, int m)
 {
-    //A,B sparse rows (compressed indices format)
+    //check that Row does not break the m:n structured sparsity when added to structured_sparsity_pattern;
     intT i = 0;
     intT j = 0;
-    vector<intT> result;
-    intT size_A = A.size();
-
-    while (i < size_A && j < size_B)
+    while (i < structured_sparsity_pattern.size() && j < row_len)
     {
-        if (A[i] <= B[j])
-        {
+        if (structured_sparsity_pattern[i] < row[j])
             i++;
-            result.push_back(A[i]);
-        }   
-
-        if (A[i] > B[j])
-        {
+        else if (structured_sparsity_pattern[i] > row[j])
             j++;
-            result.push_back(B[j]);
+        else
+        {
+            if (structured_sparsity_column_counter[i] >= m) //column is already full
+                return false;
+            i++;
+            j++;
         }
     }
-    return result;
+
+    return true;
 }
-*/
+
+void update_structured_sparsity(vector<intT>& structured_sparsity_pattern, vector<intT>& structured_sparsity_column_counter, intT* row, intT row_len)
+{
+    //A,B sparse rows (compressed indices format)
+    vector<intT> new_pattern;
+    vector<intT> new_counter;
+
+    intT i = 0;
+    intT j = 0;
+
+    while (i < structured_sparsity_pattern.size() && j < row_len)
+    {
+        if (structured_sparsity_pattern[i] < row[j])
+        {
+            new_pattern.push_back(structured_sparsity_pattern[i]);
+            new_counter.push_back(structured_sparsity_column_counter[i]);
+            i++;
+        }
+        else if (structured_sparsity_pattern[i] > row[j])
+        {
+            new_pattern.push_back(row[j]);
+            new_counter.push_back(1);
+            j++;
+        }
+        else
+        {
+            new_pattern.push_back(structured_sparsity_pattern[i]);
+            new_counter.push_back(structured_sparsity_column_counter[i] + 1);
+            i++;
+            j++;
+        }
+    }
+    
+    while (i < structured_sparsity_pattern.size())
+    {
+        new_pattern.push_back(structured_sparsity_pattern[i]);
+        new_counter.push_back(structured_sparsity_column_counter[i]);
+        i++;
+    }
+    
+    while (j < row_len)
+    {
+        new_pattern.push_back(row[j]);
+        new_counter.push_back(1);
+        j++;
+    }
+
+    structured_sparsity_pattern.clear();
+    structured_sparsity_column_counter.clear();
+    copy(new_pattern.begin(), new_pattern.end(), std::back_inserter(structured_sparsity_pattern));
+    copy(new_counter.begin(), new_counter.end(), std::back_inserter(structured_sparsity_column_counter));
+}
 
 
 vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
 {
     //A,B sparse rows (compressed indices format)
-    intT i = 0;
-    intT j = 0;
     vector<intT> result;
     intT size_A = A.size();
 

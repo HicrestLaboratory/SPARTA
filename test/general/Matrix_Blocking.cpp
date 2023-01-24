@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
     BlockingEngine bEngine(cli);
 
     //evaluate the grouping
-    vector<intT> grouping = bEngine.ObtainPartition(cmat); 
+    vector<intT> grouping = bEngine.GetGrouping(cmat); 
     bEngine.print();
 
     ofstream outfile;

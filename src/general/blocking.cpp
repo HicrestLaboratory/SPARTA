@@ -10,6 +10,86 @@
 using namespace std::chrono;
 
 using namespace std;
+
+
+vector<intT> IterativeBlockingPatternMN(const CSR& cmat, float tau, distFuncGroup distanceFunction,intT block_size, bool use_size, bool use_pattern, int structured_m, int structured_n, intT &comparison_counter, intT &merge_counter, float &timer)
+{
+    vector<intT> grouping(cmat.rows, -1); //flag each rows as ungrouped (-1)
+
+    auto start = high_resolution_clock::now();
+
+    //main loop. Takes an ungrouped row (i) as a seed for a new block.
+    for (intT i = 0; i < cmat.rows; i++)
+    {
+        if (grouping[i] == -1)
+        {
+            vector<intT> pattern;
+            intT current_group_size = 1;
+            grouping[i] = i; // the group is numbered the same as the seed row.
+            pattern.insert(pattern.end(), &cmat.ja[i][0], &cmat.ja[i][cmat.nzcount[i]]); //Initialize the pattern with the seed entries.
+            
+            int structured_sparsity_row_counter = 1;
+            vector<intT> structured_sparsity_pattern(pattern);
+            vector<intT> structured_sparsity_column_counter(pattern.size(),1);
+            bool structured_sparsity_check = true;
+
+            cout << "new block: structure:" << endl;
+            print_vec(structured_sparsity_pattern);
+            print_vec(structured_sparsity_column_counter);
+            //inner loop, compare each subsequent row with the current pattern
+            for (intT j = i + 1; j < cmat.rows; j++)
+            {
+                if (grouping[j] == -1)
+                {
+                    comparison_counter++;
+
+                    float dist = distanceFunction(pattern, current_group_size, cmat.ja[j], cmat.nzcount[j], 1, block_size);
+                    if (dist < tau)
+                    {
+                      if (structured_sparsity_row_counter%structured_n == 0) //restart m:n sparsity block
+                      {
+                        structured_sparsity_row_counter = 0;
+                        structured_sparsity_pattern.clear();
+                        structured_sparsity_column_counter.clear();
+                        structured_sparsity_check = true;
+                      }
+                      else
+                      {
+                        structured_sparsity_check = check_structured_sparsity(structured_sparsity_pattern, structured_sparsity_column_counter, cmat.ja[j], cmat.nzcount[j], structured_m);
+                      }
+
+                      cout << "STRUCTURAL CHECK: " << i << " and " << j << " : " << structured_sparsity_check << endl;
+                      if (structured_sparsity_check)
+                      {
+                        merge_counter++;
+                        grouping[j] = i;
+                        if (use_pattern)
+                            pattern = merge_rows(pattern, cmat.ja[j], cmat.nzcount[j]); //update the pattern through union with the new row
+                        if (use_size)
+                            current_group_size++;
+
+                        //update structural sparsity vectors
+                        cout << "UPDATING STRUCTURES" << endl;
+                        cout << "rows " << i << " " << j << endl;
+                        update_structured_sparsity(structured_sparsity_pattern, structured_sparsity_column_counter, cmat.ja[j], cmat.nzcount[j]);
+                        print_vec(structured_sparsity_pattern);
+                        print_vec(structured_sparsity_column_counter);
+                        structured_sparsity_row_counter++;
+                      }
+                    }
+                }
+            }
+        }
+    }
+
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    timer = duration.count();
+
+    return grouping;
+}
+
+
 vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncGroup distanceFunction,intT block_size, bool use_size, bool use_pattern, intT &comparison_counter, intT &merge_counter, float &timer)
 {
     vector<intT> grouping(cmat.rows, -1); //flag each rows as ungrouped (-1)
@@ -57,13 +137,16 @@ vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncGroup 
     return grouping;
 }
 
-vector<intT> BlockingEngine::ObtainPartition(const CSR& cmat)
+vector<intT> BlockingEngine::GetGrouping(const CSR& cmat)
 {
     //run the blocking function and store statistics
     comparison_counter = 0;
     merge_counter = 0;
     timer = 0;
-    grouping_result = IterativeBlockingPattern(cmat, tau, comparator, block_size, use_groups, use_pattern, comparison_counter, merge_counter, timer);
+    if (structured_sparsity)
+        grouping_result = IterativeBlockingPatternMN(cmat, tau, comparator, block_size, use_groups, use_pattern, structured_m, structured_n,comparison_counter, merge_counter, timer);
+    else
+        grouping_result = IterativeBlockingPattern(cmat, tau, comparator, block_size, use_groups, use_pattern, comparison_counter, merge_counter, timer);
     return grouping_result;
 }
 

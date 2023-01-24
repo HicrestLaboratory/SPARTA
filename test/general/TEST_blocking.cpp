@@ -19,7 +19,7 @@ int main()
     BEngine.use_pattern = true;
     BEngine.SetComparator(1);
     cout << "evaluating reordering" <<endl;
-    vector<intT> grouping = BEngine.ObtainPartition(cmat);
+    vector<intT> grouping = BEngine.GetGrouping(cmat);
 
     cmat.reorder(grouping);
     cmat.print(1);

@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 
     //evaluate the grouping
     if (cli.verbose_ > 0) cout << "evaluating reordering" <<endl;
-    vector<intT> grouping = bEngine.ObtainPartition(cmat);
+    vector<intT> grouping = bEngine.GetGrouping(cmat);
 
     cout << "GROUPING: "; 
     print_vec(grouping);

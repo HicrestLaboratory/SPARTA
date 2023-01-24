@@ -17,7 +17,6 @@ class CLineReader
         std::string exp_name_ = "";
         std::string reader_delimiter_ = " ";
         
-        bool scramble_ = false;
         bool sim_use_groups_ = 1;
         bool sim_use_pattern_ = 1;
         bool pattern_only_ = 0;
@@ -44,7 +43,6 @@ class CLineReader
             std::cout << "outfile: " <<  outfile_ << std::endl;
             std::cout << "exp_name: " <<  exp_name_ << std::endl;
             std::cout << "reader_delimiter_: " <<  reader_delimiter_ << std::endl;
-            std::cout << "scramble_: " <<  scramble_ << std::endl;
             std::cout << "sim_measure_: " <<  sim_measure_ << std::endl;
             std::cout << "sim_use_groups_: " <<  sim_use_groups_ << std::endl;
             std::cout << "sim_use_pattern_: " <<  sim_use_pattern_ << std::endl;
@@ -64,7 +62,7 @@ class CLineReader
         void ParseArgs(int argc, char* argv[])
         {
             char c_opt;
-            while ((c_opt = getopt(argc, argv, "b:f:g:n:o:p:P:r:s:S:t:v:w:x:")) != -1)
+            while ((c_opt = getopt(argc, argv, "b:f:g:n:o:p:P:r:s:t:v:w:x:")) != -1)
             {
                 switch(c_opt) 
                 {
@@ -77,8 +75,7 @@ class CLineReader
                     case 'n': exp_name_ = std::string(optarg);              break;
                     case 'f': filename_ = std::string(optarg);              break;
                     case 'r': reorder_ = std::stoi(optarg);                 break;
-                    case 's': scramble_ = (std::stoi(optarg) == 1);         break;
-                    case 'S': seed_ = std::stoi(optarg);                    break;
+                    case 's': seed_ = std::stoi(optarg);                    break;
                     case 't': tau_ = std::stof(optarg);                     break;
                     case 'v': verbose_ = std::stoi(optarg);                 break;
                     case 'w': warmup_ = std::stoi(optarg);                  break;
