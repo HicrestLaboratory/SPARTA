@@ -20,7 +20,7 @@ class BlockingEngine
         
         bool use_groups = false;
         bool use_pattern = true;
-        bool structured_sparsity = true;
+        bool structured_sparsity = false;
 
         int structured_m = 2;
         int structured_n = 4;
