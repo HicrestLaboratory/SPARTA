@@ -2,6 +2,7 @@
 #include "matrices.h"
 #include "blocking.h"
 #include "utilities.h"
+#include <string.h>
 
 using namespace std;
 
@@ -62,12 +63,16 @@ int main(int argc, char* argv[])
 
     //run the VBR-dense multiplications
 
+    std::cout << "cublas start" << std::endl;
+
     for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
     {
         cublas_blockmat_multiply(vbmat, mat_B, B_cols, B_rows, mat_C_VBR, C_rows, dt, 8);
         //only saves non-warmup runs
         if (i >= 0) algo_times.push_back(dt);
     }
+
+    std::cout << "cublas end" << std::endl;
 
     //mean_time = mean(algo_times);
     //std_time = std_dev(algo_times);
@@ -90,9 +95,28 @@ int main(int argc, char* argv[])
     //****VBR by dense MULTIPLICATION PHASE***
     //******************************************
 
+//     std::cout << "cusparse start" << std::endl;
+//
+//     DataT_C* mat_C_VBR2 = new DataT_C[C_rows * C_cols]{ 0 };
+//
+//     DataT* csrVal;
+//     int *csrRowPtr, *csrColInd;
+//     prepare_cusparse_CSR( cmat_A, csrRowPtr, csrColInd, csrVal);
+//
+//     std::cout << "prepare_cusparse_CSR done" << std::endl;
+//     cusparse_gemm_custom(C_rows, B_rows, (int) cmat_A.nztot(), csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_VBR2, C_rows, 1, 1, dt);
+//
+//     std::cout << "cusparse start" << std::endl;
+//
+//     int cmp = memcmp(mat_C_VBR, mat_C_VBR2, C_rows * C_cols * sizeof(DataT_C) );
+//     std::cout << "memcmp of mat_C_VBR and mat_C_VBR2 is " << cmp << std::endl;
+//
+//     DataT_C* mat_C_VBR3 = new DataT_C[C_rows * C_cols]{ 0 };
+//     cmp = memcmp(mat_C_VBR3, mat_C_VBR2, C_rows * C_cols * sizeof(DataT_C) );
+//     std::cout << "memcmp of mat_C_VBR3 and mat_C_VBR2 is " << cmp << std::endl;
 
     //TODO
 
-
+    std::cout << "END" << std::endl;
 
 }

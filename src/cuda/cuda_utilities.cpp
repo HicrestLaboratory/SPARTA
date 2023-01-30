@@ -81,10 +81,14 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
 
     checkCudaErrors(cublasCreate(&handle));
 
+    std::cout << "File: " << __FILE__ << " line " << __LINE__ << std::endl;
+
     DataT* d_A, * d_B, * d_C;
     checkCudaErrors(cudaMalloc((void**)&d_A, mem_size_A));
     checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
     checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
+
+    std::cout << "File: " << __FILE__ << " line " << __LINE__ << std::endl;
 
     //copy to device the vbmat matrix (nonzero blocks are stored consecutively and in column major format)
     checkCudaErrors(cublasSetVector(
@@ -94,6 +98,8 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
     checkCudaErrors(cublasSetMatrix(
         B_rows, B_cols, sizeof(DataT), B, B_lead_dim, d_B, B_rows));
 
+    std::cout << "File: " << __FILE__ << " line " << __LINE__ << std::endl;
+
     //initialize cuda events
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
@@ -102,6 +108,8 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
     cudaEventRecord(start, 0);
 
     //creates streams. Each block rows is assigned a different stream.
+
+    std::cout << "File: " << __FILE__ << " line " << __LINE__ << std::endl;
     
     if (n_streams > vbmatA.block_cols) n_streams = vbmatA.block_cols;
     cudaStream_t streams[n_streams];
@@ -118,6 +126,8 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
     intT rows_in_block;
     intT size_block, mem_size_block;
     intT* jab_loc = vbmatA.jab;
+
+    std::cout << "File: " << __FILE__ << " line " << __LINE__ << std::endl;
 
     //loop through all blocks
     for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop horizontally through block rows
@@ -138,26 +148,43 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
             DataT* d_C_block = d_C + vbmatA.block_col_size*jb*B_rows ;      //access the block on d_C.
 
 
-
+            std::cout << "File: " << __FILE__ << " line " << __LINE__ << " time " << nzs << std::endl;
 
             //multiply the blocks, store result in d_C_block
-            checkCudaErrors(
-                cublasGemmEx(
-                    handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                    rows_in_block, B_cols, vbmatA.block_col_size,           //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+            {
+                cublasOperation_t transa = CUBLAS_OP_N, transb = CUBLAS_OP_N;
+                int m = rows_in_block, n = B_cols, k = B_rows;   // TEST k = vbmatA.block_col_size --> B_rows
+                int lda = rows_in_block, ldb = B_rows, ldc = C_rows;
+                cudaDataType_t Atype = data_type_AB, Btype = data_type_AB, Ctype = data_type_C;
+                cublasStatus_t err = cublasGemmEx(
+                    handle, transa, transb,
+                    m, n, k,           //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
                     &alpha,
                     d_A_block,                                      // blockA device pointer,
-                    data_type_AB,                                      // blockA datatype
-                    rows_in_block,                                  // blockA leading dimension
+                    Atype,                                      // blockA datatype
+                    lda,                                  // blockA leading dimension
                     d_B_block,                                      // blockB device pointer
-                    data_type_AB,                                      // blockB datatype
-                    B_rows,                                         // leading dimension
+                    Btype,                                      // blockB datatype
+                    ldb,                                         // leading dimension
                     &beta,
-                    d_C_block, data_type_C,                           // blockC device pointer, blockC type
-                    C_rows,
+                    d_C_block, Ctype,                           // blockC device pointer, blockC type
+                    ldc,
                     compute_type,                                      // compute_type
-                    cuda_algo)
-            );                                       
+                    cuda_algo);
+
+                checkCudaErrors( err );
+                if (err != CUBLAS_STATUS_SUCCESS) {
+                    if (err == CUBLAS_STATUS_INVALID_VALUE) {
+                        std::cout << "m = " << m << " n = " << n << " k = " << k << std::endl;
+                        std::cout << "lda = " << lda << " >= max(1, " << m << ")? " << std::endl;
+                        std::cout << "ldb = " << ldb << " >= max(1, " << k << ")? " << std::endl;
+                        std::cout << "ldc = " << ldc << " >= max(1, " << n << ")? " << std::endl;
+                    }
+                    exit(42);
+                }
+            }
+
+            std::cout << "File: " << __FILE__ << " line " << __LINE__ << " time " << nzs << std::endl;
             
             //move mab and jab pointers forward
             vbmat_idx += rows_in_block*vbmatA.block_col_size;
@@ -333,7 +360,7 @@ int cublas_gemm_custom(const DataT* A, unsigned int A_rows, unsigned int A_cols,
     checkCudaErrors(cublasDestroy(handle));
 	
     return 0;
-}
+}*/
 
 
 int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrColInd, DataT* csrVal, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, const DataT_C alpha, const DataT_C beta, float& dt)
@@ -386,9 +413,13 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
     checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
 
     //copy arrays and matrices to device
-    checkCudaErrors(cublasSetVector(
-        nnz, sizeof(DataT),
-        csrVal, 1, d_Val, 1));
+    // -----------------------
+//     checkCudaErrors(cublasSetVector(
+//         nnz, sizeof(DataT),
+//         csrVal, 1, d_Val, 1));
+    // >>>>>>>>>>>>>>>>>>>>>>>
+    checkCudaErrors( cudaMemcpy(d_Val, csrVal, mem_size_csrVal, cudaMemcpyHostToDevice) );
+    // -----------------------
 
     checkCudaErrors(cublasSetVector(
         nnz, sizeof(int),
@@ -500,12 +531,13 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
 
 int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int* csrColInd, DataT* csrVal)
 {
-    if (cmat.fmt != 0)
-    {
-        std::cout << "ERROR: cusparse_gemm_custom only supports CSR (row-major) " << std::endl;
-        return 1;
-    }
+//     if (cmat.fmt != 0)
+//     {
+//         std::cout << "ERROR: cusparse_gemm_custom only supports CSR (row-major) " << std::endl;
+//         return 1;
+//     }
 
+    csrRowPtr = (int*) malloc( (cmat.rows+1) * sizeof(int));
 
     //fill csrRowPtr (element i holds number of nonzero entries up to row i)
     csrRowPtr[0] = 0;
@@ -517,6 +549,9 @@ int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int* csrColInd, DataT* csrVa
         csrRowPtr[i + 1] = nnz;
     }
     //-------------------------------------------------------------
+
+    csrColInd = (int*) malloc( nnz * sizeof(int));
+    csrVal = (DataT*) malloc( nnz * sizeof(DataT));
 
     //fill csrVal (the nonzero values) and csrColInd (their column indices)
     nnz = 0;
@@ -530,8 +565,3 @@ int prepare_cusparse_CSR(CSR& cmat, int* csrRowPtr, int* csrColInd, DataT* csrVa
 
     return 0;
 }
-
-
-
-
-*/
