@@ -157,15 +157,15 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
                 int lda = rows_in_block, ldb = B_rows, ldc = C_rows;
                 cudaDataType_t Atype = data_type_AB, Btype = data_type_AB, Ctype = data_type_C;
                 cublasStatus_t err = cublasGemmEx(
-                    handle, transa, transb,
-                    m, n, k,           //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+                    handle, CUBLAS_OP_N, CUBLAS_OP_N,
+                    B_rows, vbmatA.block_col_size, rows_in_block,           //m, n, k <-- block_B: m*k   block_A: k*n   block_C: m*n
                     &alpha,
-                    d_A_block,                                      // blockA device pointer,
-                    Atype,                                      // blockA datatype
-                    lda,                                  // blockA leading dimension
-                    d_B_block,                                      // blockB device pointer
-                    Btype,                                      // blockB datatype
-                    ldb,                                         // leading dimension
+                    d_B_block,                                     // blockA device pointer,
+                    data_type_AB,                                      // blockA datatype
+                    B_rows,                                  // blockA leading dimension
+                    d_A_block,                                    // blockB device pointer
+                    data_type_AB,                                      // blockB datatype
+                    rows_in_block,                                         // leading dimension
                     &beta,
                     d_C_block, Ctype,                           // blockC device pointer, blockC type
                     ldc,
