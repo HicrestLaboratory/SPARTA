@@ -146,7 +146,7 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
                     &alpha,
                     d_B_block,                                     // blockA device pointer,
                     data_type_AB,                                      // blockA datatype
-                    B_rows                                  // blockA leading dimension
+                    B_rows,                                  // blockA leading dimension
                     d_A_block,                                    // blockB device pointer
                     data_type_AB,                                      // blockB datatype
                     rows_in_block,                                       // leading dimension
