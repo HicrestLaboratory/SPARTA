@@ -144,12 +144,12 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
                     handle, CUBLAS_OP_N, CUBLAS_OP_N,
                     B_rows, vbmatA.block_col_size, rows_in_block,           //m, n, k <-- block_B: m*k   block_A: k*n   block_C: m*n
                     &alpha,
-                    d_B_block                                     // blockA device pointer,
+                    d_B_block,                                     // blockA device pointer,
                     data_type_AB,                                      // blockA datatype
                     B_rows                                  // blockA leading dimension
-                    d_A_block                                     // blockB device pointer
+                    d_A_block,                                    // blockB device pointer
                     data_type_AB,                                      // blockB datatype
-                    rows_in_block                                       // leading dimension
+                    rows_in_block,                                       // leading dimension
                     &beta,
                     d_C_block, data_type_C,                           // blockC device pointer, blockC type
                     C_rows,
