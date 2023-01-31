@@ -138,20 +138,18 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
             DataT* d_C_block = d_C + vbmatA.block_col_size*jb*B_rows ;      //access the block on d_C.
 
 
-
-
             //multiply the blocks, store result in d_C_block
             checkCudaErrors(
                 cublasGemmEx(
                     handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                    rows_in_block, B_cols, vbmatA.block_col_size,           //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+                    B_rows, block_col_size, rows_in_block,           //m, n, k <-- block_B: m*k   block_A: k*n   block_C: m*n
                     &alpha,
-                    d_A_block,                                      // blockA device pointer,
+                    d_B_block                                     // blockA device pointer,
                     data_type_AB,                                      // blockA datatype
-                    rows_in_block,                                  // blockA leading dimension
-                    d_B_block,                                      // blockB device pointer
+                    B_rows                                  // blockA leading dimension
+                    d_A_block                                     // blockB device pointer
                     data_type_AB,                                      // blockB datatype
-                    B_rows,                                         // leading dimension
+                    rows_in_block                                       // leading dimension
                     &beta,
                     d_C_block, data_type_C,                           // blockC device pointer, blockC type
                     C_rows,
