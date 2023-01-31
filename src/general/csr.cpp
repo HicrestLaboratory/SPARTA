@@ -43,6 +43,24 @@ void CSR::clean()
 }
 
 
+void CSR::multiply(DataT* mat_B, intT B_cols, DataT_C* mat_C)
+{
+    //A*B, A is CSR, B and C column-wise storage
+
+    for(intT i = 0; i < rows; i++)
+    {
+            for (intT nz = 0; nz < nzcount[i]; nz++)
+            {
+                intT col = ja[i][nz];
+                DataT val = pattern_only?1:ma[i][nz];
+                for(intT j = 0; j < B_cols; j++)
+                {
+                    mat_C[i + j*rows] += val*mat_B[col + j*rows];
+                }
+            }
+    }
+}
+
 void CSR::permute_rows(vector<intT> permutation)
 //permute the rows of the matrix according to "permutation"
 {   

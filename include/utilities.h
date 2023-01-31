@@ -40,6 +40,23 @@ void print_vec(std::vector<MyType> vec, std::ostream& stream = std::cout, std::s
     stream << std::endl;
 }
 
+
+template<typename T>
+void print_mat(T* mat, intT rows, intT cols, intT main_dim, bool rowwise = false, std::ostream& stream = std::cout) 
+{
+    //print mat in rowwise or columnwise format
+    for (intT i = 0; i < rows; i++)
+    {
+        for (intT j = 0; j < cols; j++)
+        {
+            T val = rowwise? mat[j + main_dim*i] : mat[i + main_dim*j];
+            stream << val << " ";
+        }
+        stream << std::endl;
+    }
+    stream << std::endl;
+}
+
 //permutes an array of n elements (original) according to a permutation (perm);
 template <class myType>
 void permute(myType* arr, std::vector<intT> &perm) {
