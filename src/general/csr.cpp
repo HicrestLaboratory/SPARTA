@@ -55,7 +55,7 @@ void CSR::multiply(DataT* mat_B, intT B_cols, DataT_C* mat_C)
                 DataT val = pattern_only?1:ma[i][nz];
                 for(intT j = 0; j < B_cols; j++)
                 {
-                    mat_C[i + j*rows] += val*B[col + j*rows];
+                    mat_C[i + j*rows] += val*mat_B[col + j*rows];
                 }
             }
     }
