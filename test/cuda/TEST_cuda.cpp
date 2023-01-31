@@ -95,19 +95,19 @@ int main(int argc, char* argv[])
     //****VBR by dense MULTIPLICATION PHASE***
     //******************************************
 
-//     std::cout << "cusparse start" << std::endl;
-//
-//     DataT_C* mat_C_VBR2 = new DataT_C[C_rows * C_cols]{ 0 };
-//
-//     DataT* csrVal;
-//     int *csrRowPtr, *csrColInd;
-//     prepare_cusparse_CSR( cmat_A, csrRowPtr, csrColInd, csrVal);
-//
-//     std::cout << "prepare_cusparse_CSR done" << std::endl;
-//     cusparse_gemm_custom(C_rows, B_rows, (int) cmat_A.nztot(), csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_VBR2, C_rows, 1, 1, dt);
-//
-//     std::cout << "cusparse start" << std::endl;
-//
+    std::cout << "cusparse start" << std::endl;
+
+    DataT_C* mat_C_VBR2 = new DataT_C[C_rows * C_cols]{ 0 };
+
+    DataT* csrVal;
+    int *csrRowPtr, *csrColInd;
+    prepare_cusparse_CSR( cmat_A, csrRowPtr, csrColInd, csrVal);
+
+    std::cout << "prepare_cusparse_CSR done" << std::endl;
+    cusparse_gemm_custom(C_rows, B_rows, (int) cmat_A.nztot(), csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_VBR2, C_rows, 1, 1, dt);
+
+    std::cout << "cusparse start" << std::endl;
+
 //     int cmp = memcmp(mat_C_VBR, mat_C_VBR2, C_rows * C_cols * sizeof(DataT_C) );
 //     std::cout << "memcmp of mat_C_VBR and mat_C_VBR2 is " << cmp << std::endl;
 //

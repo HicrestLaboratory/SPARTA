@@ -81,14 +81,12 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
 
     checkCudaErrors(cublasCreate(&handle));
 
-    std::cout << "File: " << __FILE__ << " line " << __LINE__ << std::endl;
 
     DataT* d_A, * d_B, * d_C;
     checkCudaErrors(cudaMalloc((void**)&d_A, mem_size_A));
     checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
     checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
 
-    std::cout << "File: " << __FILE__ << " line " << __LINE__ << std::endl;
 
     //copy to device the vbmat matrix (nonzero blocks are stored consecutively and in column major format)
     checkCudaErrors(cublasSetVector(
@@ -98,7 +96,6 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
     checkCudaErrors(cublasSetMatrix(
         B_rows, B_cols, sizeof(DataT), B, B_lead_dim, d_B, B_rows));
 
-    std::cout << "File: " << __FILE__ << " line " << __LINE__ << std::endl;
 
     //initialize cuda events
     cudaEvent_t start, stop;
@@ -109,7 +106,6 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
 
     //creates streams. Each block rows is assigned a different stream.
 
-    std::cout << "File: " << __FILE__ << " line " << __LINE__ << std::endl;
     
     if (n_streams > vbmatA.block_cols) n_streams = vbmatA.block_cols;
     cudaStream_t streams[n_streams];
@@ -127,7 +123,6 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
     intT size_block, mem_size_block;
     intT* jab_loc = vbmatA.jab;
 
-    std::cout << "File: " << __FILE__ << " line " << __LINE__ << std::endl;
 
     //loop through all blocks
     for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop horizontally through block rows
@@ -148,14 +143,13 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
             DataT* d_C_block = d_C + vbmatA.block_col_size*jb*B_rows ;      //access the block on d_C.
 
 
-            std::cout << "File: " << __FILE__ << " line " << __LINE__ << " time " << nzs << std::endl;
-
             //multiply the blocks, store result in d_C_block
             {
                 cublasOperation_t transa = CUBLAS_OP_N, transb = CUBLAS_OP_N;
-                int m = rows_in_block, n = B_cols, k = B_rows;   // TEST k = vbmatA.block_col_size --> B_rows
+                int m = B_rows, n = vbmatA.block_col_size, k = rows_in_block;   // TEST k = vbmatA.block_col_size --> B_rows
                 int lda = rows_in_block, ldb = B_rows, ldc = C_rows;
                 cudaDataType_t Atype = data_type_AB, Btype = data_type_AB, Ctype = data_type_C;
+
                 cublasStatus_t err = cublasGemmEx(
                     handle, CUBLAS_OP_N, CUBLAS_OP_N,
                     B_rows, vbmatA.block_col_size, rows_in_block,           //m, n, k <-- block_B: m*k   block_A: k*n   block_C: m*n
@@ -184,7 +178,6 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_cols, int B_lea
                 }
             }
 
-            std::cout << "File: " << __FILE__ << " line " << __LINE__ << " time " << nzs << std::endl;
             
             //move mab and jab pointers forward
             vbmat_idx += rows_in_block*vbmatA.block_col_size;
