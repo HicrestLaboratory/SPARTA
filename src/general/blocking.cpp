@@ -33,8 +33,6 @@ vector<intT> IterativeBlockingPatternMN(const CSR& cmat, float tau, distFuncGrou
             vector<intT> structured_sparsity_column_counter(pattern.size(),1);
             bool structured_sparsity_check = true;
 
-            print_vec(structured_sparsity_pattern);
-            print_vec(structured_sparsity_column_counter);
             //inner loop, compare each subsequent row with the current pattern
             for (intT j = i + 1; j < cmat.rows; j++)
             {
@@ -68,8 +66,6 @@ vector<intT> IterativeBlockingPatternMN(const CSR& cmat, float tau, distFuncGrou
 
                         //update structural sparsity vectors
                         update_structured_sparsity(structured_sparsity_pattern, structured_sparsity_column_counter, cmat.ja[j], cmat.nzcount[j]);
-                        print_vec(structured_sparsity_pattern);
-                        print_vec(structured_sparsity_column_counter);
                         structured_sparsity_row_counter++;
                       }
                     }
