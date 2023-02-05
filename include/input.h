@@ -20,6 +20,7 @@ class CLineReader
         bool sim_use_groups_ = 1;
         bool sim_use_pattern_ = 1;
         bool pattern_only_ = 0;
+        bool use_structured_sparsity_ = 0;
 
         int seed_ = 0;
         int sim_measure_ = 1;
@@ -46,6 +47,7 @@ class CLineReader
             std::cout << "sim_measure_: " <<  sim_measure_ << std::endl;
             std::cout << "sim_use_groups_: " <<  sim_use_groups_ << std::endl;
             std::cout << "sim_use_pattern_: " <<  sim_use_pattern_ << std::endl;
+            std::cout << "use_structured_sparsity_: " <<  use_structured_sparsity_ << std::endl;
             std::cout << "pattern_only_: " <<  pattern_only_ << std::endl;
             std::cout << "reorder_by_degree_: " <<  reorder_ << std::endl;
             std::cout << "tau_: " <<  tau_ << std::endl;
@@ -62,24 +64,25 @@ class CLineReader
         void ParseArgs(int argc, char* argv[])
         {
             char c_opt;
-            while ((c_opt = getopt(argc, argv, "b:f:g:n:o:p:P:r:s:t:v:w:x:")) != -1)
+            while ((c_opt = getopt(argc, argv, "b:f:g:n:o:p:P:r:s:S:t:v:w:x:")) != -1)
             {
                 switch(c_opt) 
                 {
-                    case 'b': block_size_ = std::stoi(optarg);              break;
-                    case 'g': sim_use_groups_ = (std::stoi(optarg) == 1);   break;
-                    case 'o': outfile_ = std::string(optarg);               break;
-                    case 'p': sim_use_pattern_ = (std::stoi(optarg) == 1);  break;
-                    case 'P': pattern_only_ = (std::stoi(optarg) == 1);     break;
-                    case 'm': sim_measure_ = std::stoi(optarg);             break;
-                    case 'n': exp_name_ = std::string(optarg);              break;
-                    case 'f': filename_ = std::string(optarg);              break;
-                    case 'r': reorder_ = std::stoi(optarg);                 break;
-                    case 's': seed_ = std::stoi(optarg);                    break;
-                    case 't': tau_ = std::stof(optarg);                     break;
-                    case 'v': verbose_ = std::stoi(optarg);                 break;
-                    case 'w': warmup_ = std::stoi(optarg);                  break;
-                    case 'x': exp_repetitions_ = std::stoi(optarg);         break;
+                    case 'b': block_size_ = std::stoi(optarg);                      break;
+                    case 'g': sim_use_groups_ = (std::stoi(optarg) == 1);           break;
+                    case 'o': outfile_ = std::string(optarg);                       break;
+                    case 'p': sim_use_pattern_ = (std::stoi(optarg) == 1);          break;
+                    case 'P': pattern_only_ = (std::stoi(optarg) == 1);             break;
+                    case 'm': sim_measure_ = std::stoi(optarg);                     break;
+                    case 'n': exp_name_ = std::string(optarg);                      break;
+                    case 'f': filename_ = std::string(optarg);                      break;
+                    case 'r': reorder_ = std::stoi(optarg);                         break;
+                    case 's': seed_ = std::stoi(optarg);                            break;
+                    case 'S': use_structured_sparsity_ = (std::stoi(optarg) == 1);  break;
+                    case 't': tau_ = std::stof(optarg);                             break;
+                    case 'v': verbose_ = std::stoi(optarg);                         break;
+                    case 'w': warmup_ = std::stoi(optarg);                          break;
+                    case 'x': exp_repetitions_ = std::stoi(optarg);                 break;
 
                 }           
             }

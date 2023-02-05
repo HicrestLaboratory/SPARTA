@@ -89,7 +89,6 @@ vector<intT> IterativeBlockingPatternMN(const CSR& cmat, float tau, distFuncGrou
     return grouping;
 }
 
-
 vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncGroup distanceFunction,intT block_size, bool use_size, bool use_pattern, intT &comparison_counter, intT &merge_counter, float &timer)
 {
     vector<intT> grouping(cmat.rows, -1); //flag each rows as ungrouped (-1)
@@ -156,6 +155,7 @@ BlockingEngine::BlockingEngine(CLineReader &cline)
   block_size = cline.block_size_;
   use_groups = cline.sim_use_groups_;
   use_pattern = cline.sim_use_pattern_;
+  structured_sparsity = cline.use_structured_sparsity_;
   SetComparator(cline.sim_measure_);
 }
 
