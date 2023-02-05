@@ -20,7 +20,7 @@ for fullpath in ${MATRICES_PATH}/*.el; do
 			for t in ${TAUs[@]}; do
 				for p in ${USE_PATTERN[@]}; do
 					for g in ${USE_GROUP[@]}; do
-						EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_t_${t}_p_${p}_g_${g}"
+						EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_t_${t}_S_${S}_p_${p}_g_${g}"
 						OUTFILE=${MATRIX_FOLDER}/${EXP_NAME}.txt
 						./${PROGRAM} -f ${fullpath} -b ${b} -t ${t} -S ${S} -p ${p} -g ${g} -v 1 -o ${OUTFILE} -P 1 -n ${EXP_NAME}
 					done
