@@ -33,7 +33,6 @@ vector<intT> IterativeBlockingPatternMN(const CSR& cmat, float tau, distFuncGrou
             vector<intT> structured_sparsity_column_counter(pattern.size(),1);
             bool structured_sparsity_check = true;
 
-            cout << "new block: structure:" << endl;
             print_vec(structured_sparsity_pattern);
             print_vec(structured_sparsity_column_counter);
             //inner loop, compare each subsequent row with the current pattern
@@ -58,7 +57,6 @@ vector<intT> IterativeBlockingPatternMN(const CSR& cmat, float tau, distFuncGrou
                         structured_sparsity_check = check_structured_sparsity(structured_sparsity_pattern, structured_sparsity_column_counter, cmat.ja[j], cmat.nzcount[j], structured_m);
                       }
 
-                      cout << "STRUCTURAL CHECK: " << i << " and " << j << " : " << structured_sparsity_check << endl;
                       if (structured_sparsity_check)
                       {
                         merge_counter++;
@@ -69,8 +67,6 @@ vector<intT> IterativeBlockingPatternMN(const CSR& cmat, float tau, distFuncGrou
                             current_group_size++;
 
                         //update structural sparsity vectors
-                        cout << "UPDATING STRUCTURES" << endl;
-                        cout << "rows " << i << " " << j << endl;
                         update_structured_sparsity(structured_sparsity_pattern, structured_sparsity_column_counter, cmat.ja[j], cmat.nzcount[j]);
                         print_vec(structured_sparsity_pattern);
                         print_vec(structured_sparsity_column_counter);
