@@ -59,13 +59,44 @@ def extract_data(filename):
 
 
 
-def get_data_line(folder):
+def check_constraints(data_dict, constraints_dict):
+    for constraint in constraints_dict:
+        if not constraint in data_dict:
+            return False
+        else:
+            if constraints_dict[constraint] == data_dict[constraint]:
+                return True
+            else:
+                return False 
+
+def get_data_line(folder, constraints):
+    datapoints = []
     for experiment in glob.glob(f"{folder}*/*.txt"):
         data,nzcount,grouping = extract_data(experiment)
-        nztot, row_block_heights = evaluate_blocking(grouping, nzcount, data["col_block_size"])
-        print(f"nz: {nztot}, tau: {data['tau']}, block size: {data['col_block_size']}, row_blocks: {len(row_block_heights)}, time {float(data['time_to_block'])/1000000}")
+        if check_constraints(data,constraints):
+            nztot, row_block_heights = evaluate_blocking(grouping, nzcount, data["col_block_size"])
+            data["nonzeros_padding"] = nztot
+            data["avg_height"] = np.average(row_block_heights)
+            datapoints.append(data)
+            #print(data)
+    return datapoints
 
-        
-        
 
-get_data_line("results/ia")
+def check_unique(l):
+    return len(l) > len(set(l))
+
+def plot_against(folder, x_name = "tau", y_name = "nonzeros_padding", constraints = {}):
+    datapoints = get_data_line(folder, constraints)
+    x_points = [data[x_name] for data in datapoints]
+    y_points = [data[y_name] for data in datapoints]
+    if not check_unique(x_points) or not check_unique(y_points):
+        print("WARNING: plotting elements are not unique. Define better constraints")
+    print(x_points, y_points)
+    plt.plot(x_points, y_points)
+
+
+constraints = {"blocking_algo": 0, 
+               "col_block_size": 32,
+                }
+
+plot_against("results/ia", constraints = constraints)

@@ -154,6 +154,7 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
     add_to_output("use_pattern", to_string(cLine.sim_use_pattern_));
     add_to_output("sim_use_groups", to_string(cLine.sim_use_groups_));
     add_to_output("sim_measure", to_string(cLine.sim_measure_));
+    add_to_output("reorder", to_string(cLine.reorder_));
     add_to_output("exp_name", cLine.exp_name_);
     add_to_output("time_to_block", to_string(bEngine.timer));
     add_to_output("merge_counter", to_string(bEngine.merge_counter));
