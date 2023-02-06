@@ -9,10 +9,7 @@ Created on Tue Feb 22 15:14:55 2022
 import argparse
 import os
 import numpy as np
-import matplotlib.pyplot as plt
 import itertools
-import similarities
-from scipy.stats import binom
 from numpy.random import default_rng
 
 class CSR: 
@@ -47,8 +44,8 @@ class CSR:
         with open(edgelist_file) as f:
             for line in f:
                 linesplit = line.split(delimiter)
-                inc = int(linesplit[0]);
-                out = int(linesplit[1]);
+                inc = int(linesplit[0])
+                out = int(linesplit[1])
                 
                 while inc > self.N - 1:
                     #create new node;
@@ -56,32 +53,52 @@ class CSR:
                     
                 self.add_edge(row = -1, col = out)
                 
-        return self.N;
+        return self.N
     
     def fill_from_array(self,array):
+        self.clean()
         self.M = len(array[0])
         for row_idx, row in enumerate(array):
             self.add_node()
             for col_idx, elem in enumerate(row):
                 if elem != 0.:
-                    self.nzcount[row_idx] +=1;
+                    self.nzcount[row_idx] +=1
                     self.pos[row_idx].append(col_idx)
                     
-    
+
+    def fill_uniform_random(n,m, density):
+        self.clean()
+        self.M = m
+        self.N = n
+        k = int(density*n*m)
+        rng = default_rng()
+        nz_pos = rng.choice(m*n, size=k, replace=False)
+        j = 0
+        for i in range(n):
+            self.add_node()
+
+        for j in nz_pos:
+            self.add_edge(row = nz_pos[j]/m, col = nz_pos[j]%m)
+
+
     def add_node(self):
         self.N += 1
         self.nzcount.append(0)
         self.pos.append([])
     
     def add_edge(self, row, col):
-        self.nzcount[row] += 1;
-        self.pos[row].append(col);
-            
+        self.nzcount[row] += 1
+        self.pos[row].append(col)
+    
+    def print_edgelist(separator = " "):
+        for i, row in enumerate(self.pos):
+            for j in row:
+                print (f"{i}{separator}{j}")
             
 #****************************************************************
 
 
-def cs_to_dense(row, width):
+def compressed_to_dense(row, width):
     out = np.zeros(width)
     for elem in row:
         out[elem] = 1
@@ -93,19 +110,6 @@ def print_blocked(cmat, grouping, block_size):
     for g in groups:
         for row, row_group in zip(cmat.pos, grouping):
             if row_group == g:
-                print(cs_to_dense(row,cmat.M))
+                print(compressed_to_dense(row,cmat.M))
         print("___"*cmat.M)
-                
 
-def make_random_CSR(n,m, density):
-    graph = CSR();
-    k = int(density*n*m)
-    
-    rng = default_rng()
-    nz_pos = rng.choice(m*n, size=k, replace=False)
-    mat = np.zeros(n*m);
-    mat[nz_pos] = 1
-    mat = mat.reshape((n,m))
-    graph.fill_from_array(mat)
-
-    return graph

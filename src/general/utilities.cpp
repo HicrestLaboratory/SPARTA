@@ -147,8 +147,10 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
     add_to_output("rows", to_string(cmat.rows));
     add_to_output("cols", to_string(cmat.cols));
     add_to_output("nonzeros", to_string(cmat.nztot()));
+    add_to_output("blocking_algo", to_string(cLine.blocking_algo_));
     add_to_output("tau", to_string(cLine.tau_));
-    add_to_output("block_size", to_string(cLine.block_size_));
+    add_to_output("row_block_size", to_string(cLine.row_block_size_));
+    add_to_output("col_block_size", to_string(cLine.col_block_size_));
     add_to_output("use_pattern", to_string(cLine.sim_use_pattern_));
     add_to_output("sim_use_groups", to_string(cLine.sim_use_groups_));
     add_to_output("sim_measure", to_string(cLine.sim_measure_));
@@ -160,7 +162,7 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
     outfile << header << endl;
     outfile << values << endl;
 
-    vector<intT> nzcount_VBR = cmat.get_VBR_nzcount(bEngine.grouping_result,cLine.block_size_);
+    vector<intT> nzcount_VBR = cmat.get_VBR_nzcount(bEngine.grouping_result,cLine.col_block_size_);
 
     outfile << "NZCOUNT,";
     print_vec(nzcount_VBR, outfile, ",");

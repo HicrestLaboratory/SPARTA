@@ -28,11 +28,11 @@ int main(int argc, char* argv[])
     if (cli.verbose_ > 0) cout << "create VBR from grouping;" << endl;
     //create a VBR matrix from grouping (without reordering the original csr)
     VBR vbmat;
-    vbmat.fill_from_CSR_inplace(cmat, grouping, cli.block_size_);
+    vbmat.fill_from_CSR_inplace(cmat, grouping, cli.col_block_size_);
     if (cli.verbose_ > 1) vbmat.print();
 
     //GET BLOCK PROPERTIES FROM GROUPING WITHOUT CREATING VBR EXPLICITLY
-    vector<intT> nzcount_VBR = cmat.get_VBR_nzcount(grouping,cli.block_size_);
+    vector<intT> nzcount_VBR = cmat.get_VBR_nzcount(grouping,cli.col_block_size_);
     cout << "nzcount_VBR: "; 
     if (cli.verbose_ > 1) print_vec(nzcount_VBR);
 
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     if (cli.verbose_ > 1) cmat.print(cli.verbose_);
 
     if (cli.verbose_ > 0) cout << "Create VBR from reordered CSR" << endl;
-    vbmat2.fill_from_CSR(cmat, get_partition(grouping), cli.block_size_);
+    vbmat2.fill_from_CSR(cmat, get_partition(grouping), cli.col_block_size_);
     if (cli.verbose_ > 1) vbmat2.print();
 
     cout << "TEST COMPLETED" << endl;

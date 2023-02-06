@@ -128,27 +128,48 @@ vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncGroup 
     return grouping;
 }
 
+vector<intT> FixedBlocking(const CSR& cmat, intT row_block_size)
+{
+  vector<intT> grouping(cmat.rows);
+  for(intT i = 0; i < cmat.rows; i++)
+  {
+    grouping[i] = i/row_block_size;
+  }
+  return grouping;
+}
+
+
 vector<intT> BlockingEngine::GetGrouping(const CSR& cmat)
 {
     //run the blocking function and store statistics
     comparison_counter = 0;
     merge_counter = 0;
     timer = 0;
-    if (structured_sparsity)
-        grouping_result = IterativeBlockingPatternMN(cmat, tau, comparator, block_size, use_groups, use_pattern, structured_m, structured_n,comparison_counter, merge_counter, timer);
-    else
-        grouping_result = IterativeBlockingPattern(cmat, tau, comparator, block_size, use_groups, use_pattern, comparison_counter, merge_counter, timer);
+    switch(blocking_algo)
+    {
+      case iterative_pattern:
+        grouping_result = IterativeBlockingPatternMN(cmat, tau, comparator, col_block_size, use_groups, use_pattern, structured_m, structured_n,comparison_counter, merge_counter, timer);
+        break;
+      case iterative:
+        grouping_result = IterativeBlockingPattern(cmat, tau, comparator, col_block_size, use_groups, use_pattern, comparison_counter, merge_counter, timer);
+        break;
+      case fixed_size:
+        grouping_result = FixedBlocking(cmat, row_block_size);
+        break;
+    }
     return grouping_result;
 }
 
 BlockingEngine::BlockingEngine(CLineReader &cline)
 {       
   tau = cline.tau_;
-  block_size = cline.block_size_;
   use_groups = cline.sim_use_groups_;
   use_pattern = cline.sim_use_pattern_;
-  structured_sparsity = cline.use_structured_sparsity_;
+  blocking_algo = cline.blocking_algo_;
+  row_block_size = cline.row_block_size_;
+  col_block_size = cline.col_block_size_;
   SetComparator(cline.sim_measure_);
+
 }
 
 void BlockingEngine::print()
@@ -172,6 +193,7 @@ void BlockingEngine::SetComparator(int choice)
             break;
     }
 }
+
 
 float HammingDistanceGroup(vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size)
 {
