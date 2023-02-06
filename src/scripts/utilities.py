@@ -7,6 +7,8 @@ Created on Thu Aug  4 15:35:55 2022
 
 import numpy as np
 import matplotlib.pyplot as plt
+import glob
+
 
 
 def evaluate_blocking(grouping,nz_block_count,block_width):
@@ -56,6 +58,8 @@ def evaluate_blocking(filename):
         
 
 def make_images(folder):
+    for experiment in glob.glob("folder/*.txt"):
+        data,nzcount,grouping = evaluate_blocking(experiment)
+        print(data,nzcount,grouping)
 
-
-print(evaluate_blocking("results/TEST_results.txt"))
+make_images("results/ia-wikiquote-user-edits-nodup")
