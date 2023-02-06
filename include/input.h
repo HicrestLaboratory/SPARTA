@@ -24,7 +24,7 @@ class CLineReader
         int blocking_algo_ = 0; // 0 for iterative; 1 for structures; 2 for fixed;
         int seed_ = 0;
         int sim_measure_ = 1;
-        int reorder_ = 0; //-1 for ascending. 1 for descending. 2 for scramble
+        int reorder_ = 0; //-1 for ascending. 0 for nothing. 1 for descending. 2 for scramble
         int col_block_size_ = 1;
         int row_block_size_ = 1;
 
