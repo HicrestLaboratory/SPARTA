@@ -1,0 +1,19 @@
+INPUT PARAMETERS:
+filename: data/real_world//twitter.el
+outfile: results//twitter/blocking_G_twitter_b_16_a_1_t_0.3_p_0_g_0_r_0.txt
+exp_name: blocking_G_twitter_b_16_a_1_t_0.3_p_0_g_0_r_0
+reader_delimiter_:  
+sim_measure_: 1
+blocking_algo_: 1
+sim_use_groups_: 0
+sim_use_pattern_: 0
+pattern_only_: 1
+reorder_by_degree_: 0
+tau_: 0.3
+col_block_size_: 16
+row_block_size_: 1
+verbose_: 1
+seed_: 0
+warmup_: 1
+exp_repetitions_: 5
+___________________

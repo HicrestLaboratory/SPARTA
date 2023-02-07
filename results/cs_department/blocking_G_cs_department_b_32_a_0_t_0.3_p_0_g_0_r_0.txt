@@ -1,4 +1,4 @@
-matrix,rows,cols,nonzeros,blocking_algo,tau,row_block_size,col_block_size,use_pattern,sim_use_groups,sim_measure,exp_name,time_to_block,merge_counter,comparison_counter,
-data/real_world//cs_department.el,60,61,353,0,0.300000,1,32,0,0,1,blocking_G_cs_department_b_32_a_0_t_0.3_p_0_g_0_r_0,341.000000,54,142,
-NZCOUNT,2,2,2,2,2,0,
-GROUPING,0,0,0,3,0,0,0,3,8,0,3,8,12,12,14,0,0,0,0,0,0,0,0,23,0,0,8,0,3,3,3,0,3,8,8,8,12,8,14,12,12,3,23,3,3,8,23,23,3,8,3,3,3,3,23,3,3,3,8,8,
+matrix,rows,cols,nonzeros,blocking_algo,tau,row_block_size,col_block_size,use_pattern,sim_use_groups,sim_measure,reorder,exp_name,time_to_block,merge_counter,comparison_counter,
+data/real_world//cs_department.el,60,61,353,0,0.300000,1,32,0,0,1,0,blocking_G_cs_department_b_32_a_0_t_0.3_p_0_g_0_r_0,77.000000,56,123,
+NZCOUNT,2,0,2,1,
+GROUPING,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,23,0,0,26,0,0,29,0,0,0,26,26,26,26,26,26,26,29,29,23,26,29,26,23,23,29,26,29,29,29,26,23,29,26,29,29,29,
