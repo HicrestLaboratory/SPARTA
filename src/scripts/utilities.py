@@ -94,7 +94,7 @@ def get_data_line(folder, constraints):
 def check_unique(l):
     return len(l) == len(set(l))
 
-def plot_against(folder, x_name = "tau", y_name = "nonzeros_padding", constraints = {}):
+def add_curve(folder, x_name = "tau", y_name = "nonzeros_padding", constraints = {}, label = ""):
     datapoints = get_data_line(folder, constraints)
     x = [data[x_name] for data in datapoints]
     y = [data[y_name] for data in datapoints]
@@ -102,14 +102,35 @@ def plot_against(folder, x_name = "tau", y_name = "nonzeros_padding", constraint
     x_s, y_s = zip(*L)
     if (not check_unique(x_s)):
         print("WARNING: plotting elements are not unique. Define better constraints")
-    print(x_s, y_s)
-    plt.plot(x_s, y_s)
+    print(x_s[1:], y_s[1:])
+    plt.plot(x_s, y_s, label = label, marker = "o")
 
 
-for algo in [0,1,2]:
-    constraints = {"blocking_algo": algo,
-                    "col_block_size": 16,
-                    "reorder":0,
-                    "use_pattern":1}
+algos = {}
+algos["basic"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 0}
+algos["pattern"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 1}
+algos["structured"] = {"blocking_algo": 1, "reorder": 0, "use_pattern": 1}
+algos["fixed"] = {"blocking_algo": 2, "reorder": 0}
 
-    plot_against("results/ia", x_name = "padding", y_name = "avg_height", constraints = constraints)
+
+
+
+for matrix_name in ["social","ia","twitter"]:
+    for block_size in [16,64,256]:
+        x_name = "tau"
+        y_name = "padding"
+        plt.figure()
+        for algo, parameters in algos.items():
+            print(algo, parameters)
+            parameters["col_block_size"] = block_size
+
+            add_curve(f"results/{matrix_name}", x_name = x_name, y_name = y_name, constraints = parameters, label = algo)
+        savename = f"images/reordering_curves_mat_{matrix_name}_X_{x_name}_Y_{y_name}_b_{block_size}.pdf"
+        plt.xlabel(x_name)
+        plt.ylabel(y_name)
+        plt.yscale("log")
+        plt.xscale("log")
+        plt.legend()
+        plt.savefig(savename,  bbox_inches='tight')
+
+
