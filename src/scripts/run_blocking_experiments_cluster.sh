@@ -8,8 +8,8 @@ script_body="#!/bin/bash -l
 #SBATCH --job-name="${EXP_NAME}"
 #SBATCH --time=00:10:00
 #SBATCH --nodes=1
-#SBATCH --output=sparta.%j.o
-#SBATCH --error=sparta.%j.e
+#SBATCH --output="${RESULTS_PATH}/scripts/outputs/${EXP_NAME}".%j.o
+#SBATCH --error="${RESULTS_PATH}/scripts/errors/${EXP_NAME}".%j.e
 #SBATCH --account="g34"
 #SBATCH --partition=normal
 #SBATCH --constraint=ssd
@@ -39,6 +39,9 @@ ALGOs=(0 1 2)
 REORDERINGs=(0) #pre-reordering
 
 mkdir ${RESULTS_PATH}/scripts
+mkdir ${RESULTS_PATH}/scripts/outputs
+mkdir ${RESULTS_PATH}/scripts/errors
+
 
 for fullpath in ${MATRICES_PATH}/*.el; do
 	MATRIX_FILE=$(basename -- "${fullpath}")
