@@ -18,7 +18,7 @@ def evaluate_blocking(grouping,nz_block_count,block_width):
     last_visited = -1
     for group in np.sort(np.array(grouping)):
         if group != last_visited:
-            row_block_heights.append(1)
+            row_block_heights.append(0)
         row_block_heights[-1] += 1
         last_visited = group
 
@@ -85,6 +85,8 @@ def get_data_line(folder, constraints):
         if check_constraints(data,constraints):
             nztot, row_block_heights = evaluate_blocking(grouping, nzcount, data["col_block_size"])
             data["padding"] = nztot - data["nonzeros"]
+            if data["blocking_algo"] == 1: #structured
+                data["padding"] /= 2
             data["avg_height"] = np.average(row_block_heights)
             datapoints.append(data)
             #print(data)
@@ -102,7 +104,6 @@ def add_curve(folder, x_name = "tau", y_name = "nonzeros_padding", constraints =
     x_s, y_s = zip(*L)
     if (not check_unique(x_s)):
         print("WARNING: plotting elements are not unique. Define better constraints")
-    print(x_s[1:], y_s[1:])
     plt.plot(x_s, y_s, label = label, marker = "o")
 
 
@@ -115,22 +116,25 @@ algos["fixed"] = {"blocking_algo": 2, "reorder": 0}
 
 
 
-for matrix_name in ["social","ia","twitter"]:
-    for block_size in [16,64,256]:
-        x_name = "tau"
-        y_name = "padding"
-        plt.figure()
-        for algo, parameters in algos.items():
-            print(algo, parameters)
-            parameters["col_block_size"] = block_size
+for matrix_name in ["social","ia","soc-pocket","twitter"]:
+    try:
+        for block_size in [16,64,256]:
+            x_name = "padding"
+            y_name = "avg_height"
 
-            add_curve(f"results/{matrix_name}", x_name = x_name, y_name = y_name, constraints = parameters, label = algo)
-        savename = f"images/reordering_curves_mat_{matrix_name}_X_{x_name}_Y_{y_name}_b_{block_size}.pdf"
-        plt.xlabel(x_name)
-        plt.ylabel(y_name)
-        plt.yscale("log")
-        plt.xscale("log")
-        plt.legend()
-        plt.savefig(savename,  bbox_inches='tight')
+            print(f"Making {x_name} vs {y_name} image for graph {matrix_name}; block size = {block_size}")
 
+            plt.figure()
+            for algo, parameters in algos.items():
+                parameters["col_block_size"] = block_size
+                add_curve(f"results/{matrix_name}", x_name = x_name, y_name = y_name, constraints = parameters, label = algo)
+            savename = f"images/reordering_curves_mat_{matrix_name}_X_{x_name}_Y_{y_name}_b_{block_size}.pdf"
+            plt.xlabel(x_name)
+            plt.ylabel(y_name)
+            plt.yscale("log")
+            plt.xscale("log")
+            plt.legend()
+            plt.savefig(savename,  bbox_inches='tight')
+    except:
+        print(f"could not create image for {matrix_name}")
 
