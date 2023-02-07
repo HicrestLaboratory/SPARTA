@@ -96,7 +96,6 @@ void VBR::print(int verbose)
     cout << endl;
 }
 
-
 int VBR::partition_check(const vector<intT> &candidate_part)
 {
 //checks that a vector is a valid partition; anything different than 0 is an error;

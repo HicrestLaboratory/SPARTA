@@ -155,7 +155,6 @@ vector<intT> CSR::get_VBR_nzcount(const vector<intT> &row_partition, const vecto
     return nz_block_count;
 }
 
-
 void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only)
 //reads edgelist into the CSR.
 {

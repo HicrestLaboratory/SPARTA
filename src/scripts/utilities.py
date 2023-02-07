@@ -23,10 +23,16 @@ def evaluate_blocking(grouping,nz_block_count,block_width):
         last_visited = group
 
     nztot = 0
+    total_height = 0
+    total_blocks = 0
     for count,block_height in zip(nz_block_count, row_block_heights):
         nztot += count*block_height*block_width
+        total_height = count*block_height
+        total_blocks += 1
 
-    return nztot, row_block_heights
+    avg_height = total_height/total_blocks
+
+    return nztot, avg_height
 
 
 def isfloat(string):
@@ -83,12 +89,12 @@ def get_data_line(folder, constraints):
     for experiment in glob.glob(f"{folder}*/*.txt"):
         data,nzcount,grouping = extract_data(experiment)
         if check_constraints(data,constraints):
-            nztot, row_block_heights = evaluate_blocking(grouping, nzcount, data["col_block_size"])
+            nztot, avg_height = evaluate_blocking(grouping, nzcount, data["col_block_size"])
             data["padding"] = nztot - data["nonzeros"]
             data["density"] = data["nonzeros"]/nztot
             if data["blocking_algo"] == 1: #structured
                 data["padding"] /= 2
-            data["avg_height"] = np.average(row_block_heights)
+            data["avg_height"] = avg_height
             datapoints.append(data)
             #print(data)
     return datapoints
