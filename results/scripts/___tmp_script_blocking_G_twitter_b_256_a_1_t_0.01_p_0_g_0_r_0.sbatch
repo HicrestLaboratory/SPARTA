@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #SBATCH --job-name=blocking_G_twitter_b_256_a_1_t_0.01_p_0_g_0_r_0
-#SBATCH --time=00:10:00
+#SBATCH --time=00:20:00
 #SBATCH --nodes=1
 #SBATCH --output=results//scripts/outputs/blocking_G_twitter_b_256_a_1_t_0.01_p_0_g_0_r_0.%j.o
 #SBATCH --error=results//scripts/errors/blocking_G_twitter_b_256_a_1_t_0.01_p_0_g_0_r_0.%j.e

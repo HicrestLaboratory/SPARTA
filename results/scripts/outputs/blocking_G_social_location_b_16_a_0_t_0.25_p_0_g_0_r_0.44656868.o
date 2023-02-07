@@ -1,0 +1,42 @@
+INPUT PARAMETERS:
+filename: data/real_world//social_location.el
+outfile: results//social_location/blocking_G_social_location_b_16_a_0_t_0.25_p_0_g_0_r_0.txt
+exp_name: blocking_G_social_location_b_16_a_0_t_0.25_p_0_g_0_r_0
+reader_delimiter_:  
+sim_measure_: 1
+blocking_algo_: 0
+sim_use_groups_: 0
+sim_use_pattern_: 0
+pattern_only_: 1
+reorder_by_degree_: 0
+tau_: 0.25
+col_block_size_: 16
+row_block_size_: 1
+verbose_: 1
+seed_: 0
+warmup_: 1
+exp_repetitions_: 5
+___________________
+BLOCKING ENGINE INFO: 
+timer: 1.73632e+07
+comparison counter: 4162582
+merge counter: 55522
+
+TEST COMPLETED
+
+
+Batch Job Summary Report (version 21.01.1) for Job "blocking_G_social_location_b_16_a_0_t_0.25_p_0_g_0_r_0" (44656868) on daint
+
+Job information (1/2)
+-----------------------------------------------------------------------------------------------------
+             Submit            Eligible               Start                 End    Elapsed Time limit
+------------------- ------------------- ------------------- ------------------- ---------- ----------
+2023-02-07T14:50:44 2023-02-07T14:50:44 2023-02-07T15:12:56 2023-02-07T15:13:20   00:00:24   00:10:00
+-----------------------------------------------------------------------------------------------------
+
+Job information (2/2)
+-------------------------------------------------------------
+    Username      Account    Partition   NNodes        Energy
+------------ ------------ ------------ -------- -------------
+    psylosla          g34       normal        1      2.010 kJ
+

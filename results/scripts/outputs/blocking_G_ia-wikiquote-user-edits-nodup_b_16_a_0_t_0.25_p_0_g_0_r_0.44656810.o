@@ -1,0 +1,42 @@
+INPUT PARAMETERS:
+filename: data/real_world//ia-wikiquote-user-edits-nodup.el
+outfile: results//ia-wikiquote-user-edits-nodup/blocking_G_ia-wikiquote-user-edits-nodup_b_16_a_0_t_0.25_p_0_g_0_r_0.txt
+exp_name: blocking_G_ia-wikiquote-user-edits-nodup_b_16_a_0_t_0.25_p_0_g_0_r_0
+reader_delimiter_:  
+sim_measure_: 1
+blocking_algo_: 0
+sim_use_groups_: 0
+sim_use_pattern_: 0
+pattern_only_: 1
+reorder_by_degree_: 0
+tau_: 0.25
+col_block_size_: 16
+row_block_size_: 1
+verbose_: 1
+seed_: 0
+warmup_: 1
+exp_repetitions_: 5
+___________________
+BLOCKING ENGINE INFO: 
+timer: 1.78772e+08
+comparison counter: 126085200
+merge counter: 10397
+
+TEST COMPLETED
+
+
+Batch Job Summary Report (version 21.01.1) for Job "blocking_G_ia-wikiquote-user-edits-nodup_b_16_a_0_t_0.25_p_0_g_0_r_0" (44656810) on daint
+
+Job information (1/2)
+-----------------------------------------------------------------------------------------------------
+             Submit            Eligible               Start                 End    Elapsed Time limit
+------------------- ------------------- ------------------- ------------------- ---------- ----------
+2023-02-07T14:49:42 2023-02-07T14:49:42 2023-02-07T14:53:33 2023-02-07T14:56:38   00:03:05   00:10:00
+-----------------------------------------------------------------------------------------------------
+
+Job information (2/2)
+-------------------------------------------------------------
+    Username      Account    Partition   NNodes        Energy
+------------ ------------ ------------ -------- -------------
+    psylosla          g34       normal        1     18.406 kJ
+
