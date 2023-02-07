@@ -117,9 +117,11 @@ def add_curve(folder, x_name = "tau", y_name = "nonzeros_padding", constraints =
 algos = {}
 algos["basic"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 0}
 algos["pattern"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 1}
-algos["pattern_groups"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 1, "use_groups":1}
-algos["pattern_groups_reordered"] = {"blocking_algo": 0, "reorder": 1, "use_pattern": 1, "use_groups":1}
+algos["pattern_groups"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 1, "sim_use_groups":1}
+algos["pattern_groups_reordered"] = {"blocking_algo": 0, "reorder": 1, "use_pattern": 1, "sim_use_groups":1}
 algos["structured"] = {"blocking_algo": 1, "reorder": 0, "use_pattern": 1}
+algos["pattern_groups"] = {"blocking_algo": 1, "reorder": 0, "use_pattern": 1}
+algos["pattern_groups_reordered"] = {"blocking_algo": 1, "reorder": 0, "use_pattern": 1, "sim_use_groups":1}
 algos["fixed"] = {"blocking_algo": 2, "reorder": 0}
 
 
@@ -139,7 +141,7 @@ for matrix_name in ["social","ia","soc-pocket","twitter"]:
                     add_curve(f"results/{matrix_name}", x_name = x_name, y_name = y_name, constraints = constraints, label = algo)
                 except:
                     print(f"******missing curve for {algo}")
-            savename = f"images/reordering_curves_mat_{matrix_name}_X_{x_name}_Y_{y_name}_b_{block_size}.pdf"
+            savename = f"images/reordering_curves_mat_{matrix_name}_X_{x_name}_Y_{y_name}_b_{block_size}_.pdf"
             plt.xlabel(x_name)
             plt.ylabel(y_name)
             plt.yscale("log")
