@@ -81,7 +81,7 @@ for fullpath in ${MATRICES_PATH}/*.el; do
 							done
 						done
 					done
-				elif [ ${a} -eq 1 ]
+				else
 					for t in ${TAUs[@]}; do
 						for g in ${USE_GROUP[@]}; do
 							export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_a_${a}_t_${t}_p_${p}_g_${g}_r_${r}"
