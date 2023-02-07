@@ -71,7 +71,7 @@ for fullpath in ${MATRICES_PATH}/*.el; do
 									echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 								else
 									export ARGS="-f ${fullpath} -b ${b} -t ${t} -a ${a} -r ${r} -p ${p} -g ${g} -v 1 -o ${OUTFILE} -P 1 -n ${EXP_NAME}"
-									creat_launch
+									create_launch
 								fi
 							done
 						done
