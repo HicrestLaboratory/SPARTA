@@ -8,6 +8,7 @@ Created on Thu Aug  4 15:35:55 2022
 import numpy as np
 import matplotlib.pyplot as plt
 import glob
+import operator
 
 
 
@@ -28,10 +29,17 @@ def evaluate_blocking(grouping,nz_block_count,block_width):
     return nztot, row_block_heights
 
 
+def isfloat(string):
+    try:
+        float(string)
+        return True
+    except ValueError:
+        return False
+    
 def extract_data(filename):
     #example: 
-    #matrix,rows,cols,nonzeros,blocking_algo,tau,row_block_size,col_block_size,use_pattern,sim_use_groups,sim_measure,exp_name,time_to_block,merge_counter,comparison_counter,
-    #data/TEST_matrix_weighted.el,9,9,13,0,0.500000,1,1,1,1,1,,47.000000,2,31,
+    #matrix,rows,cols,nonzeros,blocking_algo,tau,row_block_size,col_block_size,use_pattern,sim_use_groups,sim_measure,reorder,exp_name,time_to_block,merge_counter,comparison_counter,
+    #data/real_world//ia-wikiquote-user-edits-nodup.el,21608,94757,238714,0,0.010000,1,16,1,0,1,0,blocking_G_ia-wikiquote-user-edits-nodup_b_16_a_0_t_0.01_p_1_g_0_r_0,243922960.000000,10345,126953437,
     #NZCOUNT,1,3,3,4,0,1,1,
     #GROUPING,0,1,2,3,4,5,4,4,8,
 
@@ -45,7 +53,7 @@ def extract_data(filename):
                 if len(line) != len(vars):
                     print(f"ERROR: CSV ENTRIES MISMATCH IN {filename}")
                     break
-                data = {var:(float(value) if value.isnumeric() else value) for var, value in zip(vars, line)}
+                data = {var:(float(value) if isfloat(value) else value) for var, value in zip(vars, line)}
             elif idx == 2:
                 nzcount = [float(elem) for elem in line[1:]]
             elif idx == 3:
@@ -62,12 +70,13 @@ def extract_data(filename):
 def check_constraints(data_dict, constraints_dict):
     for constraint in constraints_dict:
         if not constraint in data_dict:
+            print(f"WARNING: checking non existent property: {constraint} ")
             return False
         else:
-            if constraints_dict[constraint] == data_dict[constraint]:
-                return True
-            else:
+            if constraints_dict[constraint] != data_dict[constraint]:
                 return False 
+    return True
+
 
 def get_data_line(folder, constraints):
     datapoints = []
@@ -75,7 +84,7 @@ def get_data_line(folder, constraints):
         data,nzcount,grouping = extract_data(experiment)
         if check_constraints(data,constraints):
             nztot, row_block_heights = evaluate_blocking(grouping, nzcount, data["col_block_size"])
-            data["nonzeros_padding"] = nztot
+            data["padding"] = nztot - data["nonzeros"]
             data["avg_height"] = np.average(row_block_heights)
             datapoints.append(data)
             #print(data)
@@ -83,20 +92,45 @@ def get_data_line(folder, constraints):
 
 
 def check_unique(l):
-    return len(l) > len(set(l))
+    return len(l) == len(set(l))
 
-def plot_against(folder, x_name = "tau", y_name = "nonzeros_padding", constraints = {}):
+def add_curve(folder, x_name = "tau", y_name = "nonzeros_padding", constraints = {}, label = ""):
     datapoints = get_data_line(folder, constraints)
-    x_points = [data[x_name] for data in datapoints]
-    y_points = [data[y_name] for data in datapoints]
-    if not check_unique(x_points) or not check_unique(y_points):
+    x = [data[x_name] for data in datapoints]
+    y = [data[y_name] for data in datapoints]
+    L = sorted(zip(x,y), key=operator.itemgetter(0))
+    x_s, y_s = zip(*L)
+    if (not check_unique(x_s)):
         print("WARNING: plotting elements are not unique. Define better constraints")
-    print(x_points, y_points)
-    plt.plot(x_points, y_points)
+    print(x_s[1:], y_s[1:])
+    plt.plot(x_s, y_s, label = label, marker = "o")
 
 
-constraints = {"blocking_algo": 0, 
-               "col_block_size": 32,
-                }
+algos = {}
+algos["basic"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 0}
+algos["pattern"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 1}
+algos["structured"] = {"blocking_algo": 1, "reorder": 0, "use_pattern": 1}
+algos["fixed"] = {"blocking_algo": 2, "reorder": 0}
 
-plot_against("results/cs", constraints = constraints)
+
+
+
+for matrix_name in ["social","ia","twitter"]:
+    for block_size in [16,64,256]:
+        x_name = "tau"
+        y_name = "padding"
+        plt.figure()
+        for algo, parameters in algos.items():
+            print(algo, parameters)
+            parameters["col_block_size"] = block_size
+
+            add_curve(f"results/{matrix_name}", x_name = x_name, y_name = y_name, constraints = parameters, label = algo)
+        savename = f"images/reordering_curves_mat_{matrix_name}_X_{x_name}_Y_{y_name}_b_{block_size}.pdf"
+        plt.xlabel(x_name)
+        plt.ylabel(y_name)
+        plt.yscale("log")
+        plt.xscale("log")
+        plt.legend()
+        plt.savefig(savename,  bbox_inches='tight')
+
+
