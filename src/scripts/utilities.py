@@ -99,4 +99,4 @@ constraints = {"blocking_algo": 0,
                "col_block_size": 32,
                 }
 
-plot_against("results/ia", constraints = constraints)
+plot_against("results/cs", constraints = constraints)

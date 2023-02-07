@@ -57,8 +57,9 @@ for fullpath in ${MATRICES_PATH}/*.el; do
 					for B in ${ROW_BLOCK_SIZEs[@]};do
 						export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_a_${a}_B_${B}_r_${r}"
 						OUTFILE=${MATRIX_FOLDER}/${EXP_NAME}.txt
-						if [[ -f "${OUTFILE}" ]]; then
-									echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
+						if [[ -f "${OUTFILE}" ]]; 
+						then
+							echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 						else
 						export ARGS="-f ${fullpath} -b ${b} -a ${a} -B ${B} -r ${r} -v 1 -o ${OUTFILE} -P 1 -n ${EXP_NAME}"
 						create_launch
@@ -70,7 +71,8 @@ for fullpath in ${MATRICES_PATH}/*.el; do
 							for g in ${USE_GROUP[@]}; do
 								export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_a_${a}_t_${t}_p_${p}_g_${g}_r_${r}"
 								OUTFILE=${MATRIX_FOLDER}/${EXP_NAME}.txt
-								if [[ -f "${OUTFILE}" ]]; then
+								if [[ -f "${OUTFILE}" ]]; 
+								then
 									echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 								else
 									export ARGS="-f ${fullpath} -b ${b} -t ${t} -a ${a} -r ${r} -p ${p} -g ${g} -v 1 -o ${OUTFILE} -P 1 -n ${EXP_NAME}"
