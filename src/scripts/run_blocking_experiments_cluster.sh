@@ -20,7 +20,6 @@ sleep 1s
 "
 script_name=___tmp_script_${EXP_NAME}
 script_folder=${RESULTS_PATH}/scripts
-mkdir ${script_folder}
 
 if [[ -f ${script_folder}/${script_name} ]]; then    
 	echo "experiment exists already"
@@ -39,6 +38,7 @@ ROW_BLOCK_SIZEs=(2 4 8 16 32 64 128 256 512 1024 2048 4096 8192)
 ALGOs=(0 1 2)
 REORDERINGs=(0) #pre-reordering
 
+mkdir ${RESULTS_PATH}/scripts
 
 for fullpath in ${MATRICES_PATH}/*.el; do
 	MATRIX_FILE=$(basename -- "${fullpath}")
