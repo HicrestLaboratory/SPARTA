@@ -18,7 +18,7 @@ def evaluate_blocking(grouping,nz_block_count,block_width):
     last_visited = -1
     for group in np.sort(np.array(grouping)):
         if group != last_visited:
-            row_block_heights.append(1)
+            row_block_heights.append(0)
         row_block_heights[-1] += 1
         last_visited = group
 
@@ -85,6 +85,8 @@ def get_data_line(folder, constraints):
         if check_constraints(data,constraints):
             nztot, row_block_heights = evaluate_blocking(grouping, nzcount, data["col_block_size"])
             data["padding"] = nztot - data["nonzeros"]
+            if data["blocking_algo"] == 1: #structured
+                data["padding"] /= 2
             data["avg_height"] = np.average(row_block_heights)
             datapoints.append(data)
             #print(data)
@@ -114,13 +116,13 @@ algos["fixed"] = {"blocking_algo": 2, "reorder": 0}
 
 
 
-for matrix_name in ["social","ia","soc","twitter"]:
+for matrix_name in ["social","ia","soc-pocket","twitter"]:
     try:
         for block_size in [16,64,256]:
-            x_name = "tau"
-            y_name = "padding"
+            x_name = "padding"
+            y_name = "avg_height"
 
-            print(f"Making {x_name} vs {y_name} image for graph {matrix_name}")
+            print(f"Making {x_name} vs {y_name} image for graph {matrix_name}; block size = {block_size}")
 
             plt.figure()
             for algo, parameters in algos.items():
