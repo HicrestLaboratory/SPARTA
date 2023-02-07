@@ -52,8 +52,7 @@ for fullpath in ${MATRICES_PATH}/*.el; do
 	for b in ${BLOCK_SIZEs[@]}; do
 		for r in ${REORDERINGs[@]}; do
 			for a in ${ALGOs[@]}; do
-				if [ ${a} -eq 2 ]
-				then
+				if [ ${a} -eq 2 ]; then
 					for B in ${ROW_BLOCK_SIZEs[@]};do
 						export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_a_${a}_B_${B}_r_${r}"
 						OUTFILE=${MATRIX_FOLDER}/${EXP_NAME}.txt
@@ -65,7 +64,7 @@ for fullpath in ${MATRICES_PATH}/*.el; do
 						create_launch
 						fi
 					done
-				elif [ ${a} -eq 0 ]
+				elif [ ${a} -eq 0 ]; then
 					for t in ${TAUs[@]}; do
 						for p in ${USE_PATTERN[@]}; do
 							for g in ${USE_GROUP[@]}; do
