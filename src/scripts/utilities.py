@@ -85,6 +85,7 @@ def get_data_line(folder, constraints):
         if check_constraints(data,constraints):
             nztot, row_block_heights = evaluate_blocking(grouping, nzcount, data["col_block_size"])
             data["padding"] = nztot - data["nonzeros"]
+            data["density"] = data["nonzeros"]/nztot
             if data["blocking_algo"] == 1: #structured
                 data["padding"] /= 2
             data["avg_height"] = np.average(row_block_heights)
@@ -117,17 +118,19 @@ algos["fixed"] = {"blocking_algo": 2, "reorder": 0}
 
 
 for matrix_name in ["social","ia","soc-pocket","twitter"]:
-    try:
         for block_size in [16,64,256]:
-            x_name = "padding"
-            y_name = "avg_height"
+            x_name = "avg_height"
+            y_name = "padding"
 
             print(f"Making {x_name} vs {y_name} image for graph {matrix_name}; block size = {block_size}")
 
             plt.figure()
-            for algo, parameters in algos.items():
-                parameters["col_block_size"] = block_size
-                add_curve(f"results/{matrix_name}", x_name = x_name, y_name = y_name, constraints = parameters, label = algo)
+            for algo, constraints in algos.items():
+                try:
+                    constraints["col_block_size"] = block_size
+                    add_curve(f"results/{matrix_name}", x_name = x_name, y_name = y_name, constraints = constraints, label = algo)
+                except:
+                    print(f"******missing curve for {algo}")
             savename = f"images/reordering_curves_mat_{matrix_name}_X_{x_name}_Y_{y_name}_b_{block_size}.pdf"
             plt.xlabel(x_name)
             plt.ylabel(y_name)
@@ -135,6 +138,4 @@ for matrix_name in ["social","ia","soc-pocket","twitter"]:
             plt.xscale("log")
             plt.legend()
             plt.savefig(savename,  bbox_inches='tight')
-    except:
-        print(f"could not create image for {matrix_name}")
 
