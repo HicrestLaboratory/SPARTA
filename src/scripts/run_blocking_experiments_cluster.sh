@@ -30,7 +30,7 @@ fi
 }
 
 
-TAUs=(0.01 0.1 0.2 0.3 0.4 0.5 0.6 0.7)
+TAUs=(0.001 0.005 0.01 0.05 0.1 0.15 0.2 0.25 0.3)
 USE_PATTERN=(0 1)
 USE_GROUP=(0)
 BLOCK_SIZEs=(16 64 256)
@@ -65,7 +65,7 @@ for fullpath in ${MATRICES_PATH}/*.el; do
 						create_launch
 						fi
 					done
-				else
+				elif [ ${a} -eq 0 ]
 					for t in ${TAUs[@]}; do
 						for p in ${USE_PATTERN[@]}; do
 							for g in ${USE_GROUP[@]}; do
@@ -79,6 +79,20 @@ for fullpath in ${MATRICES_PATH}/*.el; do
 									create_launch
 								fi
 							done
+						done
+					done
+				elif [ ${a} -eq 1 ]
+					for t in ${TAUs[@]}; do
+						for g in ${USE_GROUP[@]}; do
+							export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_a_${a}_t_${t}_p_${p}_g_${g}_r_${r}"
+							OUTFILE=${MATRIX_FOLDER}/${EXP_NAME}.txt
+							if [[ -f "${OUTFILE}" ]]; 
+							then
+								echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
+							else
+								export ARGS="-f ${fullpath} -b ${b} -t ${t} -a ${a} -r ${r} -p ${p} -g ${g} -v 1 -o ${OUTFILE} -P 1 -n ${EXP_NAME}"
+								create_launch
+							fi
 						done
 					done
 				fi
