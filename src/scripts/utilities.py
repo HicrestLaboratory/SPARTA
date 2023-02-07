@@ -117,6 +117,8 @@ def add_curve(folder, x_name = "tau", y_name = "nonzeros_padding", constraints =
 algos = {}
 algos["basic"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 0}
 algos["pattern"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 1}
+algos["pattern_groups"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 1, "use_groups":1}
+algos["pattern_groups_reordered"] = {"blocking_algo": 0, "reorder": 1, "use_pattern": 1, "use_groups":1}
 algos["structured"] = {"blocking_algo": 1, "reorder": 0, "use_pattern": 1}
 algos["fixed"] = {"blocking_algo": 2, "reorder": 0}
 
