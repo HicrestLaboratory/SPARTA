@@ -21,7 +21,7 @@ sleep 1s
 script_name=___tmp_script_${EXP_NAME}
 script_folder=${RESULTS_PATH}/scripts
 
-if [[ -f ${script_folder}/${script_name} ]]; then    
+if [[ -f "${script_folder}/${script_name}" ]]; then    
 	echo "experiment exists already"
 else
 	echo "${script_body}" > ${script_folder}/${script_name}.sbatch
@@ -30,10 +30,10 @@ fi
 }
 
 
-TAUs=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9)
+TAUs=(0.01 0.1 0.2 0.3 0.4 0.5 0.6 0.7)
 USE_PATTERN=(0 1)
 USE_GROUP=(0)
-BLOCK_SIZEs=(32 64 128)
+BLOCK_SIZEs=(16 64 256)
 ROW_BLOCK_SIZEs=(2 4 8 16 32 64 128 256 512 1024 2048 4096 8192)
 ALGOs=(0 1 2)
 REORDERINGs=(0) #pre-reordering
