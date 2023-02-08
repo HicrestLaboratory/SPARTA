@@ -28,7 +28,7 @@ double avg(std::vector<T> const& v) {
 }
 
 
-void save_blocking_data(std::ostream &outfile, CLineReader &cLine, BlockingEngine &bEngine, CSR &cmat, bool save_blocking = false, ostream &blocking_outfile = std::cout);
+void save_blocking_data(std::ostream &outfile, CLineReader &cLine, BlockingEngine &bEngine, CSR &cmat, bool save_blocking = false, std::ostream &blocking_outfile = std::cout);
 
 template <class MyType>
 void print_vec(std::vector<MyType> vec, std::ostream& stream = std::cout, std::string separator = " ")

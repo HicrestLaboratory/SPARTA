@@ -148,7 +148,7 @@ void BlockingEngine::CollectBlockingInfo(const CSR& cmat)
   vector<intT> row_partition = get_partition(grouping_result);
   vector<intT> row_permutation = get_permutation(grouping_result);
 
-  intT block_cols = cmat.cols/col_block_size + 1;
+  intT block_cols = std::ceil(((float) cmat.cols)/col_block_size);
   intT block_rows = row_partition.size() - 1;
 
   intT total_blocks_height = 0;
@@ -163,26 +163,31 @@ void BlockingEngine::CollectBlockingInfo(const CSR& cmat)
       for (intT i_reordered = row_partition[ib]; i_reordered < row_partition[ib+1]; i_reordered++)
       {
           intT i = row_permutation[i_reordered];
-          for (intT nz = 0; nz < nzcount[i]; nz++)
+          for (intT nz = 0; nz < cmat.nzcount[i]; nz++)
           {
-              intT j = ja[i][nz];
+              intT j = cmat.ja[i][nz];
               nonzero_flags[j/col_block_size] = true;
           }
       }
 
       for (intT jb = 0; jb < nonzero_flags.size(); jb++)
       {
+          intT tmp_block_col_size = col_block_size;
           if (nonzero_flags[jb] == 1)
           {
-              intT tmp_block_col_size = col_block_size - cmat.cols%col_block_size; //accounts for the last (possibly shorter) block
               VBR_nzcount += tmp_block_col_size*row_block_size;
               VBR_nzblocks_count++;
               total_blocks_height += row_block_size;
           }
       }
+
+      if (cmat.cols%col_block_size != 0 && nonzero_flags[nonzero_flags.size() - 1] == 1)
+      {
+          VBR_nzcount -= row_block_size*(col_block_size - cmat.cols%col_block_size); //accounts for the last (possibly shorter) block
+      }
   }
 
-    VBR_average_height = ((float) total_blocks_height)/VBR_nzblocks_count;
+  VBR_average_height = ((float) total_blocks_height)/VBR_nzblocks_count;
 }
 
 vector<intT> BlockingEngine::GetGrouping(const CSR& cmat)

@@ -113,55 +113,6 @@ void CSR::scramble()
     permute_rows(v);
 }
 
-
-void CSR::get_VBR_nzcount(const vector<intT> &grouping, intT block_col_size, intT& VBR_nzcount, intT& VBR_nzblocks_count, float& VBR_average_height)
-{
-    vector<intT> row_partition = get_partition(grouping);
-    vector<intT> row_permutation = get_permutation(grouping);
-    return get_VBR_nzcount(row_partition, row_permutation, block_col_size, VBR_nzcount, VBR_nzblocks_count, VBR_average_height);
-}
-
-void CSR::get_VBR_nzcount(const vector<intT> &row_partition, const vector<intT> &row_permutation, intT block_col_size, intT& VBR_nzcount, intT& VBR_nzblocks_count, float& VBR_average_height)
-{
-    
-    intT block_cols = cols/block_col_size + 1;
-    intT block_rows = row_partition.size() - 1;
-
-    intT VBR_nzblocks_count = 0;
-    intT total_blocks_height = 0;
-
-    //copy data block_row by block_row
-    for(intT ib = 0; ib < block_rows; ib++)
-    {
-        vector<bool> nonzero_flags(block_cols, false);
-        intT row_block_size = row_partition[ib+1] - row_partition[ib];
-
-        //flag nonzero blocks
-        for (intT i_reordered = row_partition[ib]; i_reordered < row_partition[ib+1]; i_reordered++)
-        {
-            intT i = row_permutation[i_reordered];
-            for (intT nz = 0; nz < nzcount[i]; nz++)
-            {
-                intT j = ja[i][nz];
-                nonzero_flags[j/block_col_size] = true;
-            }
-        }
-
-        for (intT jb = 0; jb < nonzero_flags.size(); jb++)
-        {
-            if (nonzero_flags[jb] == 1)
-            {
-                intT tmp_block_col_size = block_col_size - cols%block_col_size; //accounts for the last (possibly shorter) block
-                VBR_nzcount += tmp_block_col_size*row_block_size;
-                VBR_nzblocks_count++;
-                total_blocks_height += row_block_size;
-            }
-        }
-    }
-
-    VBR_average_height = ((float) total_blocks_height)/VBR_nzblocks_count;
-}
-
 void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only)
 //reads edgelist into the CSR.
 {

@@ -32,24 +32,21 @@ int main(int argc, char* argv[])
     if (cli.verbose_ > 1) vbmat.print();
 
     //GET BLOCK PROPERTIES FROM GROUPING WITHOUT CREATING VBR EXPLICITLY
-    if (cli.verbose_ > 0) cout << "nzcount_VBR: " << nzcount_VBR;
+    bEngine.CollectBlockingInfo(cmat);
 
     //REORDER CSR, THEN CREATE VBR FROM GROUPING
-    if (cli.verbose_ > 0) cout << "reordering the CSR" << endl;
+    //if (cli.verbose_ > 0) cout << "reordering the CSR" << endl;
     //create a VBR matrix from the row_partition (reordering the original csr)
-    VBR vbmat2; 
-    cmat.reorder(bEngine.grouping_result);
-    if (cli.verbose_ > 1) cmat.print(cli.verbose_);
+    //VBR vbmat2; 
+    //cmat.reorder(bEngine.grouping_result);
+    //if (cli.verbose_ > 1) cmat.print(cli.verbose_);
 
-    if (cli.verbose_ > 0) cout << "Create VBR from reordered CSR" << endl;
-    vbmat2.fill_from_CSR(cmat, get_partition(bEngine.grouping_result), cli.col_block_size_);
-    if (cli.verbose_ > 1) vbmat2.print();
+    //if (cli.verbose_ > 0) cout << "Create VBR from reordered CSR" << endl;
+    //vbmat2.fill_from_CSR(cmat, get_partition(bEngine.grouping_result), cli.col_block_size_);
+    //if (cli.verbose_ > 1) vbmat2.print();
     
-    if (cli.verbose_ > 1) 
-    {
-        cout << "GROUPING,";
-        print_vec(bEngine.grouping_result);
-    }
+    cout << "BLOCKING RESULTS:" << endl;
+    save_blocking_data(cout, cli, bEngine, cmat, true);
 
     cout << "TEST COMPLETED" << endl;
 }
