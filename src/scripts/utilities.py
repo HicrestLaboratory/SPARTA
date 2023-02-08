@@ -127,7 +127,7 @@ algos["fixed"] = {"blocking_algo": 2, "reorder": 0}
 
 
 
-for matrix_name in ["social","ia","soc-pocket","twitter"]:
+for matrix_name in ["social","ia","sevent","twitter"]:
         for block_size in [16,64,256]:
             x_name = "avg_height"
             y_name = "padding"

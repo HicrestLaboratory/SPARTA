@@ -36,9 +36,13 @@ class BlockingEngine
         intT merge_counter = 0;
         distFuncGroup comparator;
         std::vector<intT> grouping_result;
+        intT VBR_nzcount = 0;
+        intT VBR_nzblocks_count = 0;
+        float VBR_average_height = 0;
 
         std::vector<intT> GetGrouping(const CSR& cmat);
-
+        void CollectBlockingInfo(const CSR& cmat);
+        
         void SetComparator(int choice);
         
         void print();

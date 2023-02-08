@@ -138,6 +138,52 @@ vector<intT> FixedBlocking(const CSR& cmat, intT row_block_size)
   return grouping;
 }
 
+void BlockingEngine::CollectBlockingInfo(const CSR& cmat)
+{
+  //will fill the three variables:
+  VBR_nzcount = 0; //total nonzeros in the VBR
+  VBR_nzblocks_count = 0; //total nonzero blocks in the VBR
+  VBR_average_height = 0; //average height of nonzero blocks
+
+  vector<intT> row_partition = get_partition(grouping_result);
+  vector<intT> row_permutation = get_permutation(grouping_result);
+
+  intT block_cols = cmat.cols/col_block_size + 1;
+  intT block_rows = row_partition.size() - 1;
+
+  intT total_blocks_height = 0;
+
+  //copy data block_row by block_row
+  for(intT ib = 0; ib < block_rows; ib++)
+  {
+      vector<bool> nonzero_flags(block_cols, false);
+      intT row_block_size = row_partition[ib+1] - row_partition[ib];
+
+      //flag nonzero blocks
+      for (intT i_reordered = row_partition[ib]; i_reordered < row_partition[ib+1]; i_reordered++)
+      {
+          intT i = row_permutation[i_reordered];
+          for (intT nz = 0; nz < nzcount[i]; nz++)
+          {
+              intT j = ja[i][nz];
+              nonzero_flags[j/col_block_size] = true;
+          }
+      }
+
+      for (intT jb = 0; jb < nonzero_flags.size(); jb++)
+      {
+          if (nonzero_flags[jb] == 1)
+          {
+              intT tmp_block_col_size = col_block_size - cmat.cols%col_block_size; //accounts for the last (possibly shorter) block
+              VBR_nzcount += tmp_block_col_size*row_block_size;
+              VBR_nzblocks_count++;
+              total_blocks_height += row_block_size;
+          }
+      }
+  }
+
+    VBR_average_height = ((float) total_blocks_height)/VBR_nzblocks_count;
+}
 
 vector<intT> BlockingEngine::GetGrouping(const CSR& cmat)
 {

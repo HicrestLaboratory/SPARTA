@@ -134,7 +134,7 @@ vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
 }
 
 
-void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bEngine, CSR &cmat, bool save_blocking)
+void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bEngine, CSR &cmat, bool save_blocking, ostream &blocking_outfile)
 {
     string header;
     string values;
@@ -143,6 +143,10 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
         header += name + ","; 
         values += value + ",";
     };
+
+    bEngine.CollectBlockingInfo(cmat);
+
+    //infos
     add_to_output("matrix", cLine.filename_);
     add_to_output("rows", to_string(cmat.rows));
     add_to_output("cols", to_string(cmat.cols));
@@ -156,21 +160,21 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
     add_to_output("sim_measure", to_string(cLine.sim_measure_));
     add_to_output("reorder", to_string(cLine.reorder_));
     add_to_output("exp_name", cLine.exp_name_);
+ 
+    //results
     add_to_output("time_to_block", to_string(bEngine.timer));
+    add_to_output("VBR_nzcount", to_string(bEngine.VBR_nzcount));
+    add_to_output("VBR_nzblocks_count", to_string(bEngine.VBR_nzblocks_count));
+    add_to_output("VBR_average_heightVBR_average_height", to_string(bEngine.VBR_average_height));
     add_to_output("merge_counter", to_string(bEngine.merge_counter));
     add_to_output("comparison_counter", to_string(bEngine.comparison_counter));
 
     outfile << header << endl;
     outfile << values << endl;
 
-    vector<intT> nzcount_VBR = cmat.get_VBR_nzcount(bEngine.grouping_result,cLine.col_block_size_);
-
-    outfile << "NZCOUNT,";
-    print_vec(nzcount_VBR, outfile, ",");
-
     if (save_blocking)
     {
-        outfile << "GROUPING,";
-        print_vec(bEngine.grouping_result, outfile, ",");
+        blocking_outfile << "GROUPING,";
+        print_vec(bEngine.grouping_result, blocking_outfile, ",");
     }
 }

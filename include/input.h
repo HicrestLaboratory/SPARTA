@@ -17,7 +17,7 @@ class CLineReader
         std::string exp_name_ = "";
         std::string reader_delimiter_ = " ";
         
-        bool sim_use_groups_ = 1;
+        bool sim_use_groups_ = 0;
         bool sim_use_pattern_ = 1;
         bool pattern_only_ = 0;
 

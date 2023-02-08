@@ -114,23 +114,21 @@ void CSR::scramble()
 }
 
 
-vector<intT> CSR::get_VBR_nzcount(const vector<intT> &grouping, intT block_col_size)
+void CSR::get_VBR_nzcount(const vector<intT> &grouping, intT block_col_size, intT& VBR_nzcount, intT& VBR_nzblocks_count, float& VBR_average_height)
 {
     vector<intT> row_partition = get_partition(grouping);
     vector<intT> row_permutation = get_permutation(grouping);
-    return get_VBR_nzcount(row_partition, row_permutation, block_col_size);
+    return get_VBR_nzcount(row_partition, row_permutation, block_col_size, VBR_nzcount, VBR_nzblocks_count, VBR_average_height);
 }
 
-vector<intT> CSR::get_VBR_nzcount(const vector<intT> &row_partition, const vector<intT> &row_permutation, intT block_col_size)
+void CSR::get_VBR_nzcount(const vector<intT> &row_partition, const vector<intT> &row_permutation, intT block_col_size, intT& VBR_nzcount, intT& VBR_nzblocks_count, float& VBR_average_height)
 {
     
     intT block_cols = cols/block_col_size + 1;
     intT block_rows = row_partition.size() - 1;
 
-
-    //stats storage
-    vector<intT> nz_block_count(row_partition.size() - 1,0);
-
+    intT VBR_nzblocks_count = 0;
+    intT total_blocks_height = 0;
 
     //copy data block_row by block_row
     for(intT ib = 0; ib < block_rows; ib++)
@@ -149,10 +147,19 @@ vector<intT> CSR::get_VBR_nzcount(const vector<intT> &row_partition, const vecto
             }
         }
 
-        //fill nzcount
-        nz_block_count[ib] = std::count(nonzero_flags.begin(), nonzero_flags.end(), true);
+        for (intT jb = 0; jb < nonzero_flags.size(); jb++)
+        {
+            if (nonzero_flags[jb] == 1)
+            {
+                intT tmp_block_col_size = block_col_size - cols%block_col_size; //accounts for the last (possibly shorter) block
+                VBR_nzcount += tmp_block_col_size*row_block_size;
+                VBR_nzblocks_count++;
+                total_blocks_height += row_block_size;
+            }
+        }
     }
-    return nz_block_count;
+
+    VBR_average_height = ((float) total_blocks_height)/VBR_nzblocks_count;
 }
 
 void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only)

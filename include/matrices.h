@@ -42,8 +42,6 @@ struct CSR
     void scramble();
 
     void multiply(DataT* mat_B, intT B_cols, DataT_C* mat_C);
-    std::vector<intT> get_VBR_nzcount(const std::vector<intT> &grouping, intT block_col_size = 1);
-    std::vector<intT> get_VBR_nzcount(const std::vector<intT> &row_partition, const std::vector<intT> &row_permutation, intT block_col_size = 1);
     void print(intT verbose = 0);
     intT nztot()
     {

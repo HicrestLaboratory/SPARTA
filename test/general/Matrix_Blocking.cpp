@@ -22,7 +22,14 @@ int main(int argc, char* argv[])
     ofstream outfile;
     bool save_grouping = true;
     outfile.open(cli.outfile_);
-    save_blocking_data(outfile, cli, bEngine, cmat, save_grouping);
+
+
+    if (save_grouping)
+    {
+        ofstream outfile_grouping;
+        outfile_grouping.open(cli.outfile_ + ".g");
+    }
+    save_blocking_data(outfile, cli, bEngine, cmat, save_grouping, outfile_grouping);
 
     cout << "TEST COMPLETED" << endl;
 }
