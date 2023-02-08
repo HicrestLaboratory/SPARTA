@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
     //if (cli.verbose_ > 1) vbmat2.print();
     
     cout << "BLOCKING RESULTS:" << endl;
-    save_blocking_data(cout, cli, bEngine, cmat, true);
+    save_blocking_data(cout, cli, bEngine, cmat, false);
 
     cout << "TEST COMPLETED" << endl;
 }

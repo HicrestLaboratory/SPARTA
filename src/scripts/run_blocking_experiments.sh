@@ -3,14 +3,15 @@ export RESULTS_PATH=$2
 export PROGRAM=$3
 
 
-TAUs=(0.001 0.005 0.01 0.05 0.1 0.15 0.2 0.25 0.3)
+TAUs=(0.001 0.002 0.005 0.01 0.02 0.05 0.1 0.2 0.5)
 USE_PATTERN=(0 1)
 USE_GROUP=(0)
-BLOCK_SIZEs=(8 32 64 128)
+BLOCK_SIZEs=(16 64 256)
 ROW_BLOCK_SIZEs=(2 4 8 16 32 64 128 256 512 1024 2048 4096 8192)
 ALGOs=(0 1 2)
-REORDERINGs=(0 1) #pre-reordering
+REORDERINGs=(1) #pre-reordering
 
+mkdir ${RESULTS_PATH}
 
 for fullpath in ${MATRICES_PATH}/*.el; do
 	MATRIX_FILE=$(basename -- "${fullpath}")

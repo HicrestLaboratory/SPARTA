@@ -119,7 +119,7 @@ void update_structured_sparsity(vector<intT>& structured_sparsity_pattern, vecto
 }
 
 
-vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
+vector<intT> OLD_merge_rows(vector<intT> A, intT*B, intT size_B)
 {
     //A,B sparse rows (compressed indices format)
     vector<intT> result;
@@ -130,6 +130,36 @@ vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
             B, B + size_B,
            std::back_inserter(result));
 
+    return result;
+}
+
+vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
+{
+
+    vector<intT> result;
+    auto i = A.begin();
+    auto new_i = A.begin();
+    intT j = 0;
+    while(j < size_B)
+    {
+        auto B_val = B[j];
+
+        //find j position in A
+        new_i = std::lower_bound(i, A.end(), B_val);
+
+        if (new_i == A.end()) break;
+
+
+        //copy A up to there
+        result.insert(result.end(), i, new_i);
+        result.push_back(B_val);
+        if (*new_i == B_val) new_i++;
+
+        i = new_i;
+        j++;
+    }
+
+    result.insert(result.end(), B + j, B + size_B);
     return result;
 }
 

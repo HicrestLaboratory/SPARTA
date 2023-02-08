@@ -250,7 +250,7 @@ float HammingDistanceGroup(vector<intT> row_A, intT group_size_A, intT* row_B, i
 {
   bool count_zeros = 0;
   intT size_A = row_A.size();
-  if (size_A == 0 and size_B == 0) return 0;
+  if (size_A == 0 && size_B == 0) return 0;
 
   intT blocksize_A = ceil(size_A/block_size);
   intT blocksize_B = ceil(size_B/block_size);
@@ -269,10 +269,6 @@ float HammingDistanceGroup(vector<intT> row_A, intT group_size_A, intT* row_B, i
     add_to_count_B = group_size_B;
   }
 
-  auto blockpos_A = [&](intT i){return floor(row_A[i]/block_size);}; 
-  auto blockpos_B = [&](intT j){return floor(row_B[j]/block_size);};
-
-
   intT i = 0;
   intT j = 0;
   intT count = 0;
@@ -281,38 +277,38 @@ float HammingDistanceGroup(vector<intT> row_A, intT group_size_A, intT* row_B, i
   
   while (i < size_A && j < size_B)
   {
-    pos_A = blockpos_A(i);
-    pos_B = blockpos_B(j);
+    pos_A = row_A[i]/block_size;
+    pos_B = row_B[j]/block_size;
 
     if (pos_A < pos_B)
     {
       count += add_to_count_A;
-      while(i < size_A && blockpos_A(i) == pos_A) i++;
+      while(i < size_A && row_A[i]/block_size == pos_A) i++;
     }
     else if (pos_A > pos_B)
     {
       count += add_to_count_B;
-      while(j < size_B && blockpos_B(j) == pos_B) j++;
+      while(j < size_B && row_B[j]/block_size == pos_B) j++;
     }
     else
     {
-      while(i < size_A && blockpos_A(i) == pos_A) i++;
-      while(j < size_B && blockpos_B(j) == pos_B) j++;
+      while(i < size_A && row_A[i]/block_size == pos_A) i++;
+      while(j < size_B && row_B[j]/block_size == pos_B) j++;
     }
   }
 
   while (i < size_A)
   { 
-    pos_A = blockpos_A(i);
+    pos_A = row_A[i]/block_size;
     count += add_to_count_A;
-    while(i < size_A && blockpos_A(i) == pos_A) i++;
+    while(i < size_A && row_A[i]/block_size == pos_A) i++;
   }
 
   while (j < size_B)
   { 
-    pos_B = blockpos_B(j);
+    pos_B = row_B[j]/block_size;;
     count += add_to_count_B;
-    while(j < size_B && blockpos_B(j) == pos_B) j++;
+    while(j < size_B && row_B[j]/block_size == pos_B) j++;
   }
 
   return count;
