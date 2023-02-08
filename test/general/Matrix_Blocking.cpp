@@ -24,9 +24,9 @@ int main(int argc, char* argv[])
     outfile.open(cli.outfile_);
 
 
+    ofstream outfile_grouping;
     if (save_grouping)
     {
-        ofstream outfile_grouping;
         outfile_grouping.open(cli.outfile_ + ".g");
     }
     save_blocking_data(outfile, cli, bEngine, cmat, save_grouping, outfile_grouping);
