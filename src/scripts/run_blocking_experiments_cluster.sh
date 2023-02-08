@@ -30,9 +30,9 @@ fi
 }
 
 
-TAUs=(0.001 0.005 0.01 0.05 0.1 0.15 0.2 0.25 0.3)
-USE_PATTERN=(1)
-USE_GROUP=(0 1)
+TAUs=(0.001 0.002 0.005 0.01 0.02 0.05 0.1 0.2 0.5)
+USE_PATTERN=(0 1)
+USE_GROUP=(0)
 BLOCK_SIZEs=(16 64 256 1024)
 ROW_BLOCK_SIZEs=(2 4 8 16 32 64 128 256 512 1024 2048 4096 8192)
 ALGOs=(0 1 2)
@@ -60,7 +60,7 @@ for fullpath in ${MATRICES_PATH}/*.el; do
 						then
 							echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 						else
-						export ARGS="-f ${fullpath} -b ${b} -a ${a} -B ${B} -r ${r} -v 1 -o ${OUTFILE} -P 1 -n ${EXP_NAME}"
+						export ARGS="-f ${fullpath} -b ${b} -a ${a} -B ${B} -r 0 -v 1 -o ${OUTFILE} -P 1 -n ${EXP_NAME}"
 						create_launch
 						fi
 					done
