@@ -93,7 +93,7 @@ clean:
 
 TEST: TESTGEN TESTCUDA
 
-TESTGEN : build_general $(GEN_APP_DIR)/TEST_matrices $(GEN_APP_DIR)/TEST_blocking_VBR
+TESTGEN : build_general $(GEN_APP_DIR)/TEST_matrices $(GEN_APP_DIR)/TEST_blocking_VBR $(GEN_APP_DIR)/TEST_similarities
 
 TESTCUDA : build_cuda $(CUDA_APP_DIR)/TEST_cuda
 

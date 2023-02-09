@@ -116,8 +116,11 @@ algos["fixed"] = {"blocking_algo": 2, "reorder": 0}
 
 
 
-#for matrix_name in ["social","ia","sevent","twitter"]:
-for matrix_name in ["0","1","2","3"]:
+result_folder = "results/"
+#result_folder = "results/tinydense"
+
+for matrix_name in ["1","2","ia"]:
+#for matrix_name in ["0","1","2","3"]:
         for block_size in [16,64,256]:
             x_name = "VBR_average_height"
             y_name = "padding"
@@ -128,7 +131,7 @@ for matrix_name in ["0","1","2","3"]:
             for algo, constraints in algos.items():
                 try:
                     constraints["col_block_size"] = block_size
-                    add_curve(f"results/tinydense/{matrix_name}", x_name = x_name, y_name = y_name, constraints = constraints, label = algo)
+                    add_curve(f"{result_folder}/{matrix_name}", x_name = x_name, y_name = y_name, constraints = constraints, label = algo)
                 except:
                     print(f"******missing curve for {algo}")
             savename = f"images/reordering_curves_mat_{matrix_name}_X_{x_name}_Y_{y_name}_b_{block_size}_.pdf"

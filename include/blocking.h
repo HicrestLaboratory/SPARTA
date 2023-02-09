@@ -55,7 +55,9 @@ std::vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncG
 std::vector<intT> IterativeBlockingPatternMN(const CSR& cmat, float tau, distFuncGroup distanceFunction,intT block_size, bool use_size, bool use_pattern, int structured_m, int structured_n, intT &comparison_counter, intT &merge_counter, float &timer);
 std::vector<intT> FixedBlocking(const CSR& cmat, intT row_block_size);
 
-
+float HammingDistanceGroupOPENMP(std::vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size);
 float HammingDistanceGroup(std::vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size);
+
+float JaccardDistanceGroupOPENMP(std::vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size);
 float JaccardDistanceGroup(std::vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size);
 
