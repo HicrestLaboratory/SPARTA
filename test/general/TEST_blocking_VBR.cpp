@@ -25,11 +25,11 @@ int main(int argc, char* argv[])
     bEngine.print();
 
     //CREATE VBR FROM GROUPING
-    //if (cli.verbose_ > 0) cout << "create VBR from grouping;" << endl;
+    if (cli.verbose_ > 0) cout << "create VBR from grouping;" << endl;
     //create a VBR matrix from grouping (without reordering the original csr)
-    //VBR vbmat;
-    //vbmat.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_);
-    //if (cli.verbose_ > 1) vbmat.print();
+    VBR vbmat;
+    vbmat.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_);
+    if (cli.verbose_ > 1) vbmat.print();
 
     //GET BLOCK PROPERTIES FROM GROUPING WITHOUT CREATING VBR EXPLICITLY
     bEngine.CollectBlockingInfo(cmat);

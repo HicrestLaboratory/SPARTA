@@ -77,8 +77,10 @@ def get_data_line(folder, constraints):
         if check_constraints(data,constraints):
             data["padding"] = data["VBR_nzcount"] - data["nonzeros"]
             data["density"] = data["nonzeros"]/data["VBR_nzcount"]
-            if data["blocking_algo"] == 1: #structured
-                data["padding"] /= 2
+            #if data["blocking_algo"] == 1: #structured
+            #    data["padding"] = data["VBR_nzcount"]/2 - data["nonzeros"]
+            #    if data["padding"] <= 0:
+            #        print("padding!", data["padding"])
             datapoints.append(data)
     return datapoints
 
@@ -92,27 +94,30 @@ def add_curve(folder, x_name = "tau", y_name = "padding", constraints = {}, labe
     y = [data[y_name] for data in datapoints]
     L = sorted(zip(x,y), key=operator.itemgetter(0))
     x_s, y_s = zip(*L)
-    if (not check_unique(x_s)):
-        print("WARNING: plotting elements are not unique. Define better constraints")
+    #if (not check_unique(x_s)):
+        #print("WARNING: plotting elements are not unique. Define better constraints")
     plt.plot(x_s, y_s, label = label, marker = "o")
+
 
 
 reorder = 1;
 algos = {}
-algos["basic"] = {"blocking_algo": 0, "reorder": reorder, "use_pattern": 0, "sim_use_groups": 0}
-algos["pattern"] = {"blocking_algo": 0, "reorder": reorder, "use_pattern": 1, "sim_use_groups":1}
-#algos["pattern_groups"] = {"blocking_algo": 0, "reorder": reorder, "use_pattern": 1, "sim_use_groups":1}
+#algos["basic"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 0, "sim_use_groups": 0}
+#algos["pattern"] = {"blocking_algo": 0, "reorder": reorder, "use_pattern": 1, "sim_use_groups":0}
+#algos["pattern"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 1, "sim_use_groups":1}
+#algos["pattern"] = {"blocking_algo": 0, "reorder": 1, "use_pattern": 1, "sim_use_groups":0}
+algos["pattern"] = {"blocking_algo": 0, "reorder": 1, "use_pattern": 1, "sim_use_groups":1}
+#algos["pattern_groups_nore"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 1, "sim_use_groups":1}
 #algos["pattern_groups_reordered"] = {"blocking_algo": reorder, "reorder": 1, "use_pattern": 1, "sim_use_groups":1}
 algos["structured"] = {"blocking_algo": 1, "reorder": reorder, "use_pattern": 1}
-#algos["pattern_groups"] = {"blocking_algo": 1, "reorder": reorder, "use_pattern": 1}
-#algos["pattern_groups_reordered"] = {"blocking_algo": 1, "reorder": reorder, "use_pattern": 1, "sim_use_groups":1}
-algos["fixed"] = {"blocking_algo": 2, "reorder": reorder}
+#algos["structured_nore"] = {"blocking_algo": 1, "reorder": reorder, "use_pattern": 0}
+algos["fixed"] = {"blocking_algo": 2, "reorder": 0}
 
 
 
 
 #for matrix_name in ["social","ia","sevent","twitter"]:
-for matrix_name in ["ia","sevent"]:
+for matrix_name in ["0","1","2","3"]:
         for block_size in [16,64,256]:
             x_name = "VBR_average_height"
             y_name = "padding"
@@ -123,7 +128,7 @@ for matrix_name in ["ia","sevent"]:
             for algo, constraints in algos.items():
                 try:
                     constraints["col_block_size"] = block_size
-                    add_curve(f"results/home/{matrix_name}", x_name = x_name, y_name = y_name, constraints = constraints, label = algo)
+                    add_curve(f"results/tinydense/{matrix_name}", x_name = x_name, y_name = y_name, constraints = constraints, label = algo)
                 except:
                     print(f"******missing curve for {algo}")
             savename = f"images/reordering_curves_mat_{matrix_name}_X_{x_name}_Y_{y_name}_b_{block_size}_.pdf"
@@ -131,6 +136,8 @@ for matrix_name in ["ia","sevent"]:
             plt.ylabel(y_name)
             plt.yscale("log")
             plt.xscale("log")
+            plt.xlim(1,100)
             plt.legend()
+            plt.tight_layout()
             plt.savefig(savename,  bbox_inches='tight')
 
