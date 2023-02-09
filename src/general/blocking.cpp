@@ -243,6 +243,12 @@ void BlockingEngine::SetComparator(int choice)
         case 1: 
             comparator = JaccardDistanceGroup;
             break;
+        case 2: 
+            comparator = HammingDistanceGroupOPENMP;
+            break;        
+        case 3: 
+            comparator = JaccardDistanceGroupOPENMP;
+            break;
     }
 }
 
@@ -368,13 +374,13 @@ float JaccardDistanceGroupOPENMP(vector<intT> row_A, intT group_size_A, intT* ro
 
       pos_B = row_B[j]/block_size;
       auto ptr_A = std::lower_bound(row_A.begin(), row_A.end(), pos_B * block_size); //check the smallest element larger than the start of the block
-      if (*ptr_A/block_size > pos_B) //if it does not belong to same block, increase difference (can only be larger)
+      if (ptr_A != row_A.end() && *ptr_A/block_size == pos_B) //if it does not belong to same block, increase difference (can only be larger)
       {
-        diffBA++;
+        intersectBA++;
       }
       else //otherwise, count it as intersection
       {
-        intersectBA++;
+        diffBA++;
       }
     }
   }
@@ -519,8 +525,6 @@ float JaccardDistanceGroup(vector<intT> row_A, intT group_size_A, intT* row_B, i
     block_size_B++;
     while(j < size_B && row_B[j]/block_size == pos_B) j++;
   }
-
-  std::cout << "j_count" << count << endl;
 
   return (2.0*count)/(block_size_A*group_size_A + block_size_B*group_size_B + count);
 }

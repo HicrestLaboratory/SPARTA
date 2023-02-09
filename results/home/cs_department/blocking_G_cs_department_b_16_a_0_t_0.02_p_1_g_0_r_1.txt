@@ -1,2 +1,0 @@
-matrix,rows,cols,nonzeros,blocking_algo,tau,row_block_size,col_block_size,use_pattern,sim_use_groups,sim_measure,reorder,exp_name,time_to_block,VBR_nzcount,VBR_nzblocks_count,VBR_average_height,merge_counter,comparison_counter,
-data/real_world//cs_department.el,60,61,353,0,0.020000,1,16,1,0,1,1,blocking_G_cs_department_b_16_a_0_t_0.02_p_1_g_0_r_1,1060.000000,1571,22,4.727273,48,369,

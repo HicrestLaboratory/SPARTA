@@ -6,10 +6,12 @@ export PROGRAM=$3
 TAUs=(0.001 0.002 0.005 0.01 0.02 0.05 0.1 0.2 0.5)
 USE_PATTERN=(0 1)
 USE_GROUP=(0 1)
-BLOCK_SIZEs=(16 64 256)
+BLOCK_SIZEs=(16)
 ROW_BLOCK_SIZEs=(2 4 8 16 32 64 128 256 512 1024 2048 4096 8192)
 ALGOs=(0 1 2)
 REORDERINGs=(0 1) #pre-reordering
+
+SIM=1 #0: hamming 1:jaccard; +2 for OPENMP versions
 
 mkdir ${RESULTS_PATH}
 
@@ -44,7 +46,7 @@ for fullpath in ${MATRICES_PATH}/*.el; do
 								then
 									echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 								else
-									export ARGS="-f ${fullpath} -b ${b} -t ${t} -a ${a} -r ${r} -p ${p} -g ${g} -v 1 -o ${OUTFILE} -P 1 -n ${EXP_NAME}"
+									export ARGS="-f ${fullpath} -b ${b} -t ${t} -a ${a} -r ${r} -p ${p} -g ${g} -v 1 -o ${OUTFILE} -P 1 -n ${EXP_NAME} -m ${SIM}"
 									./${PROGRAM} ${ARGS}
 								fi
 							done
@@ -61,7 +63,7 @@ for fullpath in ${MATRICES_PATH}/*.el; do
 							then
 								echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 							else
-								export ARGS="-f ${fullpath} -b ${b} -t ${t} -a ${a} -r ${r} -p ${p} -g ${g} -v 1 -o ${OUTFILE} -P 1 -n ${EXP_NAME}"
+								export ARGS="-f ${fullpath} -b ${b} -t ${t} -a ${a} -r ${r} -p ${p} -g ${g} -v 1 -o ${OUTFILE} -P 1 -n ${EXP_NAME} -m ${SIM}"
 								./${PROGRAM} ${ARGS}
 							fi
 						done

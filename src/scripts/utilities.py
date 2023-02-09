@@ -102,25 +102,27 @@ def add_curve(folder, x_name = "tau", y_name = "padding", constraints = {}, labe
 
 reorder = 1;
 algos = {}
-#algos["basic"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 0, "sim_use_groups": 0}
-#algos["pattern"] = {"blocking_algo": 0, "reorder": reorder, "use_pattern": 1, "sim_use_groups":0}
-#algos["pattern"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 1, "sim_use_groups":1}
-#algos["pattern"] = {"blocking_algo": 0, "reorder": 1, "use_pattern": 1, "sim_use_groups":0}
-algos["pattern"] = {"blocking_algo": 0, "reorder": 1, "use_pattern": 1, "sim_use_groups":1}
-#algos["pattern_groups_nore"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 1, "sim_use_groups":1}
-#algos["pattern_groups_reordered"] = {"blocking_algo": reorder, "reorder": 1, "use_pattern": 1, "sim_use_groups":1}
-algos["structured"] = {"blocking_algo": 1, "reorder": reorder, "use_pattern": 1}
+algos["basic"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 0, "sim_use_groups": 0}
+algos["pattern"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 1, "sim_use_groups":0}
+algos["pattern_group"] = {"blocking_algo": 0, "reorder": 0, "use_pattern": 1, "sim_use_groups":1}
+algos["pattern_reorder"] = {"blocking_algo": 0, "reorder": 1, "use_pattern": 1, "sim_use_groups":0}
+algos["pattern_groups_reorder"] = {"blocking_algo": 0, "reorder": 1, "use_pattern": 1, "sim_use_groups":1}
+
+algos["structured"] = {"blocking_algo": 1, "reorder": 1, "use_pattern": 1, "sim_use_groups": 1}
 #algos["structured_nore"] = {"blocking_algo": 1, "reorder": reorder, "use_pattern": 0}
 algos["fixed"] = {"blocking_algo": 2, "reorder": 0}
+algos["fixed_reordered"] = {"blocking_algo": 2, "reorder": 1}
 
 
 
 
-result_folder = "results/"
-#result_folder = "results/tinydense"
 
-for matrix_name in ["1","2","ia"]:
-#for matrix_name in ["0","1","2","3"]:
+#result_folder = "results/"
+result_folder = "results/tinydense"
+saving_folder = "images"
+
+#for matrix_name in ["0",]:
+for matrix_name in ["0","1","2","3"]:
         for block_size in [16,64,256]:
             x_name = "VBR_average_height"
             y_name = "padding"
@@ -134,12 +136,12 @@ for matrix_name in ["1","2","ia"]:
                     add_curve(f"{result_folder}/{matrix_name}", x_name = x_name, y_name = y_name, constraints = constraints, label = algo)
                 except:
                     print(f"******missing curve for {algo}")
-            savename = f"images/reordering_curves_mat_{matrix_name}_X_{x_name}_Y_{y_name}_b_{block_size}_.pdf"
+            savename = f"{saving_folder}/reordering_curves_mat_{matrix_name}_X_{x_name}_Y_{y_name}_b_{block_size}_.pdf"
             plt.xlabel(x_name)
             plt.ylabel(y_name)
             plt.yscale("log")
             plt.xscale("log")
-            plt.xlim(1,100)
+            #plt.xlim(1,100)
             plt.legend()
             plt.tight_layout()
             plt.savefig(savename,  bbox_inches='tight')
