@@ -12,24 +12,24 @@ int main(int argc, char* argv[])
     CLineReader cli(argc, argv);
     if (cli.verbose_ > 0) cli.print();
     CSR cmat(cli);
-    if (cli.verbose_ > 0) cmat.print(cli.verbose_);
+    if (cli.verbose_ > 1) cmat.print(cli.verbose_);
     BlockingEngine bEngine(cli);
 
     //evaluate the grouping
     if (cli.verbose_ > 0) cout << "evaluating reordering" <<endl;
     bEngine.GetGrouping(cmat);
 
-    cout << "GROUPING: "; 
-    print_vec(bEngine.grouping_result);
+    if (cli.verbose_ > 1) cout << "GROUPING: "; 
+    if (cli.verbose_ > 1) print_vec(bEngine.grouping_result);
     
     bEngine.print();
 
     //CREATE VBR FROM GROUPING
-    if (cli.verbose_ > 0) cout << "create VBR from grouping;" << endl;
+    //if (cli.verbose_ > 0) cout << "create VBR from grouping;" << endl;
     //create a VBR matrix from grouping (without reordering the original csr)
-    VBR vbmat;
-    vbmat.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_);
-    if (cli.verbose_ > 1) vbmat.print();
+    //VBR vbmat;
+    //vbmat.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_);
+    //if (cli.verbose_ > 1) vbmat.print();
 
     //GET BLOCK PROPERTIES FROM GROUPING WITHOUT CREATING VBR EXPLICITLY
     bEngine.CollectBlockingInfo(cmat);
