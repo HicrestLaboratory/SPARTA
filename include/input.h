@@ -1,107 +1,110 @@
 #pragma once
+
 #include <string>
-#include <vector>
-#include "comp_mats.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>       //time
+#include <random>       // random
+#include <iostream>
+#include <fstream>
+#include <unistd.h> //getopt, optarg
 
-typedef std::vector<float> vec_d;
-typedef std::vector<std::string> vec_str;
-
-template<class T>
-float mean(std::vector<T> v)
+class CLineReader
 {
-    //mean of a vector
-    float m = 0.;
-    for (auto t : v)
-    {
-        m += t;
-    }
-    m /= v.size();
-    return m;
-}
+    public:
+        std::string filename_ = "data/TEST_matrix_weighted.el";
+        std::string outfile_ = "results/TEST_results.txt";
+        std::string exp_name_ = "";
+        std::string reader_delimiter_ = " ";
+        
+        bool sim_use_groups_ = 0;
+        bool sim_use_pattern_ = 1;
+        bool pattern_only_ = 0;
 
-template<class T>
-float std_dev(std::vector<T> v)
-{
-    //std of a vector
-    float m = mean(v);
-    float s = 0.;
-    for (auto t : v)
-    {
-        s += (t - m) * (t - m);
-    }
-    s = sqrt(s / v.size());
-    return s;
-}
+        int blocking_algo_ = 0; // 0 for iterative; 1 for structures; 2 for fixed;
+        int seed_ = 0;
+        int sim_measure_ = 1;
+        int reorder_ = 0; //-1 for ascending. 0 for nothing. 1 for descending. 2 for scramble
+        int col_block_size_ = 1;
+        int row_block_size_ = 1;
 
+        int verbose_ = 1;
+        int warmup_ = 1; //how many warmup multiplications
+        int exp_repetitions_ = 5;
 
-template <class myType>
-int output_couple(std::string& names, std::string& values, std::string name, myType value)
-{
-    //append name to names and value to values; add spaces
-    //used to produce output in CSV-like form;
+        float tau_ = 0.5;
 
-    names += name + " ";
-    values += std::to_string(value) + " ";
+        CLineReader(int argc, char* argv[])
+        {
+            ParseArgs(argc, argv);
+        }
 
-    return 0;
-}
+        void print()
+        {
+            std::cout << "INPUT PARAMETERS:" << std::endl;
+            std::cout << "filename: " << filename_ << std::endl;
+            std::cout << "outfile: " <<  outfile_ << std::endl;
+            std::cout << "exp_name: " <<  exp_name_ << std::endl;
+            std::cout << "reader_delimiter_: " <<  reader_delimiter_ << std::endl;
+            std::cout << "sim_measure_: " <<  sim_measure_ << std::endl;
+            std::cout << "blocking_algo_: " <<  blocking_algo_ << std::endl;
+            std::cout << "sim_use_groups_: " <<  sim_use_groups_ << std::endl;
+            std::cout << "sim_use_pattern_: " <<  sim_use_pattern_ << std::endl;
+            std::cout << "pattern_only_: " <<  pattern_only_ << std::endl;
+            std::cout << "reorder_by_degree_: " <<  reorder_ << std::endl;
+            std::cout << "tau_: " <<  tau_ << std::endl;
+            std::cout << "col_block_size_: " <<  col_block_size_ << std::endl;
+            std::cout << "row_block_size_: " <<  row_block_size_ << std::endl;
+            std::cout << "verbose_: " <<  verbose_ << std::endl;
+            std::cout << "seed_: " <<  seed_ << std::endl; //-1 for random
+            std::cout << "warmup_: " <<  warmup_ << std::endl;
+            std::cout << "exp_repetitions_: " <<  exp_repetitions_ << std::endl;
 
-int output_couple(std::string& names, std::string& values, std::string name, std::string value);
-
-struct input_parameters
-{
-    int verbose = 3;
-    int input_type = 4;
-
-    intT A_rows = 12;            //rows in the square input matrix;
-    intT A_cols = 8;
-    int cmat_A_fmt = 0;          //cuda needs column-major matrices
-    int A_nnz = -1;              //will store the number of nonzeros
-
-    
-    intT B_cols = 5;             //number of columns in the output matrix;
-    float B_density = 1.;       //density of the multiplication matrix
-    
-    int block_size = 4;         //block size for variable block matrix. Rows and columns must be evenly divisible by this;
-    float density = 0.5;        //density of the input matrix;
-    float block_density = 0.5;  //density inside the blocks;
-
-    std::string exp_name = "default";
-    std::string reorder_algo = "saad_blocks";
-    std::string similarity_func = "scalar";
-    int hierarchic_merge = 1;         //Activate hierchical merging?
-    float merge_limit = 0;            //the merge limit. If -1, use the theoretical limit; if 0, deactivate;
+            std::cout << "___________________" << std::endl;; 
+        }
 
 
-    int algo_block_size = 4;
-    bool save_reordering = false; //save the grouping and blocking info obtained from reordering?
+        void ParseArgs(int argc, char* argv[])
+        {
+            char c_opt;
+            while ((c_opt = getopt(argc, argv, "a:b:B:f:g:n:o:p:P:r:s:t:v:w:x:")) != -1)
+            {
+                switch(c_opt) 
+                {
+                    case 'a': blocking_algo_ = std::stoi(optarg);                   break;
+                    case 'b': col_block_size_ = std::stoi(optarg);                      break;
+                    case 'B': row_block_size_ = std::stoi(optarg);                      break;
+                    case 'g': sim_use_groups_ = (std::stoi(optarg) == 1);           break;
+                    case 'o': outfile_ = std::string(optarg);                       break;
+                    case 'p': sim_use_pattern_ = (std::stoi(optarg) == 1);          break;
+                    case 'P': pattern_only_ = (std::stoi(optarg) == 1);             break;
+                    case 'm': sim_measure_ = std::stoi(optarg);                     break;
+                    case 'n': exp_name_ = std::string(optarg);                      break;
+                    case 'f': filename_ = std::string(optarg);                      break;
+                    case 'r': reorder_ = std::stoi(optarg);                         break;
+                    case 's': seed_ = std::stoi(optarg);                            break;
+                    case 't': tau_ = std::stof(optarg);                             break;
+                    case 'v': verbose_ = std::stoi(optarg);                         break;
+                    case 'w': warmup_ = std::stoi(optarg);                          break;
+                    case 'x': exp_repetitions_ = std::stoi(optarg);                 break;
 
-    std::string input_source = "NO_INPUT";
-    int scramble = 0;           //scramble the input matrix?
-    int n_streams = 16;         //number of streams for the custom block_based multiplication
+                }           
+            }
 
-    float eps = 0.5;            //this value sets how different two rows in the same block can be.
-                                //eps = 1 means only rows with equal structure are merged into a block
-                                //eps = 0 means all rows are merged into a single block
-    int seed = 123;
-    float precision = 0.0001;   //precision for float equality check
+            if (seed_ != 0)
+            {
+                std::srand(seed_);
+            }
+            else
+            {
+                //TODO better randomness if needed
+                std::random_device rd;
+                std::srand(rd());
+            }
 
-    int warmup = 0;             //number of warmup experiments
-    int experiment_reps = 1;    //number of non-warmup repetitions
-    int algo = -1;              //algorithm choice (-1: all)
-    int check_correct = 0;      //verify correctness?
-
+            if ((filename_ == "")) 
+            {
+            std::cout << "No graph input specified." << std::endl;
+            }
+        }
 };
-
-int output_couple_parameters(input_parameters& params, std::string& names, std::string& values);
-
-int save_reordering(std::string& output_file, intT* hash_groups, input_parameters& params);
-
-int get_input_params(int argc, char* argv[], input_parameters& params);
-
-int get_input_CSR(CSR& cmat_A, input_parameters& params);
-
-int scramble_input(CSR& cmat, input_parameters& params);
-
-
-
