@@ -1,6 +1,12 @@
-TODO
+Compile with 
 
+'''make serial''' to compile without cuda  
+or
+'''make all''' to compile also the cuda test
 
-input scrambler in CSR definition
+run '''./programs/general/TEST_blocking_VBR''' to see an example application; you can see available options in input.h
 
-python scripts for analysis (bring from other repo)
+important options: 
+-a algorithm choice (0: iterative, 1: structured, 2: fixed)
+-b column_block_size
+
