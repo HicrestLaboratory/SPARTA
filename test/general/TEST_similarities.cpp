@@ -45,8 +45,16 @@ int main(int argc, char* argv[])
 
             cout << " Hamming: " << hamming_sim << endl;
             cout << " Hamming(OPENMP): " << hamming_sim_openmp << endl;
+            
+            if (!(hamming_sim == hamming_sim_openmp)) cout << "HAMMING TEST FAILED!" << endl;
+
 
             cout << " Jaccard: " << jaccard_sim << endl;
             cout << " Jaccard(OPENMP): " << jaccard_sim_openmp << endl;
+            
+            if (!(jaccard_sim == jaccard_sim_openmp)) cout << "JACCARD TEST FAILED!" << endl;
+
+
+
         }
 }
