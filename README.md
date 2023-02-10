@@ -1,10 +1,10 @@
-Compile with 
+# Compilation
 
-'''make serial''' to compile without cuda  
+`` make serial `` to compile without cuda  
 or
-'''make all''' to compile also the cuda test
+``make all`` to compile also the cuda test
 
-run '''./programs/general/TEST_blocking_VBR''' to see an example application; you can see available options in input.h
+run ``./programs/general/TEST_blocking_VBR`` to see an example application; you can see available options in input.h
 
 important options: 
 -a algorithm choice (0: iterative, 1: structured, 2: fixed)
