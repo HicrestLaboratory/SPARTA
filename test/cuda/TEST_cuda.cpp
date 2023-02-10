@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
     if (cli.verbose_ > 0) cli.print();
     CSR cmat_A(cli); //sparse operand
     BlockingEngine bEngine(cli);
-    bEngine.blocking_algo = 2; //set blocking algo to fixed_size
+    bEngine.blocking_algo = fixed_size; //set blocking algo to fixed_size
     bEngine.row_block_size = bEngine.col_block_size;
 
 
