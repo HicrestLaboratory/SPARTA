@@ -28,7 +28,6 @@ int main(int argc, char* argv[])
     VBR vbmat; 
     if (cli.verbose_ > 0) cout << "Create VBR" << endl;
     bEngine.GetGrouping(cmat_A);
-    VBR vbmat;
     vbmat.fill_from_CSR_inplace(cmat_A, bEngine.grouping_result, cli.col_block_size_);
     if (cli.verbose_ > 1) vbmat.print();
 
