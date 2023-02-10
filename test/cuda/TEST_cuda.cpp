@@ -21,21 +21,15 @@ int main(int argc, char* argv[])
     if (cli.verbose_ > 0) cli.print();
     CSR cmat_A(cli); //sparse operand
     BlockingEngine bEngine(cli);
+    bEngine.blocking_algo = fixed_size; //set blocking algo to fixed_size
+    bEngine.row_block_size = bEngine.col_block_size;
 
 
-    //partition for the row of cmat_A
-    vector<intT> partition;
-    intT part_block_size = 5;
-    for (intT i = 0; i < cmat_A.rows; i += part_block_size) partition.push_back(i);
-    partition.push_back(cmat_A.rows);
-
-
-    //create vbamt from equally spaced row partition of cmat_A;
     VBR vbmat; 
-    if (cli.verbose_ > 0) cout << "Create VBR from reordered CSR" << endl;
-    vbmat.fill_from_CSR(cmat_A, partition, cli.block_size_);
+    if (cli.verbose_ > 0) cout << "Create VBR" << endl;
+    bEngine.GetGrouping(cmat_A);
+    vbmat.fill_from_CSR_inplace(cmat_A, bEngine.grouping_result, cli.col_block_size_);
     if (cli.verbose_ > 1) vbmat.print();
-
 
     intT A_rows = cmat_A.rows;
     intT A_cols = cmat_A.cols;

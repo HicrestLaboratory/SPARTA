@@ -238,11 +238,157 @@ void BlockingEngine::SetComparator(int choice)
     {
         case 0:
             comparator = HammingDistanceGroup;
+            //comparator = HammingDistanceGroup;
             break;
         case 1: 
             comparator = JaccardDistanceGroup;
             break;
+        case 2: 
+            comparator = HammingDistanceGroupOPENMP;
+            break;        
+        case 3: 
+            comparator = JaccardDistanceGroupOPENMP;
+            break;
     }
+}
+
+
+float HammingDistanceGroupOPENMP(vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size)
+{
+  bool count_zeros = 0;
+  intT size_A = row_A.size();
+  if (size_A == 0 && size_B == 0) return 0;
+  
+  if (size_A == 0 or size_B == 0) return max(size_A*group_size_A,size_B*group_size_B); //approximation, to be checked.
+
+  intT add_to_count_A, add_to_count_B;
+  if (count_zeros)
+  {
+    add_to_count_A = group_size_B;
+    add_to_count_B = group_size_A;
+  }
+  else
+  {
+    add_to_count_A = group_size_A;
+    add_to_count_B = group_size_B;
+  }
+
+  intT block_pos_A = -1;
+  intT A_block_size = 0;
+  //calculates block_size of A; 
+  //this amounts to calculate for each element elem/block_size, then counting the unique results.
+  for (auto it = row_A.begin(); it != row_A.end(); it++)
+  {
+    //is this a in a new column-block?
+    if (*it/block_size != block_pos_A) 
+    { 
+
+        //if yes, update size and current column-block idx.
+        block_pos_A = *it/block_size;
+        A_block_size++;
+    }
+  }
+
+  intT diffBA = 0;
+  intT intersectBA = 0;
+  intT pos_B = -1;
+
+  //evaluates |B intersec A| and |B minus A| in the column-blocked domain
+  //So, for each element check elem/block_size
+  //  then, only one time for each unique result,
+  //  check wheter the same block is occupied in A
+
+  for (int j = 0; j < size_B; j++)
+  {
+    
+    if(row_B[j]/block_size != pos_B)
+    {
+      //since the value is unique, this can now run independentently
+
+      pos_B = row_B[j]/block_size;
+      auto ptr_A = std::lower_bound(row_A.begin(), row_A.end(), pos_B * block_size); //check the smallest element larger than the start of the block
+      if (*ptr_A/block_size > pos_B) //if it does not belong to same block, increase difference (can only be larger)
+      {
+        diffBA++;
+      }
+      else //otherwise, count it as intersection
+      {
+        intersectBA++;
+      }
+    }
+  }
+
+  //hamming distance will be diffBA + sizeA - intersectBA. we add some modifiers
+  return diffBA*add_to_count_B + (A_block_size - intersectBA)*add_to_count_A;
+}
+
+float JaccardDistanceGroupOPENMP(vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size)
+{
+  bool count_zeros = 0;
+  intT size_A = row_A.size();
+  if (size_A == 0 && size_B == 0) return 0;
+  if (size_A == 0 || size_B == 0) return 1;
+
+  intT add_to_count_A, add_to_count_B;
+  if (count_zeros)
+  {
+    add_to_count_A = group_size_B;
+    add_to_count_B = group_size_A;
+  }
+  else
+  {
+    add_to_count_A = group_size_A;
+    add_to_count_B = group_size_B;
+  }
+
+  intT block_pos_A = -1;
+  intT A_block_size = 0;
+  //calculates block_size of A; 
+  //this amounts to calculate for each element elem/block_size, then counting the unique results.
+  for (auto it = row_A.begin(); it != row_A.end(); it++)
+  {
+    //is this a in a new column-block?
+    if (*it/block_size != block_pos_A) 
+    { 
+        //if yes, update size and current column-block idx.
+        block_pos_A = *it/block_size;
+        A_block_size++;
+    }
+  }
+
+  intT diffBA = 0;
+  intT intersectBA = 0;
+  intT pos_B = -1;
+
+  //evaluates |B intersec A| and |B minus A| in the column-blocked domain
+  //So, for each element check elem/block_size
+  //  then, only one time for each unique result,
+  //  check wheter the same block is occupied in A
+
+  for (int j = 0; j < size_B; j++)
+  {
+    
+    if(row_B[j]/block_size != pos_B)
+    {
+      //since the value is unique, this can now run independentently
+
+      pos_B = row_B[j]/block_size;
+      auto ptr_A = std::lower_bound(row_A.begin(), row_A.end(), pos_B * block_size); //check the smallest element larger than the start of the block
+      if (ptr_A != row_A.end() && *ptr_A/block_size == pos_B) //if it does not belong to same block, increase difference (can only be larger)
+      {
+        intersectBA++;
+      }
+      else //otherwise, count it as intersection
+      {
+        diffBA++;
+      }
+    }
+  }
+  //hamming distance will be diffBA + sizeA - intersectBA. we add some modifiers
+
+  intT B_block_size = diffBA + intersectBA;
+  intT count = diffBA*add_to_count_B + (A_block_size - intersectBA)*add_to_count_A;
+  return (2.0*count)/(A_block_size*group_size_A + B_block_size*group_size_B + count);
 }
 
 
@@ -251,11 +397,7 @@ float HammingDistanceGroup(vector<intT> row_A, intT group_size_A, intT* row_B, i
   bool count_zeros = 0;
   intT size_A = row_A.size();
   if (size_A == 0 && size_B == 0) return 0;
-
-  intT blocksize_A = ceil(size_A/block_size);
-  intT blocksize_B = ceil(size_B/block_size);
-  
-  if (size_A == 0 or size_B == 0) return max(blocksize_A*group_size_A,blocksize_B*group_size_B);
+  if (size_A == 0 || size_B == 0) return max(size_A*group_size_A,size_B*group_size_B);
 
   intT add_to_count_A, add_to_count_B;
   if (count_zeros)
@@ -319,7 +461,70 @@ float JaccardDistanceGroup(vector<intT> row_A, intT group_size_A, intT* row_B, i
   intT size_A = row_A.size();
   if (size_A == 0 && size_B == 0) return 0;
   if (size_A == 0 || size_B == 0) return 1;
+  
+  bool count_zeros = 0;
 
-  float h = HammingDistanceGroup(row_A, group_size_A, row_B, size_B, group_size_B, block_size);
-  return 2*h/(size_A*group_size_A + size_B*group_size_B + h);
+  intT add_to_count_A, add_to_count_B;
+  if (count_zeros)
+  {
+    add_to_count_A = group_size_B;
+    add_to_count_B = group_size_A;
+  }
+  else
+  {
+    add_to_count_A = group_size_A;
+    add_to_count_B = group_size_B;
+  }
+
+  intT i = 0;
+  intT j = 0;
+  intT count = 0;
+  intT pos_A;
+  intT pos_B;
+  intT block_size_A = 0;
+  intT block_size_B = 0;
+
+  while (i < size_A && j < size_B)
+  {
+    pos_A = row_A[i]/block_size;
+    pos_B = row_B[j]/block_size;
+
+    if (pos_A < pos_B)
+    {
+      count += add_to_count_A;
+      block_size_A++;
+      while(i < size_A && row_A[i]/block_size == pos_A) i++;
+    }
+    else if (pos_A > pos_B)
+    {
+      count += add_to_count_B;
+      block_size_B++;
+      while(j < size_B && row_B[j]/block_size == pos_B) j++;
+    }
+    else
+    {
+      block_size_A++;
+      block_size_B++;
+      while(i < size_A && row_A[i]/block_size == pos_A) i++;
+      while(j < size_B && row_B[j]/block_size == pos_B) j++;
+    }
+  }
+
+  while (i < size_A)
+  { 
+    pos_A = row_A[i]/block_size;
+    count += add_to_count_A;
+    block_size_A++;
+    while(i < size_A && row_A[i]/block_size == pos_A) i++;
+  }
+
+  while (j < size_B)
+  { 
+    pos_B = row_B[j]/block_size;;
+    count += add_to_count_B;
+    block_size_B++;
+    while(j < size_B && row_B[j]/block_size == pos_B) j++;
+  }
+
+  return (2.0*count)/(block_size_A*group_size_A + block_size_B*group_size_B + count);
 }

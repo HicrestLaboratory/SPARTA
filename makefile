@@ -74,7 +74,7 @@ $(CUDA_APP_DIR)/% : $(CUDA_OBJ_DIR)/%.o $(CUDA_OBJECTS)
 
 build: build_general build_cuda
 
-all: TEST PROGRAMS
+all: serial cuda
 
 build_general: 
 	@mkdir -p $(APP_DIR)
@@ -91,10 +91,6 @@ clean:
 	-@rm -rvf $(APP_DIR)/*
 
 
-TEST: TESTGEN TESTCUDA
+serial : build_general $(GEN_APP_DIR)/Matrix_Blocking $(GEN_APP_DIR)/TEST_matrices $(GEN_APP_DIR)/TEST_blocking_VBR $(GEN_APP_DIR)/TEST_similarities
 
-TESTGEN : build_general $(GEN_APP_DIR)/TEST_matrices $(GEN_APP_DIR)/TEST_blocking_VBR
-
-TESTCUDA : build_cuda $(CUDA_APP_DIR)/TEST_cuda
-
-PROGRAMS: build_general $(GEN_APP_DIR)/Matrix_Blocking
+cuda : build_cuda $(CUDA_APP_DIR)/TEST_cuda
