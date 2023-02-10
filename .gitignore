@@ -10,3 +10,7 @@ programs/general/TEST_matrices
 programs/general/TEST_blocking_VBR
 cuda-repo-wsl-ubuntu-12-0-local_12.0.0-1_amd64.deb
 programs/general/TEST_blocking_VBR
+results/scripts/
+data/real_world/nd12k.el
+programs/general/Matrix_Blocking
+programs/general/TEST_blocking_VBR

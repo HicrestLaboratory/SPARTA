@@ -113,49 +113,6 @@ void CSR::scramble()
     permute_rows(v);
 }
 
-
-vector<intT> CSR::get_VBR_nzcount(const vector<intT> &grouping, intT block_col_size)
-{
-    vector<intT> row_partition = get_partition(grouping);
-    vector<intT> row_permutation = get_permutation(grouping);
-    return get_VBR_nzcount(row_partition, row_permutation, block_col_size);
-}
-
-vector<intT> CSR::get_VBR_nzcount(const vector<intT> &row_partition, const vector<intT> &row_permutation, intT block_col_size)
-{
-    
-    intT block_cols = cols/block_col_size + 1;
-    intT block_rows = row_partition.size() - 1;
-
-
-    //stats storage
-    vector<intT> nz_block_count(row_partition.size() - 1,0);
-
-
-    //copy data block_row by block_row
-    for(intT ib = 0; ib < block_rows; ib++)
-    {
-        vector<bool> nonzero_flags(block_cols, false);
-        intT row_block_size = row_partition[ib+1] - row_partition[ib];
-
-        //flag nonzero blocks
-        for (intT i_reordered = row_partition[ib]; i_reordered < row_partition[ib+1]; i_reordered++)
-        {
-            intT i = row_permutation[i_reordered];
-            for (intT nz = 0; nz < nzcount[i]; nz++)
-            {
-                intT j = ja[i][nz];
-                nonzero_flags[j/block_col_size] = true;
-            }
-        }
-
-        //fill nzcount
-        nz_block_count[ib] = std::count(nonzero_flags.begin(), nonzero_flags.end(), true);
-    }
-    return nz_block_count;
-}
-
-
 void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only)
 //reads edgelist into the CSR.
 {

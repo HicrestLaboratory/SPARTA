@@ -119,7 +119,7 @@ void update_structured_sparsity(vector<intT>& structured_sparsity_pattern, vecto
 }
 
 
-vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
+vector<intT> OLD_merge_rows(vector<intT> A, intT*B, intT size_B)
 {
     //A,B sparse rows (compressed indices format)
     vector<intT> result;
@@ -133,8 +133,38 @@ vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
     return result;
 }
 
+vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
+{
 
-void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bEngine, CSR &cmat, bool save_blocking)
+    vector<intT> result;
+    auto i = A.begin();
+    auto new_i = A.begin();
+    intT j = 0;
+    while(j < size_B)
+    {
+        auto B_val = B[j];
+
+        //find j position in A
+        new_i = std::lower_bound(i, A.end(), B_val);
+
+        if (new_i == A.end()) break;
+
+
+        //copy A up to there
+        result.insert(result.end(), i, new_i);
+        result.push_back(B_val);
+        if (*new_i == B_val) new_i++;
+
+        i = new_i;
+        j++;
+    }
+
+    result.insert(result.end(), B + j, B + size_B);
+    return result;
+}
+
+
+void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bEngine, CSR &cmat, bool save_blocking, ostream &blocking_outfile)
 {
     string header;
     string values;
@@ -143,31 +173,38 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
         header += name + ","; 
         values += value + ",";
     };
+
+    bEngine.CollectBlockingInfo(cmat);
+
+    //infos
     add_to_output("matrix", cLine.filename_);
     add_to_output("rows", to_string(cmat.rows));
     add_to_output("cols", to_string(cmat.cols));
     add_to_output("nonzeros", to_string(cmat.nztot()));
+    add_to_output("blocking_algo", to_string(cLine.blocking_algo_));
     add_to_output("tau", to_string(cLine.tau_));
-    add_to_output("block_size", to_string(cLine.block_size_));
+    add_to_output("row_block_size", to_string(cLine.row_block_size_));
+    add_to_output("col_block_size", to_string(cLine.col_block_size_));
     add_to_output("use_pattern", to_string(cLine.sim_use_pattern_));
     add_to_output("sim_use_groups", to_string(cLine.sim_use_groups_));
     add_to_output("sim_measure", to_string(cLine.sim_measure_));
+    add_to_output("reorder", to_string(cLine.reorder_));
     add_to_output("exp_name", cLine.exp_name_);
+ 
+    //results
     add_to_output("time_to_block", to_string(bEngine.timer));
+    add_to_output("VBR_nzcount", to_string(bEngine.VBR_nzcount));
+    add_to_output("VBR_nzblocks_count", to_string(bEngine.VBR_nzblocks_count));
+    add_to_output("VBR_average_height", to_string(bEngine.VBR_average_height));
     add_to_output("merge_counter", to_string(bEngine.merge_counter));
     add_to_output("comparison_counter", to_string(bEngine.comparison_counter));
 
     outfile << header << endl;
     outfile << values << endl;
 
-    vector<intT> nzcount_VBR = cmat.get_VBR_nzcount(bEngine.grouping_result,cLine.block_size_);
-
-    outfile << "NZCOUNT,";
-    print_vec(nzcount_VBR, outfile, ",");
-
     if (save_blocking)
     {
-        outfile << "GROUPING,";
-        print_vec(bEngine.grouping_result, outfile, ",");
+        blocking_outfile << "GROUPING,";
+        print_vec(bEngine.grouping_result, blocking_outfile, ",");
     }
 }

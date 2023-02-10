@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
     //std_time = std_dev(algo_times);
     //algo_times.clear();
 
-    //delete[] mat_A_gemm;
+    delete[] mat_C_VBR;
 
 
 
