@@ -3,6 +3,7 @@
 #include "blocking.h"
 #include "utilities.h"
 #include <string.h>
+#include <cuda_runtime_api.h>
 
 using namespace std;
 
@@ -34,7 +35,7 @@ int main(int argc, char* argv[])
     //create vbamt from equally spaced row partition of cmat_A;
     VBR vbmat; 
     if (cli.verbose_ > 0) cout << "Create VBR from reordered CSR" << endl;
-    vbmat.fill_from_CSR(cmat_A, partition, cli.block_size_);
+    vbmat.fill_from_CSR(cmat_A, partition, cli.col_block_size_);
     if (cli.verbose_ > 1) vbmat.print();
 
 
@@ -103,10 +104,11 @@ int main(int argc, char* argv[])
     int *csrRowPtr, *csrColInd;
     prepare_cusparse_CSR( cmat_A, csrRowPtr, csrColInd, csrVal);
 
+    cudaDeviceSynchronize();
     std::cout << "prepare_cusparse_CSR done" << std::endl;
-    cusparse_gemm_custom(C_rows, B_rows, (int) cmat_A.nztot(), csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_VBR2, C_rows, 1, 1, dt);
+    cusparse_gemm_custom(C_rows, B_rows, (int) cmat_A.nztot(), csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_rows, mat_C_VBR2, C_rows, 1, 1, dt); // BUG qui
 
-    std::cout << "cusparse start" << std::endl;
+    std::cout << "cusparse end" << std::endl;
 
 //     int cmp = memcmp(mat_C_VBR, mat_C_VBR2, C_rows * C_cols * sizeof(DataT_C) );
 //     std::cout << "memcmp of mat_C_VBR and mat_C_VBR2 is " << cmp << std::endl;

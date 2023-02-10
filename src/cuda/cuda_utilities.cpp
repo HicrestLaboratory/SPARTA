@@ -579,11 +579,11 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
 
     //copy arrays and matrices to device
     // -----------------------
-//     checkCudaErrors(cublasSetVector(
-//         nnz, sizeof(DataT),
-//         csrVal, 1, d_Val, 1));
+    checkCudaErrors(cublasSetVector(
+        nnz, sizeof(DataT),
+        csrVal, 1, d_Val, 1));
     // >>>>>>>>>>>>>>>>>>>>>>>
-    checkCudaErrors( cudaMemcpy(d_Val, csrVal, mem_size_csrVal, cudaMemcpyHostToDevice) );
+//     checkCudaErrors( cudaMemcpy(d_Val, csrVal, mem_size_csrVal, cudaMemcpyHostToDevice) );
     // -----------------------
 
     checkCudaErrors(cublasSetVector(
@@ -634,7 +634,8 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
         cusparseCreateDnMat(&matC, rows, B_cols, C_lead_dim, d_C,
             data_type_C, CUSPARSE_ORDER_COL));
 
-    size_t bufferSize;
+    size_t bufferSize = 0;
+    void *dBuffer = NULL;
 
     checkCudaErrors(cusparseSpMM_bufferSize(
         handle,
@@ -649,6 +650,7 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
         CUSPARSE_SPMM_ALG_DEFAULT,
         &bufferSize
     ));
+    checkCudaErrors( cudaMalloc(&dBuffer, bufferSize) );
 
 
     //initialize cuda events
@@ -657,12 +659,12 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
     cudaEventCreate(&stop);
     cudaEventRecord(start, 0);
     
-    
+
     checkCudaErrors(cusparseSpMM(handle,
         CUSPARSE_OPERATION_NON_TRANSPOSE,
         CUSPARSE_OPERATION_NON_TRANSPOSE,
         &alpha, matA, matB, &beta, matC, data_type_C,
-        CUSPARSE_SPMM_ALG_DEFAULT, &bufferSize));
+        CUSPARSE_SPMM_ALG_DEFAULT, dBuffer));       // We have a BUG here
 
     //record the elapsed time onto dt
     cudaDeviceSynchronize();
