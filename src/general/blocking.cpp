@@ -6,6 +6,10 @@
 #include <vector>
 #include <iostream>
 #include <chrono>
+#include <algorithm>
+#include <vector>
+#include <omp.h>
+
 
 using namespace std::chrono;
 
@@ -253,74 +257,7 @@ void BlockingEngine::SetComparator(int choice)
 }
 
 
-float HammingDistanceGroupOPENMP(vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size)
-{
-  bool count_zeros = 0;
-  intT size_A = row_A.size();
-  if (size_A == 0 && size_B == 0) return 0;
-  
-  if (size_A == 0 or size_B == 0) return max(size_A*group_size_A,size_B*group_size_B); //approximation, to be checked.
 
-  intT add_to_count_A, add_to_count_B;
-  if (count_zeros)
-  {
-    add_to_count_A = group_size_B;
-    add_to_count_B = group_size_A;
-  }
-  else
-  {
-    add_to_count_A = group_size_A;
-    add_to_count_B = group_size_B;
-  }
-
-  intT block_pos_A = -1;
-  intT A_block_size = 0;
-  //calculates block_size of A; 
-  //this amounts to calculate for each element elem/block_size, then counting the unique results.
-  for (auto it = row_A.begin(); it != row_A.end(); it++)
-  {
-    //is this a in a new column-block?
-    if (*it/block_size != block_pos_A) 
-    { 
-
-        //if yes, update size and current column-block idx.
-        block_pos_A = *it/block_size;
-        A_block_size++;
-    }
-  }
-
-  intT diffBA = 0;
-  intT intersectBA = 0;
-  intT pos_B = -1;
-
-  //evaluates |B intersec A| and |B minus A| in the column-blocked domain
-  //So, for each element check elem/block_size
-  //  then, only one time for each unique result,
-  //  check wheter the same block is occupied in A
-
-  for (int j = 0; j < size_B; j++)
-  {
-    
-    if(row_B[j]/block_size != pos_B)
-    {
-      //since the value is unique, this can now run independentently
-
-      pos_B = row_B[j]/block_size;
-      auto ptr_A = std::lower_bound(row_A.begin(), row_A.end(), pos_B * block_size); //check the smallest element larger than the start of the block
-      if (*ptr_A/block_size > pos_B) //if it does not belong to same block, increase difference (can only be larger)
-      {
-        diffBA++;
-      }
-      else //otherwise, count it as intersection
-      {
-        intersectBA++;
-      }
-    }
-  }
-
-  //hamming distance will be diffBA + sizeA - intersectBA. we add some modifiers
-  return diffBA*add_to_count_B + (A_block_size - intersectBA)*add_to_count_A;
-}
 
 float JaccardDistanceGroupOPENMP(vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size)
 {
@@ -390,6 +327,72 @@ float JaccardDistanceGroupOPENMP(vector<intT> row_A, intT group_size_A, intT* ro
   intT count = diffBA*add_to_count_B + (A_block_size - intersectBA)*add_to_count_A;
   return (2.0*count)/(A_block_size*group_size_A + B_block_size*group_size_B + count);
 }
+
+
+
+float HammingDistanceGroupOPENMP(std::vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size)
+{
+    bool count_zeros = 0;
+    intT size_A = row_A.size();
+    if (size_A == 0 && size_B == 0) return 0;
+  
+    if (size_A == 0 or size_B == 0) return max(size_A*group_size_A,size_B*group_size_B); //approximation, to be checked.
+
+    intT add_to_count_A, add_to_count_B;
+    if (count_zeros)
+    {
+        add_to_count_A = group_size_B;
+        add_to_count_B = group_size_A;
+    }
+    else
+    {
+        add_to_count_A = group_size_A;
+        add_to_count_B = group_size_B;
+    }
+
+    intT A_block_size = 0;
+    #pragma omp parallel reduction(+: A_block_size)
+    {
+        intT block_pos_A = -1;
+	//TO BE OPTIMIZE
+        #pragma omp for
+        for (intT i = 0; i < size_A; i++)
+        {
+            if (row_A[i] / block_size != block_pos_A)
+            {
+                block_pos_A = row_A[i] / block_size;
+                A_block_size++;
+            }
+        }
+    }
+
+    intT diffBA = 0;
+    intT intersectBA = 0;
+    #pragma omp parallel reduction(+: diffBA, intersectBA)
+    {
+        intT pos_B = -1;
+        #pragma omp for
+        for (intT j = 0; j < size_B; j++)
+        {
+            if (row_B[j] / block_size != pos_B)
+            {
+                pos_B = row_B[j] / block_size;
+                auto ptr_A = std::lower_bound(row_A.begin(), row_A.end(), pos_B * block_size);
+                if (*ptr_A / block_size > pos_B)
+                {
+                    diffBA++;
+                }
+                else
+                {
+                    intersectBA++;
+                }
+            }
+        }
+    }
+
+    return diffBA * add_to_count_B + (A_block_size - intersectBA) * add_to_count_A;
+}
+
 
 
 float HammingDistanceGroup(vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size)
