@@ -13,6 +13,10 @@ std::vector<intT> get_partition(const std::vector<intT> &grouping);
 
 std::vector<intT> get_permutation(const std::vector<intT> &grouping);
 
+bool check_structured_sparsity(std::vector<intT>& structured_sparsity_pattern, std::vector<intT>& structured_sparsity_column_counter, intT* row, intT row_len, int m);
+void update_structured_sparsity(std::vector<intT>& structured_sparsity_pattern, std::vector<intT>& structured_sparsity_column_counter, intT* row, intT row_len);
+
+
 template<typename T>
 double avg(std::vector<T> const& v) {
     if (v.empty()) 
@@ -24,7 +28,7 @@ double avg(std::vector<T> const& v) {
 }
 
 
-void save_blocking_data(std::ostream &outfile, CLineReader &cLine, BlockingEngine &bEngine, CSR &cmat, bool save_blocking = false);
+void save_blocking_data(std::ostream &outfile, CLineReader &cLine, BlockingEngine &bEngine, CSR &cmat, bool save_blocking = false, std::ostream &blocking_outfile = std::cout);
 
 template <class MyType>
 void print_vec(std::vector<MyType> vec, std::ostream& stream = std::cout, std::string separator = " ")
@@ -32,6 +36,23 @@ void print_vec(std::vector<MyType> vec, std::ostream& stream = std::cout, std::s
     for (intT i = 0; i < vec.size(); i++)
     {
         stream << vec[i] << separator;
+    }
+    stream << std::endl;
+}
+
+
+template<typename T>
+void print_mat(T* mat, intT rows, intT cols, intT main_dim, bool rowwise = false, std::ostream& stream = std::cout) 
+{
+    //print mat in rowwise or columnwise format
+    for (intT i = 0; i < rows; i++)
+    {
+        for (intT j = 0; j < cols; j++)
+        {
+            T val = rowwise? mat[j + main_dim*i] : mat[i + main_dim*j];
+            stream << val << " ";
+        }
+        stream << std::endl;
     }
     stream << std::endl;
 }
