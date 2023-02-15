@@ -21,7 +21,7 @@ class CLineReader
         bool sim_use_pattern_ = 1;
         bool pattern_only_ = 0;
 
-        int blocking_algo_ = 0; // 0 for iterative; 1 for structures; 2 for fixed;
+        int blocking_algo_ = 3; // 0 for iterative; 1 for structured; 2 for fixed, 3 for iterative_clocked
         int seed_ = 0;
         int sim_measure_ = 1;
         int reorder_ = 0; //-1 for ascending. 0 for nothing. 1 for descending. 2 for scramble
