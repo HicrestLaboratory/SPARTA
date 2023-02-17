@@ -43,8 +43,8 @@ int main(int argc, char* argv[])
     intT A_cols = cmat_A.cols;
     intT B_rows = A_cols;
     intT B_cols = 32;
-    intT C_cols = A_cols;
-    intT C_rows = B_rows;
+    intT C_cols = B_cols;
+    intT C_rows = A_rows;
 
     //dense operand
     DataT* mat_B = new DataT[B_rows * B_cols];
@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 
     for (int n = 0; n < B_rows*B_cols; n++) 
     {
-        mat_B[n] = dist(e2);
+        mat_B[n] = 1.; //dist(e2);
     }
     if (cli.verbose_ > 1) 
     {
