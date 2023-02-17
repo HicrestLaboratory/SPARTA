@@ -54,13 +54,13 @@ int main(int argc, char* argv[])
     mt19937 e2(rd());
     uniform_real_distribution<> dist(0, 1);
 
-    for (int n = 0; n < B_rows*B_cols; ++n) 
+    for (int n = 0; n < B_rows*B_cols; n++) 
     {
         mat_B[n] = 1.;//dist(e2);
     }
     if (cli.verbose_ > 1) 
     {
-        cout << "Matrix B" << endl;
+        cout << "Matrix B: " << B_rows << " X " << B_cols << endl;
         print_mat(mat_B, B_rows, B_cols, B_cols);
     }
 
