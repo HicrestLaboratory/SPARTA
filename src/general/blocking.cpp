@@ -130,7 +130,8 @@ vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncGroup 
 
 vector<intT> IterativeBlockingPatternCLOCKED(const CSR& cmat, float tau, distFuncGroup distanceFunction,intT block_size, bool use_size, bool use_pattern, intT &comparison_counter, intT &merge_counter, float &average_row_distance, float& average_merge_tau, float &timer_total, float &timer_comparisons, float &timer_merges)
 {
-    vector<intT> grouping(cmat.rows, -1); //flag each rows as ungrouped (-1)
+    vector<intT>grouping(cmat.rows,-1); //flag each rows as ungrouped (-1)
+    float distances[cmat.rows] = {-1};
 
     auto start = high_resolution_clock::now();
     float total_merge_tau = 0;
@@ -144,44 +145,61 @@ vector<intT> IterativeBlockingPatternCLOCKED(const CSR& cmat, float tau, distFun
             vector<intT> pattern;
             intT current_group_size = 1;
             grouping[i] = i; // the group is numbered the same as the seed row.
-            pattern.insert(pattern.end(), &cmat.ja[i][0], &cmat.ja[i][cmat.nzcount[i]]); //Initialize the pattern with the seed entries.
-            //TODO check performance of std::copy instead
-
+            pattern.insert(pattern.end(), &cmat.ja[i][0], &cmat.ja[i][cmat.nzcount[i]]); //Initialize the pattern with the seed entries.            
 
             //inner loop, compare each subsequent row with the current pattern
             for (intT j = i + 1; j < cmat.rows; j++)
             {
-                if (grouping[j] == -1)
-                {
-                    comparison_counter++;
+              
+              /*
+              TODO: FIX THIS HEURISTIC
+              if ((1-tau)*(pattern.size() - cmat.nzcount[j]) > tau*(pattern.size()*current_group_size + cmat.nzcount[j]))
+              {
+                continue;
+              }
+              */
 
-                    auto start_dist = high_resolution_clock::now();
-                    float dist = distanceFunction(pattern, current_group_size, cmat.ja[j], cmat.nzcount[j], 1, block_size);
-                    auto stop_dist = high_resolution_clock::now();
+              
+              if (distances[i] != -1 && distances[j] != -1 && abs(distances[i] - distances[j]) > tau)
+              {
+                distances[j] = -1;
+                continue;
+              }
+              
 
-                    timer_comparisons += duration_cast<microseconds>(stop_dist - start_dist).count();
+              if (grouping[j] == -1) 
+              {
+                  comparison_counter++;
 
-                    
-                    if (dist < tau)
-                    {
-                        total_merge_tau += dist;
-                        total_row_distance += j - i;
-                        merge_counter++;
+                  auto start_dist = high_resolution_clock::now();
+                  float dist = distanceFunction(pattern, current_group_size, cmat.ja[j], cmat.nzcount[j], 1, block_size);
+                  auto stop_dist = high_resolution_clock::now();
 
-                        grouping[j] = i;
-                        if (use_pattern)
-                        {
-                            auto start_merge = high_resolution_clock::now();
-                            pattern = merge_rows(pattern, cmat.ja[j], cmat.nzcount[j]); //update the pattern through union with the new row
-                            auto stop_merge = high_resolution_clock::now();
-                            timer_merges += duration_cast<microseconds>(stop_merge - start_merge).count();
-                        }
-                        if (use_size)
-                        {
-                          current_group_size++;
-                        }
-                    }
-                }
+                  timer_comparisons += duration_cast<microseconds>(stop_dist - start_dist).count();
+
+
+                  distances[j] = dist;
+                  
+                  if (dist < tau)
+                  {
+                      total_merge_tau += dist;
+                      total_row_distance += j - i;
+                      merge_counter++;
+
+                      grouping[j] = i;
+                      if (use_pattern)
+                      {
+                          auto start_merge = high_resolution_clock::now();
+                          pattern = merge_rows(pattern, cmat.ja[j], cmat.nzcount[j]); //update the pattern through union with the new row
+                          auto stop_merge = high_resolution_clock::now();
+                          timer_merges += duration_cast<microseconds>(stop_merge - start_merge).count();
+                      }
+                      if (use_size)
+                      {
+                        current_group_size++;
+                      }
+                  }
+              }
             }
         }
     }
@@ -469,7 +487,7 @@ float JaccardDistanceGroupOPENMP(vector<intT> row_A, intT group_size_A, intT* ro
 
 float HammingDistanceGroup(vector<intT> row_A, intT group_size_A, intT* row_B, intT size_B, intT group_size_B, intT block_size)
 {
-  bool count_zeros = 0;
+  bool count_zeros = 1;
   intT size_A = row_A.size();
   if (size_A == 0 && size_B == 0) return 0;
   if (size_A == 0 || size_B == 0) return max(size_A*group_size_A,size_B*group_size_B);
@@ -537,7 +555,7 @@ float JaccardDistanceGroup(vector<intT> row_A, intT group_size_A, intT* row_B, i
   if (size_A == 0 && size_B == 0) return 0;
   if (size_A == 0 || size_B == 0) return 1;
   
-  bool count_zeros = 0;
+  bool count_zeros = 1;
 
   intT add_to_count_A, add_to_count_B;
   if (count_zeros)
