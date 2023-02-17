@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
     //*****SERIAL CSR MULTIPLICATION PHASE******
     //******************************************
 
-    DataT* mat_C_serial = new DataT[C_rows*C_cols];
+    DataT* mat_C_serial = new DataT[C_rows*C_cols]{0};
 
     if (cli.verbose_ > 0) cout << "CSR Serial Multiplication" << endl;
     cmat_A.multiply(mat_B, B_cols, mat_C_serial);
