@@ -84,18 +84,19 @@ int main(int argc, char* argv[])
     //******************************************
 
     DataT_C* mat_C_VBR = new DataT_C[C_rows * C_cols]{ 0 }; //will store result of dense-dense multiplication
-
+    algo_times.clear();
     //run the VBR-dense multiplications
-
     for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
     {
         fill(mat_C_VBR, mat_C_VBR + C_cols*C_rows, 0);
-        cublas_blockmat_multiply(vbmat, mat_B, B_cols, B_rows, mat_C_VBR, C_rows, dt, 8);
+        //cublas_blockmat_multiply(vbmat, mat_B, B_cols, B_rows, mat_C_VBR, C_rows, dt, 8);
         //only saves non-warmup runs
         if (i >= 0) algo_times.push_back(dt);
         bool equality_check = equal(mat_C_VBR, mat_C_VBR + C_cols*C_rows, mat_C_serial);
         cout << "CORRECTNESS CHECK: " << equality_check?"PASSED":"FAILED" << endl;
     }
+
+    cout << "TIME: " << avg(algo_times) << endl;
 
     //mean_time = mean(algo_times);
     //std_time = std_dev(algo_times);
