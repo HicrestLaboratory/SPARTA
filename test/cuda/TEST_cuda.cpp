@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
     intT A_rows = cmat_A.rows;
     intT A_cols = cmat_A.cols;
     intT B_rows = A_cols;
-    intT B_cols = 128;
+    intT B_cols = 32;
     intT C_cols = A_cols;
     intT C_rows = B_rows;
 
