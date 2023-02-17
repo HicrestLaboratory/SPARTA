@@ -49,7 +49,7 @@ void print_mat(T* mat, intT rows, intT cols, intT main_dim, bool rowwise = false
     {
         for (intT j = 0; j < cols; j++)
         {
-            T val = rowwise? mat[j + main_dim*i] : mat[i + main_dim*j];
+            T val = rowwise? mat[i + main_dim*j] : mat[j + main_dim*i];
             stream << val << " ";
         }
         stream << std::endl;

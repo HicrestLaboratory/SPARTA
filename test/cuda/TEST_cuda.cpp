@@ -61,12 +61,6 @@ int main(int argc, char* argv[])
     if (cli.verbose_ > 1) 
     {
         cout << "Matrix B: " << B_rows << " X " << B_cols << endl;
-
-        for (int n = 0; n < B_rows*B_cols; n++) 
-        {
-            cout << mat_B[n] << " ";
-        }
-
         print_mat(mat_B, B_rows, B_cols, B_cols);
     }
 
