@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
         //only saves non-warmup runs
         if (i >= 0) algo_times.push_back(dt);
         bool equality_check = equal(mat_C_VBR, mat_C_VBR + C_cols*C_rows, mat_C_serial);
-        cout << "CORRECTNESS CHECK: " << equality_check?"PASSED":"FAILED" << endl;
+        cout << "CORRECTNESS CHECK: " << equality_check << endl;
     }
 
     cout << "TIME: " << avg(algo_times) << endl;
