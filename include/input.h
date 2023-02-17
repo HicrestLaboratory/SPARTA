@@ -30,7 +30,7 @@ class CLineReader
 
         int verbose_ = 1;
         int warmup_ = 1; //how many warmup multiplications
-        int exp_repetitions_ = 5;
+        int exp_repetitions_ = 1;
 
         float tau_ = 0.5;
 
