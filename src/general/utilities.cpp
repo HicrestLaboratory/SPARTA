@@ -192,12 +192,18 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
     add_to_output("exp_name", cLine.exp_name_);
  
     //results
-    add_to_output("time_to_block", to_string(bEngine.timer));
+    add_to_output("time_to_block", to_string(bEngine.timer_total));
+    add_to_output("time_to_merge", to_string(bEngine.timer_merges));
+    add_to_output("time_to_compare", to_string(bEngine.timer_comparisons));
+
     add_to_output("VBR_nzcount", to_string(bEngine.VBR_nzcount));
     add_to_output("VBR_nzblocks_count", to_string(bEngine.VBR_nzblocks_count));
     add_to_output("VBR_average_height", to_string(bEngine.VBR_average_height));
     add_to_output("merge_counter", to_string(bEngine.merge_counter));
     add_to_output("comparison_counter", to_string(bEngine.comparison_counter));
+    add_to_output("average_merge_tau", to_string(bEngine.average_merge_tau));
+    add_to_output("average_row_distance", to_string(bEngine.average_row_distance));
+
 
     outfile << header << endl;
     outfile << values << endl;
