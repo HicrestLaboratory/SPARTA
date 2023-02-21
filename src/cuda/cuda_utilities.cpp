@@ -93,8 +93,12 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_rows, int B_lea
         size_A, sizeof(DataT), vbmatA.mab, 1, d_A, 1));
 
     //copy B to device (maybe more efficient to copy it block by block?)
-    checkCudaErrors(cublasSetMatrix(
-        B_rows, B_cols, sizeof(DataT), B, B_lead_dim, d_B, B_rows));
+    // --------------------- TEST Error on cudaMemcpy2D ---------------------
+//     checkCudaErrors(cublasSetMatrix(
+//         B_rows, B_cols, sizeof(DataT), B, B_lead_dim, d_B, B_rows));
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    checkCudaErrors(cudaMemcpy(d_B, B, B_rows * B_cols * sizeof(DataT), cudaMemcpyHostToDevice));
+    // ----------------------------------------------------------------------
 
 
     //initialize cuda events
@@ -204,9 +208,12 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_rows, int B_lea
     {
         stream_id = jb % n_streams;
         cublasSetStream(handle, streams[stream_id]);
-        checkCudaErrors(cublasGetMatrix(
-            C_rows, vbmatA.block_col_size, sizeof(DataT_C), d_C + C_rows*jb*vbmatA.block_col_size, C_rows, C + C_rows*jb*vbmatA.block_col_size, C_lead_dim));
-
+        // --------------------- TEST Error on cudaMemcpy2D ---------------------
+//         checkCudaErrors(cublasGetMatrix(
+//             C_rows, vbmatA.block_col_size, sizeof(DataT_C), d_C + C_rows*jb*vbmatA.block_col_size, C_rows, C + C_rows*jb*vbmatA.block_col_size, C_lead_dim));
+        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        checkCudaErrors(cudaMemcpy(C, d_C, C_rows * C_cols * sizeof(DataT_C), cudaMemcpyDeviceToHost));
+        // ----------------------------------------------------------------------
     }
 
     cudaDeviceSynchronize();
@@ -286,8 +293,12 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
         size_A, sizeof(DataT), vbmatA.mab, 1, d_A, 1));
 
     //copy B to device (maybe more efficient to copy it block by block?)
-    checkCudaErrors(cublasSetMatrix(
-        B_rows, B_cols, sizeof(DataT), B, B_rows, d_B, B_rows));
+    // --------------------- TEST Error on cudaMemcpy2D ---------------------
+//     checkCudaErrors(cublasSetMatrix(
+//         B_rows, B_cols, sizeof(DataT), B, B_rows, d_B, B_rows));
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    checkCudaErrors(cudaMemcpy(d_B, B, B_rows * B_cols * sizeof(DataT), cudaMemcpyHostToDevice));
+    // ----------------------------------------------------------------------
 
     //initialize cuda events
     cudaEvent_t start, stop;
@@ -379,8 +390,12 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
         stream_id = ib % n_streams;
         cublasSetStream(handle, streams[stream_id]);
         rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib];
-        checkCudaErrors(cublasGetMatrix(
-            rows_in_block, C_cols, sizeof(DataT_C), d_C + vbmatA.row_part[ib], C_rows, C + vbmatA.row_part[ib], C_rows));
+        // --------------------- TEST Error on cudaMemcpy2D ---------------------
+//         checkCudaErrors(cublasGetMatrix(
+//             rows_in_block, C_cols, sizeof(DataT_C), d_C + vbmatA.row_part[ib], C_rows, C + vbmatA.row_part[ib], C_rows));
+        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        checkCudaErrors(cudaMemcpy(C, d_C, C_rows * C_cols * sizeof(DataT_C), cudaMemcpyDeviceToHost));
+        // ----------------------------------------------------------------------
 
     }
 
