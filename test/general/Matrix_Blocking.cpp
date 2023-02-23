@@ -10,7 +10,7 @@ using namespace std;
 int main(int argc, char* argv[])
 {
     CLineReader cli(argc, argv);
-    if (cli.verbose_ > 0) cli.print();
+    if (cli.verbose_ > 1) cli.print();
     CSR cmat(cli);
     if (cli.verbose_ > 1) cmat.print(cli.verbose_);
     BlockingEngine bEngine(cli);

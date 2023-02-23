@@ -20,8 +20,9 @@ class CLineReader
         bool sim_use_groups_ = 0;
         bool sim_use_pattern_ = 1;
         bool pattern_only_ = 0;
+        bool force_fixed_size = 0;
 
-        int blocking_algo_ = 0; // 0 for iterative; 1 for structures; 2 for fixed;
+        int blocking_algo_ = 3; // 0 for iterative; 1 for structured; 2 for fixed, 3 for iterative_clocked
         int seed_ = 0;
         int sim_measure_ = 1;
         int reorder_ = 0; //-1 for ascending. 0 for nothing. 1 for descending. 2 for scramble
@@ -30,7 +31,7 @@ class CLineReader
 
         int verbose_ = 1;
         int warmup_ = 1; //how many warmup multiplications
-        int exp_repetitions_ = 5;
+        int exp_repetitions_ = 1;
 
         float tau_ = 0.5;
 
@@ -48,6 +49,7 @@ class CLineReader
             std::cout << "reader_delimiter_: " <<  reader_delimiter_ << std::endl;
             std::cout << "sim_measure_: " <<  sim_measure_ << std::endl;
             std::cout << "blocking_algo_: " <<  blocking_algo_ << std::endl;
+            std::cout << "force_fixed_size: " <<  force_fixed_size << std::endl;
             std::cout << "sim_use_groups_: " <<  sim_use_groups_ << std::endl;
             std::cout << "sim_use_pattern_: " <<  sim_use_pattern_ << std::endl;
             std::cout << "pattern_only_: " <<  pattern_only_ << std::endl;
@@ -67,20 +69,21 @@ class CLineReader
         void ParseArgs(int argc, char* argv[])
         {
             char c_opt;
-            while ((c_opt = getopt(argc, argv, "a:b:B:f:g:m:n:o:p:P:r:s:t:v:w:x:")) != -1)
+            while ((c_opt = getopt(argc, argv, "a:b:B:f:F:g:m:n:o:p:P:r:s:t:v:w:x:")) != -1)
             {
                 switch(c_opt) 
                 {
                     case 'a': blocking_algo_ = std::stoi(optarg);                   break;
                     case 'b': col_block_size_ = std::stoi(optarg);                      break;
                     case 'B': row_block_size_ = std::stoi(optarg);                      break;
+                    case 'f': filename_ = std::string(optarg);                      break;
+                    case 'F': force_fixed_size = (std::stoi(optarg) == 1);                      break;
                     case 'g': sim_use_groups_ = (std::stoi(optarg) == 1);           break;
                     case 'o': outfile_ = std::string(optarg);                       break;
                     case 'p': sim_use_pattern_ = (std::stoi(optarg) == 1);          break;
                     case 'P': pattern_only_ = (std::stoi(optarg) == 1);             break;
                     case 'm': sim_measure_ = std::stoi(optarg);                     break;
                     case 'n': exp_name_ = std::string(optarg);                      break;
-                    case 'f': filename_ = std::string(optarg);                      break;
                     case 'r': reorder_ = std::stoi(optarg);                         break;
                     case 's': seed_ = std::stoi(optarg);                            break;
                     case 't': tau_ = std::stof(optarg);                             break;

@@ -13,6 +13,9 @@ std::vector<intT> get_partition(const std::vector<intT> &grouping);
 
 std::vector<intT> get_permutation(const std::vector<intT> &grouping);
 
+std::vector<intT> get_fixed_size_grouping(const std::vector<intT> &grouping, intT row_block_size);
+
+
 bool check_structured_sparsity(std::vector<intT>& structured_sparsity_pattern, std::vector<intT>& structured_sparsity_column_counter, intT* row, intT row_len, int m);
 void update_structured_sparsity(std::vector<intT>& structured_sparsity_pattern, std::vector<intT>& structured_sparsity_column_counter, intT* row, intT row_len);
 
@@ -49,7 +52,7 @@ void print_mat(T* mat, intT rows, intT cols, intT main_dim, bool rowwise = false
     {
         for (intT j = 0; j < cols; j++)
         {
-            T val = rowwise? mat[j + main_dim*i] : mat[i + main_dim*j];
+            T val = rowwise? mat[j + cols*i] : mat[i + rows*j];
             stream << val << " ";
         }
         stream << std::endl;

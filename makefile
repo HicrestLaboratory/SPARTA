@@ -1,5 +1,5 @@
 CXX       =g++
-CXXFLAGS  =  -fpermissive -Wl,--no-as-needed -m64 -std=c++11 -fopenmp
+CXXFLAGS  =  -fpermissive -Wl,--no-as-needed -m64 -std=c++11
 INCLUDE = -I include
 
 OBJ_DIR = ./obj
