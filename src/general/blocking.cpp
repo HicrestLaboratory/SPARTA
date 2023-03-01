@@ -147,6 +147,10 @@ vector<intT> IterativeBlockingPatternCLOCKED(const CSR& cmat, float tau, distFun
             grouping[i] = i; // the group is numbered the same as the seed row.
             pattern.insert(pattern.end(), &cmat.ja[i][0], &cmat.ja[i][cmat.nzcount[i]]); //Initialize the pattern with the seed entries.            
 
+
+
+            auto start_dist = high_resolution_clock::now();
+
             //inner loop, compare each subsequent row with the current pattern
             for (intT j = i + 1; j < cmat.rows; j++)
             {
@@ -171,12 +175,7 @@ vector<intT> IterativeBlockingPatternCLOCKED(const CSR& cmat, float tau, distFun
               {
                   comparison_counter++;
 
-                  auto start_dist = high_resolution_clock::now();
                   float dist = distanceFunction(pattern, current_group_size, cmat.ja[j], cmat.nzcount[j], 1, block_size);
-                  auto stop_dist = high_resolution_clock::now();
-
-                  timer_comparisons += duration_cast<microseconds>(stop_dist - start_dist).count();
-
 
                   distances[j] = dist;
                   
@@ -201,6 +200,11 @@ vector<intT> IterativeBlockingPatternCLOCKED(const CSR& cmat, float tau, distFun
                   }
               }
             }
+
+            auto stop_dist = high_resolution_clock::now();
+            timer_comparisons += duration_cast<microseconds>(stop_dist - start_dist).count();
+
+
         }
     }
 

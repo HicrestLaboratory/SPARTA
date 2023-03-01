@@ -97,9 +97,25 @@ void CSR::reorder_by_degree(bool descending)
     vector<intT> v(rows);
     iota(v.begin(), v.end(), 0);
 
+    std::cout << "ROWS: " << rows << std::endl;
+
+    for (intT i = 0; i < rows; i++)
+    {
+        try
+        {
+            intT test = nzcount[i];
+        }
+        catch(const std::exception& e)
+        {
+            std::cout << "FAILED ON ROW": e.what() << '\n';
+        }
+        
+    }
+
     if (descending) sort (v.begin(), v.end(), desc_comparator);
     else sort (v.begin(), v.end(), asc_comparator);
     permute_rows(v);
+
 }
 
 void CSR::scramble()
