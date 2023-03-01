@@ -108,6 +108,21 @@ int VBR::partition_check(const vector<intT> &candidate_part)
     return 0;
 }
 
+
+void VBR::fill_from_CSR_inplace(const CSR& cmat,intT row_block_size, intT col_block_size)
+{
+
+    //generate fixed_size grouping
+    vector<intT> grouping;
+    for (intT i = 0; i < cmat.rows; i++)
+    {
+        grouping.push_back(i/row_block_size);    
+    }
+    //fill from fixed_size grouping
+    fill_from_CSR_inplace(cmat, grouping, col_block_size);
+}
+
+
 void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, intT block_size)
 {
     //fill the VBR with entries from a CSR, with rows permuted and grouped according to grouping.
@@ -196,6 +211,7 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, in
     copy(mab_vec.begin(),mab_vec.end(), mab);
 }
 
+
 void VBR::fill_from_CSR(const CSR& cmat,const vector<intT> &row_partition, intT block_size)
 {
     //fill the VBR with entries from a CSR, with rows appearing in the same order and divided according to row_partition.
@@ -278,4 +294,57 @@ void VBR::fill_from_CSR(const CSR& cmat,const vector<intT> &row_partition, intT 
     mab = new DataT[mab_vec.size()];
     copy(jab_vec.begin(), jab_vec.end(),jab);
     copy(mab_vec.begin(),mab_vec.end(), mab);
+}
+
+
+
+void VBR::multiply(DataT* B, int B_cols, DataT_C* C)
+{
+//multiplies a VBS matrix (vbmatA) and dense matrix (B); stores A*B into (C)
+    //vbmatA:       column-major entries (in-block) storage;
+    //              row-major block storage; 
+    //B:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+    //C:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+    
+    int B_rows = cols;
+    int C_rows = rows;
+    int C_cols = B_cols;
+
+    intT mat_idx = 0; //keeps writing position for mat
+    intT vbmat_idx = 0; //keeps reading position for vbmat 
+    intT ja_count = 0; //keeps total nonzero blocks count;
+    intT rows_in_block;
+    intT* jab_loc = jab;
+
+    //loop through all blocks
+    for(intT ib = 0; ib < block_rows; ib++ )      //loop horizontally through block rows
+    {
+        rows_in_block = row_part[ib + 1] - row_part[ib]; //the row height of the block
+        
+        for(intT nzs = 0; nzs < nzcount[ib]; nzs++)        //loop horizontally through nonzero blocks
+
+        {
+            intT jb = *jab_loc;             //the block row position of a nonzero block 
+
+            auto d_B_block = B + block_col_size*jb;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
+
+            //define the sub-matrices
+	          auto d_A_block = mab + vbmat_idx;           //access the block on d_A.
+            auto d_C_block = C + row_part[ib];      //access the block on d_C.            
+            
+            //multiply the dense blocks, accumulate result on C
+            for(intT i = 0; i < rows_in_block; i++)
+              for(intT j = 0; j < B_cols; j++)
+                for(intT k = 0; k < block_col_size; k++)
+                  {
+                    d_C_block[i + C_rows*j] += d_A_block[i + k*rows_in_block]*d_B_block[k + j*B_rows];
+                  }
+
+            //move mab and jab pointers forward
+            vbmat_idx += rows_in_block*block_col_size;
+            jab_loc++;
+	    }
+
+    }
+
 }

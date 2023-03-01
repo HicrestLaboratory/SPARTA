@@ -24,6 +24,7 @@
     intT = int
 */
 
+/*
 void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_rows, int B_lead_dim, DataT_C* C, int C_lead_dim, float& dt, int n_streams)
 {
 //multiplies a dense matrix (B) and a VBS matrix (vbmatA); stores B*A into (C)
@@ -195,7 +196,7 @@ void cublas_blockmat_multiply(const VBR& vbmatA, DataT* B, int B_rows, int B_lea
 
     checkCudaErrors(cublasDestroy(handle));
 }
-
+*/
 
 void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt, int n_streams)
 {
@@ -316,18 +317,18 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
             checkCudaErrors(
                 cublasGemmEx(
                     handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                    B_rows, vbmatA.block_col_size, rows_in_block,           //m, n, k <-- block_B: m*k   block_A: k*n   block_C: m*n
+                    rows_in_block, B_cols, vbmatA.block_col_size,          //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
                     &alpha,
                     d_A_block,                                     // blockA device pointer,
                     data_type_AB,                                      // blockA datatype
-                    rows_in_block,                                  // blockA leading dimension
-                    d_B_block,                                    // blockB device pointer
-                    data_type_AB,                                      // blockB datatype
-                    B_rows,                                       // leading dimension
+                    rows_in_block,                                      // blockA leading dimension
+                    d_B_block,                                          // blockB device pointer
+                    data_type_AB,                                       // blockB datatype
+                    B_rows,                                             // B leading dimension
                     &beta,
-                    d_C_block, data_type_C,                           // blockC device pointer, blockC type
-                    C_rows,
-                    compute_type,                                      // compute_type
+                    d_C_block, data_type_C,                             // blockC device pointer, blockC type
+                    C_rows,                                             // C leading dimension
+                    compute_type,                                       // compute_type
                     cuda_algo)
             );                                       
             

@@ -319,7 +319,7 @@ BlockingEngine::BlockingEngine(CLineReader &cline)
   tau = cline.tau_;
   use_groups = cline.sim_use_groups_;
   use_pattern = cline.sim_use_pattern_;
-  blocking_algo = cline.blocking_algo_;
+  blocking_algo = static_cast<BlockingType>(cline.blocking_algo_);
   row_block_size = cline.row_block_size_;
   col_block_size = cline.col_block_size_;
   force_fixed_size = cline.force_fixed_size;

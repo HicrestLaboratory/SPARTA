@@ -116,5 +116,7 @@ struct VBR
     int partition_check(const std::vector<intT> &candidate_part);
     void fill_from_CSR(const CSR& cmat,const std::vector<intT> &row_partition, intT block_size);
     void fill_from_CSR_inplace(const CSR& cmat,const std::vector<intT> &grouping, intT block_size);
+    void fill_from_CSR_inplace(const CSR& cmat, intT row_block_size, intT col_block_size);
     DataT* get_block_start(intT row_block_idx);
+    void multiply(DataT* B, int B_cols, DataT_C* C);
 };

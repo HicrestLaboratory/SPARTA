@@ -3,13 +3,13 @@ export RESULTS_PATH=$2
 export PROGRAM=$3
 
 
-TAUs=(0.001 0.002 0.005 0.01 0.02 0.05 0.1 0.2 0.5 0.9)
+TAUs=(0.9 0.5 0.2 0.1 0.05 0.02 0.01 0.005 0.002 0.001)
 USE_PATTERN=(1)
 USE_GROUP=(0)
 BLOCK_SIZEs=(32)
 ROW_BLOCK_SIZEs=(2 4 8 16 32 64 128 256 512 1024 2048 4096 8192)
 ALGOs=(2 3)
-REORDERINGs=(0) #pre-reordering
+REORDERINGs=(0 1) #pre-reordering
 
 SIM=1 #0: hamming 1:jaccard; +2 for OPENMP versions
 
