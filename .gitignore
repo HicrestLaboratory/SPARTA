@@ -15,3 +15,6 @@ data/real_world/nd12k.el
 programs/general/Matrix_Blocking
 programs/general/TEST_blocking_VBR
 programs/general/TEST_similarities
+programs/general/TEST_blocking_VBR
+programs/general/TEST_matrices
+programs/general/TEST_similarities
