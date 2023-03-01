@@ -96,9 +96,7 @@ void CSR::reorder_by_degree(bool descending)
 
     vector<intT> v(rows);
     iota(v.begin(), v.end(), 0);
-
-    std::cout << "ROWS: " << rows << std::endl;
-
+    
     for (intT i = 0; i < rows; i++)
     {
         try
@@ -107,7 +105,7 @@ void CSR::reorder_by_degree(bool descending)
         }
         catch(const std::exception& e)
         {
-            std::cout << "FAILED ON ROW": e.what() << '\n';
+            std::cout << "REORDERING FAILED ON ROW " << i <<  e.what() << '\n';
         }
         
     }
