@@ -68,7 +68,7 @@ for fullpath in ${MATRICES_PATH}/*.el; do
 							then
 								echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 							else
-								export ARGS="-f ${fullpath} -b ${b} -t ${t} -a ${a} -r ${r} -p ${p} -g ${g} -v 1 -o ${OUTFILE} -P 1 -n ${EXP_NAME} -m ${SIM}"
+								export ARGS="-f ${fullpath} -b ${b} -t ${t} -a ${a} -r ${r} -p ${p} -g ${g} -o ${OUTFILE} -n ${EXP_NAME} -m ${SIM}"
 								echo "running ./${PROGRAM} ${ARGS} ${BASIC_ARGS}"
 								./${PROGRAM} ${ARGS} ${BASIC_ARGS}
 							fi
