@@ -811,6 +811,132 @@ void pico_print_SpMMM(const char* Aname, int An, int Am, int Az, int* Arows, int
 
 }
 
+void pico_print_SpMMM(const char* Aname, VBR* A, const char* Bname, int Bn, int Bm, DataT* B, const char* Cname, long int Cn, long int Cm, DataT_C* C) {
+
+    printf("Dims of %s %s %s:\n", Aname, Bname, Cname);
+    printf("       %6s %6s %6s\n", "rows", "cols", "block_rows x block_cols");
+    if (A != NULL)     printf(" %5s %6ld %6ld      %ldx%ld\n", Aname, A->rows, A->cols, A->block_rows, A->block_cols);
+    if (B != NULL)     printf(" %5s %6d %6d      %dx%d\n", Bname, Bn, Bm, 0, 0);
+    if (C != NULL)     printf(" %5s %6ld %6ld      %dx%d\n", Cname, Cn, Cm, 0, 0);
+    printf("\n");
+
+
+    if (A != NULL) {
+        printf("Sparse matrix %s:\n", Aname);
+        printf("nzcount: ");
+        for (int i=0; i<((A->rows)/(A->block_rows)); i++)
+            printf("%3ld ", A->nzcount[i]);
+        printf("\n");
+        printf("jab: ");
+        int k = 0;
+        for (int i=0; i<((A->rows)/(A->block_rows)); i++)
+            for (int j=0; j<A->nzcount[i]; j++) {
+                printf("%3ld ", A->jab[k]);
+                k++;
+            }
+        printf("\n");
+        printf("mab: ");
+        for (int i=0; i<A->nztot; i++)
+            printf("%3.2f ", A->mab[i]);
+        printf("\n");
+        printf("row_part: ");
+        for (int i=0; i<((A->rows)/(A->block_rows) +1); i++)
+            printf("%3.2ld ", A->row_part[i]);
+        printf("\n\n");
+    }
+
+    if (B != NULL) {
+        printf("Dense matrix %s:\n", Bname);
+        for (int i=0; i<Bn; i++) {
+            for (int j=0; j<Bm; j++) {
+                printf(" %6.3f ", B[i * Bm + j]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
+
+    if (C != NULL) {
+        printf("Dense matrix %s:\n", Cname);
+        for (int i=0; i<Cn; i++) {
+            for (int j=0; j<Cm; j++) {
+                printf(" %6.3f ", C[i * Cm + j]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
+
+}
+
+void pico_print_SpMMM(const char* Aname, int rows, int cols, int ell_blocksize, int ell_rows, int ell_cols, int num_blocks, intT* columns, DataT_C* values, const char* Bname, int Bn, int Bm, DataT* B, const char* Cname, long int Cn, long int Cm, DataT_C* C) {
+
+    printf("Dims of %s %s %s:\n", Aname, Bname, Cname);
+    printf("       %6s %6s\n", "rows", "cols");
+    if (columns != NULL)     printf(" %5s %6d %6d\n", Aname, rows, cols);
+    if (B != NULL)     printf(" %5s %6d %6d\n", Bname, Bn, Bm);
+    if (C != NULL)     printf(" %5s %6ld %6ld\n", Cname, Cn, Cm);
+    printf("\n");
+
+    printf("rows = %d, cols = %d, ell_blocksize = %d, ell_rows = %d, ell_cols = %d, num_blocks = %d\n", rows, cols, ell_blocksize, ell_rows, ell_cols, num_blocks);
+
+    if (columns != NULL) {
+        printf("Blocked-ellpac matrix %s:\n", Aname);
+        printf("\tellColInd matrix:\n");
+        for (int i=0; i<ell_rows; i++) {
+            printf("\t\t");
+            for (int j=0; j< ell_cols; j++)
+                printf("%ld ", columns[i*ell_cols + j]);
+            printf("\n");
+        }
+
+        printf("\tellValue matrix:\n");
+        int t = 0;
+        for (int i=0; i<ell_rows; i++) {
+            for (int j=0; j< ell_cols; j++) {
+                if (columns[i*ell_cols + j] != -1) {
+                    for(int k=0; k<ell_blocksize; k++) {
+                        printf("\t\t");
+                        for(int h=0; h<ell_blocksize; h++) {
+                            printf("%f ", values[t*ell_blocksize*ell_blocksize +  k*ell_blocksize + h]);
+                        }
+                        printf("\n");
+                    }
+                    t++;
+                } else {
+                    printf("\t\t Padding block\n");
+                }
+                printf("\t\t--------------------\n");
+            }
+            printf("\t\t~~~~~~~~~~~~~~~~~~~~\n");
+        }
+
+    }
+
+    if (B != NULL) {
+        printf("Dense matrix %s:\n", Bname);
+        for (int i=0; i<Bn; i++) {
+            for (int j=0; j<Bm; j++) {
+                printf(" %6.3f ", B[i * Bm + j]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
+
+    if (C != NULL) {
+        printf("Dense matrix %s:\n", Cname);
+        for (int i=0; i<Cn; i++) {
+            for (int j=0; j<Cm; j++) {
+                printf(" %6.3f ", C[i * Cm + j]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
+
+}
+
 void ck_out (const char* name, bool test) {
     if (test)
         printf("\t%s test: TRUE\n", name);
@@ -1201,6 +1327,223 @@ int prepare_cusparse_CSR(CSR& cmat, int** csrRowPtr, int** csrColInd, DataT** cs
         nnz += cmat.nzcount[i];
 
     }
+
+    return 0;
+}
+
+
+
+int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_ell_cols, int A_ell_rows, int A_num_blocks, intT* columns, DataT_C* values, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, const DataT_C alpha, const DataT_C beta, float& dt)
+{
+
+    cudaDataType_t data_type_AB;
+    cudaDataType_t data_type_C;
+
+    if (typeid(DataT) == typeid(int8_t))
+    {
+        data_type_AB = CUDA_R_8I;
+        data_type_C = CUDA_R_32I;
+    }
+    else if (typeid(DataT) == typeid(float))
+    {
+        data_type_AB = CUDA_R_32F;
+        data_type_C = CUDA_R_32F;
+    }
+    else
+    {
+        std::cout << "WARNING! Unsopported multiplication type. Check comp_mats.h" << std::endl;
+    }
+
+
+    //allocate memory on device
+
+
+    unsigned int B_rows = cols;
+    unsigned int size_B = B_rows * B_cols;
+    unsigned int mem_size_B = sizeof(DataT) * size_B;
+
+// TO ADAPT
+
+    long int C_rows = rows;
+    long int C_cols = B_cols;
+    unsigned int size_C = C_rows * C_cols;
+    unsigned int mem_size_C = sizeof(DataT_C) * size_C;
+
+    // allocate device memory
+    intT    *dA_columns;
+    DataT_C *dA_values;
+
+
+#ifdef PICO_DEBUG
+    printf("alpha = %f, beta = %f\n", alpha, beta);
+//     pico_print_SpMMM("A", rows, cols, nnz, csrRowPtr, csrColInd, csrVal, "B", B_rows, B_cols, B, "C", C_rows, C_cols, C);
+#endif
+
+    checkCudaErrors( cudaMalloc((void**) &dA_columns, A_ell_cols * A_ell_rows * sizeof(intT)) );
+    checkCudaErrors( cudaMalloc((void**) &dA_values, A_ell_blocksize * A_ell_blocksize * A_num_blocks * sizeof(DataT_C)) );
+
+    DataT* d_B;
+    DataT_C* d_C;
+    checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
+    checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
+
+    //copy arrays and matrices to device
+    checkCudaErrors( cudaMemcpy(dA_columns, columns, A_num_blocks * sizeof(intT), cudaMemcpyHostToDevice) );
+    checkCudaErrors( cudaMemcpy(dA_values, values, A_ell_cols * rows * sizeof(DataT_C), cudaMemcpyHostToDevice) );
+
+    checkCudaErrors( cudaMemcpy(d_B, B, mem_size_B, cudaMemcpyHostToDevice) );
+
+    if (beta != 0)
+    {
+        checkCudaErrors( cudaMemcpy(d_C, C, mem_size_C, cudaMemcpyHostToDevice) );
+    }
+
+    cusparseHandle_t handle;
+    cusparseSpMatDescr_t matA;
+    cusparseDnMatDescr_t matB, matC;
+
+    checkCudaErrors(cusparseCreate(&handle));
+
+    checkCudaErrors( cusparseCreateBlockedEll(
+                                      &matA,
+                                      rows, cols, A_ell_blocksize,
+                                      A_ell_cols, dA_columns, dA_values,
+                                      CUSPARSE_INDEX_32I,
+                                      CUSPARSE_INDEX_BASE_ZERO, data_type_AB) );
+
+#ifdef PICO_DEBUG
+//     check_csr(matA, "A", rows, cols, nnz, csrRowPtr, csrColInd, csrVal);
+#endif
+
+    checkCudaErrors(
+        cusparseCreateDnMat(&matB, cols, B_cols, B_lead_dim, d_B,
+            data_type_AB, CUSPARSE_ORDER_ROW));
+
+#ifdef PICO_DEBUG
+    check_dnmat(matB, "matB", B_rows, B_cols, B);
+#endif
+
+    checkCudaErrors(
+        cusparseCreateDnMat(&matC, rows, B_cols, C_lead_dim, d_C,
+            data_type_C, CUSPARSE_ORDER_ROW));
+
+#ifdef PICO_DEBUG
+    check_dnmat(matC, "matC", C_rows, C_cols, C);
+#endif
+
+
+
+    size_t bufferSize = 0;
+    void *dBuffer = NULL;
+
+    checkCudaErrors( cusparseSpMM_bufferSize(
+                                 handle,
+                                 CUSPARSE_OPERATION_NON_TRANSPOSE,
+                                 CUSPARSE_OPERATION_NON_TRANSPOSE,
+                                 &alpha, matA, matB, &beta, matC, data_type_C,
+                                 CUSPARSE_SPMM_ALG_DEFAULT, &bufferSize) );
+    checkCudaErrors( cudaMalloc(&dBuffer, bufferSize) );
+
+
+    //initialize cuda events
+    cudaEvent_t start, stop;
+    checkCudaErrors(cudaEventCreate(&start));
+    checkCudaErrors(cudaEventCreate(&stop));
+    checkCudaErrors(cudaEventRecord(start, 0));
+
+
+    checkCudaErrors(cusparseSpMM(handle,
+        CUSPARSE_OPERATION_NON_TRANSPOSE,
+        CUSPARSE_OPERATION_NON_TRANSPOSE,
+        &alpha, matA, matB, &beta, matC, data_type_C,
+        CUSPARSE_SPMM_ALG_DEFAULT, dBuffer));       // We have a BUG here
+
+    checkCudaErrors( cusparseSpMM(handle,
+                                 CUSPARSE_OPERATION_NON_TRANSPOSE,
+                                 CUSPARSE_OPERATION_NON_TRANSPOSE,
+                                 &alpha, matA, matB, &beta, matC, data_type_C,
+                                 CUSPARSE_SPMM_ALG_DEFAULT, dBuffer) );
+
+    //record the elapsed time onto dt
+    cudaDeviceSynchronize();
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&dt, start, stop);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+
+    // destroy matrix/vector descriptors
+    checkCudaErrors(cusparseDestroySpMat(matA));
+    checkCudaErrors(cusparseDestroyDnMat(matB));
+    checkCudaErrors(cusparseDestroyDnMat(matC));
+
+    // copy result from device to host
+    // -------------------------------------------------
+//     checkCudaErrors(cublasGetMatrix(C_rows, C_cols, sizeof(DataT_C), d_C, C_rows, C, C_rows));
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    checkCudaErrors(cudaMemcpy(C, d_C, mem_size_C, cudaMemcpyDeviceToHost));
+    // -------------------------------------------------
+
+#ifdef PICO_DEBUG
+    printf("Printing results of %s:\n", __func__);
+    pico_print_SpMMM("NULL", 0, 0, 0, NULL, NULL, NULL, "B", B_rows, B_cols, B, "C", C_rows, C_cols, C);
+#endif
+
+    // clean up memor;y
+    checkCudaErrors(cudaFree(d_B));
+    checkCudaErrors(cudaFree(d_C));
+    checkCudaErrors(cudaFree(dA_values));
+    checkCudaErrors(cudaFree(dA_columns));
+
+    // Destroy the handle
+    checkCudaErrors(cusparseDestroy(handle));
+
+    return 0;
+}
+
+int prepare_cusparse_BLOCKEDELLPACK(VBR *A, int *ell_blocksize, int *ell_rows, int *ell_cols, int *num_blocks, intT** columns, DataT_C** values)
+{
+//     if (cmat.fmt != 0)
+//     {
+//         std::cout << "ERROR: cusparse_gemm_custom only supports CSR (row-major) " << std::endl;
+//         return 1;
+//     }
+
+#ifdef PICO_DEBUG
+    printf("File %s, line %d: print cmat\n", __FILE__, __LINE__);
+    A->print(2);
+#endif
+
+    *ell_blocksize = A->block_rows;
+    *ell_rows = ((A->rows)/(A->block_rows));
+    *ell_cols = 0;
+    *num_blocks = 0;
+    for (int i=0; i<(*ell_rows); i++) {
+        *num_blocks += A->nzcount[i];
+        if (A->nzcount[i] > (*ell_cols))
+            (*ell_cols) = A->nzcount[i];
+    }
+
+    *columns = (intT*)malloc(sizeof(intT)*(*ell_cols)*(*ell_rows));
+    *values = (DataT_C*)malloc(sizeof(DataT)*((*num_blocks))*(*ell_blocksize)*(*ell_blocksize));
+
+    int i, j, k_col = 0, k_val_i, k_val_j;
+    for (i=0; i<(*ell_rows); i++)
+        for (j=0; j<(*ell_cols); j++)
+            if (j < A->nzcount[i]) {
+                (*columns)[i*(*ell_cols)+j] = A->jab[k_col];
+
+                // blocks form colum-major (A->mab) to row-major (*values)
+                for (k_val_i=0; k_val_i<(*ell_blocksize); k_val_i++)
+                    for (k_val_j=0; k_val_j<(*ell_blocksize); k_val_j++) {
+                        (*values)[k_col * (*ell_blocksize)*(*ell_blocksize) + k_val_i * (*ell_blocksize) + k_val_j] =
+                            A->mab[k_col * (*ell_blocksize)*(*ell_blocksize) + k_val_j * (*ell_blocksize) + k_val_i];
+                    }
+
+                k_col ++;
+            } else {
+                (*columns)[i*(*ell_cols)+j] = -1; // '-1' means thet the algorithm autmaticly pad it with a compleate zero block
+            }
 
     return 0;
 }

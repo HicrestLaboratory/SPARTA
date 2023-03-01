@@ -100,6 +100,7 @@ int main(int argc, char* argv[])
 
     //run the VBR-dense multiplications
 
+/*
     std::cout << "cublas start" << std::endl;
 
     for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
@@ -112,7 +113,7 @@ int main(int argc, char* argv[])
         cout << "CORRECTNESS CHECK: " << equality_check << endl;
     }
 
-    std::cout << "cublas end" << std::endl;
+    std::cout << "cublas end" << std::endl; */
     cout << "TIME: " << avg(algo_times) << endl;
 
     //mean_time = mean(algo_times);
@@ -162,7 +163,32 @@ int main(int argc, char* argv[])
     cmp = memcmp(mat_C_VBR3, mat_C_VBR2, C_rows * C_cols * sizeof(DataT_C) );
     std::cout << "memcmp of mat_C_VBR3 and mat_C_VBR2 is " << cmp << std::endl;
 
+
+    std::cout << "================================ cusparse ellpack start ==================================" << std::endl;
+
+    if (vbmat.block_rows == vbmat.block_cols) {
+        BDG_CKP
+
+        vbmat.print();
+        pico_print_SpMMM("VBR_A", &vbmat, "NULL", 0, 0, NULL, "NULL", 0, 0, NULL);
+
+        int ell_blocksize, ell_rows, ell_cols, num_blocks;
+        intT* columns;
+        DataT_C* values;
+        prepare_cusparse_BLOCKEDELLPACK(&vbmat, &ell_blocksize, &ell_rows, &ell_cols, &num_blocks, &columns, &values);
+        pico_print_SpMMM("BEL_A", vbmat.rows, vbmat.cols, ell_blocksize, ell_rows, ell_cols, num_blocks, columns, values, "NULL", 0, 0, NULL, "NULL", 0, 0, NULL);
+        cusparse_gemm_custom_ellpack(A_rows, A_cols, ell_blocksize, ell_cols, ell_rows, num_blocks, columns, values, mat_B, B_cols, B_cols, mat_C_VBR3, C_cols, 1, 1, dt);
+
+        vbmat.print();
+        pico_print_SpMMM("VBR_A", &vbmat, "mat_B", B_rows, B_cols, mat_B, "C_VBR", C_rows, C_cols, mat_C_VBR3);
+    }
     //TODO
+
+
+    std::cout << "================================= cusparse ellpack end ===================================" << std::endl;
+
+    cmp = memcmp(mat_C_VBR3, mat_C_VBR2, C_rows * C_cols * sizeof(DataT_C) );
+    std::cout << "memcmp of mat_C_VBR3 and mat_C_VBR2 is " << cmp << std::endl;
 
     std::cout << "END" << std::endl;
 
