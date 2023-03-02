@@ -1004,6 +1004,60 @@ void check_csr(cusparseSpMatDescr_t csr, const char* Aname, int An, int Am, int 
     return;
 }
 
+void check_bell(cusparseSpMatDescr_t bell, const char* Aname, int rows, int cols, int ell_blocksize, int ell_rows, int ell_cols, int num_blocks, intT* columns, DataT_C* values) {
+    printf("Checking blocked ellpack %s:\n", Aname);
+
+    int64_t chk_rows;
+    int64_t chk_cols;
+    int64_t chk_ell_blocksize;
+    int64_t chk_ell_cols;
+    void* chk_columns, *h_chk_columns;
+    void* chk_values, *h_chk_values;
+    cusparseIndexType_t chk_ellIdxType;
+    cusparseIndexBase_t chk_idxBase;
+    cudaDataType chk_valueType;
+
+    cusparseBlockedEllGet(bell,
+        &chk_rows,
+        &chk_cols,
+        &chk_ell_blocksize,
+        &chk_ell_cols,
+        &chk_columns,
+        &chk_values,
+        &chk_ellIdxType,
+        &chk_idxBase,
+        &chk_valueType);
+
+    bool ck_dim = ((rows == chk_rows) && (cols == chk_cols) && (ell_blocksize == chk_ell_blocksize) && (ell_cols == chk_ell_cols));
+    ck_out ("dimension", ck_dim);
+
+    if (ck_dim) {
+        h_chk_columns = malloc(sizeof(intT) * (ell_cols*ell_rows));
+        cudaMemcpy(h_chk_columns, chk_columns, sizeof(intT) * (ell_cols*ell_rows), cudaMemcpyDeviceToHost);
+        bool ck_col = (memcmp(h_chk_columns, columns, sizeof(intT) * (ell_cols*ell_rows)) == 0) ? 1 : 0;
+        ck_out ("ell_cols", ck_col);
+    } else {
+        printf("(rows == chk_rows): (%d, %ld) && (cols == chk_cols): (%d, %ld) && (ell_blocksize == chk_ell_blocksize): (%d, %ld) && (ell_cols == chk_ell_cols): (%d, %ld)\n", rows, chk_rows, cols, chk_cols, ell_blocksize, chk_ell_blocksize, ell_cols, chk_ell_cols);
+    }
+
+    if (ck_dim) {
+        h_chk_values = malloc(sizeof(DataT_C) * (num_blocks*ell_blocksize*ell_blocksize));
+        cudaMemcpy(h_chk_values, chk_values, sizeof(DataT_C) * (num_blocks*ell_blocksize*ell_blocksize), cudaMemcpyDeviceToHost);
+        bool ck_val = (memcmp(h_chk_values, values, sizeof(DataT_C) * (num_blocks*ell_blocksize*ell_blocksize)) == 0) ? 1 : 0;
+        ck_out ("ell_val", ck_val);
+    }
+
+    printf("\n");
+
+// ---------- They are only readed, not copyed ----------
+//     cudaFree(chk_columns);
+//     cudaFree(chk_values);
+    free(h_chk_columns);
+    free(h_chk_values);
+
+    return;
+}
+
 void check_dnmat(cusparseDnMatDescr_t dnmat, const char* Bname, int Bn, int Bm, DataT* B) {
     printf("Checking csr %s:\n", Bname);
 
@@ -1412,7 +1466,7 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
                                       CUSPARSE_INDEX_BASE_ZERO, data_type_AB) );
 
 #ifdef PICO_DEBUG
-//     check_csr(matA, "A", rows, cols, nnz, csrRowPtr, csrColInd, csrVal);
+    check_bell(matA, "A", rows, cols, A_ell_blocksize, A_ell_rows, A_ell_cols, A_num_blocks, columns, values);
 #endif
 
     checkCudaErrors(
