@@ -181,7 +181,7 @@ int main(int argc, char* argv[])
         std::cout << "------------------------------- prepare_cusparse_BELL done -------------------------------" << std::endl;
 
 #ifdef PICO_DEBUG
-        pico_print_SpMMM("BEL_A", vbmat.rows, vbmat.cols, ell_blocksize, ell_rows, ell_cols, num_blocks, columns, values, "NULL", 0, 0, NULL, "NULL", 0, 0, NULL);
+        pico_print_SpMMM("BEL_A", vbmat.rows, vbmat.cols, ell_blocksize, ell_rows, ell_cols, num_blocks, columns, values, "mat_B", B_rows, B_cols, mat_B, "C_VBR", C_rows, C_cols, mat_C_VBR3);
 #endif
 
         cusparse_gemm_custom_ellpack(A_rows, A_cols, ell_blocksize, ell_cols, ell_rows, num_blocks, columns, values, mat_B, B_cols, B_cols, mat_C_VBR3, C_cols, 1, 1, dt);

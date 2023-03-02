@@ -1510,18 +1510,11 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
     checkCudaErrors(cudaEventCreate(&stop));
     checkCudaErrors(cudaEventRecord(start, 0));
 
-
-    checkCudaErrors(cusparseSpMM(handle,
+    checkCudaErrors( cusparseSpMM(handle,
         CUSPARSE_OPERATION_NON_TRANSPOSE,
         CUSPARSE_OPERATION_NON_TRANSPOSE,
         &alpha, matA, matB, &beta, matC, data_type_C,
-        CUSPARSE_SPMM_ALG_DEFAULT, dBuffer));       // We have a BUG here
-
-    checkCudaErrors( cusparseSpMM(handle,
-                                 CUSPARSE_OPERATION_NON_TRANSPOSE,
-                                 CUSPARSE_OPERATION_NON_TRANSPOSE,
-                                 &alpha, matA, matB, &beta, matC, data_type_C,
-                                 CUSPARSE_SPMM_ALG_DEFAULT, dBuffer) );
+        CUSPARSE_SPMM_ALG_DEFAULT, dBuffer) );
 
     //record the elapsed time onto dt
     cudaDeviceSynchronize();
