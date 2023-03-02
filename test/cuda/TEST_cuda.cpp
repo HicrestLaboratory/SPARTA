@@ -169,21 +169,28 @@ int main(int argc, char* argv[])
     if (vbmat.block_rows == vbmat.block_cols) {
         BDG_CKP
 
+#ifdef PICO_DEBUG
         vbmat.print();
-        pico_print_SpMMM("VBR_A", &vbmat, "NULL", 0, 0, NULL, "NULL", 0, 0, NULL);
+#endif
 
         int ell_blocksize, ell_rows, ell_cols, num_blocks;
         intT* columns;
         DataT_C* values;
         prepare_cusparse_BLOCKEDELLPACK(&vbmat, &ell_blocksize, &ell_rows, &ell_cols, &num_blocks, &columns, &values);
+
+        std::cout << "------------------------------- prepare_cusparse_BELL done -------------------------------" << std::endl;
+
+#ifdef PICO_DEBUG
         pico_print_SpMMM("BEL_A", vbmat.rows, vbmat.cols, ell_blocksize, ell_rows, ell_cols, num_blocks, columns, values, "NULL", 0, 0, NULL, "NULL", 0, 0, NULL);
+#endif
+
         cusparse_gemm_custom_ellpack(A_rows, A_cols, ell_blocksize, ell_cols, ell_rows, num_blocks, columns, values, mat_B, B_cols, B_cols, mat_C_VBR3, C_cols, 1, 1, dt);
 
+#ifdef PICO_DEBUG
         vbmat.print();
-        pico_print_SpMMM("VBR_A", &vbmat, "mat_B", B_rows, B_cols, mat_B, "C_VBR", C_rows, C_cols, mat_C_VBR3);
+        pico_print_SpMMM("BEL_A", vbmat.rows, vbmat.cols, ell_blocksize, ell_rows, ell_cols, num_blocks, columns, values, "mat_B", B_rows, B_cols, mat_B, "C_VBR", C_rows, C_cols, mat_C_VBR3);
+#endif
     }
-    //TODO
-
 
     std::cout << "================================= cusparse ellpack end ===================================" << std::endl;
 

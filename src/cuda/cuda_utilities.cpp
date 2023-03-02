@@ -1514,8 +1514,8 @@ int prepare_cusparse_BLOCKEDELLPACK(VBR *A, int *ell_blocksize, int *ell_rows, i
     A->print(2);
 #endif
 
-    *ell_blocksize = A->block_rows;
-    *ell_rows = ((A->rows)/(A->block_rows));
+    *ell_blocksize = A->block_col_size;
+    *ell_rows = ((A->rows)/(*ell_blocksize));
     *ell_cols = 0;
     *num_blocks = 0;
     for (int i=0; i<(*ell_rows); i++) {
