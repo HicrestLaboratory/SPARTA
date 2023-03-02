@@ -1028,13 +1028,13 @@ void check_bell(cusparseSpMatDescr_t bell, const char* Aname, int rows, int cols
         &chk_idxBase,
         &chk_valueType);
 
-    bool ck_dim = ((rows == chk_rows) && (cols == chk_cols) && (ell_blocksize == chk_ell_blocksize) && (ell_cols == chk_ell_cols));
+    bool ck_dim = ((rows == chk_rows) && (cols == chk_cols) && (ell_blocksize == chk_ell_blocksize) && (ell_cols == chk_ell_cols)), ck_col, ck_val;
     ck_out ("dimension", ck_dim);
 
     if (ck_dim) {
         h_chk_columns = malloc(sizeof(intT) * (ell_cols*ell_rows));
         cudaMemcpy(h_chk_columns, chk_columns, sizeof(intT) * (ell_cols*ell_rows), cudaMemcpyDeviceToHost);
-        bool ck_col = (memcmp(h_chk_columns, columns, sizeof(intT) * (ell_cols*ell_rows)) == 0) ? 1 : 0;
+        ck_col = (memcmp(h_chk_columns, columns, sizeof(intT) * (ell_cols*ell_rows)) == 0) ? 1 : 0;
         ck_out ("ell_cols", ck_col);
     } else {
         printf("(rows == chk_rows): (%d, %ld) && (cols == chk_cols): (%d, %ld) && (ell_blocksize == chk_ell_blocksize): (%d, %ld) && (ell_cols == chk_ell_cols): (%d, %ld)\n", rows, chk_rows, cols, chk_cols, ell_blocksize, chk_ell_blocksize, ell_cols, chk_ell_cols);
@@ -1043,8 +1043,13 @@ void check_bell(cusparseSpMatDescr_t bell, const char* Aname, int rows, int cols
     if (ck_dim) {
         h_chk_values = malloc(sizeof(DataT_C) * (num_blocks*ell_blocksize*ell_blocksize));
         cudaMemcpy(h_chk_values, chk_values, sizeof(DataT_C) * (num_blocks*ell_blocksize*ell_blocksize), cudaMemcpyDeviceToHost);
-        bool ck_val = (memcmp(h_chk_values, values, sizeof(DataT_C) * (num_blocks*ell_blocksize*ell_blocksize)) == 0) ? 1 : 0;
+        ck_val = (memcmp(h_chk_values, values, sizeof(DataT_C) * (num_blocks*ell_blocksize*ell_blocksize)) == 0) ? 1 : 0;
         ck_out ("ell_val", ck_val);
+    }
+
+    if (ck_col == false || ck_val == false) {
+        printf("h_chk_matrix:\n");
+        pico_print_SpMMM("BEL_A", chk_rows, chk_cols, chk_ell_blocksize, ell_rows, chk_ell_cols, num_blocks, (intT*)h_chk_columns, (DataT_C*)h_chk_values, "NULL", 0, 0, NULL, "NULL", 0, 0, NULL);
     }
 
     printf("\n");
@@ -1059,7 +1064,7 @@ void check_bell(cusparseSpMatDescr_t bell, const char* Aname, int rows, int cols
 }
 
 void check_dnmat(cusparseDnMatDescr_t dnmat, const char* Bname, int Bn, int Bm, DataT* B) {
-    printf("Checking csr %s:\n", Bname);
+    printf("Checking dense matrix %s:\n", Bname);
 
 
     int64_t chk_rows;
@@ -1442,8 +1447,8 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
     checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
 
     //copy arrays and matrices to device
-    checkCudaErrors( cudaMemcpy(dA_columns, columns, A_num_blocks * sizeof(intT), cudaMemcpyHostToDevice) );
-    checkCudaErrors( cudaMemcpy(dA_values, values, A_ell_cols * rows * sizeof(DataT_C), cudaMemcpyHostToDevice) );
+    checkCudaErrors( cudaMemcpy(dA_columns, columns, A_ell_rows * A_ell_cols * sizeof(intT), cudaMemcpyHostToDevice) );
+    checkCudaErrors( cudaMemcpy(dA_values, values, A_num_blocks * A_ell_blocksize * A_ell_blocksize * sizeof(DataT_C), cudaMemcpyHostToDevice) );
 
     checkCudaErrors( cudaMemcpy(d_B, B, mem_size_B, cudaMemcpyHostToDevice) );
 
