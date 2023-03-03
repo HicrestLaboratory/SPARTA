@@ -911,15 +911,15 @@ void pico_print_SpMMM(const char* Aname, int rows, int cols, int ell_blocksize, 
             printf("\t\t~~~~~~~~~~~~~~~~~~~~\n");
         }
 
-        printf("\trow ellColInd matrix:\n");
+        printf("\n\traw ellColInd matrix:\n\t\t");
         for (int i=0; i<ellColumnsInd_cols*ellColumnsInd_rows; i++)
             printf("%ld ", ellColumnsInd[i]);
         printf("\n");
 
-        printf("\trow ellValue matrix:\n");
+        printf("\traw ellValue matrix:\n\t\t");
         for (int i=0; i<num_blocks*ell_blocksize*ell_blocksize; i++)
-            printf("%f ", ellValues[i]);
-        printf("\n");
+            printf("%6.3f ", ellValues[i]);
+        printf("\n\n");
 
 
     }
@@ -1547,11 +1547,6 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
     checkCudaErrors(cudaMemcpy(C, d_C, mem_size_C, cudaMemcpyDeviceToHost));
     // -------------------------------------------------
 
-#ifdef PICO_DEBUG
-    printf("Printing results of %s:\n", __func__);
-    pico_print_SpMMM("NULL", 0, 0, 0, NULL, NULL, NULL, "B", B_rows, B_cols, B, "C", C_rows, C_cols, C);
-#endif
-
     // clean up memor;y
     checkCudaErrors(cudaFree(d_B));
     checkCudaErrors(cudaFree(d_C));
@@ -1564,6 +1559,8 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
     return 0;
 }
 
+#define BELL_LEYOUT_TEST
+
 int prepare_cusparse_BLOCKEDELLPACK(VBR *A, int *ell_blocksize, int *ellValue_cols, int *ellColInd_rows, int *ellColInd_cols, int *num_blocks, intT** ellColInd, DataT_C** ellValues)
 {
 //     if (cmat.fmt != 0)
@@ -1571,11 +1568,6 @@ int prepare_cusparse_BLOCKEDELLPACK(VBR *A, int *ell_blocksize, int *ellValue_co
 //         std::cout << "ERROR: cusparse_gemm_custom only supports CSR (row-major) " << std::endl;
 //         return 1;
 //     }
-
-#ifdef PICO_DEBUG
-    printf("File %s, line %d: print cmat\n", __FILE__, __LINE__);
-    A->print(2);
-#endif
 
     *ell_blocksize = A->block_col_size;
     *ellColInd_rows = ((A->rows)/(*ell_blocksize));
@@ -1588,9 +1580,38 @@ int prepare_cusparse_BLOCKEDELLPACK(VBR *A, int *ell_blocksize, int *ellValue_co
     }
     *ellValue_cols = (*ellColInd_cols) * (*ell_blocksize);
 
+#ifdef BELL_LEYOUT_TEST
+    *num_blocks = (*ellColInd_rows)*(*ellColInd_cols);
+#endif
     *ellColInd = (intT*)malloc(sizeof(intT)*(*ellColInd_cols)*(*ellColInd_rows));
     *ellValues = (DataT_C*)malloc(sizeof(DataT)*((*num_blocks))*(*ell_blocksize)*(*ell_blocksize));
 
+#ifdef BELL_LEYOUT_TEST
+    int k_col = 0, k, i, j, vbr_blk_row_shift, bel_blk_row_shift;
+
+    // to complete ellColInd
+    for (i=0; i<(*ellColInd_rows); i++)
+        for (j=0; j<(*ellColInd_cols); j++)
+            if (j < A->nzcount[i]) {
+                (*ellColInd)[i*(*ellColInd_cols)+j] = A->jab[k_col];
+                k_col++;
+            } else {
+                (*ellColInd)[i*(*ellColInd_cols)+j] = -1; // '-1' means thet the algorithm autmaticly pad it with a compleate zero block
+            }
+
+    // to complete ellValues
+    vbr_blk_row_shift = 0;
+    bel_blk_row_shift = 0;
+    for(k=0; k<(*ellColInd_rows); k++) {
+        for (i=0; i<(*ell_blocksize); i++)
+            for (j=0; j<(*ellValue_cols); j++)
+                (*ellValues)[bel_blk_row_shift + i*(*ellValue_cols) + j] =
+                    ((*ellColInd)[k*(*ellColInd_cols) + (j/(*ell_blocksize))] != -1) ? A->mab[vbr_blk_row_shift + j*(*ell_blocksize) + i] : 0.0;
+
+        vbr_blk_row_shift += (A->nzcount[k])*(*ell_blocksize)*(*ell_blocksize);
+        bel_blk_row_shift += (*ellColInd_cols)*(*ell_blocksize)*(*ell_blocksize);
+    }
+#else
     int i, j, k_col = 0, k_val_i, k_val_j;
     for (i=0; i<(*ellColInd_rows); i++)
         for (j=0; j<(*ellColInd_cols); j++)
@@ -1608,6 +1629,7 @@ int prepare_cusparse_BLOCKEDELLPACK(VBR *A, int *ell_blocksize, int *ellValue_co
             } else {
                 (*ellColInd)[i*(*ellColInd_cols)+j] = -1; // '-1' means thet the algorithm autmaticly pad it with a compleate zero block
             }
+#endif
 
     return 0;
 }

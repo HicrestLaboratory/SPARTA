@@ -185,6 +185,7 @@ int main(int argc, char* argv[])
 
 #ifdef PICO_DEBUG
         vbmat.print();
+        pico_print_SpMMM("VBR_A", &vbmat, "NULL", 0, 0, NULL, "NULL", 0, 0, NULL);
 #endif
         // ellValue_cols, int *ell_blocksize, int *ellColInd_rows, int *ellColInd_cols, int *num_blocks, intT** ellColInd, DataT_C** ellValues
         int ell_blocksize, ellColInd_rows, ellColInd_cols, ellValue_cols, num_blocks;
