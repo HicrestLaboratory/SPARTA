@@ -58,7 +58,21 @@ int main(int argc, char* argv[])
 
     for (int n = 0; n < B_rows*B_cols; n++) 
     {
+#if defined B_ROW_GROWING || defined B_COL_GROWING
+#if defined B_ROW_GROWING && defined B_COL_GROWING
+        mat_B[n] = (n/B_cols)*100 + n%B_cols;
+#else
+#ifdef B_ROW_GROWING
+        mat_B[n] = n/B_cols;
+#else
+        mat_B[n] = n%B_cols;
+#endif
+#endif
+#else
         mat_B[n] = 1.; //dist(e2);
+#endif
+
+
     }
     if (cli.verbose_ > 1) 
     {
@@ -172,23 +186,23 @@ int main(int argc, char* argv[])
 #ifdef PICO_DEBUG
         vbmat.print();
 #endif
-
-        int ell_blocksize, ell_rows, ell_cols, num_blocks;
-        intT* columns;
-        DataT_C* values;
-        prepare_cusparse_BLOCKEDELLPACK(&vbmat, &ell_blocksize, &ell_rows, &ell_cols, &num_blocks, &columns, &values);
+        // ellValue_cols, int *ell_blocksize, int *ellColInd_rows, int *ellColInd_cols, int *num_blocks, intT** ellColInd, DataT_C** ellValues
+        int ell_blocksize, ellColInd_rows, ellColInd_cols, ellValue_cols, num_blocks;
+        intT* ellColInd;
+        DataT_C* ellValues;
+        prepare_cusparse_BLOCKEDELLPACK(&vbmat, &ell_blocksize, &ellValue_cols, &ellColInd_rows, &ellColInd_cols, &num_blocks, &ellColInd, &ellValues);
 
         std::cout << "------------------------------- prepare_cusparse_BELL done -------------------------------" << std::endl;
 
 #ifdef PICO_DEBUG
-        pico_print_SpMMM("BEL_A", vbmat.rows, vbmat.cols, ell_blocksize, ell_rows, ell_cols, num_blocks, columns, values, "mat_B", B_rows, B_cols, mat_B, "C_VBR", C_rows, C_cols, mat_C_VBR3);
+        pico_print_SpMMM("BEL_A", vbmat.rows, vbmat.cols, ell_blocksize, ellValue_cols, ellColInd_rows, ellColInd_cols, num_blocks, ellColInd, ellValues, "mat_B", B_rows, B_cols, mat_B, "C_VBR", C_rows, C_cols, mat_C_VBR3);
 #endif
 
-        cusparse_gemm_custom_ellpack(A_rows, A_cols, ell_blocksize, ell_cols, ell_rows, num_blocks, columns, values, mat_B, B_cols, B_cols, mat_C_VBR3, C_cols, 1, 1, dt);
+        cusparse_gemm_custom_ellpack(A_rows, A_cols, ell_blocksize, ellValue_cols, ellColInd_cols, ellColInd_rows, num_blocks, ellColInd, ellValues, mat_B, B_cols, B_cols, mat_C_VBR3, C_cols, 1, 1, dt);
 
 #ifdef PICO_DEBUG
         vbmat.print();
-        pico_print_SpMMM("BEL_A", vbmat.rows, vbmat.cols, ell_blocksize, ell_rows, ell_cols, num_blocks, columns, values, "mat_B", B_rows, B_cols, mat_B, "C_VBR", C_rows, C_cols, mat_C_VBR3);
+        pico_print_SpMMM("BEL_A", vbmat.rows, vbmat.cols, ell_blocksize, ellValue_cols, ellColInd_rows, ellColInd_cols, num_blocks, ellColInd, ellValues, "mat_B", B_rows, B_cols, mat_B, "C_VBR", C_rows, C_cols, mat_C_VBR3);
 #endif
     }
 
