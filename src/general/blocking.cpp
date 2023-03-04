@@ -14,8 +14,9 @@ using namespace std;
 
 vector<intT> IterativeBlockingPatternMN(const CSR& cmat, float tau, distFuncGroup distanceFunction,intT block_size, bool use_size, bool use_pattern, int structured_m, int structured_n, intT &comparison_counter, intT &merge_counter, float &timer_total)
 {
-    vector<intT> grouping(cmat.rows, -1); //flag each rows as ungrouped (-1)
 
+    vector<intT> grouping(cmat.rows, -1); //flag each rows as ungrouped (-1)
+    
     auto start = high_resolution_clock::now();
 
     //main loop. Takes an ungrouped row (i) as a seed for a new block.
@@ -73,7 +74,6 @@ vector<intT> IterativeBlockingPatternMN(const CSR& cmat, float tau, distFuncGrou
             }
         }
     }
-
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
     timer_total = duration.count();
@@ -83,10 +83,17 @@ vector<intT> IterativeBlockingPatternMN(const CSR& cmat, float tau, distFuncGrou
 
 vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncGroup distanceFunction,intT block_size, bool use_size, bool use_pattern, intT &comparison_counter, intT &merge_counter, float &timer_total)
 {
+    TIMER_DEF(1);
+    TIMER_DEF(2);
+    TIMER_DEF(3);
+    TIMER_DEF(4);
+    TIMER_START(1);
     vector<intT> grouping(cmat.rows, -1); //flag each rows as ungrouped (-1)
 
     auto start = high_resolution_clock::now();
-
+    float inner_time = 0.0;
+    float distance_time = 0.0;
+    float merge_time = 0.0;
     //main loop. Takes an ungrouped row (i) as a seed for a new block.
     for (intT i = 0; i < cmat.rows; i++)
     {
@@ -98,36 +105,48 @@ vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncGroup 
             pattern.insert(pattern.end(), &cmat.ja[i][0], &cmat.ja[i][cmat.nzcount[i]]); //Initialize the pattern with the seed entries.
             //TODO check performance of std::copy instead
 
-
+            TIMER_START(2);
             //inner loop, compare each subsequent row with the current pattern
             for (intT j = i + 1; j < cmat.rows; j++)
             {
                 if (grouping[j] == -1)
                 {
                     comparison_counter++;
-
+		    TIMER_START(3); 
                     float dist = distanceFunction(pattern, current_group_size, cmat.ja[j], cmat.nzcount[j], 1, block_size);
+		    TIMER_STOP(3);
+		    distance_time += TIMER_ELAPSED(3);
                     if (dist < tau)
                     {
                         merge_counter++;
                         grouping[j] = i;
                         if (use_pattern)
+			    TIMER_START(4);
                             pattern = merge_rows(pattern, cmat.ja[j], cmat.nzcount[j]); //update the pattern through union with the new row
+			    TIMER_STOP(4);
+			    merge_time += TIMER_ELAPSED(4);
+
                         if (use_size)
                             current_group_size++;
                     }
                 }
             }
+	    TIMER_STOP(2);
+	    inner_time += TIMER_ELAPSED(2);
         }
     }
-
+    TIMER_STOP(1);
+    printf("IterativeBlockingPattern: %g\n",TIMER_ELAPSED(1));
+    printf("InnerLoop (%d)  %g\n", cmat.rows, inner_time);
+    printf("Distance %g\n", distance_time);
+    printf("Merge %g\n", merge_time);
+    printf("Total D+M %g\n", merge_time+distance_time);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
     timer_total = duration.count();
 
     return grouping;
 }
-
 vector<intT> IterativeBlockingPatternCLOCKED(const CSR& cmat, float tau, distFuncGroup distanceFunction,intT block_size, bool use_size, bool use_pattern, intT &comparison_counter, intT &merge_counter, float &average_row_distance, float& average_merge_tau, float &timer_total, float &timer_comparisons, float &timer_merges)
 {
     vector<intT>grouping(cmat.rows,-1); //flag each rows as ungrouped (-1)
@@ -292,6 +311,7 @@ vector<intT> BlockingEngine::GetGrouping(const CSR& cmat)
 
     switch(blocking_algo)
     {
+
       case iterative_clocked:
         grouping_result = IterativeBlockingPatternCLOCKED(cmat, tau, comparator, col_block_size, use_groups, use_pattern, comparison_counter, merge_counter, average_row_distance, average_merge_tau, timer_total, timer_comparisons, timer_merges);
         break;
@@ -305,7 +325,7 @@ vector<intT> BlockingEngine::GetGrouping(const CSR& cmat)
         grouping_result = FixedBlocking(cmat, row_block_size);
         break;
     }
-
+    
     if (force_fixed_size && blocking_algo != fixed_size)
     {
         grouping_result = get_fixed_size_grouping(grouping_result, row_block_size);
