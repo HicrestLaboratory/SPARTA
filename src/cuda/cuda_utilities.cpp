@@ -891,24 +891,20 @@ void pico_print_SpMMM(const char* Aname, int rows, int cols, int ell_blocksize, 
         }
 
         printf("\tellValue matrix:\n");
-        int t = 0;
-        for (int i=0; i<ellColumnsInd_rows; i++) {
-            for (int j=0; j< ellColumnsInd_cols; j++) {
-                if (ellColumnsInd[i*ellColumnsInd_cols + j] != -1) {
-                    for(int k=0; k<ell_blocksize; k++) {
-                        printf("\t\t");
-                        for(int h=0; h<ell_blocksize; h++) {
-                            printf("%f ", ellValues[t*ell_blocksize*ell_blocksize +  k*ell_blocksize + h]);
-                        }
-                        printf("\n");
-                    }
-                    t++;
+        for (int i=0; i<rows; i++) {
+            printf("\t\t");
+            for (int j=0; j< ellValue_cols; j++) {
+                if ((j%ell_blocksize) == 0)
+                    printf("| ");
+                if (ellColumnsInd[(i/ell_blocksize)*ellColumnsInd_cols + (j/ell_blocksize)] != -1) {
+                    printf("%f ", ellValues[i*ellValue_cols +  j]);
                 } else {
-                    printf("\t\t Padding block\n");
+                    printf("Pad ");
                 }
-                printf("\t\t--------------------\n");
             }
-            printf("\t\t~~~~~~~~~~~~~~~~~~~~\n");
+            printf("\n");
+            if ((i%ell_blocksize) == (ell_blocksize-1))
+                printf("\t\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
         }
 
         printf("\n\traw ellColInd matrix:\n\t\t");
