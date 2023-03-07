@@ -33,6 +33,9 @@ class BlockingEngine
         float average_row_distance = 0;
         float average_merge_tau = 0; 
 
+        float multiplication_timer_avg = 0;
+        float multiplication_timer_std = 0;
+
         intT VBR_nzcount = 0;
         intT VBR_nzblocks_count = 0;
         float VBR_average_height = 0;

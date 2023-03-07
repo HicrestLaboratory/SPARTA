@@ -49,51 +49,59 @@ DataT* VBR::get_block_start(intT row_block_idx)
 
 void VBR::print(int verbose)
 {
-    intT* jab_ptr = jab;
-    for (intT ib = 0; ib < block_rows; ib++)
-    //iterate through block-rows
-    {   
-        intT row_block_size = row_part[ib+1] - row_part[ib];
-        DataT* data_pointer = get_block_start(ib);
+    cout << "VBR: " << endl;
+    cout << "--- rows, cols: " << rows << "," << cols << endl;
+    cout << "--- block rows, block cols: " << block_rows << "," << block_cols << endl;
+    cout << "--- block columns size: " << block_col_size << endl;
+    cout << "--- total nonzero area: " << nztot << endl;
+    if (verbose > 0)
+    {
+        intT* jab_ptr = jab;
+        for (intT ib = 0; ib < block_rows; ib++)
+        //iterate through block-rows
+        {   
+            intT row_block_size = row_part[ib+1] - row_part[ib];
+            DataT* data_pointer = get_block_start(ib);
 
-        for (intT i = 0; i < row_block_size; i++)
-        //iterate through rows in the row-block
-        {
-            intT jb = 0;
-            for (intT nzb = 0; nzb < nzcount[ib]; nzb++)
-            //iterate through nonzero blocks in the row-block
+            for (intT i = 0; i < row_block_size; i++)
+            //iterate through rows in the row-block
             {
-                intT nz_jb = jab_ptr[nzb]; //position of nonzero block
-                while (jb < nz_jb)
+                intT jb = 0;
+                for (intT nzb = 0; nzb < nzcount[ib]; nzb++)
+                //iterate through nonzero blocks in the row-block
+                {
+                    intT nz_jb = jab_ptr[nzb]; //position of nonzero block
+                    while (jb < nz_jb)
+                    {
+                        for (intT j = 0; j < block_col_size; j++) cout << "0 ";
+                        cout << "| ";
+                        jb++;
+                    }
+                    jb++;
+                    //print mab  slice
+                    for (intT j = 0; j < block_col_size; j++) 
+                    {
+                        DataT d = data_pointer[nzb*block_col_size*row_block_size + j*row_block_size + i];
+                        cout << d << " " ;
+                    }    
+                    cout << "| ";
+                }
+
+                while (jb < block_cols && jb*block_col_size < cols)
                 {
                     for (intT j = 0; j < block_col_size; j++) cout << "0 ";
-                    cout << "| ";
+                    {
+                        cout << "| ";
+                    }
                     jb++;
                 }
-                jb++;
-                //print mab  slice
-                for (intT j = 0; j < block_col_size; j++) 
-                {
-                    DataT d = data_pointer[nzb*block_col_size*row_block_size + j*row_block_size + i];
-                    cout << d << " " ;
-                }    
-                cout << "| ";
-            }
-
-            while (jb < block_cols && jb*block_col_size < cols)
-            {
-                for (intT j = 0; j < block_col_size; j++) cout << "0 ";
-                {
-                    cout << "| ";
-                }
-                jb++;
+                cout << endl;
             }
             cout << endl;
+            jab_ptr += nzcount[ib]; //move jab ptr to start of next block_row
         }
         cout << endl;
-        jab_ptr += nzcount[ib]; //move jab ptr to start of next block_row
     }
-    cout << endl;
 }
 
 int VBR::partition_check(const vector<intT> &candidate_part)

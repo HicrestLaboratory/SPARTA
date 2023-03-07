@@ -53,7 +53,6 @@ vector<intT> get_fixed_size_grouping(const vector<intT> &grouping, intT row_bloc
     return result_grouping;
 }
 
-
 bool check_structured_sparsity(vector<intT>& structured_sparsity_pattern, vector<intT>& structured_sparsity_column_counter, intT* row, intT row_len, int m)
 {
     //check that Row does not break the m:n structured sparsity when added to structured_sparsity_pattern;
@@ -129,7 +128,6 @@ void update_structured_sparsity(vector<intT>& structured_sparsity_pattern, vecto
     copy(new_counter.begin(), new_counter.end(), std::back_inserter(structured_sparsity_column_counter));
 }
 
-
 vector<intT> OLD_merge_rows(vector<intT> A, intT*B, intT size_B)
 {
     //A,B sparse rows (compressed indices format)
@@ -174,7 +172,6 @@ vector<intT> merge_rows(vector<intT> A, intT*B, intT size_B)
     return result;
 }
 
-
 void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bEngine, CSR &cmat, bool save_blocking, ostream &blocking_outfile)
 {
     string header;
@@ -187,11 +184,13 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
 
     bEngine.CollectBlockingInfo(cmat);
 
-    //infos
+    //matrix infos
     add_to_output("matrix", cLine.filename_);
     add_to_output("rows", to_string(cmat.rows));
     add_to_output("cols", to_string(cmat.cols));
     add_to_output("nonzeros", to_string(cmat.nztot()));
+
+    //blocking info
     add_to_output("blocking_algo", to_string(cLine.blocking_algo_));
     add_to_output("tau", to_string(cLine.tau_));
     add_to_output("row_block_size", to_string(cLine.row_block_size_));
@@ -201,8 +200,15 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
     add_to_output("sim_measure", to_string(cLine.sim_measure_));
     add_to_output("reorder", to_string(cLine.reorder_));
     add_to_output("exp_name", cLine.exp_name_);
- 
-    //results
+
+    //multiplication info
+    add_to_output("b_cols", to_string(cLine.B_cols_));
+    add_to_output("warmup", to_string(cLine.warmup_));
+    add_to_output("exp_repetitions", to_string(cLine.exp_repetitions_));
+    add_to_output("multiplication_algo", to_string(cLine.multiplication_algo_));
+    add_to_output("n_streams", to_string(cLine.n_streams_));
+
+    //blocking results
     add_to_output("time_to_block", to_string(bEngine.timer_total));
     add_to_output("time_to_merge", to_string(bEngine.timer_merges));
     add_to_output("time_to_compare", to_string(bEngine.timer_comparisons));
@@ -215,6 +221,9 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
     add_to_output("average_merge_tau", to_string(bEngine.average_merge_tau));
     add_to_output("average_row_distance", to_string(bEngine.average_row_distance));
 
+    //multiplication results
+    add_to_output("avg_time_multiply", to_string(bEngine.multiplication_timer_avg));
+    add_to_output("std_time_multiply", to_string(bEngine.multiplication_timer_std));
 
     outfile << header << endl;
     outfile << values << endl;

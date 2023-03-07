@@ -14,4 +14,4 @@ typedef float (*distFuncGroup)(std::vector<intT>,intT,intT*,intT,intT,intT);
 
 enum BlockingType {iterative, iterative_structured, fixed_size, iterative_clocked, iterative_queue};
 
-enum MultiplicationAlgo {cublas_gemm, cusparse_spmm, cusparse_bellpack, cublas_vbr};
+enum MultiplicationAlgo {NO_MULT, cublas_gemm, cusparse_spmm, cusparse_bellpack, cublas_vbr};

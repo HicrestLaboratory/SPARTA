@@ -222,12 +222,10 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
 
 void CSR::print(intT verbose)
 {
-    if (verbose > 0)
-    {
-        cout << "PRINTING A CSR MATRIX (arrays only)" << endl;
-        cout << "ROWS: " << rows << " COLS: " << cols << " PATTERN_only: " << pattern_only << endl; 
-        cout << "NZ: " << nztot() << endl;
-    }
+    cout << "PRINTING A CSR MATRIX (arrays only)" << endl;
+    cout << "ROWS: " << rows << " COLS: " << cols << " PATTERN_only: " << pattern_only << endl; 
+    cout << "NZ: " << nztot() << endl;
+
     if (verbose > 1)
     {
         cout << "JA:" << endl;
@@ -262,36 +260,38 @@ void CSR::print(intT verbose)
                 cout << nzcount[i] << " ";
         }
         cout << endl;
+    }
 
-        cout << "PRINTING A CSR MATRIX" << endl;
-        cout << "ROWS:" << rows << " COLS:" << cols << " PATTERN_only:" << pattern_only << endl; 
-        //loop through rows
-        for (intT i = 0; i < rows; i++)
+    if (verbose > 0)
         {
-            intT j = 0;
-            for (intT nzs = 0; nzs < nzcount[i]; nzs++) 
+            //loop through rows
+            for (intT i = 0; i < rows; i++)
             {
-                intT nz_column = ja[i][nzs]; //find column (row) index of next nonzero element
+                intT j = 0;
+                for (intT nzs = 0; nzs < nzcount[i]; nzs++) 
+                {
+                    intT nz_column = ja[i][nzs]; //find column (row) index of next nonzero element
+                    
+                    DataT elem;
+                    if (!pattern_only) elem = ma[i][nzs]; //value of that element;
+                    else elem = 1;
                 
-                DataT elem;
-                if (!pattern_only) elem = ma[i][nzs]; //value of that element;
-                else elem = 1;
-            
-                while (j < nz_column)
+                    while (j < nz_column)
+                    {
+                        j++;
+                        cout << 0 << " ";
+                    }
+                    cout << elem << " ";
+                    j++;
+                }
+                while (j < cols)
                 {
                     j++;
                     cout << 0 << " ";
                 }
-                cout << elem << " ";
-                j++;
-            }
-            while (j < cols)
-            {
-                j++;
-                cout << 0 << " ";
-            }
 
-        cout << endl;
+            cout << endl;
+            }
         }
-    }
+
 }
