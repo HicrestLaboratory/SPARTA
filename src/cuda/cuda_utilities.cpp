@@ -127,6 +127,133 @@ void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, floa
         }
         exit(42);
     }
+
+    
+void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, float &dt)
+{
+
+    //define data types
+    cudaDataType_t data_type_AB;
+    cudaDataType_t data_type_C;
+    cublasComputeType_t compute_type;
+    cublasGemmAlgo_t cuda_algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP;
+
+    int B_rows = A_cols;
+    int C_rows = A_rows;
+    int C_cols = B_cols;
+
+    const DataT_C alpha = 1;
+    const DataT_C beta = 1;
+
+    cudaDataType_t data_type_AB;
+    cudaDataType_t data_type_C;
+    cublasComputeType_t compute_type;
+    if (typeid(DataT) == typeid(int8_t))
+    {
+        data_type_AB = CUDA_R_8I;
+        data_type_C = CUDA_R_32I;
+        compute_type = CUBLAS_COMPUTE_32I;
+    }
+    else if (typeid(DataT) == typeid(float))
+    {
+        data_type_AB = CUDA_R_32F;
+        data_type_C = CUDA_R_32F;
+        compute_type = CUBLAS_COMPUTE_32F;
+    }
+    else
+    {
+        std::cout << "WARNING! Unsopported multiplication type in cublas_blockmat_multiply(). Check matrices.h" << std::endl;
+    }
+
+    //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+    cublasOperation_t transa = CUBLAS_OP_N, transb = CUBLAS_OP_N;
+    int m = A_rows, n = B_cols, k = A_cols;
+    int lda = A_rows, ldb = B_rows, ldc = C_rows;
+    cudaDataType_t Atype = data_type_AB, Btype = data_type_AB, Ctype = data_type_C;
+
+    //allocate memory on device
+    intT size_A = A_rows * A_cols; //total nonzero entries in A
+    intT mem_size_A = sizeof(DataT) * size_A;
+
+    intT size_B = B_rows * B_cols;
+    intT mem_size_B = sizeof(DataT) * size_B;
+
+    intT size_C = C_rows * C_cols;
+    intT mem_size_C = sizeof(DataT_C) * size_C;
+
+    cublasHandle_t handle;
+    checkCudaErrors(cublasCreate(&handle));
+
+    DataT* d_A, * d_B, * d_C;
+    checkCudaErrors(cudaMalloc((void**)&d_A, mem_size_A));
+    checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
+    checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
+
+    //copy to device the vbmat matrix (nonzero blocks are stored consecutively and in column major format)
+    checkCudaErrors(cublasSetVector(
+        size_A, sizeof(DataT), A, 1, d_A, 1));
+
+    checkCudaErrors(cublasSetVector(
+        size_B, sizeof(DataT), B, 1, d_B, 1));
+
+    //initialize cuda events
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start, 0);
+
+    cublasStatus_t err = cublasGemmEx(
+        handle, CUBLAS_OP_N, CUBLAS_OP_N,
+        A_rows, B_cols, A_cols,           //m, n, k <-- block_B: m*k   block_A: k*n   block_C: m*n
+        &alpha,
+        d_A,                                     // blockA device pointer,
+        data_type_AB,                                      // blockA datatype
+        lda,                                  // blockA leading dimension
+        d_B,                                    // blockB device pointer
+        data_type_AB,                                      // blockB datatype
+        ldb,                                         // leading dimension
+        &beta,
+        d_C, Ctype,                           // blockC device pointer, blockC type
+        ldc,
+        compute_type,                                      // compute_type
+        cuda_algo);
+
+    checkCudaErrors( err );
+    if (err != CUBLAS_STATUS_SUCCESS) 
+    {
+        if (err == CUBLAS_STATUS_INVALID_VALUE) 
+        {
+            std::cout << "m = " << m << " n = " << n << " k = " << k << std::endl;
+            std::cout << "lda = " << lda << " >= max(1, " << m << ")? " << std::endl;
+            std::cout << "ldb = " << ldb << " >= max(1, " << k << ")? " << std::endl;
+            std::cout << "ldc = " << ldc << " >= max(1, " << n << ")? " << std::endl;
+        }
+        exit(42);
+    }
+
+    //record the elapsed time onto dt
+    cudaDeviceSynchronize();
+    cudaEventRecord(stop, 0);
+
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&dt, start, stop);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+
+    checkCudaErrors(cudaMemcpy(C, d_C, C_rows * C_cols * sizeof(DataT_C), cudaMemcpyDeviceToHost));
+
+    cudaDeviceSynchronize();
+
+    checkCudaErrors(cudaFree(d_C));
+    checkCudaErrors(cudaFree(d_A));
+    checkCudaErrors(cudaFree(d_B));
+
+    checkCudaErrors(cublasDestroy(handle));
+
+
+}
+
 }
 
 void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt, int n_streams)
@@ -196,10 +323,6 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
         size_A, sizeof(DataT), vbmatA.mab, 1, d_A, 1));
 
     //copy B to device (maybe more efficient to copy it block by block?)
-    // --------------------- TEST Error on cudaMemcpy2D ---------------------
-//     checkCudaErrors(cublasSetMatrix(
-//         B_rows, B_cols, sizeof(DataT), B, B_rows, d_B, B_rows));
-    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     checkCudaErrors(cudaMemcpy(d_B, B, B_rows * B_cols * sizeof(DataT), cudaMemcpyHostToDevice));
     // ----------------------------------------------------------------------
 
@@ -252,18 +375,18 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
             checkCudaErrors(
                 cublasGemmEx(
                     handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                    B_rows, vbmatA.block_col_size, rows_in_block,           //m, n, k <-- block_B: m*k   block_A: k*n   block_C: m*n
+                    rows_in_block, B_cols, vbmatA.block_col_size,          //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
                     &alpha,
                     d_A_block,                                     // blockA device pointer,
                     data_type_AB,                                      // blockA datatype
-                    rows_in_block,                                  // blockA leading dimension
-                    d_B_block,                                    // blockB device pointer
-                    data_type_AB,                                      // blockB datatype
-                    B_rows,                                       // leading dimension
+                    rows_in_block,                                      // blockA leading dimension
+                    d_B_block,                                          // blockB device pointer
+                    data_type_AB,                                       // blockB datatype
+                    B_rows,                                             // B leading dimension
                     &beta,
-                    d_C_block, data_type_C,                           // blockC device pointer, blockC type
-                    C_rows,
-                    compute_type,                                      // compute_type
+                    d_C_block, data_type_C,                             // blockC device pointer, blockC type
+                    C_rows,                                             // C leading dimension
+                    compute_type,                                       // compute_type
                     cuda_algo)
             );                                       
             
@@ -285,7 +408,6 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
     cudaEventDestroy(stop);
 
 
-
     //let each stream copy the relevant C block from device
     int stream_id;
     for (int ib = 0; ib < vbmatA.block_rows; ib++)
@@ -293,13 +415,8 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
         stream_id = ib % n_streams;
         cublasSetStream(handle, streams[stream_id]);
         rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib];
-        // --------------------- TEST Error on cudaMemcpy2D ---------------------
-//         checkCudaErrors(cublasGetMatrix(
-//             rows_in_block, C_cols, sizeof(DataT_C), d_C + vbmatA.row_part[ib], C_rows, C + vbmatA.row_part[ib], C_rows));
-        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        checkCudaErrors(cudaMemcpy(C, d_C, C_rows * C_cols * sizeof(DataT_C), cudaMemcpyDeviceToHost));
-        // ----------------------------------------------------------------------
-
+        checkCudaErrors(cublasGetMatrixAsync(
+            rows_in_block, C_cols, sizeof(DataT_C), d_C + vbmatA.row_part[ib], C_rows, C + vbmatA.row_part[ib], C_rows, streams[stream_id]));
     }
 
     cudaDeviceSynchronize();
