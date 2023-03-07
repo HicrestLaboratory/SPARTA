@@ -10,7 +10,7 @@ typedef float (*distFunc)(intT*,intT,intT*,intT);
 typedef float (*distFuncQuot)(intT*,intT,intT*,intT, intT );
 typedef float (*distFuncGroup)(std::vector<intT>,intT,intT*,intT,intT,intT);
 
-enum BlockingType {iterative, iterative_structured, fixed_size, iterative_clocked};
+enum BlockingType {iterative, iterative_structured, fixed_size, iterative_clocked, iterative_queue};
 
 
 class BlockingEngine
@@ -27,7 +27,7 @@ class BlockingEngine
         int structured_m = 2;
         int structured_n = 4;
 
-        BlockingType blocking_algo = iterative;
+        BlockingType blocking_algo = iterative_clocked;
 
         //bool blocking_completed = false;
 
