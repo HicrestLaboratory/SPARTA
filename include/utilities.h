@@ -6,7 +6,7 @@
 #include "input.h"
 #include "matrices.h"
 #include "blocking.h"
-#include "definitons.h"
+#include "definitions.h"
 
 
 #ifndef TIMING_H

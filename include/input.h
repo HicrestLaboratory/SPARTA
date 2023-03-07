@@ -1,5 +1,4 @@
 #pragma once
-
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,7 +32,7 @@ class CLineReader
         int verbose_ = 1;
 
         //multiplication parameters
-        int B_cols = 64;
+        int B_cols_ = 64;
         int warmup_ = 1; //how many warmup multiplications
         int exp_repetitions_ = 1; //how many multiplications rep
 
