@@ -5,14 +5,7 @@
 #include <vector>
 #include <fstream>
 #include "input.h"
-
-
-typedef long int intT;
-typedef float DataT; //precision for input matrices entries
-typedef float DataT_C; //precision for result matrix entries
-//types for the two multiplied matrices and the result matrix. available choices are: 
-//          INT_8, INT_32
-//          FLOAT_32, FLOAT_32
+#include "definitions.h"
 
 struct CSR
 {

@@ -4,14 +4,7 @@
 #include "matrices.h"
 #include "input.h"
 #include <fstream>
-
-
-typedef float (*distFunc)(intT*,intT,intT*,intT);
-typedef float (*distFuncQuot)(intT*,intT,intT*,intT, intT );
-typedef float (*distFuncGroup)(std::vector<intT>,intT,intT*,intT,intT,intT);
-
-enum BlockingType {iterative, iterative_structured, fixed_size, iterative_clocked, iterative_queue};
-
+#include "definitions.h"
 
 class BlockingEngine
 {

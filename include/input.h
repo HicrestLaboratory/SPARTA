@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <unistd.h> //getopt, optarg
+#include "definitions.h"
 
 class CLineReader
 {
@@ -22,7 +23,7 @@ class CLineReader
         bool pattern_only_ = 0;
         bool force_fixed_size = 0;
 
-        int blocking_algo_ = 3; // 0 for iterative; 1 for structured; 2 for fixed, 3 for iterative_clocked
+        BlockingType blocking_algo_ = 3; // 0 for iterative; 1 for structured; 2 for fixed, 3 for iterative_clocked
         int seed_ = 0;
         int sim_measure_ = 1;
         int reorder_ = 0; //-1 for ascending. 0 for nothing. 1 for descending. 2 for scramble
@@ -30,8 +31,12 @@ class CLineReader
         int row_block_size_ = 1;
 
         int verbose_ = 1;
+
+        //multiplication parameters
+        int B_cols = 64;
         int warmup_ = 1; //how many warmup multiplications
-        int exp_repetitions_ = 1;
+        int exp_repetitions_ = 1; //how many multiplications rep
+
 
         float tau_ = 0.5;
 
@@ -76,6 +81,7 @@ class CLineReader
                     case 'a': blocking_algo_ = std::stoi(optarg);                   break;
                     case 'b': col_block_size_ = std::stoi(optarg);                      break;
                     case 'B': row_block_size_ = std::stoi(optarg);                      break;
+                    case 'c': B_cols_ = std::stoi(optarg);                          break;
                     case 'f': filename_ = std::string(optarg);                      break;
                     case 'F': force_fixed_size = (std::stoi(optarg) == 1);                      break;
                     case 'g': sim_use_groups_ = (std::stoi(optarg) == 1);           break;

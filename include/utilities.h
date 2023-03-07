@@ -6,6 +6,9 @@
 #include "input.h"
 #include "matrices.h"
 #include "blocking.h"
+#include "definitons.h"
+
+
 #ifndef TIMING_H
 #define TIMING_H
 #include <sys/time.h>

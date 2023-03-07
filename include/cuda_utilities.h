@@ -1,6 +1,7 @@
 #pragma once
 
 #include "matrices.h"
+#include "definitions.h"
 
 #define PICO_DEBUG
 // #define B_ROW_GROWING
