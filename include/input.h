@@ -32,6 +32,7 @@ class CLineReader
         int verbose_ = 1;
 
         //multiplication parameters
+        MultiplicationAlgo multiplication_algo_ = 0;
         int B_cols_ = 64;
         int warmup_ = 1; //how many warmup multiplications
         int exp_repetitions_ = 1; //how many multiplications rep
@@ -88,6 +89,7 @@ class CLineReader
                     case 'p': sim_use_pattern_ = (std::stoi(optarg) == 1);          break;
                     case 'P': pattern_only_ = (std::stoi(optarg) == 1);             break;
                     case 'm': sim_measure_ = std::stoi(optarg);                     break;
+                    case 'M': multiplication_algo_ = static_cast<MultiplicationAlgo>std::stoi(optarg);                     break;
                     case 'n': exp_name_ = std::string(optarg);                      break;
                     case 'r': reorder_ = std::stoi(optarg);                         break;
                     case 's': seed_ = std::stoi(optarg);                            break;
