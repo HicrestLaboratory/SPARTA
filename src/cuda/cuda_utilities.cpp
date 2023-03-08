@@ -24,7 +24,7 @@
     intT = int
 */
 
-
+/*
 void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, float &dt)
 {
 
@@ -41,9 +41,6 @@ void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, floa
     const DataT_C alpha = 1;
     const DataT_C beta = 1;
 
-    cudaDataType_t data_type_AB;
-    cudaDataType_t data_type_C;
-    cublasComputeType_t compute_type;
     if (typeid(DataT) == typeid(int8_t))
     {
         data_type_AB = CUDA_R_8I;
@@ -255,6 +252,7 @@ void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, floa
 }
 
 }
+*/
 
 void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt, int n_streams)
 {
@@ -376,7 +374,7 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
             checkCudaErrors(
                 cublasGemmEx(
                     handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                    m,n,k                                               //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+                    m,n,k,                                               //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
                     &alpha,
                     d_A_block,                                          // blockA device pointer,
                     data_type_AB,                                       // blockA datatype
