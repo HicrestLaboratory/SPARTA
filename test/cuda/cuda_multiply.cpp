@@ -21,8 +21,8 @@ int main(int argc, char* argv[])
     if (cli.verbose_ > 0) cli.print();
     CSR cmat(cli); //sparse operand
 
-    intT A_rows = cmat_A.rows;
-    intT A_cols = cmat_A.cols;
+    intT A_rows = cmat.rows;
+    intT A_cols = cmat.cols;
     intT B_rows = A_cols;
     intT B_cols = cli.B_cols_;
     intT C_cols = B_cols;
@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
     //ensure compatibility of blocking with selected multiplication 
     if (mult_algo == cusparse_bellpack)
     {
-        if !(cli.force_fixed_size || cli.blocking_algo_ == fixed_size) {
+        if (!(cli.force_fixed_size || cli.blocking_algo_ == fixed_size)) {
             cli.force_fixed_size = true;
             cout << "WARNING: forcing fixed size. -F set to 1" << endl;
         }
@@ -81,37 +81,47 @@ int main(int argc, char* argv[])
         break;
     
     case cublas_vbr:
-        bEngine.GetGrouping(cmat);
-        VBR vbmat_cublas;
-        vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_);
-        algo_times.clear();
-        for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
+        {
+            bEngine.GetGrouping(cmat);
+            VBR vbmat_cublas;
+            vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_);
+            algo_times.clear();
+            for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
+            {
+                fill(mat_C, mat_C + C_cols*C_rows, 0);
+                cublas_blockmat_multiplyAB(vbmat_cublas, mat_B, B_cols, mat_C, dt, cli.n_streams_);
+                if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
+            }
+            bEngine.multiplication_timer_avg = avg(algo_times);
+            bEngine.multiplication_timer_std = 0; //TODO add function to calculate error in utilities.
+            break;
+        }
+    case cusparse_spmm:
         {
             fill(mat_C, mat_C + C_cols*C_rows, 0);
-            cublas_blockmat_multiplyAB(vbmat_cublas, mat_B, B_cols, mat_C, dt, cli.n_streams_);
-            if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
+            cusparse_blockmat_multiplyAB(cmat, mat_B, B_cols, mat_C, C_cols, dt);
+            //bEngine.multiplication_timer_avg = avg(algo_times);
+            //bEngine.multiplication_timer_std = 0; //TODO add function to calculate error in utilities.
+            break;
         }
-        bEngine.multiplication_timer_avg = avg(algo_times);
-        bEngine.multiplication_timer_std = 0; //TODO add function to calculate error in utilities.
-        break;
-
-    case cusparse_spmm:
-        //TODO CONVERT AND RUN MULTIPLICATION
-
-        //bEngine.multiplication_timer_avg = avg(algo_times);
-        //bEngine.multiplication_timer_std = 0; //TODO add function to calculate error in utilities.
-        break;
-
     case cusparse_bellpack:
-        bEngine.GetGrouping(cmat);
-        VBR vbmat_bellpack;
-        vbmat_bellpack.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_);
-        //TODO CONVERT AND RUN MULTIPLICATIONS
-        
-        //bEngine.multiplication_timer_avg = avg(algo_times);
-        //bEngine.multiplication_timer_std = 0; //TODO add function to calculate error in utilities.
-        break;
+        {
+            bEngine.GetGrouping(cmat);
+            VBR vbmat_bellpack;
+            vbmat_bellpack.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_);
+
+            fill(mat_C, mat_C + C_cols*C_rows, 0);
+            bellpack_blockmat_multiplyAB(&vbmat_bellpack, mat_B, B_cols, mat_C, C_cols, dt);
+
+            //bEngine.multiplication_timer_avg = avg(algo_times);
+            //bEngine.multiplication_timer_std = 0; //TODO add function to calculate error in utilities.
+            break;
+        }
     }
+
+#ifdef PICO_DEBUG
+    pico_print_DnM("mat_C", cmat.rows, B_cols, mat_C);
+#endif
 
     ofstream outfile;
     bool save_grouping = false;

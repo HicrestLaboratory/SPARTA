@@ -535,6 +535,18 @@ void pico_print_SpMMM(const char* Aname, VBR* A, const char* Bname, int Bn, int 
 
 }
 
+void pico_print_DnM(const char* Cname, int Cn, int Cm, DataT_C* C) {
+
+    printf("Dense matrix %s:\n", Cname);
+    for (int i=0; i<Cn; i++) {
+        for (int j=0; j<Cm; j++) {
+            printf(" %6.3f ", C[i * Cm + j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
 void pico_print_SpMMM(const char* Aname, int rows, int cols, int ell_blocksize, int ellValue_cols, int ellColumnsInd_rows, int ellColumnsInd_cols, int num_blocks, intT* ellColumnsInd, DataT_C* ellValues, const char* Bname, int Bn, int Bm, DataT* B, const char* Cname, long int Cn, long int Cm, DataT_C* C) {
 
     printf("Dims of %s %s %s:\n", Aname, Bname, Cname);

@@ -18,6 +18,8 @@ void pico_print_SpMMM(const char* Aname, VBR* A, const char* Bname, int Bn, int 
 
 void pico_print_SpMMM(const char* Aname, int rows, int cols, int ell_blocksize, int ellValue_cols, int ellColumnsInd_rows, int ellColumnsInd_cols, int num_blocks, intT* ellColumnsInd, DataT_C* ellValues, const char* Bname, int Bn, int Bm, DataT* B, const char* Cname, long int Cn, long int Cm, DataT_C* C);
 
+void pico_print_DnM(const char* Cname, int Cn, int Cm, DataT_C* C);
+
 int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrColInd, DataT* csrVal, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, const DataT_C alpha, const DataT_C beta, float& dt);
 
 int prepare_cusparse_CSR(CSR& cmat, int **csrRowPtr, int **csrColInd, DataT **csrVal);
