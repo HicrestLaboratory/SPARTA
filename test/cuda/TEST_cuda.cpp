@@ -151,7 +151,9 @@ int main(int argc, char* argv[])
     //****VBR by dense MULTIPLICATION PHASE***
     //******************************************
 
+#ifdef PICO_DEBUG
     std::cout << "==================================== cusparse start ======================================" << std::endl;
+#endif
 
     DataT_C* mat_C_VBR2 = new DataT_C[C_rows * C_cols]{ 0 };
 
@@ -165,18 +167,28 @@ int main(int argc, char* argv[])
 #endif
 
     cudaDeviceSynchronize();
+#ifdef PICO_DEBUG
     std::cout << "------------------------------- prepare_cusparse_CSR done --------------------------------" << std::endl;
+#endif
     cusparse_gemm_custom(C_rows, B_rows, (int) cmat_A.nztot(), csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_cols, mat_C_VBR2, C_cols, 1, 1, dt);
 
+#ifdef PICO_DEBUG
     std::cout << "===================================== cusparse end =======================================" << std::endl;
+#endif
 
     int cmp = memcmp(mat_C_VBR, mat_C_VBR2, C_rows * C_cols * sizeof(DataT_C) );
     std::cout << "memcmp of mat_C_VBR and mat_C_VBR2 is " << cmp << std::endl;
 
+    DataT_C* C_test_cusparse_blockmat_multiplyAB = new DataT_C[C_rows * C_cols]{ 0 };
+    cusparse_blockmat_multiplyAB(cmat_A, mat_B, B_cols, C_test_cusparse_blockmat_multiplyAB, C_cols, dt);
+    cmp = memcmp(mat_C_VBR2, C_test_cusparse_blockmat_multiplyAB, C_rows * C_cols * sizeof(DataT_C) );
+    std::cout << "memcmp of mat_C_VBR2 and C_test_cusparse_blockmat_multiplyAB is " << cmp << std::endl;
+
     DataT_C* mat_C_VBR3 = new DataT_C[C_rows * C_cols]{ 0 };
 
-
+#ifdef PICO_DEBUG
     std::cout << "================================ cusparse ellpack start ==================================" << std::endl;
+#endif
 
     if (vbmat.block_rows == vbmat.block_cols) {
 
@@ -190,7 +202,9 @@ int main(int argc, char* argv[])
         DataT_C* ellValues;
         prepare_cusparse_BLOCKEDELLPACK(&vbmat, &ell_blocksize, &ellValue_cols, &ellColInd_rows, &ellColInd_cols, &num_blocks, &ellColInd, &ellValues);
 
+#ifdef PICO_DEBUG
         std::cout << "------------------------------- prepare_cusparse_BELL done -------------------------------" << std::endl;
+#endif
 
 #ifdef PICO_DEBUG
         pico_print_SpMMM("BEL_A", vbmat.rows, vbmat.cols, ell_blocksize, ellValue_cols, ellColInd_rows, ellColInd_cols, num_blocks, ellColInd, ellValues, "mat_B", B_rows, B_cols, mat_B, "NULL", 0, 0, NULL);
@@ -205,10 +219,17 @@ int main(int argc, char* argv[])
         printf("vbmat.block_rows (%ld) != vbmat.block_cols (%ld)\n", vbmat.block_rows, vbmat.block_cols);
     }
 
+#ifdef PICO_DEBUG
     std::cout << "================================= cusparse ellpack end ===================================" << std::endl;
+#endif
 
     cmp = memcmp(mat_C_VBR3, mat_C_VBR2, C_rows * C_cols * sizeof(DataT_C) );
     std::cout << "memcmp of mat_C_VBR3 and mat_C_VBR2 is " << cmp << std::endl;
+
+    DataT_C* C_test_bellpack_blockmat_multiplyAB = new DataT_C[C_rows * C_cols]{ 0 };
+    bellpack_blockmat_multiplyAB(&vbmat, mat_B, B_cols, C_test_bellpack_blockmat_multiplyAB, C_cols, dt);
+    cmp = memcmp(mat_C_VBR3, C_test_bellpack_blockmat_multiplyAB, C_rows * C_cols * sizeof(DataT_C) );
+    std::cout << "memcmp of mat_C_VBR3 and C_test_bellpack_blockmat_multiplyAB is " << cmp << std::endl;
 
     std::cout << "END" << std::endl;
 

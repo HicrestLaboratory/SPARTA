@@ -998,6 +998,19 @@ int prepare_cusparse_CSR(CSR& cmat, int** csrRowPtr, int** csrColInd, DataT** cs
     return 0;
 }
 
+void cusparse_blockmat_multiplyAB(CSR& A, DataT* B, int B_cols, DataT_C* C, int C_cols, float& dt) {
+
+    DataT *csrVal;
+    int *csrRowPtr, *csrColInd;
+
+    prepare_cusparse_CSR( A, &csrRowPtr, &csrColInd, &csrVal);
+    cudaDeviceSynchronize();
+
+    cusparse_gemm_custom(A.rows, A.cols, (int) A.nztot(), csrRowPtr, csrColInd, csrVal, B, B_cols, B_cols, C, C_cols, 1, 1, dt);
+
+    return;
+}
+
 
 
 int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_ellValues_cols, int A_ellColInd_cols, int A_ellColInd_rows, int A_num_blocks, intT* A_ellColInd, DataT_C* A_ellValues, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, const DataT_C alpha, const DataT_C beta, float& dt)
@@ -1206,4 +1219,24 @@ int prepare_cusparse_BLOCKEDELLPACK(VBR *A, int *ell_blocksize, int *ellValue_co
     }
 
     return 0;
+}
+
+void bellpack_blockmat_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int C_cols, float& dt) {
+
+    if (A->block_rows == A->block_cols) {
+
+        // ellValue_cols, int *ell_blocksize, int *ellColInd_rows, int *ellColInd_cols, int *num_blocks, intT** ellColInd, DataT_C** ellValues
+        int ell_blocksize, ellColInd_rows, ellColInd_cols, ellValue_cols, num_blocks;
+        intT* ellColInd;
+        DataT_C* ellValues;
+        prepare_cusparse_BLOCKEDELLPACK(A, &ell_blocksize, &ellValue_cols, &ellColInd_rows, &ellColInd_cols, &num_blocks, &ellColInd, &ellValues);
+
+
+        cusparse_gemm_custom_ellpack(A->rows, A->cols, ell_blocksize, ellValue_cols, ellColInd_cols, ellColInd_rows, num_blocks, ellColInd, ellValues, B, B_cols, B_cols, C, C_cols, 1, 1, dt);
+
+    } else {
+        printf("A->block_rows (%ld) != A->block_cols (%ld)\n", A->block_rows, A->block_cols);
+    }
+
+    return;
 }
