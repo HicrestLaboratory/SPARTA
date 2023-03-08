@@ -166,7 +166,7 @@ int main(int argc, char* argv[])
 
     cudaDeviceSynchronize();
     std::cout << "------------------------------- prepare_cusparse_CSR done --------------------------------" << std::endl;
-    cusparse_gemm_custom2(C_rows, B_rows, (int) cmat_A.nztot(), csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_cols, mat_C_VBR2, C_cols, 1, 1, dt); // BUG qui
+    cusparse_gemm_custom(C_rows, B_rows, (int) cmat_A.nztot(), csrRowPtr, csrColInd, csrVal, mat_B, B_cols, B_cols, mat_C_VBR2, C_cols, 1, 1, dt);
 
     std::cout << "===================================== cusparse end =======================================" << std::endl;
 
