@@ -98,10 +98,15 @@ int main(int argc, char* argv[])
         }
     case cusparse_spmm:
         {
-            fill(mat_C, mat_C + C_cols*C_rows, 0);
-            cusparse_blockmat_multiplyAB(cmat, mat_B, B_cols, mat_C, C_cols, dt);
-            //bEngine.multiplication_timer_avg = avg(algo_times);
-            //bEngine.multiplication_timer_std = 0; //TODO add function to calculate error in utilities.
+            algo_times.clear();
+            for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
+            {
+                fill(mat_C, mat_C + C_cols*C_rows, 0);
+                cusparse_blockmat_multiplyAB(cmat, mat_B, B_cols, mat_C, C_cols, dt);
+                if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
+            }
+            bEngine.multiplication_timer_avg = avg(algo_times);
+            bEngine.multiplication_timer_std = 0; //TODO add function to calculate error in utilities.
             break;
         }
     case cusparse_bellpack:
@@ -109,12 +114,15 @@ int main(int argc, char* argv[])
             bEngine.GetGrouping(cmat);
             VBR vbmat_bellpack;
             vbmat_bellpack.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_);
-
-            fill(mat_C, mat_C + C_cols*C_rows, 0);
-            bellpack_blockmat_multiplyAB(&vbmat_bellpack, mat_B, B_cols, mat_C, C_cols, dt);
-
-            //bEngine.multiplication_timer_avg = avg(algo_times);
-            //bEngine.multiplication_timer_std = 0; //TODO add function to calculate error in utilities.
+            algo_times.clear();
+            for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
+            {
+                fill(mat_C, mat_C + C_cols*C_rows, 0);
+                bellpack_blockmat_multiplyAB(&vbmat_bellpack, mat_B, B_cols, mat_C, C_cols, dt);
+                if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
+            }
+            bEngine.multiplication_timer_avg = avg(algo_times);
+            bEngine.multiplication_timer_std = 0; //TODO add function to calculate error in utilities.
             break;
         }
     }
@@ -134,5 +142,8 @@ int main(int argc, char* argv[])
     }
     save_blocking_data(outfile, cli, bEngine, cmat, save_grouping, outfile_grouping);
 
-
+    if (cli.verbose_ > 0)
+    {
+        save_blocking_data(cout, cli, bEngine, cmat, false, outfile_grouping);
+    }
 }

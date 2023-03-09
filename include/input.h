@@ -75,7 +75,7 @@ class CLineReader
         void ParseArgs(int argc, char* argv[])
         {
             char c_opt;
-            while ((c_opt = getopt(argc, argv, "a:b:B:f:F:g:m:n:o:p:P:r:s:t:v:w:x:")) != -1)
+            while ((c_opt = getopt(argc, argv, "a:b:B:c:f:F:g:m:M:n:o:p:P:r:s:S:t:v:w:x:")) != -1)
             {
                 switch(c_opt) 
                 {
