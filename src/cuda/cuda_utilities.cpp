@@ -1020,6 +1020,10 @@ void cusparse_blockmat_multiplyAB(CSR& A, DataT* B, int B_cols, DataT_C* C, int 
 
     cusparse_gemm_custom(A.rows, A.cols, (int) A.nztot(), csrRowPtr, csrColInd, csrVal, B, B_cols, B_cols, C, C_cols, 1, 1, dt);
 
+    free(csrVal);
+    free(csrColInd);
+    free(csrRowPtr);
+
     return;
 }
 
@@ -1245,6 +1249,9 @@ void bellpack_blockmat_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int 
 
 
         cusparse_gemm_custom_ellpack(A->rows, A->cols, ell_blocksize, ellValue_cols, ellColInd_cols, ellColInd_rows, num_blocks, ellColInd, ellValues, B, B_cols, B_cols, C, C_cols, 1, 1, dt);
+
+        free(ellColInd);
+        free(ellValues);
 
     } else {
         printf("A->block_rows (%ld) != A->block_cols (%ld)\n", A->block_rows, A->block_cols);
