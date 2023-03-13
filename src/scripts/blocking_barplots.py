@@ -56,32 +56,37 @@ def get_results(folder, constraints, variable):
         valid_data = []
         for experiment in glob.glob(f"{matrix_folder}/*.txt"):
             data = extract_data(experiment)
+            data["effective_density"] = data["nonzeros"]/data["VBR_nzcount"]
+            data["true_density"] = data["nonzeros"]/(data["rows"]*data["cols"])
+            data["relative_density"] = data["effective_density"]/(data["true_density"])
+            data["nz_per_block"] = data["nonzeros"]/data["VBR_nzblocks_count"]
+
             if check_constraints(data,constraints):
                 valid_data.append(data[variable])
-        values.append(min(valid_data))
-    return graph_names, values
+        values.append(max(valid_data))
+    return graph_names, np.array(values)
 
 
 
 folder = "results/minitest"
-savename = f"{folder}/../minitest_barplot.png"
+savename = f"{folder}/../barplot_totnz_miniset"
 
 
-variable = "VBR_nzcount"
-plt.figure()
-plt.xlabel("graphs")
-plt.ylabel("# of nonzero 16 x 16 blocks")
-
-
-barsize = 0.8
-barpos = -barsize/2
-increment = barsize/4
-width = increment*0.9
+variable = "effective_density"
+ylabel = "density amplification"
 
 
 hatches = {2 : "///", 5 : ".."}
 
 for block_size in [16,32]:
+    barsize = 0.4
+    barpos = -barsize/2
+    increment = barsize
+    width = increment*0.9
+
+    plt.figure()
+    plt.xlabel("graphs")
+    plt.ylabel(ylabel)
     for algo, algoname in zip([2,5],("no-reordering","our reordering")):
         constraints = {"row_block_size" : block_size, "col_block_size": block_size, "blocking_algo" : algo}
         graph_names, values = get_results(folder, constraints, variable)
@@ -89,7 +94,12 @@ for block_size in [16,32]:
         x_pos = np.arange(barpos,len(graph_names) + barpos)
         print(x_pos)
         barpos += increment
-        plt.bar(x_pos,values,label=f"{algoname}, block size = {block_size}", width = width, hatch = hatches[algo])
-plt.legend()
-plt.xticks(range(len(graph_names)), graph_names,rotation=90)
-plt.savefig(savename,  bbox_inches='tight', dpi = 300)
+        if (algo == 2):
+            baseline = values
+            corrected_values = values/values
+        else:
+            corrected_values = values/baseline
+        plt.bar(x_pos,corrected_values,label=f"{algoname}, block size = {block_size}", width = width, hatch = hatches[algo])
+    plt.legend()
+    plt.xticks(range(len(graph_names)), graph_names,rotation=90)
+    plt.savefig(savename + f"_{block_size}.png",  bbox_inches='tight', dpi = 300)
