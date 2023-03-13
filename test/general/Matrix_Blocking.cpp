@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 
     //evaluate the grouping
     bEngine.GetGrouping(cmat); 
-    bEngine.print();
+    if (cli.verbose_ > 0) bEngine.print();
 
     ofstream outfile;
     bool save_grouping = false;

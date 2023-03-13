@@ -7,6 +7,7 @@
 #include <iostream>
 #include <chrono>
 #include <queue>
+#include <set>
 
 using namespace std::chrono;
 
@@ -148,7 +149,6 @@ vector<intT> IterativeBlockingPattern(const CSR& cmat, float tau, distFuncGroup 
 
     return grouping;
 }
-
 
 vector<intT> IterativeBlockingPatternCLOCKED(const CSR& cmat, float tau, distFuncGroup distanceFunction,intT block_size, bool use_size, bool use_pattern, intT &comparison_counter, intT &merge_counter, float &average_row_distance, float& average_merge_tau, float &timer_total, float &timer_comparisons, float &timer_merges)
 {
@@ -334,6 +334,219 @@ vector<intT> IterativeBlockingQueue(const CSR& cmat, float tau, distFuncGroup di
   return grouping;
 }
 
+vector<intT> IterativeBlockingMaxSize(const CSR& cmat, float tau, distFuncGroup distanceFunction,intT col_block_size, intT max_row_block_size, bool use_size, bool use_pattern, intT &comparison_counter, intT &merge_counter, float &average_row_distance, float& average_merge_tau, float &timer_total, float &timer_comparisons, float &timer_merges)
+{
+    vector<intT>grouping(cmat.rows,-1); //flag each rows as ungrouped (-1)
+    float distances[cmat.rows] = {-1};
+
+    auto start = high_resolution_clock::now();
+    float total_merge_tau = 0;
+    float total_row_distance = 0;
+
+    //main loop. Takes an ungrouped row (i) as a seed for a new block.
+    for (intT i = 0; i < cmat.rows; i++)
+    {
+        if (grouping[i] == -1)
+        {
+            vector<intT> merged_rows; //collect rows merged to i
+            intT group_number = i + cmat.rows;
+            vector<intT> pattern;
+            intT current_group_size = 1;
+            grouping[i] = group_number; // the group is numbered the same as the seed row.
+            merged_rows.push_back(i);
+            pattern.insert(pattern.end(), &cmat.ja[i][0], &cmat.ja[i][cmat.nzcount[i]]); //Initialize the pattern with the seed entries.            
+
+
+
+            auto start_dist = high_resolution_clock::now();
+
+            //inner loop, compare each subsequent row with the current pattern
+            for (intT j = i + 1; j < cmat.rows; j++)
+            {
+
+              if (current_group_size == max_row_block_size)
+              {
+                for (auto idx : merged_rows)
+                {
+                  grouping[idx] -= cmat.rows; //trick to put complete blocks first. 
+                }
+                break;
+              }
+
+
+              if (distances[i] != -1 && distances[j] != -1 && abs(distances[i] - distances[j]) > tau)
+              {
+                distances[j] = -1;
+                continue;
+              }
+              
+
+              if (grouping[j] == -1) 
+              {
+                  comparison_counter++;
+                  intT effective_block_size = use_size? current_group_size : 1;
+                  float dist = distanceFunction(pattern, current_group_size, cmat.ja[j], cmat.nzcount[j], 1, col_block_size);
+
+                  distances[j] = dist;
+                  
+                  if (dist <= tau)
+                  {
+                      total_merge_tau += dist;
+                      total_row_distance += j - i;
+                      merge_counter++;
+
+                      grouping[j] = group_number;
+                      merged_rows.push_back(j);
+
+                      if (use_pattern)
+                      {
+                          auto start_merge = high_resolution_clock::now();
+                          pattern = merge_rows(pattern, cmat.ja[j], cmat.nzcount[j]); //update the pattern through union with the new row
+                          auto stop_merge = high_resolution_clock::now();
+                          timer_merges += duration_cast<microseconds>(stop_merge - start_merge).count();
+                      }
+                      
+                      current_group_size++;
+                  }
+              }
+            }
+
+            auto stop_dist = high_resolution_clock::now();
+            timer_comparisons += duration_cast<microseconds>(stop_dist - start_dist).count();
+
+
+        }
+    }
+
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    timer_total = duration.count();
+    average_merge_tau = total_merge_tau/merge_counter;
+    average_row_distance = total_row_distance/merge_counter;
+
+    return grouping;
+}
+
+vector<intT> IterativeBlockingKeeper(const CSR& cmat, float tau, distFuncGroup distanceFunction,intT col_block_size, intT max_row_block_size, bool use_size, bool use_pattern, intT &comparison_counter, intT &merge_counter, float &average_row_distance, float& average_merge_tau, float &timer_total, float &timer_comparisons, float &timer_merges)
+{
+    vector<intT>grouping(cmat.rows,-1); //flag each rows as ungrouped (-1)
+    float distances[cmat.rows] = {-1};
+
+    auto start = high_resolution_clock::now();
+    float total_merge_tau = 0;
+    float total_row_distance = 0;
+
+    //main loop. Takes an ungrouped row (i) as a seed for a new block.
+    for (intT i = 0; i < cmat.rows; i++)
+    {
+        if (grouping[i] == -1)
+        {
+            std::set<std::pair<float, intT>> best_elements;
+
+            vector<intT> merged_rows; //collect rows merged to i
+            intT group_number = i + cmat.rows;
+            vector<intT> pattern;
+            intT current_group_size = 1;
+            grouping[i] = group_number; // the group is numbered the same as the seed row.
+            merged_rows.push_back(i);
+            pattern.insert(pattern.end(), &cmat.ja[i][0], &cmat.ja[i][cmat.nzcount[i]]); //Initialize the pattern with the seed entries.            
+
+            auto start_dist = high_resolution_clock::now();
+
+            //inner loop, compare each subsequent row with the current pattern
+            for (intT j = i + 1; j < cmat.rows; j++)
+            {
+
+              if (current_group_size == max_row_block_size)
+              {
+                break;
+              }
+
+
+              if (distances[i] != -1 && distances[j] != -1 && abs(distances[i] - distances[j]) > tau)
+              {
+                distances[j] = -1;
+                continue;
+              }
+              
+
+              if (grouping[j] == -1) 
+              {
+                  comparison_counter++;
+                  intT effective_block_size = use_size? current_group_size : 1;
+                  float dist = distanceFunction(pattern, current_group_size, cmat.ja[j], cmat.nzcount[j], 1, col_block_size);
+
+                  distances[j] = dist;
+                  
+                  if (dist <= tau)
+                  {
+                      total_merge_tau += dist;
+                      total_row_distance += j - i;
+                      merge_counter++;
+
+                      grouping[j] = group_number;
+                      merged_rows.push_back(j);
+
+                      if (use_pattern)
+                      {
+                          auto start_merge = high_resolution_clock::now();
+                          pattern = merge_rows(pattern, cmat.ja[j], cmat.nzcount[j]); //update the pattern through union with the new row
+                          auto stop_merge = high_resolution_clock::now();
+                          timer_merges += duration_cast<microseconds>(stop_merge - start_merge).count();
+                      }
+                      
+                      current_group_size++;
+                  }
+                  else
+                  {
+                    pair<float,intT> good_row = {dist, j};
+                    best_elements.insert(good_row);
+                    if (best_elements.size() > max_row_block_size - merged_rows.size())
+                    {
+                      auto it = best_elements.end();
+                      advance(it, max_row_block_size - merged_rows.size());
+                      best_elements.erase(it, best_elements.end());
+                    }
+                  }
+              }
+            }
+
+            if (current_group_size < max_row_block_size)
+            {
+              for(auto it = best_elements.begin(); it != best_elements.end() && current_group_size != max_row_block_size; it++) 
+              {
+                grouping[it->second] = group_number;
+                merged_rows.push_back(it->second);
+                current_group_size++;
+              }
+            }
+
+            if (current_group_size == max_row_block_size)
+              {
+                for (auto idx : merged_rows)
+                {
+                  grouping[idx] -= cmat.rows; //trick to put complete blocks first. 
+                }
+              }
+
+            auto stop_dist = high_resolution_clock::now();
+            timer_comparisons += duration_cast<microseconds>(stop_dist - start_dist).count();
+
+
+        }
+    }
+
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    timer_total = duration.count();
+    average_merge_tau = total_merge_tau/merge_counter;
+    average_row_distance = total_row_distance/merge_counter;
+
+    return grouping;
+}
+
+
+
 
 vector<intT> FixedBlocking(const CSR& cmat, intT row_block_size)
 {
@@ -416,7 +629,11 @@ vector<intT> BlockingEngine::GetGrouping(const CSR& cmat)
         break;
       case iterative_queue:
         grouping_result = IterativeBlockingQueue(cmat, tau, comparator, col_block_size, use_groups, use_pattern, comparison_counter, merge_counter, average_row_distance, average_merge_tau, timer_total, timer_comparisons, timer_merges);
-      break;
+        break;
+      case iterative_max_size:
+        //grouping_result = IterativeBlockingMaxSize(cmat, tau, comparator, col_block_size, row_block_size, use_groups, use_pattern, comparison_counter, merge_counter, average_row_distance, average_merge_tau, timer_total, timer_comparisons, timer_merges);
+        grouping_result = IterativeBlockingKeeper(cmat, tau, comparator, col_block_size, row_block_size, use_groups, use_pattern, comparison_counter, merge_counter, average_row_distance, average_merge_tau, timer_total, timer_comparisons, timer_merges);
+        break;
       case iterative_structured:
         grouping_result = IterativeBlockingPatternMN(cmat, tau, comparator, col_block_size, use_groups, use_pattern, structured_m, structured_n,comparison_counter, merge_counter, timer_total);
         break;
