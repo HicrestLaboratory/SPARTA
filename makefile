@@ -93,4 +93,4 @@ clean:
 
 serial : build_general $(GEN_APP_DIR)/Matrix_Blocking $(GEN_APP_DIR)/TEST_matrices $(GEN_APP_DIR)/TEST_blocking_VBR $(GEN_APP_DIR)/TEST_similarities
 
-cuda : build_cuda $(CUDA_APP_DIR)/TEST_cuda
+cuda : build_cuda $(CUDA_APP_DIR)/TEST_cuda  $(CUDA_APP_DIR)/cuda_multiply

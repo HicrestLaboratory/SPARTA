@@ -24,7 +24,7 @@
     intT = int
 */
 
-
+/*
 void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, float &dt)
 {
 
@@ -41,9 +41,6 @@ void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, floa
     const DataT_C alpha = 1;
     const DataT_C beta = 1;
 
-    cudaDataType_t data_type_AB;
-    cudaDataType_t data_type_C;
-    cublasComputeType_t compute_type;
     if (typeid(DataT) == typeid(int8_t))
     {
         data_type_AB = CUDA_R_8I;
@@ -255,6 +252,7 @@ void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, floa
 }
 
 }
+*/
 
 void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt, int n_streams)
 {
@@ -376,7 +374,7 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
             checkCudaErrors(
                 cublasGemmEx(
                     handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                    m,n,k                                               //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+                    m,n,k,                                               //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
                     &alpha,
                     d_A_block,                                          // blockA device pointer,
                     data_type_AB,                                       // blockA datatype
@@ -427,224 +425,6 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
     checkCudaErrors(cudaFree(d_B));
 
     checkCudaErrors(cublasDestroy(handle));
-}
-
-int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrColInd, DataT* csrVal, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, const DataT_C alpha, const DataT_C beta, float& dt)
-{
-
-    cudaDataType_t data_type_AB;
-    cudaDataType_t data_type_C;
-
-    if (typeid(DataT) == typeid(int8_t))
-    {
-        data_type_AB = CUDA_R_8I;
-        data_type_C = CUDA_R_32I;
-    }
-    else if (typeid(DataT) == typeid(float))
-    {
-        data_type_AB = CUDA_R_32F;
-        data_type_C = CUDA_R_32F;
-    }
-    else
-    {
-        std::cout << "WARNING! Unsopported multiplication type. Check comp_mats.h" << std::endl;
-    }
-
-
-    //allocate memory on device
-    unsigned int mem_size_csrVal = sizeof(DataT) * nnz;
-    unsigned int mem_size_csrColInd = sizeof(int) * nnz;
-    unsigned int mem_size_csrRowPtr = sizeof(int) * (rows + 1);
-
-    unsigned int B_rows = cols;
-    unsigned int size_B = B_rows * B_cols;
-    unsigned int mem_size_B = sizeof(DataT) * size_B;
-    
-    long int C_rows = rows;
-    long int C_cols = B_cols;
-    unsigned int size_C = C_rows * C_cols;
-    unsigned int mem_size_C = sizeof(DataT_C) * size_C;
-
-    // allocate device memory
-    int* d_RowPtr, * d_ColInd;
-    DataT* d_Val;
-
-    checkCudaErrors(cudaMalloc((void**)&d_RowPtr, mem_size_csrRowPtr));
-    checkCudaErrors(cudaMalloc((void**)&d_ColInd, mem_size_csrColInd));
-    checkCudaErrors(cudaMalloc((void**)&d_Val, mem_size_csrVal));
-
-    DataT* d_B;
-    DataT_C* d_C;
-    checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
-    checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
-
-    //copy arrays and matrices to device
-    // -----------------------
-    checkCudaErrors(cublasSetVector(
-        nnz, sizeof(DataT),
-        csrVal, 1, d_Val, 1));
-    // >>>>>>>>>>>>>>>>>>>>>>>
-//     checkCudaErrors( cudaMemcpy(d_Val, csrVal, mem_size_csrVal, cudaMemcpyHostToDevice) );
-    // -----------------------
-    void *tmp = malloc(sizeof(DataT) * nnz);
-    checkCudaErrors( cudaMemcpy(tmp, d_Val, sizeof(DataT) * nnz, cudaMemcpyDeviceToHost) );
-    int out = memcmp(csrVal, tmp, sizeof(DataT) * nnz);
-    std::cout << "compare between csrVal and tmp is " << out << "\n";
-    free(tmp);
-
-    checkCudaErrors(cublasSetVector(
-        nnz, sizeof(int),
-        csrColInd, 1, d_ColInd, 1));
-
-    tmp = malloc(sizeof(int) * nnz);
-    checkCudaErrors( cudaMemcpy(tmp, d_ColInd, sizeof(int) * nnz, cudaMemcpyDeviceToHost) );
-    out = memcmp(csrColInd, tmp, sizeof(int) * nnz);
-    std::cout << "compare between csrColInd and tmp is " << out << "\n";
-    free(tmp);
-
-    checkCudaErrors(cublasSetVector(
-        (rows + 1), sizeof(int),
-        csrRowPtr, 1, d_RowPtr, 1));
-
-    tmp = malloc(sizeof(int) * (rows +1) );
-    checkCudaErrors( cudaMemcpy(tmp, d_RowPtr, sizeof(int) * (rows +1), cudaMemcpyDeviceToHost) );
-    out = memcmp(csrRowPtr, tmp, sizeof(int) * nnz);
-    std::cout << "compare between csrRowPtr and tmp is " << out << "\n";
-    free(tmp);
-
-    checkCudaErrors(cublasSetMatrix(
-        B_rows, B_cols, sizeof(DataT), B, B_lead_dim, d_B, B_rows));
-
-    tmp = malloc(sizeof(DataT) * B_rows * B_cols );
-    checkCudaErrors( cudaMemcpy(tmp, d_B, sizeof(DataT) * B_rows * B_cols, cudaMemcpyDeviceToHost) );
-    out = memcmp(B, tmp, sizeof(DataT) * B_rows * B_cols);
-    std::cout << "compare between B and tmp is " << out << "\n";
-    free(tmp);
-
-
-    if (beta != 0)
-    {
-        checkCudaErrors(cublasSetMatrix(
-            C_rows, C_cols, sizeof(DataT_C), C, C_lead_dim, d_C, C_rows));
-    }
-    tmp = malloc(sizeof(DataT_C) * C_rows * C_cols );
-    checkCudaErrors( cudaMemcpy(tmp, d_C, sizeof(DataT_C) * C_rows * C_cols, cudaMemcpyDeviceToHost) );
-    out = memcmp(C, tmp, sizeof(DataT_C) * C_rows * C_cols);
-    std::cout << "compare between C and tmp is " << out << "\n";
-    free(tmp);
-
-    cusparseHandle_t handle;
-    cusparseSpMatDescr_t matA;
-    cusparseDnMatDescr_t matB, matC;
-
-    checkCudaErrors(cusparseCreate(&handle));
-
-    checkCudaErrors(
-        cusparseCreateCsr(
-            &matA,
-            rows,
-            cols,
-            nnz,
-            d_RowPtr,
-            d_ColInd,
-            d_Val,
-            CUSPARSE_INDEX_32I,
-            CUSPARSE_INDEX_32I,
-            CUSPARSE_INDEX_BASE_ZERO,
-            data_type_AB
-            )
-        );
-
-    long int chk_rows, chk_cols, chk_ld, chk_nnz;
-    void *chk_values, *chk_row, *chk_col;
-    cudaDataType chk_datatype;
-    cusparseIndexType_t chk_datatypecol, chk_datatyperow;
-    cudaDataType_t chk_datatypeval;
-    cusparseOrder_t chk_order;
-    cusparseIndexBase_t chk_base;
-    checkCudaErrors( cusparseCsrGet(matA, &chk_rows, &chk_cols, &chk_nnz, &chk_row, &chk_col, &chk_values, &chk_datatyperow, &chk_datatypecol, &chk_base, &chk_datatypeval) );
-    std::cout << "| chk_rows | chk_cols |  chk_nnz  | datatype | chk_order" << std::endl;
-    printf("%8ld %8ld %8ld\n", chk_rows, chk_cols, chk_nnz);
-
-    checkCudaErrors(
-        cusparseCreateDnMat(&matB, cols, B_cols, B_lead_dim, d_B,
-            data_type_AB, CUSPARSE_ORDER_COL));
-
-    checkCudaErrors( cusparseDnMatGet(matB, &chk_rows, &chk_cols, &chk_ld, &chk_values, &chk_datatype, &chk_order) );
-    std::cout << "| chk_rows | chk_cols |  chk_ld  | datatype | chk_order" << std::endl;
-    printf("%8ld %8ld %8ld\n", chk_rows, chk_cols, chk_ld);
-
-    checkCudaErrors(
-        cusparseCreateDnMat(&matC, rows, B_cols, C_lead_dim, d_C,
-            data_type_C, CUSPARSE_ORDER_COL));
-
-    checkCudaErrors( cusparseDnMatGet(matC, &chk_rows, &chk_cols, &chk_ld, &chk_values, &chk_datatype, &chk_order) );
-    std::cout << "| chk_rows | chk_cols |  chk_ld  | datatype | chk_order" << std::endl;
-    printf("%8ld %8ld %8ld\n", chk_rows, chk_cols, chk_ld);
-
-    size_t bufferSize = 0;
-    void *dBuffer = NULL;
-
-    checkCudaErrors(cusparseSpMM_bufferSize(
-        handle,
-        CUSPARSE_OPERATION_NON_TRANSPOSE,
-        CUSPARSE_OPERATION_NON_TRANSPOSE,
-        (void*)&alpha,
-        matA,
-        matB,
-        (void*)&beta,
-        matC,
-        data_type_C,
-        CUSPARSE_SPMM_ALG_DEFAULT,
-        &bufferSize
-    ));
-    checkCudaErrors( cudaMalloc(&dBuffer, bufferSize) );
-
-
-    //initialize cuda events
-    cudaEvent_t start, stop;
-    checkCudaErrors(cudaEventCreate(&start));
-    checkCudaErrors(cudaEventCreate(&stop));
-    checkCudaErrors(cudaEventRecord(start, 0));
-    
-
-    checkCudaErrors(cusparseSpMM(handle,
-        CUSPARSE_OPERATION_NON_TRANSPOSE,
-        CUSPARSE_OPERATION_NON_TRANSPOSE,
-        &alpha, matA, matB, &beta, matC, data_type_C,
-        CUSPARSE_SPMM_ALG_DEFAULT, dBuffer));       // We have a BUG here
-
-    //record the elapsed time onto dt
-    cudaDeviceSynchronize();
-    cudaEventRecord(stop, 0);
-    cudaEventSynchronize(stop);
-    cudaEventElapsedTime(&dt, start, stop);
-    cudaEventDestroy(start);
-    cudaEventDestroy(stop);
-
-    // destroy matrix/vector descriptors
-    checkCudaErrors(cusparseDestroySpMat(matA));
-    checkCudaErrors(cusparseDestroyDnMat(matB));
-    checkCudaErrors(cusparseDestroyDnMat(matC));
-
-    // copy result from device to host
-    // -------------------------------------------------
-//     checkCudaErrors(cublasGetMatrix(C_rows, C_cols, sizeof(DataT_C), d_C, C_rows, C, C_rows));
-    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    checkCudaErrors(cudaMemcpy(C, d_C, C_rows * C_cols * sizeof(DataT_C), cudaMemcpyDeviceToHost));
-    // -------------------------------------------------
-
-    // clean up memor;y
-    checkCudaErrors(cudaFree(d_B));
-    checkCudaErrors(cudaFree(d_C));
-    checkCudaErrors(cudaFree(d_Val));
-    checkCudaErrors(cudaFree(d_RowPtr));
-    checkCudaErrors(cudaFree(d_ColInd));
-
-    // Destroy the handle
-    checkCudaErrors(cusparseDestroy(handle));
-
-    return 0;
 }
 
 void pico_print_SpMMM(const char* Aname, int An, int Am, int Az, int* Arows, int* Acols, DataT* Avals, const char* Bname, int Bn, int Bm, DataT* B, const char* Cname, long int Cn, long int Cm, DataT_C* C) {
@@ -753,6 +533,18 @@ void pico_print_SpMMM(const char* Aname, VBR* A, const char* Bname, int Bn, int 
         printf("\n");
     }
 
+}
+
+void pico_print_DnM(const char* Cname, int Cn, int Cm, DataT_C* C) {
+
+    printf("Dense matrix %s:\n", Cname);
+    for (int i=0; i<Cn; i++) {
+        for (int j=0; j<Cm; j++) {
+            printf(" %6.3f ", C[i * Cm + j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
 }
 
 void pico_print_SpMMM(const char* Aname, int rows, int cols, int ell_blocksize, int ellValue_cols, int ellColumnsInd_rows, int ellColumnsInd_cols, int num_blocks, intT* ellColumnsInd, DataT_C* ellValues, const char* Bname, int Bn, int Bm, DataT* B, const char* Cname, long int Cn, long int Cm, DataT_C* C) {
@@ -996,12 +788,7 @@ void check_dnmat(cusparseDnMatDescr_t dnmat, const char* Bname, int Bn, int Bm, 
     return;
 }
 
-// #define BYPASS
-#ifndef BYPASS
-int cusparse_gemm_custom2(int rows, int cols, int nnz, int* csrRowPtr, int* csrColInd, DataT* csrVal, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, const DataT_C alpha, const DataT_C beta, float& dt)
-#else
-int cusparse_gemm_custom2(int rows, int cols, int nnz, int* csrRowPtr0, int* csrColInd0, DataT* csrVal0, DataT* B0, int B_cols, int B_lead_dim, DataT_C* C0, int C_lead_dim, const DataT_C alpha, const DataT_C beta, float& dt)
-#endif
+int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrColInd, DataT* csrVal, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, const DataT_C alpha, const DataT_C beta, float& dt)
 {
 
     cudaDataType_t data_type_AB;
@@ -1040,66 +827,6 @@ int cusparse_gemm_custom2(int rows, int cols, int nnz, int* csrRowPtr0, int* csr
     // allocate device memory
     int *d_RowPtr, *d_ColInd;
     DataT *d_Val;
-
-#ifdef BYPASS
-
-    pico_print_SpMMM("A0", rows, cols, nnz, csrRowPtr0, csrColInd0, csrVal0, "B0", B_rows, B_cols, B0, "C0", C_rows, C_cols, C0);
-
-    /*int*/   rows      = 4;
-    /*int*/   cols      = 4;
-    /*int*/   nnz       = 9;
-    /*unsigned int*/   B_rows      = cols;
-    /*int*/   B_cols      = 3;
-    /*int*/   B_lead_dim          = B_cols;
-    /*int*/   C_lead_dim          = B_cols;
-    /*int*/   mem_size_B          = B_rows * B_cols * sizeof(DataT);
-    /*int*/   mem_size_C          = C_rows * B_cols * sizeof(DataT_C);
-
-// ------------------------ Test ----------------------------
-    int   csrRowPtr[] = { 0, 3, 4, 7, 9 };
-    int   csrColInd[]    = { 0, 2, 3, 1, 0, 2, 3, 1, 3 };
-    DataT csrVal[]     = { 1.0f, 2.0f, 3.0f, 4.0f, 5.0f,
-                              6.0f, 7.0f, 8.0f, 9.0f };
-    DataT B[]            = { 1.0f,  5.0f,  9.0f,
-                             2.0f,  6.0f, 10.0f,
-                             3.0f,  7.0f, 11.0f,
-                             4.0f,  8.0f, 12.0f };
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-//     nnz = 12;
-//     /*int*/   mem_size_B          = B_rows * B_cols * sizeof(DataT);
-//     /*int*/   mem_size_C          = C_rows * C_cols * sizeof(DataT_C);
-//
-//     int   csrRowPtr[] = { 0, 0, 4, 8, 12 };
-//     int   csrColInd[]    = { 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3 };
-//     DataT csrVal[]     = { 1.0f, 1.0f, 1.0f, 1.0f,
-//                            2.0f, 2.0f, 2.0f, 2.0f,
-//                            3.0f, 3.0f, 3.0f, 3.0f };
-//
-//     DataT B[]            = { 1.0f,  0.1f,  0.01f,
-//                              1.0f,  0.1f,  0.01f,
-//                              1.0f,  0.1f,  0.01f,
-//                              1.0f,  0.1f,  0.01f };
-// ----------------------------------------------------------
-
-    DataT_C C[]            = { 0.0f, 0.0f, 0.0f,
-                               0.0f, 0.0f, 0.0f,
-                               0.0f, 0.0f, 0.0f,
-                               0.0f, 0.0f, 0.0f };
-    DataT_C hC_result[]     = { 19.0f,  8.0f,  51.0f,  52.0f,
-                              43.0f, 24.0f, 123.0f, 120.0f,
-                              67.0f, 40.0f, 195.0f, 188.0f };
-//     float alpha           = 1.0f;
-//     float beta            = 0.0f;
-
-    // -----------------
-    C_rows = rows;
-    C_cols = B_cols;
-
-    mem_size_csrVal = sizeof(DataT) * nnz;
-    mem_size_csrColInd = sizeof(int) * nnz;
-    mem_size_csrRowPtr = sizeof(int) * (rows + 1);
-
-#endif
 
 #ifdef PICO_DEBUG
     printf("alpha = %f, beta = %f\n", alpha, beta);
@@ -1283,6 +1010,23 @@ int prepare_cusparse_CSR(CSR& cmat, int** csrRowPtr, int** csrColInd, DataT** cs
     return 0;
 }
 
+void cusparse_blockmat_multiplyAB(CSR& A, DataT* B, int B_cols, DataT_C* C, int C_cols, float& dt) {
+
+    DataT *csrVal;
+    int *csrRowPtr, *csrColInd;
+
+    prepare_cusparse_CSR( A, &csrRowPtr, &csrColInd, &csrVal);
+    cudaDeviceSynchronize();
+
+    cusparse_gemm_custom(A.rows, A.cols, (int) A.nztot(), csrRowPtr, csrColInd, csrVal, B, B_cols, B_cols, C, C_cols, 1, 1, dt);
+
+    free(csrVal);
+    free(csrColInd);
+    free(csrRowPtr);
+
+    return;
+}
+
 
 
 int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_ellValues_cols, int A_ellColInd_cols, int A_ellColInd_rows, int A_num_blocks, intT* A_ellColInd, DataT_C* A_ellValues, DataT* B, int B_cols, int B_lead_dim, DataT_C* C, int C_lead_dim, const DataT_C alpha, const DataT_C beta, float& dt)
@@ -1441,7 +1185,6 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
     return 0;
 }
 
-#define BELL_LEYOUT_TEST
 
 int prepare_cusparse_BLOCKEDELLPACK(VBR *A, int *ell_blocksize, int *ellValue_cols, int *ellColInd_rows, int *ellColInd_cols, int *num_blocks, intT** ellColInd, DataT_C** ellValues)
 {
@@ -1462,13 +1205,10 @@ int prepare_cusparse_BLOCKEDELLPACK(VBR *A, int *ell_blocksize, int *ellValue_co
     }
     *ellValue_cols = (*ellColInd_cols) * (*ell_blocksize);
 
-#ifdef BELL_LEYOUT_TEST
     *num_blocks = (*ellColInd_rows)*(*ellColInd_cols);
-#endif
     *ellColInd = (intT*)malloc(sizeof(intT)*(*ellColInd_cols)*(*ellColInd_rows));
     *ellValues = (DataT_C*)malloc(sizeof(DataT)*((*num_blocks))*(*ell_blocksize)*(*ell_blocksize));
 
-#ifdef BELL_LEYOUT_TEST
     int k_col = 0, k, i, j, vbr_blk_row_shift, bel_blk_row_shift;
 
     // to complete ellColInd
@@ -1493,25 +1233,29 @@ int prepare_cusparse_BLOCKEDELLPACK(VBR *A, int *ell_blocksize, int *ellValue_co
         vbr_blk_row_shift += (A->nzcount[k])*(*ell_blocksize)*(*ell_blocksize);
         bel_blk_row_shift += (*ellColInd_cols)*(*ell_blocksize)*(*ell_blocksize);
     }
-#else
-    int i, j, k_col = 0, k_val_i, k_val_j;
-    for (i=0; i<(*ellColInd_rows); i++)
-        for (j=0; j<(*ellColInd_cols); j++)
-            if (j < A->nzcount[i]) {
-                (*ellColInd)[i*(*ellColInd_cols)+j] = A->jab[k_col];
-
-                // blocks form colum-major (A->mab) to row-major (*ellValues)
-                for (k_val_i=0; k_val_i<(*ell_blocksize); k_val_i++)
-                    for (k_val_j=0; k_val_j<(*ell_blocksize); k_val_j++) {
-                        (*ellValues)[k_col * (*ell_blocksize)*(*ell_blocksize) + k_val_i * (*ell_blocksize) + k_val_j] =
-                            A->mab[k_col * (*ell_blocksize)*(*ell_blocksize) + k_val_j * (*ell_blocksize) + k_val_i];
-                    }
-
-                k_col ++;
-            } else {
-                (*ellColInd)[i*(*ellColInd_cols)+j] = -1; // '-1' means thet the algorithm autmaticly pad it with a compleate zero block
-            }
-#endif
 
     return 0;
+}
+
+void bellpack_blockmat_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int C_cols, float& dt) {
+
+    if (A->block_rows == A->block_cols) {
+
+        // ellValue_cols, int *ell_blocksize, int *ellColInd_rows, int *ellColInd_cols, int *num_blocks, intT** ellColInd, DataT_C** ellValues
+        int ell_blocksize, ellColInd_rows, ellColInd_cols, ellValue_cols, num_blocks;
+        intT* ellColInd;
+        DataT_C* ellValues;
+        prepare_cusparse_BLOCKEDELLPACK(A, &ell_blocksize, &ellValue_cols, &ellColInd_rows, &ellColInd_cols, &num_blocks, &ellColInd, &ellValues);
+
+
+        cusparse_gemm_custom_ellpack(A->rows, A->cols, ell_blocksize, ellValue_cols, ellColInd_cols, ellColInd_rows, num_blocks, ellColInd, ellValues, B, B_cols, B_cols, C, C_cols, 1, 1, dt);
+
+        free(ellColInd);
+        free(ellValues);
+
+    } else {
+        printf("A->block_rows (%ld) != A->block_cols (%ld)\n", A->block_rows, A->block_cols);
+    }
+
+    return;
 }

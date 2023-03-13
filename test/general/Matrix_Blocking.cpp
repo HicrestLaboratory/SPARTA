@@ -23,7 +23,6 @@ int main(int argc, char* argv[])
     bool save_grouping = false;
     outfile.open(cli.outfile_);
 
-
     ofstream outfile_grouping;
     if (save_grouping)
     {
@@ -31,8 +30,8 @@ int main(int argc, char* argv[])
     }
     save_blocking_data(outfile, cli, bEngine, cmat, save_grouping, outfile_grouping);
 
-    if (cli.verbose_ > 0){
+    if (cli.verbose_ > 0)
+    {
         save_blocking_data(cout, cli, bEngine, cmat, false, outfile_grouping);
     }
-
 }
