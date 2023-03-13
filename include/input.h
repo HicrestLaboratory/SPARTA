@@ -34,7 +34,7 @@ class CLineReader
 
         //multiplication parameters
         int multiplication_algo_ = 0;
-        int B_cols_ = 64;
+        int B_cols_ = 1024;
         int warmup_ = 1; //how many warmup multiplications
         int exp_repetitions_ = 1; //how many multiplications rep
         int n_streams_ = 16;
