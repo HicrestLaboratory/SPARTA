@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#SBATCH --job-name=exp_1
+#SBATCH --ntasks=1
+#SBATCH --partition=short
+#SBATCH --gres=gpu:1
+
+#SBATCH --output=outputs_exps/exp_1.out
+#SBATCH --error=outputs_exps/exp_1.err
+
+./programs/cuda/cuda_multiply -b 16 -a 2 -F 1 -P 1 -B 16 -f data/real_world/wiki-Vote_r.el -v 1 -M 2

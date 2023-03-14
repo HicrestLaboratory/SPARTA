@@ -3,7 +3,7 @@
 #include "matrices.h"
 #include "definitions.h"
 
-#define PICO_DEBUG
+// #define PICO_DEBUG
 // #define B_ROW_GROWING
 // #define B_COL_GROWING
 #define BDG_CKP { printf("BDG_CKP: file %s line %d\n", __FILE__, __LINE__); }

@@ -1002,7 +1002,11 @@ int prepare_cusparse_CSR(CSR& cmat, int** csrRowPtr, int** csrColInd, DataT** cs
     for (int i = 0; i < cmat.rows; i++)
     {
         std::copy(cmat.ja[i], cmat.ja[i] + cmat.nzcount[i], (*csrColInd) + nnz);
-        std::copy(cmat.ma[i], cmat.ma[i] + cmat.nzcount[i], (*csrVal) + nnz);
+        if (cmat.pattern_only == 0)
+            std::copy(cmat.ma[i], cmat.ma[i] + cmat.nzcount[i], (*csrVal) + nnz);
+        else
+            for (int j=0; j<cmat.nzcount[i]; j++)
+                (*csrVal)[nnz +j] = 1;
         nnz += cmat.nzcount[i];
 
     }
@@ -1193,13 +1197,18 @@ int prepare_cusparse_BLOCKEDELLPACK(VBR *A, int *ell_blocksize, int *ellValue_co
 //         std::cout << "ERROR: cusparse_gemm_custom only supports CSR (row-major) " << std::endl;
 //         return 1;
 //     }
-
     *ell_blocksize = A->block_col_size;
+    if ((A->rows)%(*ell_blocksize) != 0 || (A->cols)%(*ell_blocksize)) {
+        if ((A->rows)%(*ell_blocksize) != 0)
+            printf("The number of rows is not multiple of ell_blocksize\n");
+        else
+            printf("The number of cols is not multiple of ell_blocksize\n");
+        exit(__LINE__);
+    }
+
     *ellColInd_rows = ((A->rows)/(*ell_blocksize));
     *ellColInd_cols = 0;
-    *num_blocks = 0;
     for (int i=0; i<(*ellColInd_rows); i++) {
-        *num_blocks += A->nzcount[i];
         if (A->nzcount[i] > (*ellColInd_cols))
             (*ellColInd_cols) = A->nzcount[i];
     }
@@ -1239,8 +1248,6 @@ int prepare_cusparse_BLOCKEDELLPACK(VBR *A, int *ell_blocksize, int *ellValue_co
 
 void bellpack_blockmat_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int C_cols, float& dt) {
 
-    if (A->block_rows == A->block_cols) {
-
         // ellValue_cols, int *ell_blocksize, int *ellColInd_rows, int *ellColInd_cols, int *num_blocks, intT** ellColInd, DataT_C** ellValues
         int ell_blocksize, ellColInd_rows, ellColInd_cols, ellValue_cols, num_blocks;
         intT* ellColInd;
@@ -1252,10 +1259,6 @@ void bellpack_blockmat_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int 
 
         free(ellColInd);
         free(ellValues);
-
-    } else {
-        printf("A->block_rows (%ld) != A->block_cols (%ld)\n", A->block_rows, A->block_cols);
-    }
 
     return;
 }
