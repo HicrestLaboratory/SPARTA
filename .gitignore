@@ -18,3 +18,5 @@ programs/general/TEST_similarities
 programs/general/TEST_blocking_VBR
 programs/general/TEST_matrices
 programs/general/TEST_similarities
+.kdev4/*
+*.kdev4
