@@ -63,6 +63,10 @@ def get_results(folder, constraints, variable):
 
             if check_constraints(data,constraints):
                 valid_data.append(data[variable])
+
+                if constraints["blocking_algo"] == 5:
+                    print(graph_name, constraints["col_block_size"], data["tau"], data["effective_density"])
+
         values.append(max(valid_data))
     return graph_names, np.array(values)
 
