@@ -69,11 +69,11 @@ def get_results(folder, constraints, variable):
 
 
 folder = "results/minitest"
-savename = f"{folder}/../barplot_totnz_miniset"
+savename = f"{folder}/../denseAMP_miniset_relative"
 
 
 variable = "effective_density"
-ylabel = "density amplification"
+ylabel = "density amplification relative to natural blocking"
 
 
 hatches = {2 : "///", 5 : ".."}
@@ -100,6 +100,35 @@ for block_size in [16,32]:
         else:
             corrected_values = values/baseline
         plt.bar(x_pos,corrected_values,label=f"{algoname}, block size = {block_size}", width = width, hatch = hatches[algo])
+    plt.legend()
+    plt.xticks(range(len(graph_names)), graph_names,rotation=90)
+    plt.savefig(savename + f"_{block_size}.png",  bbox_inches='tight', dpi = 300)
+
+
+
+savename = f"{folder}/../denseAMP_miniset_absolute"
+
+variable = "relative_density"
+ylabel = "density amplification against original matrix"
+hatches = {2 : "///", 5 : ".."}
+
+for block_size in [16,32]:
+    barsize = 0.4
+    barpos = -barsize/2
+    increment = barsize
+    width = increment*0.9
+
+    plt.figure()
+    plt.xlabel("graphs")
+    plt.ylabel(ylabel)
+    for algo, algoname in zip([2,5],("no-reordering","our reordering")):
+        constraints = {"row_block_size" : block_size, "col_block_size": block_size, "blocking_algo" : algo}
+        graph_names, values = get_results(folder, constraints, variable)
+        print(block_size, algo, graph_names, values)
+        x_pos = np.arange(barpos,len(graph_names) + barpos)
+        print(x_pos)
+        barpos += increment
+        plt.bar(x_pos,values,label=f"{algoname}, block size = {block_size}", width = width, hatch = hatches[algo])
     plt.legend()
     plt.xticks(range(len(graph_names)), graph_names,rotation=90)
     plt.savefig(savename + f"_{block_size}.png",  bbox_inches='tight', dpi = 300)
