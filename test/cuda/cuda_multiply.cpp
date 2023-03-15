@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
         {
             bEngine.GetGrouping(cmat);
             VBR vbmat_cublas;
-            vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.force_fixed_size);
+            vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_);
             algo_times.clear();
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
