@@ -206,8 +206,6 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, in
         for (intT i_reordered = row_part[ib]; i_reordered < row_part[ib+1]; i_reordered++)
         {
             intT i = row_permutation[i_reordered];
-            cout << "filling mab" << endl;
-            cout << "---row: " << i << " order: " << i_reordered << endl;
 
             if (i >= cmat.rows)
                 continue;
