@@ -43,6 +43,24 @@ double avg(std::vector<T> const& v) {
     return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
 }
 
+template<typename T>
+double var(std::vector<T> const& v) {
+    if (v.empty()) 
+    {
+        return 0;
+    }
+
+    const T mean = avg(v);
+
+    auto var = 0;
+    for (auto it = v.begin(); it != v.end(); it++)
+    {
+        var += pow(*it - mean, 2);
+    }
+
+    return sqrt(var);
+}
+
 
 void save_blocking_data(std::ostream &outfile, CLineReader &cLine, BlockingEngine &bEngine, CSR &cmat, bool save_blocking = false, std::ostream &blocking_outfile = std::cout);
 

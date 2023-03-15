@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
-            bEngine.multiplication_timer_std = 0; //TODO add function to calculate error in utilities.
+            bEngine.multiplication_timer_std = var(algo_times); 
             break;
         }
     case cusparse_spmm:
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
-            bEngine.multiplication_timer_std = 0; //TODO add function to calculate error in utilities.
+            bEngine.multiplication_timer_std = var(algo_times); 
             break;
         }
     case cusparse_bellpack:
@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
-            bEngine.multiplication_timer_std = 0; //TODO add function to calculate error in utilities.
+            bEngine.multiplication_timer_std = var(algo_times); 
             break;
         }
     }
