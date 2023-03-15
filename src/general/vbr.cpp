@@ -117,7 +117,7 @@ int VBR::partition_check(const vector<intT> &candidate_part)
 }
 
 
-void VBR::fill_from_CSR_inplace(const CSR& cmat,intT row_block_size, intT col_block_size)
+void VBR::fill_from_CSR_inplace(const CSR& cmat,intT row_block_size, intT col_block_size, bool force_fixed_size)
 {
 
     //generate fixed_size grouping
@@ -127,21 +127,31 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,intT row_block_size, intT col_bl
         grouping.push_back(i/row_block_size);    
     }
     //fill from fixed_size grouping
-    fill_from_CSR_inplace(cmat, grouping, col_block_size);
+    fill_from_CSR_inplace(cmat, grouping, col_block_size, force_fixed_size);
 }
 
 
-void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, intT block_size)
+void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, intT block_size, bool force_fixed_size)
 {
     //fill the VBR with entries from a CSR, with rows permuted and grouped according to grouping.
 
     vector<intT> row_partition = get_partition(grouping);
     vector<intT> row_permutation = get_permutation(grouping);
 
-    rows = cmat.rows;
-    cols = cmat.cols;
+
+    if (force_fixed_size){
+        rows = ((cmat.rows -1)/block_size + 1)*block_size;
+        cols = ((cmat.cols -1)/block_size + 1)*block_size;
+        row_partition[row_partition.size() - 1] = rows;
+        for (int i = row_permutation.size(); i < rows; i++) row_permutation.push_back(i);
+    }
+    else{
+        rows = cmat.rows;
+        cols = cmat.cols;
+    }
+
+
     block_col_size = block_size;
-    
     block_cols = (cols - 1)/block_size + 1;
     block_rows = row_partition.size() - 1;
 
@@ -170,6 +180,9 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, in
         for (intT i_reordered = row_part[ib]; i_reordered < row_part[ib+1]; i_reordered++)
         {
             intT i = row_permutation[i_reordered];
+
+            if (i >= cmat.rows)     
+                continue;
             for (intT nz = 0; nz < cmat.nzcount[i]; nz++)
             {
                 intT j = cmat.ja[i][nz];
@@ -193,6 +206,11 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, in
         for (intT i_reordered = row_part[ib]; i_reordered < row_part[ib+1]; i_reordered++)
         {
             intT i = row_permutation[i_reordered];
+            cout << "filling mab" << endl;
+            cout << "---row: " << i << " order: " << i_reordered << endl;
+
+            if (i >= cmat.rows)
+                continue;
             for (intT nz = 0; nz < cmat.nzcount[i]; nz++)
             {
                 intT j = cmat.ja[i][nz];
