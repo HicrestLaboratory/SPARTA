@@ -20,4 +20,6 @@ programs/general/TEST_matrices
 programs/general/TEST_similarities
 .kdev4/*
 *.kdev4
+*.o
+*.o
 outpurt_exps/*
