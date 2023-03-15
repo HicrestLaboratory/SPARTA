@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
             DataT* mat_B_bell = new DataT[B_rows * B_cols];
             for (int n = 0; n < B_rows*B_cols; n++) 
             {
-                mat_B[n] = dist(e2);
+                mat_B_bell[n] = dist(e2);
             }
 
             DataT* mat_C_bell = new DataT[C_rows * C_cols];
@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
                 fill(mat_C_bell, mat_C_bell + C_cols*C_rows, 0);
-                bellpack_blockmat_multiplyAB(&vbmat_bellpack, mat_B_bell, B_cols, mat_C_bell, C_cols, dt);
+                bellpack_blockmat_multiplyAB(&vbmat_bellpack, mat_B_bell, B_cols, mat_C_bell, C_cols, dt, cli.verbose_);
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);

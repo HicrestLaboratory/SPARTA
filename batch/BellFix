@@ -1,0 +1,153 @@
+#!/bin/bash
+
+#SBATCH --ntasks=1
+#SBATCH --partition=short
+#SBATCH --gres=gpu:1
+
+#SBATCH --job-name=BellFix
+#SBATCH --output=outputs_exps/slurm_runtime_%x.%j.out
+#SBATCH --error=outputs_exps/slurm_runtime_%x.%j.err
+
+if [[ $# < 2 ]]
+then
+    echo "usage: sbatch exp_TEST matrix block_size"
+else
+
+matrix=$1
+block_size=$2
+
+echo "$matrix" | sed 's|.*/||' | cut -d'.' -f1 > name.tmp
+matnum=$(<name.tmp)
+echo $matnum
+
+if [[ $matnum == "0_mycielskian13" ]]
+then
+    if [[ $block_size == 16 ]]
+    then
+        tau=0.2
+    else
+        if [[ $block_size == 32 ]]
+        then
+            tau=0.3
+        else
+            if [[ $block_size == 64 ]]
+            then
+                tau=0.2
+            fi
+        fi
+    fi
+fi
+
+if [[ $matnum == "3_TSC" ]]
+then
+    if [[ $block_size == 16 ]]
+    then
+        tau=0.3
+    else
+        if [[ $block_size == 32 ]]
+        then
+            tau=0.9
+        else
+            if [[ $block_size == 64 ]]
+            then
+                tau=0.9
+            fi
+        fi
+    fi
+fi
+
+if [[ $matnum == "bcsstk18_r" ]]
+then
+    if [[ $block_size == 16 ]]
+    then
+        tau=0.5
+    else
+        if [[ $block_size == 32 ]]
+        then
+            tau=0.5
+        else
+            if [[ $block_size == 64 ]]
+            then
+                tau=0.9
+            fi
+        fi
+    fi
+fi
+
+if [[ $matnum == "ca-HepPh_r" ]]
+then
+    if [[ $block_size == 16 ]]
+    then
+        tau=0.3
+    else
+        if [[ $block_size == 32 ]]
+        then
+            tau=0.5
+        else
+            if [[ $block_size == 64 ]]
+            then
+                tau=0.7
+            fi
+        fi
+    fi
+fi
+
+if [[ $matnum == "ia-wikiquote-user-edits-nodup" ]]
+then
+    if [[ $block_size == 16 ]]
+    then
+        tau=0.3
+    else
+        if [[ $block_size == 32 ]]
+        then
+            tau=0.2
+        else
+            if [[ $block_size == 64 ]]
+            then
+                tau=0.3
+            fi
+        fi
+    fi
+fi
+
+if [[ $matnum == "social_location" ]]
+then
+    if [[ $block_size == 16 ]]
+    then
+        tau=0.4
+    else
+        if [[ $block_size == 32 ]]
+        then
+            tau=0.4
+        else
+            if [[ $block_size == 64 ]]
+            then
+                tau=0.4
+            fi
+        fi
+    fi
+fi
+
+if [[ $matnum == "wiki-Vote_r" ]]
+then
+    if [[ $block_size == 16 ]]
+    then
+        tau=0.3
+    else
+        if [[ $block_size == 32 ]]
+        then
+            tau=0.3
+        else
+            if [[ $block_size == 64 ]]
+            then
+                tau=0.1
+            fi
+        fi
+    fi
+fi
+
+echo "tau = $tau"
+
+ ./programs/cuda/cuda_multiply -b $block_size -a 5 -t $tau -F 1 -P 1 -B $block_size -f $matrix -v 1 -M 3 > outputs_exps/BellFix_$matnum-$block_size.out 2> outputs_exps/BellFix_$matnum-$block_size.err
+
+fi
