@@ -21,3 +21,4 @@ programs/general/TEST_similarities
 .kdev4/*
 *.kdev4
 *.o
+*.o
