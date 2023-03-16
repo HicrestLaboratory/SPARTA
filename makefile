@@ -72,9 +72,9 @@ $(CUDA_APP_DIR)/% : $(CUDA_OBJ_DIR)/%.o $(CUDA_OBJECTS)
 
 .PHONY: all build clean
 
-build: build_general build_cuda
+build: build_general build_cuda build_slurm
 
-all: serial cuda
+all: serial cuda build_slurm
 
 build_general: 
 	@mkdir -p $(APP_DIR)
@@ -85,6 +85,10 @@ build_general:
 build_cuda: build_general
 	@mkdir -p $(CUDA_APP_DIR)
 	@mkdir -p $(CUDA_OBJ_DIR)
+
+build_slurm:
+	@mkdir -p outputs_exps/
+	@mkdir -p outputs_exps/slurm_runtime/
 
 clean:
 	-@rm -rvf $(OBJ_DIR)/*

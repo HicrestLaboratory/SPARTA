@@ -2,11 +2,13 @@
 
 #SBATCH --ntasks=1
 #SBATCH --partition=short
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=1
 #SBATCH --gres=gpu:1
 
 #SBATCH --job-name=VbrNoFix
-#SBATCH --output=outputs_exps/slurm_runtime_%x.%j.out
-#SBATCH --error=outputs_exps/slurm_runtime_%x.%j.err
+#SBATCH --output=outputs_exps/slurm_runtime/slurm_runtime_%x.%j.out
+#SBATCH --error=outputs_exps/slurm_runtime/slurm_runtime_%x.%j.err
 
 if [[ $# < 2 ]]
 then
@@ -20,6 +22,14 @@ echo "$matrix" | sed 's|.*/||' | cut -d'.' -f1 > name.tmp
 matnum=$(<name.tmp)
 echo $matnum
 
- ./programs/cuda/cuda_multiply -b $block_size -a 4 -t 0.7 -P 1 -f $matrix -v 1 -M 4 > outputs_exps/VbrNoFix_$matnum-$block_size.out 2> outputs_exps/VbrNoFix_$matnum-$block_size.err
+if [[ $# > 2 ]]
+then
+    cval=$3
+else
+    cval=1024
+fi
+echo "cval = $cval"
+
+ ./programs/cuda/cuda_multiply -b $block_size -a 4 -t 0.7 -P 1 -f $matrix -v 1 -M 4 -c $cval > outputs_exps/VbrNoFix_$matnum-$block_size-$3.out 2> outputs_exps/VbrNoFix_$matnum-$block_size-$3.err
 
 fi

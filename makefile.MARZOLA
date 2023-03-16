@@ -9,7 +9,7 @@ TEST_DIR = ./test
 
 
 #CUDA
-CUDA_HOME = /usr/local/cuda-11.3
+CUDA_HOME = /usr/local/cuda-12.0
 CUDA_PATH = $(CUDA_HOME)
 CUDA_CXXFLAGS = 
 CUDA_CXXFLAGS += -std=c++11

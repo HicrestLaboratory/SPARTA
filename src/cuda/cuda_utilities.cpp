@@ -1254,8 +1254,13 @@ void bellpack_blockmat_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int 
         DataT_C* ellValues;
         prepare_cusparse_BLOCKEDELLPACK(A, &ell_blocksize, &ellValue_cols, &ellColInd_rows, &ellColInd_cols, &num_blocks, &ellColInd, &ellValues);
 
-        if (verbose > 0)
-            printf("ell_blocksize = %d, ellColInd has dimensions %d x %d, ellValues has dimensions %ld x %d\n", ell_blocksize, ellColInd_rows, ellColInd_cols, A->rows, ellValue_cols);
+        if (verbose > 0) {
+            int pad_num = 0;
+            for (int i=0; i<ellColInd_rows*ellColInd_cols; i++)
+                if (ellColInd[i] == -1)
+                    pad_num++;
+            printf("ell_blocksize = %d, ellColInd has dimensions %d x %d with %d padding blocks, ellValues has dimensions %ld x %d\n", ell_blocksize, ellColInd_rows, ellColInd_cols, pad_num, A->rows, ellValue_cols);
+        }
 
         cusparse_gemm_custom_ellpack(A->rows, A->cols, ell_blocksize, ellValue_cols, ellColInd_cols, ellColInd_rows, num_blocks, ellColInd, ellValues, B, B_cols, B_cols, C, C_cols, 1, 1, dt);
 
