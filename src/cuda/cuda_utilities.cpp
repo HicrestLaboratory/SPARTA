@@ -360,8 +360,6 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
     intT blocks_in_stream = 0
     cublasSetStream(handle, streams[0]);               //each stream handles at most max_blocks_per_stream of block_rows
 
-
-
     //loop through all blocks
     for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop horizontally through block rows
     {
@@ -371,9 +369,8 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
         if (blocks_in_stream + nz_blocks > max_blocks_per_stream)
         {
             current_stream++;
-            current_stream %= n_streams;
-            blocks_in_stream = nz_blocks;
-            cublasSetStream(handle, streams[current_stream]);               //each stream handles a separate block-row
+            if(current_stream < n_streams) blocks_in_stream = nz_blocks;              //only reset the counter if we did not circle back to the first stream
+            cublasSetStream(handle, streams[current_stream%n_streams]);               //each stream handles a separate block-row
         }
         else
         {
@@ -414,7 +411,7 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
             );                                       
             
             //move mab and jab pointers forward
-            vbmat_idx += rows_in_block*vbmatA.block_col_size;
+            vbmat_idx += size_block;
             jab_loc++;
 
 	    }
