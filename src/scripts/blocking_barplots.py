@@ -52,22 +52,25 @@ def get_results(folder, constraints, variable):
     values = []
     for matrix_folder in glob.glob(f"{folder}/*"):
         graph_name = matrix_folder.split("/")[-1]
-        graph_names.append(graph_name)
         valid_data = []
-        for experiment in glob.glob(f"{matrix_folder}/*.txt"):
-            data = extract_data(experiment)
-            data["effective_density"] = data["nonzeros"]/data["VBR_nzcount"]
-            data["true_density"] = data["nonzeros"]/(data["rows"]*data["cols"])
-            data["relative_density"] = data["effective_density"]/(data["true_density"])
-            data["nz_per_block"] = data["nonzeros"]/data["VBR_nzblocks_count"]
+        try:
+            for experiment in glob.glob(f"{matrix_folder}/*.txt"):
+                data = extract_data(experiment)
+                data["effective_density"] = data["nonzeros"]/data["VBR_nzcount"]
+                data["true_density"] = data["nonzeros"]/(data["rows"]*data["cols"])
+                data["relative_density"] = data["effective_density"]/(data["true_density"])
+                data["nz_per_block"] = data["nonzeros"]/data["VBR_nzblocks_count"]
 
-            if check_constraints(data,constraints):
-                valid_data.append(data[variable])
+                if check_constraints(data,constraints):
+                    valid_data.append(data[variable])
 
-                if constraints["blocking_algo"] == 5:
-                    print(graph_name, constraints["col_block_size"], data["tau"], data["effective_density"])
+                    if constraints["blocking_algo"] == 5:
+                        print(graph_name, constraints["col_block_size"], data["tau"], data["VBR_longest_row"])
 
-        values.append(max(valid_data))
+            values.append(max(valid_data))
+            graph_names.append(graph_name)
+        except: 
+            print(f"ERROR LOADING DATA FOR GRAPH {graph_name}")
     return graph_names, np.array(values)
 
 
@@ -82,7 +85,7 @@ ylabel = "density amplification relative to natural blocking"
 
 hatches = {2 : "///", 5 : ".."}
 
-for block_size in [16,32]:
+for block_size in [16,32,64,128]:
     barsize = 0.4
     barpos = -barsize/2
     increment = barsize

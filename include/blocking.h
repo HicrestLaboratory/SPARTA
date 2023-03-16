@@ -39,6 +39,7 @@ class BlockingEngine
         intT VBR_nzcount = 0;
         intT VBR_nzblocks_count = 0;
         float VBR_average_height = 0;
+        intT VBR_longest_row = 0;
 
         distFuncGroup comparator;
         std::vector<intT> grouping_result;

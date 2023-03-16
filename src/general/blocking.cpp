@@ -8,6 +8,7 @@
 #include <chrono>
 #include <queue>
 #include <set>
+#include <algorithm>
 
 using namespace std::chrono;
 
@@ -590,6 +591,8 @@ void BlockingEngine::CollectBlockingInfo(const CSR& cmat)
           }
       }
 
+
+      VBR_longest_row = max(VBR_longest_row, (intT) count(nonzero_flags.begin(), nonzero_flags.end(), true));
       for (intT jb = 0; jb < nonzero_flags.size(); jb++)
       {
           intT tmp_block_col_size = col_block_size;
