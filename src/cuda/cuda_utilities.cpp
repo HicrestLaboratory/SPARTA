@@ -254,6 +254,206 @@ void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, floa
 }
 */
 
+
+void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt, int n_streams)
+{
+//multiplies a fixed size VBR matrix (vbmatA) and dense matrix (B); stores A*B into (C)
+    //vbmatA:       column-major entries (in-block) storage;
+    //              row-major block storage; 
+    //B:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+    //C:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+
+
+    cudaDataType_t data_type_AB;
+    cudaDataType_t data_type_C;
+    cublasComputeType_t compute_type;
+
+    if (typeid(DataT) == typeid(int8_t))
+    {
+        data_type_AB = CUDA_R_8I;
+        data_type_C = CUDA_R_32I;
+        compute_type = CUBLAS_COMPUTE_32I;
+    }
+    else if (typeid(DataT) == typeid(float))
+    {
+        data_type_AB = CUDA_R_32F;
+        data_type_C = CUDA_R_32F;
+        compute_type = CUBLAS_COMPUTE_32F;
+    }
+    else
+    {
+        std::cout << "WARNING! Unsopported multiplication type in cublas_blockmat_multiply(). Check matrices.h" << std::endl;
+    }
+
+    cublasGemmAlgo_t cuda_algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP;
+
+    intT block_size = vbmatA.block_col_size;
+
+    intT A_rows = vbmatA.rows;
+    intT A_cols = vbmatA.cols;
+
+    intT B_rows = A_cols;
+    intT C_rows = A_rows;
+    int C_cols = B_cols;
+
+    const DataT_C alpha = 1;
+    const DataT_C beta = 1;
+
+    //allocate memory on device
+    intT size_A = vbmatA.nztot; //total nonzero entries in vbmat
+    intT mem_size_A = sizeof(DataT) * size_A;
+
+    intT size_B = B_rows * B_cols;
+    intT mem_size_B = sizeof(DataT) * size_B;
+
+    intT size_C = C_rows * C_cols;
+    intT mem_size_C = sizeof(DataT_C) * size_C;
+
+    cublasHandle_t handle;
+
+    checkCudaErrors(cublasCreate(&handle));
+
+    DataT* d_A, * d_B, * d_C;
+    checkCudaErrors(cudaMalloc((void**)&d_A, mem_size_A));
+    checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
+    checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
+
+    //copy to device the vbmat matrix (nonzero blocks are stored consecutively and in column major format)
+    checkCudaErrors(cublasSetVector(
+        size_A, sizeof(DataT), vbmatA.mab, 1, d_A, 1));
+
+    //copy B to device (maybe more efficient to copy it block by block?)
+    checkCudaErrors(cudaMemcpy(d_B, B, B_rows * B_cols * sizeof(DataT), cudaMemcpyHostToDevice));
+    // ----------------------------------------------------------------------
+
+    //initialize cuda events
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start, 0);
+
+    //creates streams. Each block rows is assigned a different stream.
+    
+    if (n_streams > vbmatA.block_rows) n_streams = vbmatA.block_rows;
+    cudaStream_t streams[n_streams];
+    for (intT ib = 0; ib < n_streams; ib++)
+    {
+        cudaStreamCreate(&(streams[ib]));
+    }
+
+    intT tot_nz_blocks = accumulate(vbmatA.nzcount, vbmatA.nzcount + vbmatA.block_rows);
+    intT max_blocks_per_stream = tot_nz_blocks/n_streams + 1;
+
+
+    intT mat_idx = 0; //keeps writing position for mat
+    intT vbmat_idx = 0; //keeps reading position for vbmat 
+    intT ja_count = 0; //keeps total nonzero blocks count;
+    intT tot_nonzero_blocks = 0; //index for total nonzero blocks
+    intT rows_in_block;
+    intT nz_blocks = 0;
+    intT size_block = block_size*block_size;
+    intT* jab_loc = vbmatA.jab;
+
+
+    intT current_stream = 0;
+    intT blocks_in_stream = 0
+    cublasSetStream(handle, streams[0]);               //each stream handles at most max_blocks_per_stream of block_rows
+
+
+
+    //loop through all blocks
+    for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop horizontally through block rows
+    {
+        rows_in_block = block_size; //the row height of the block
+        nz_blocks = vbmatA.nzcount[ib];
+        
+        if (blocks_in_stream + nz_blocks > max_blocks_per_stream)
+        {
+            current_stream++;
+            current_stream %= n_streams;
+            blocks_in_stream = nz_blocks;
+            cublasSetStream(handle, streams[current_stream]);               //each stream handles a separate block-row
+        }
+        else
+        {
+            blocks_in_stream += nz_blocks;
+        }
+
+
+        for(intT nzs = 0; nzs < vbmatA.nzcount[ib]; nzs++)        //loop horizontally through nonzero blocks
+        {
+            intT jb = *jab_loc;             //the block row position of a nonzero block 
+
+            const DataT* d_B_block = d_B + vbmatA.block_col_size*jb;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
+
+            //define the sub-matrices
+	        const DataT* d_A_block = d_A + vbmat_idx;           //access the block on d_A.
+            DataT* d_C_block = d_C + vbmatA.row_part[ib] ;      //access the block on d_C.
+
+            int m = rows_in_block, n = B_cols, k = vbmatA.block_col_size;
+            int lda = rows_in_block, ldb = B_rows, ldc = C_rows;
+
+            //multiply the blocks, store result in d_C_block
+            checkCudaErrors(
+                cublasGemmEx(
+                    handle, CUBLAS_OP_N, CUBLAS_OP_N,
+                    m,n,k,                                               //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+                    &alpha,
+                    d_A_block,                                          // blockA device pointer,
+                    data_type_AB,                                       // blockA datatype
+                    lda,                                      // blockA leading dimension
+                    d_B_block,                                          // blockB device pointer
+                    data_type_AB,                                       // blockB datatype
+                    ldb,                                             // B leading dimension
+                    &beta,
+                    d_C_block, data_type_C,                             // blockC device pointer, blockC type
+                    ldc,                                             // C leading dimension
+                    compute_type,                                       // compute_type
+                    cuda_algo)
+            );                                       
+            
+            //move mab and jab pointers forward
+            vbmat_idx += rows_in_block*vbmatA.block_col_size;
+            jab_loc++;
+
+	    }
+
+    }
+
+    //record the elapsed time onto dt
+    cudaDeviceSynchronize();
+    cudaEventRecord(stop, 0);
+
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&dt, start, stop);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+
+
+    //let each stream copy the relevant C block from device
+    int stream_id;
+    for (int ib = 0; ib < vbmatA.block_rows; ib++)
+    {
+        stream_id = ib % n_streams;
+        cublasSetStream(handle, streams[stream_id]);
+        rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib];
+        checkCudaErrors(cublasGetMatrixAsync(
+            rows_in_block, C_cols, sizeof(DataT_C), d_C + vbmatA.row_part[ib], C_rows, C + vbmatA.row_part[ib], C_rows, streams[stream_id]));
+    }
+
+    cudaDeviceSynchronize();
+
+    checkCudaErrors(cudaFree(d_C));
+    checkCudaErrors(cudaFree(d_A));
+    checkCudaErrors(cudaFree(d_B));
+
+    checkCudaErrors(cublasDestroy(handle));
+}
+
+
+
+
 void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt, int n_streams)
 {
 //multiplies a VBS matrix (vbmatA) and dense matrix (B); stores A*B into (C)
@@ -426,6 +626,8 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
 
     checkCudaErrors(cublasDestroy(handle));
 }
+
+
 
 void pico_print_SpMMM(const char* Aname, int An, int Am, int Az, int* Arows, int* Acols, DataT* Avals, const char* Bname, int Bn, int Bm, DataT* B, const char* Cname, long int Cn, long int Cm, DataT_C* C) {
 

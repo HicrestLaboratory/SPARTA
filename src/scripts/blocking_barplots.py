@@ -65,7 +65,10 @@ def get_results(folder, constraints, variable):
                     valid_data.append(data[variable])
 
                     if constraints["blocking_algo"] == 5:
-                        print(graph_name, constraints["col_block_size"], data["tau"], data["VBR_longest_row"])
+                        print("___",graph_name, constraints["col_block_size"], data["tau"], data["VBR_longest_row"])
+                    if constraints["blocking_algo"] == 2:
+                        print("***",graph_name, constraints["col_block_size"], data["tau"], data["VBR_longest_row"])
+
 
             values.append(max(valid_data))
             graph_names.append(graph_name)
@@ -97,6 +100,7 @@ for block_size in [16,32,64,128]:
     for algo, algoname in zip([2,5],("no-reordering","our reordering")):
         constraints = {"row_block_size" : block_size, "col_block_size": block_size, "blocking_algo" : algo}
         graph_names, values = get_results(folder, constraints, variable)
+        continue
         print(block_size, algo, graph_names, values)
         x_pos = np.arange(barpos,len(graph_names) + barpos)
         print(x_pos)
