@@ -835,7 +835,7 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
     intT max_blocks_in_row = 0;
     for (intT ib = 0; ib < vbmatA.block_rows; ib++)
     {
-        max_blocks_in_row = max(max_blocks_in_row, vbmatA.nzcount[ib]);
+        max_blocks_in_row = std::max(max_blocks_in_row, vbmatA.nzcount[ib]);
     }
 
     //allocate memory on device
