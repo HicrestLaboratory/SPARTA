@@ -827,7 +827,7 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
     intT A_cols = vbmatA.cols;
     intT B_cols = A_rows;
     intT C_rows = B_rows;
-    int C_cols = B_cols;
+    intT C_cols = A_cols;
 
     const DataT_C alpha = 1;
     const DataT_C beta = 1;
@@ -852,7 +852,7 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
 
     checkCudaErrors(cublasCreate(&handle));
 
-    DataT* d_A, * d_B, * d_C;
+    DataT *d_A, *d_B, *d_C;
     checkCudaErrors(cudaMalloc((void**)&d_A, mem_size_A));
     checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
     checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
@@ -867,19 +867,22 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
 
     //initialize cuda events
     cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
+    checkCudaErrors(cudaEventCreate(&start));
+    checkCudaErrors(cudaEventCreate(&stop));
 
-    cudaEventRecord(start, 0);
+    checkCudaErrors(cudaEventRecord(start, 0));
 
     intT vbmat_idx = 0; //keeps reading position for vbmat 
     intT ja_count = 0; //keeps total nonzero blocks count;
     intT rows_in_block;
     intT* jab_loc = vbmatA.jab;
-    DataT** h_d_A[max_blocks_in_row];
-    DataT** h_d_B[max_blocks_in_row];
-    DataT** h_d_C[max_blocks_in_row];
-    DataT** d_A_array, d_B_array, d_C_array;
+    const DataT* h_d_A[max_blocks_in_row];
+    const DataT* h_d_B[max_blocks_in_row];
+    const DataT* h_d_C[max_blocks_in_row];
+    DataT **d_A_array, **d_B_array, **d_C_array;
+    checkCudaErrors(cudaMalloc((void**)&d_A_array, sizeof(DataT*)*max_blocks_in_row));
+    checkCudaErrors(cudaMalloc((void**)&d_B_array, sizeof(DataT*)*max_blocks_in_row));
+    checkCudaErrors(cudaMalloc((void**)&d_C_array, sizeof(DataT*)*max_blocks_in_row));
     // Create host pointer array to device matrix storage
 
     //loop through all blocks
@@ -904,23 +907,23 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
             h_d_C[nzs] = d_C_block;
         }
 
-        cudaMemcpy(d_A_array, h_d_B, vbmatA.nzcount[ib]*sizeof(DataT*), cudaMemcpyHostToDevice);
-        cudaMemcpy(d_B_array, h_d_B, vbmatA.nzcount[ib]*sizeof(DataT*), cudaMemcpyHostToDevice);
-        cudaMemcpy(d_C_array, h_d_C, vbmatA.nzcount[ib]*sizeof(DataT*), cudaMemcpyHostToDevice);
+        checkCudaErrors(cudaMemcpy(d_A_array, h_d_A, vbmatA.nzcount[ib]*sizeof(DataT*), cudaMemcpyHostToDevice));
+        checkCudaErrors(cudaMemcpy(d_B_array, h_d_B, vbmatA.nzcount[ib]*sizeof(DataT*), cudaMemcpyHostToDevice));
+        checkCudaErrors(cudaMemcpy(d_C_array, h_d_C, vbmatA.nzcount[ib]*sizeof(DataT*), cudaMemcpyHostToDevice));
 
 
         int k = rows_in_block, m = B_rows, n = vbmatA.block_col_size;
         int lda = rows_in_block, ldb = B_rows, ldc = C_rows;
 
 
-        cublasDgemmBatched(handle,
+        cublasSgemmBatched(handle,
                        CUBLAS_OP_N, CUBLAS_OP_N,
                        m, n, k,
                        &alpha,
-                       (const DataT**)d_B_array, ldb,
-                       (const DataT**)d_A_array, lda,
+                       (const DataT**) d_B_array, ldb,
+                       (const DataT**) d_A_array, lda,
                        &beta,
-                       d_C, ldc,
+                       (DataT**) d_C_array, ldc,
                        vbmatA.nzcount[ib]);                  
     }
 
