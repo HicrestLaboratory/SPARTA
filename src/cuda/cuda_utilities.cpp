@@ -342,7 +342,7 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
         cudaStreamCreate(&(streams[ib]));
     }
 
-    intT tot_nz_blocks = accumulate(vbmatA.nzcount, vbmatA.nzcount + vbmatA.block_rows);
+    intT tot_nz_blocks = std::accumulate(vbmatA.nzcount, vbmatA.nzcount + vbmatA.block_rows);
     intT max_blocks_per_stream = tot_nz_blocks/n_streams + 1;
 
 
