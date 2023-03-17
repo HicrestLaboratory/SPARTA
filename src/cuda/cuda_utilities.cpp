@@ -729,9 +729,11 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
 
         for(intT nzs = 0; nzs < vbmatA.nzcount[ib]; nzs++)        //loop horizontally through nonzero blocks
         {
-            DataT* d_C_block = d_C + vbmatA.block_col_size*C_rows;      //access the block on d_C.
             
             intT jb = *jab_loc;             //the block row position of a nonzero block 
+
+            DataT* d_C_block = d_C + vbmatA.block_col_size*C_rows*jb;      //access the block on d_C.
+
 
             cublasSetStream(handle, streams[jb%n_streams]);               //each stream handles a separate block-row
             
@@ -785,6 +787,162 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
 
     checkCudaErrors(cublasDestroy(handle));
 }
+
+
+
+void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C* C, float& dt)
+{
+//multiplies a VBS matrix (vbmatA) and dense matrix (B); stores B*A into (C)
+    //vbmatA:       column-major entries (in-block) storage;
+    //              row-major block storage; 
+    //B:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+    //C:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+
+
+    cudaDataType_t data_type_AB;
+    cudaDataType_t data_type_C;
+    cublasComputeType_t compute_type;
+
+    if (typeid(DataT) == typeid(int8_t))
+    {
+        data_type_AB = CUDA_R_8I;
+        data_type_C = CUDA_R_32I;
+        compute_type = CUBLAS_COMPUTE_32I;
+    }
+    else if (typeid(DataT) == typeid(float))
+    {
+        data_type_AB = CUDA_R_16F;
+        data_type_C = CUDA_R_16F;
+        compute_type = CUBLAS_COMPUTE_16F;
+    }
+    else
+    {
+        std::cout << "WARNING! Unsopported multiplication type in cublas_blockmat_multiply(). Check matrices.h" << std::endl;
+    }
+
+
+    cublasGemmAlgo_t cuda_algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP;
+
+    intT A_rows = vbmatA.rows;
+    intT A_cols = vbmatA.cols;
+    intT B_cols = A_rows;
+    intT C_rows = B_rows;
+    int C_cols = B_cols;
+
+    const DataT_C alpha = 1;
+    const DataT_C beta = 1;
+
+    intT max_blocks_in_row = 0;
+    for (intT ib = 0; ib < vbmatA.block_rows; ib++)
+    {
+        max_blocks_in_row = max(max_blocks_in_row, vbmatA.nzcount[ib]);
+    }
+
+    //allocate memory on device
+    intT size_A = vbmatA.nztot; //total nonzero entries in vbmat
+    intT mem_size_A = sizeof(DataT) * size_A;
+
+    intT size_B = B_rows * B_cols;
+    intT mem_size_B = sizeof(DataT) * size_B;
+
+    intT size_C = C_rows * C_cols;
+    intT mem_size_C = sizeof(DataT_C) * size_C;
+
+    cublasHandle_t handle;
+
+    checkCudaErrors(cublasCreate(&handle));
+
+    DataT* d_A, * d_B, * d_C;
+    checkCudaErrors(cudaMalloc((void**)&d_A, mem_size_A));
+    checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
+    checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
+
+    //copy to device the vbmat matrix (nonzero blocks are stored consecutively and in column major format)
+    checkCudaErrors(cublasSetVector(
+        size_A, sizeof(DataT), vbmatA.mab, 1, d_A, 1));
+
+    //copy B to device (maybe more efficient to copy it block by block?)
+    checkCudaErrors(cudaMemcpy(d_B, B, B_rows * B_cols * sizeof(DataT), cudaMemcpyHostToDevice));
+    // ----------------------------------------------------------------------
+
+    //initialize cuda events
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start, 0);
+
+    intT vbmat_idx = 0; //keeps reading position for vbmat 
+    intT ja_count = 0; //keeps total nonzero blocks count;
+    intT rows_in_block;
+    intT* jab_loc = vbmatA.jab;
+    DataT** h_d_A[max_blocks_in_row];
+    DataT** h_d_B[max_blocks_in_row];
+    DataT** h_d_C[max_blocks_in_row];
+    DataT** d_A_array, d_B_array, d_C_array;
+    // Create host pointer array to device matrix storage
+
+    //loop through all blocks
+    for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop vertically through block rows
+    {
+        rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
+        const DataT* d_B_block = d_B + vbmatA.block_col_size*ib;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
+
+
+        for(intT nzs = 0; nzs < vbmatA.nzcount[ib]; nzs++)
+        {
+            intT jb = *jab_loc;             //the block row position of a nonzero block
+            jab_loc++; 
+            
+            const DataT* d_C_block = d_C + vbmatA.block_col_size*C_rows*jb;      //access the block on d_C.
+	        
+            const DataT* d_A_block = d_A + vbmat_idx;           //access the block on d_A.
+            vbmat_idx += rows_in_block*vbmatA.block_col_size;
+
+            h_d_A[nzs] = d_A_block;
+            h_d_B[nzs] = d_B_block;
+            h_d_C[nzs] = d_C_block;
+        }
+
+        cudaMemcpy(d_A_array, h_d_B, vbmatA.nzcount[ib]*sizeof(DataT*), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_B_array, h_d_B, vbmatA.nzcount[ib]*sizeof(DataT*), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_C_array, h_d_C, vbmatA.nzcount[ib]*sizeof(DataT*), cudaMemcpyHostToDevice);
+
+
+        int k = rows_in_block, m = B_rows, n = vbmatA.block_col_size;
+        int lda = rows_in_block, ldb = B_rows, ldc = C_rows;
+
+
+        cublasDgemmBatched(handle,
+                       CUBLAS_OP_N, CUBLAS_OP_N,
+                       m, n, k,
+                       &alpha,
+                       (const DataT**)d_B_array, ldb,
+                       (const DataT**)d_A_array, lda,
+                       &beta,
+                       d_C, ldc,
+                       vbmatA.nzcount[ib]);                  
+    }
+
+    //record the elapsed time onto dt
+    cudaDeviceSynchronize();
+    cudaEventRecord(stop, 0);
+
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&dt, start, stop);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+
+    checkCudaErrors(cublasGetMatrix(
+            C_rows, C_cols, sizeof(DataT_C), d_C, C_rows, C, C_rows));
+
+    checkCudaErrors(cudaFree(d_C));
+    checkCudaErrors(cudaFree(d_A));
+    checkCudaErrors(cudaFree(d_B));
+
+    checkCudaErrors(cublasDestroy(handle));
+}
+
 
 
 

@@ -37,6 +37,8 @@ const int num_colors = sizeof(colors)/sizeof(uint32_t);
 
 void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt, int n_streams = 16);
 
+void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C* C, float& dt);
+
 void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt, int n_streams = 16);
 
 //int cublas_gemm_custom(const DataT* A, unsigned int A_rows, unsigned int A_cols, unsigned int lda, const DataT* B, unsigned int B_cols, unsigned int ldb, DataT_C* C, unsigned int ldc, const DataT_C alpha, const DataT_C beta, float& dt);
