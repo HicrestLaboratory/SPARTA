@@ -14,7 +14,7 @@ CUDA_PATH = $(CUDA_HOME)
 CUDA_CXXFLAGS = 
 CUDA_CXXFLAGS += -std=c++11
 CUDA_CXXFLAGS += -m64 
-CUDA_CXXFLAGS += -O3 -arch=sm_70
+CUDA_CXXFLAGS += CUDA_CXXFLAGS += -O3 -gencode=arch=compute_80,code=sm_80
 
 NVCC          := $(CUDA_PATH)/bin/nvcc -ccbin $(CXX)
 CUDA_INCLUDE  = -I include/cuda_inc

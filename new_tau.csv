@@ -1,0 +1,8 @@
+### "block_size",  16,  32,  64,  128
+"0_mycielskian13", 0.4, 0.3, 0.2, 0.3
+"3_TSC",           0.3, 0.7, 0.7, 0.7
+"bcsstk18_r",      0.9, 0.9, 0.7, 0.6
+"ca-HepPh_r",      0.8, 0.3, 0.5, 0.1
+"ia-wikiquote-user-edits-nodup", 0.4, 0.9, 0.5, 0.2
+"social_location", 0.9, 0.9, 0.1,  ?
+"wiki-Vote_r",     0.8, 0.8,  ? ,  ?
