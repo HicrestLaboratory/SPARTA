@@ -4,6 +4,7 @@
 #include "utilities.h"
 #include "definitions.h"
 
+#include <numeric>
 #include <string.h>
 #include <cuda_runtime_api.h>
 #include <iostream>
