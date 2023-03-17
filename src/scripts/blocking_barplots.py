@@ -19,16 +19,18 @@ def isfloat(string):
         return False
     
 
-def extract_data(filename):
+def extract_data(filename, skip = 0):
     #header:matrix,rows,cols,nonzeros,blocking_algo,tau,row_block_size,col_block_size,use_pattern,sim_use_groups,sim_measure,reorder,exp_name,b_cols,warmup,exp_repetitions,multiplication_algo,n_streams,time_to_block,time_to_merge,time_to_compare,VBR_nzcount,VBR_nzblocks_count,VBR_average_height,merge_counter,comparison_counter,average_merge_tau,average_row_distance,avg_time_multiply,std_time_multiply,
 
     with open(filename) as infile:
         complete = False
         for idx, line in enumerate(infile):
             line = line.split(",")[:-1]
-            if idx == 0: 
+            if idx < skip:
+                continue
+            if idx == skip:
                 vars = line
-            elif idx == 1:
+            elif idx == skip+1:
                 if len(line) != len(vars):
                     print(f"ERROR: CSV ENTRIES MISMATCH IN {filename}")
                     break
@@ -47,12 +49,21 @@ def check_constraints(data_dict, constraints_dict):
     return True
 
 
+
+
 def get_results(folder, constraints, variable):
     graph_names = []
     values = []
+    
+    best_values = {}
+    relevant_variable = "VBR_longest_row"
+
     for matrix_folder in glob.glob(f"{folder}/*"):
         graph_name = matrix_folder.split("/")[-1]
         valid_data = []
+
+        best_values[graph_name] = []
+        current_min = float('inf')
         try:
             for experiment in glob.glob(f"{matrix_folder}/*.txt"):
                 data = extract_data(experiment)
@@ -65,16 +76,18 @@ def get_results(folder, constraints, variable):
                     valid_data.append(data[variable])
 
                     if constraints["blocking_algo"] == 5:
-                        print("___",graph_name, constraints["col_block_size"], data["tau"], data["VBR_longest_row"])
-                    if constraints["blocking_algo"] == 2:
-                        print("***",graph_name, constraints["col_block_size"], data["tau"], data["VBR_longest_row"])
-
-
+                        if (data[relevant_variable] < current_min):
+                            current_min = data[relevant_variable]
+                            best_values[graph_name] = data["tau"]
+                        
             values.append(max(valid_data))
             graph_names.append(graph_name)
         except: 
-            print(f"ERROR LOADING DATA FOR GRAPH {graph_name}")
+            print(f"ERROR LOADING DATA FOR GRAPH {graph_name}", constraints)
+
+    print("FOUND BEST", relevant_variable, " : ", constraints["col_block_size"], best_values)
     return graph_names, np.array(values)
+
 
 
 
@@ -82,64 +95,72 @@ folder = "results/minitest"
 savename = f"{folder}/../denseAMP_miniset_relative"
 
 
+
 variable = "effective_density"
 ylabel = "density amplification relative to natural blocking"
 
 
-hatches = {2 : "///", 5 : ".."}
 
+
+
+def get_dataframe(folder):
+    df = pd.DataFrame()
+    for matrix_folder in glob.glob(f"{folder}/*"):
+        for experiment in glob.glob(f"{matrix_folder}/*"):
+            try:
+                df1 = pd.read_csv(experiment, skiprows = 0)
+                df = pd.concat([df, df1], ignore_index=True, sort=False)
+            except:
+                print(f"CANNOT LOAD {experiment}")
+    return df        
+
+def get_line(df, constraints):
+    query = ""
+    for key in constraints:
+        query += f"{key} == {constraints[key]} &"
+    query = query[:-2]
+    return df.query(query)
+
+def apply_function_per_matrix(df, variable, variable_2, constraints = {}):
+    tmp_df = get_line(df, constraints)
+    result_df = pd.DataFrame()
+    for matrix_path in df["matrix"].unique():
+        matrix_name = matrix_path.split("/")[-1]
+        mat_df = tmp_df[tmp_df["matrix"] == matrix_path]
+        mat_df = mat_df[mat_df[variable] == mat_df[variable].min()]
+        mat_df = (mat_df[mat_df[variable_2] == mat_df[variable_2].min()])
+        try:
+            result_df = pd.concat([result_df, mat_df], ignore_index=True, sort=False)
+        except:
+            print("found no values for matrix ", matrix_name)
+    return(result_df)
+
+
+folder = "results/minitest_hamming"
+variable = "VBR_longest_row"
+variable_2 = "tau"
+savename = f"results/minitest_hamming_{variable}"
+df = get_dataframe(folder)
+constraints = {}
 for block_size in [16,32,64,128]:
+    plt.figure()
+    plt.xlabel("graphs")
+    plt.ylabel(ylabel)
     barsize = 0.4
     barpos = -barsize/2
     increment = barsize
     width = increment*0.9
-
-    plt.figure()
-    plt.xlabel("graphs")
-    plt.ylabel(ylabel)
-    for algo, algoname in zip([2,5],("no-reordering","our reordering")):
-        constraints = {"row_block_size" : block_size, "col_block_size": block_size, "blocking_algo" : algo}
-        graph_names, values = get_results(folder, constraints, variable)
-        continue
-        print(block_size, algo, graph_names, values)
-        x_pos = np.arange(barpos,len(graph_names) + barpos)
-        print(x_pos)
+    for algo,algoname in zip((2,5),("no-reordering","reordering")):
+        constraints["col_block_size"] = block_size
+        constraints["blocking_algo"] = algo
+        res_df = apply_function_per_matrix(df, variable = variable, variable_2 = variable_2, constraints = constraints)
+        matrices = res_df["matrix"].values
+        taus = res_df["tau"].values
+        var_values = res_df[variable].values
+        print(algo, block_size, matrices, taus, var_values)
+        x_pos = np.arange(barpos,len(matrices) + barpos)
         barpos += increment
-        if (algo == 2):
-            baseline = values
-            corrected_values = values/values
-        else:
-            corrected_values = values/baseline
-        plt.bar(x_pos,corrected_values,label=f"{algoname}, block size = {block_size}", width = width, hatch = hatches[algo])
+        plt.bar(x_pos,var_values,label=f"{algoname}, block size = {block_size}", width = width)
     plt.legend()
-    plt.xticks(range(len(graph_names)), graph_names,rotation=90)
-    plt.savefig(savename + f"_{block_size}.png",  bbox_inches='tight', dpi = 300)
-
-
-
-savename = f"{folder}/../denseAMP_miniset_absolute"
-
-variable = "relative_density"
-ylabel = "density amplification against original matrix"
-hatches = {2 : "///", 5 : ".."}
-
-for block_size in [16,32]:
-    barsize = 0.4
-    barpos = -barsize/2
-    increment = barsize
-    width = increment*0.9
-
-    plt.figure()
-    plt.xlabel("graphs")
-    plt.ylabel(ylabel)
-    for algo, algoname in zip([2,5],("no-reordering","our reordering")):
-        constraints = {"row_block_size" : block_size, "col_block_size": block_size, "blocking_algo" : algo}
-        graph_names, values = get_results(folder, constraints, variable)
-        print(block_size, algo, graph_names, values)
-        x_pos = np.arange(barpos,len(graph_names) + barpos)
-        print(x_pos)
-        barpos += increment
-        plt.bar(x_pos,values,label=f"{algoname}, block size = {block_size}", width = width, hatch = hatches[algo])
-    plt.legend()
-    plt.xticks(range(len(graph_names)), graph_names,rotation=90)
+    plt.xticks(range(len(matrices)), matrices, rotation=90)
     plt.savefig(savename + f"_{block_size}.png",  bbox_inches='tight', dpi = 300)

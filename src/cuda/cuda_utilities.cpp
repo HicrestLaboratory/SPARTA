@@ -549,7 +549,8 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
     for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop horizontally through block rows
     {
         rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
-        
+        DataT* d_C_block = d_C + vbmatA.row_part[ib] ;      //access the block on d_C.
+       
 
         cublasSetStream(handle, streams[ib%n_streams]);               //each stream handles a separate block-row
 
@@ -562,7 +563,6 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
 
             //define the sub-matrices
 	        const DataT* d_A_block = d_A + vbmat_idx;           //access the block on d_A.
-            DataT* d_C_block = d_C + vbmatA.row_part[ib] ;      //access the block on d_C.
 
             int m = rows_in_block, n = B_cols, k = vbmatA.block_col_size;
             int lda = rows_in_block, ldb = B_rows, ldc = C_rows;

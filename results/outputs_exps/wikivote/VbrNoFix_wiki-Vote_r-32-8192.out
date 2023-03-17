@@ -1,0 +1,25 @@
+INPUT PARAMETERS:
+filename: data/minitest/wiki-Vote_r.el
+outfile: results/TEST_results.txt
+exp_name: 
+reader_delimiter_:  
+sim_measure_: 1
+blocking_algo_: 4
+force_fixed_size: 0
+sim_use_groups_: 0
+sim_use_pattern_: 1
+pattern_only_: 1
+reorder_by_degree_: 0
+tau_: 0.7
+col_block_size_: 32
+row_block_size_: 1
+verbose_: 1
+seed_: 0
+multiplication_algo: 4
+B_cols: 8192
+warmup_: 1
+exp_repetitions_: 3
+n_streams: 16
+___________________
+matrix,rows,cols,nonzeros,blocking_algo,tau,row_block_size,col_block_size,use_pattern,sim_use_groups,sim_measure,reorder,exp_name,b_cols,warmup,exp_repetitions,multiplication_algo,n_streams,time_to_block,time_to_merge,time_to_compare,VBR_nzcount,VBR_nzblocks_count,VBR_average_height,merge_counter,comparison_counter,average_merge_tau,average_row_distance,avg_time_multiply,std_time_multiply,
+data/minitest/wiki-Vote_r.el,8275,8298,103689,4,0.700000,1,32,1,0,1,0,,8192,1,3,4,16,2637780.000000,25834.000000,2636036.000000,6273790,28016,7.030268,6577,3560604,0.319569,2897.290527,137.857285,1.000000,
