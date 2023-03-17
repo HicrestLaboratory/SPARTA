@@ -97,16 +97,24 @@ int main(int argc, char* argv[])
             bEngine.multiplication_timer_std = var(algo_times); 
             break;
         }
-    case cublas_vbr_fixed:
+    case cublas_vbr_inverted:
         {
             bEngine.GetGrouping(cmat);
             VBR vbmat_cublas;
+            DataT* mat_B_tran = new DataT[B_rows * B_cols];
+            for (int i = 0; i < B_rows; i++)
+            {
+                for (int j= 0; j < B_cols; j++)
+                {
+                    mat_B_tran[i + j*B_rows] = mat_B[j + i*B_cols] 
+                }
+            }
             vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.force_fixed_size);
             algo_times.clear();
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
                 fill(mat_C, mat_C + C_cols*C_rows, 0);
-                cublas_fixed_blocks_multiply(vbmat_cublas, mat_B, B_cols, mat_C, dt, cli.n_streams_);
+                cublas_fixed_blocks_multiplyBA(vbmat_cublas, mat_B_tran, B_cols, mat_C, dt, cli.n_streams_);
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
