@@ -343,7 +343,7 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
         cudaStreamCreate(&(streams[ib]));
     }
 
-    intT tot_nz_blocks = std::accumulate(vbmatA.nzcount, vbmatA.nzcount + vbmatA.block_rows);
+    intT tot_nz_blocks = 0;
     intT max_blocks_per_stream = tot_nz_blocks/n_streams + 1;
 
 
@@ -473,9 +473,9 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_32F;
-        data_type_C = CUDA_R_32F;
-        compute_type = CUBLAS_COMPUTE_32F;
+        data_type_AB = CUDA_R_16F;
+        data_type_C = CUDA_R_16F;
+        compute_type = CUBLAS_COMPUTE_16F;
     }
     else
     {
@@ -647,9 +647,9 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_32F;
-        data_type_C = CUDA_R_32F;
-        compute_type = CUBLAS_COMPUTE_32F;
+        data_type_AB = CUDA_R_16F;
+        data_type_C = CUDA_R_16F;
+        compute_type = CUBLAS_COMPUTE_16F;
     }
     else
     {
@@ -708,7 +708,8 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
     cudaStream_t streams[n_streams];
     for (intT ib = 0; ib < n_streams; ib++)
     {
-        cudaStreamCreate(&(streams[ib]));
+	cudaStreamCreate(&(streams[ib]));
+        // cudaStreamCreateWithFlags(&streams[ib],cudaStreamNonBlocking);
     }
 
     intT mat_idx = 0; //keeps writing position for mat
@@ -1153,6 +1154,7 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
 
     cudaDataType_t data_type_AB;
     cudaDataType_t data_type_C;
+    cudaDataType_t compute_type;
 
     if (typeid(DataT) == typeid(int8_t))
     {
@@ -1161,8 +1163,9 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_32F;
-        data_type_C = CUDA_R_32F;
+        data_type_AB = CUDA_R_16F;
+        data_type_C = CUDA_R_16F;
+	compute_type = CUDA_R_32F;
     }
     else
     {
@@ -1270,7 +1273,7 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
         matB,
         (void*)&beta,
         matC,
-        data_type_C,
+        compute_type,
         CUSPARSE_SPMM_ALG_DEFAULT,
         &bufferSize
     ));
@@ -1287,7 +1290,7 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
     checkCudaErrors(cusparseSpMM(handle,
         CUSPARSE_OPERATION_NON_TRANSPOSE,
         CUSPARSE_OPERATION_NON_TRANSPOSE,
-        &alpha, matA, matB, &beta, matC, data_type_C,
+        &alpha, matA, matB, &beta, matC, compute_type,
         CUSPARSE_SPMM_ALG_DEFAULT, dBuffer));       // We have a BUG here
 
     //record the elapsed time onto dt
@@ -1398,6 +1401,7 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
 
     cudaDataType_t data_type_AB;
     cudaDataType_t data_type_C;
+    cudaDataType_t compute_type;
 
     if (typeid(DataT) == typeid(int8_t))
     {
@@ -1406,8 +1410,9 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_32F;
-        data_type_C = CUDA_R_32F;
+        data_type_AB = CUDA_R_16F;
+        data_type_C = CUDA_R_16F;
+	compute_type = CUDA_R_16F;
     }
     else
     {
@@ -1500,7 +1505,7 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
                                  handle,
                                  CUSPARSE_OPERATION_NON_TRANSPOSE,
                                  CUSPARSE_OPERATION_NON_TRANSPOSE,
-                                 &alpha, matA, matB, &beta, matC, data_type_C,
+                                 &alpha, matA, matB, &beta, matC, compute_type,
                                  CUSPARSE_SPMM_ALG_DEFAULT, &bufferSize) );
     checkCudaErrors( cudaMalloc(&dBuffer, bufferSize) );
 
@@ -1514,7 +1519,7 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
     checkCudaErrors( cusparseSpMM(handle,
                                 CUSPARSE_OPERATION_NON_TRANSPOSE,
                                 CUSPARSE_OPERATION_NON_TRANSPOSE,
-                                &alpha, matA, matB, &beta, matC, data_type_C,
+                                &alpha, matA, matB, &beta, matC, compute_type,
                                 CUSPARSE_SPMM_ALG_DEFAULT, dBuffer) );
 
     //record the elapsed time onto dt
