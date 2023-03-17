@@ -357,7 +357,7 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
 
 
     intT current_stream = 0;
-    intT blocks_in_stream = 0
+    intT blocks_in_stream = 0;
     cublasSetStream(handle, streams[0]);               //each stream handles at most max_blocks_per_stream of block_rows
 
     //loop through all blocks
@@ -729,10 +729,11 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
         for(intT nzs = 0; nzs < vbmatA.nzcount[ib]; nzs++)        //loop horizontally through nonzero blocks
         {
             DataT* d_C_block = d_C + vbmatA.block_col_size*C_rows;      //access the block on d_C.
-            cublasSetStream(handle, streams[ib%n_streams]);               //each stream handles a separate block-row
             
             intT jb = *jab_loc;             //the block row position of a nonzero block 
 
+            cublasSetStream(handle, streams[jb%n_streams]);               //each stream handles a separate block-row
+            
             //define the sub-matrices
 	        const DataT* d_A_block = d_A + vbmat_idx;           //access the block on d_A.
 
@@ -776,8 +777,6 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
 
     checkCudaErrors(cublasGetMatrix(
             C_rows, C_cols, sizeof(DataT_C), d_C, C_rows, C, C_rows));
-
-    cudaDeviceSynchronize();
 
     checkCudaErrors(cudaFree(d_C));
     checkCudaErrors(cudaFree(d_A));
