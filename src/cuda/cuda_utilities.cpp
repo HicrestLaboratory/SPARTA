@@ -18,6 +18,7 @@
 #include "cuda_utilities.h"
 #include "matrices.h"
 #include "utilities.h"
+#include <numeric>
 
 /*ONLY WORKS WITH 
     DataT = float, double, int;
@@ -551,7 +552,6 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
         rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
         DataT* d_C_block = d_C + vbmatA.row_part[ib] ;      //access the block on d_C.
        
-
         cublasSetStream(handle, streams[ib%n_streams]);               //each stream handles a separate block-row
 
         for(intT nzs = 0; nzs < vbmatA.nzcount[ib]; nzs++)        //loop horizontally through nonzero blocks
@@ -720,7 +720,7 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
     intT* jab_loc = vbmatA.jab;
 
     //loop through all blocks
-    for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop horizontally through block rows
+    for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop vertically through block rows
     {
         rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
         
