@@ -723,34 +723,34 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
     for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop horizontally through block rows
     {
         rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
+        
+        const DataT* d_B_block = d_B + vbmatA.block_col_size*ib;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
 
         for(intT nzs = 0; nzs < vbmatA.nzcount[ib]; nzs++)        //loop horizontally through nonzero blocks
         {
-            DataT* d_C_block = d_C + vbmatA.row_part[ib] ;      //access the block on d_C.
+            DataT* d_C_block = d_C + vbmatA.block_col_size*C_rows;      //access the block on d_C.
             cublasSetStream(handle, streams[ib%n_streams]);               //each stream handles a separate block-row
-
+            
             intT jb = *jab_loc;             //the block row position of a nonzero block 
-
-            const DataT* d_B_block = d_B + vbmatA.block_col_size*jb;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
 
             //define the sub-matrices
 	        const DataT* d_A_block = d_A + vbmat_idx;           //access the block on d_A.
 
-            int m = rows_in_block, n = B_cols, k = vbmatA.block_col_size;
+            int k = rows_in_block, m = B_rows, n = vbmatA.block_col_size;
             int lda = rows_in_block, ldb = B_rows, ldc = C_rows;
 
             //multiply the blocks, store result in d_C_block
             checkCudaErrors(
                 cublasGemmEx(
                     handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                    m,n,k,                                               //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+                    m,n,k,                                               //m, n, k <-- block_B: m*k   block_A: k*n   block_C: m*n
                     &alpha,
-                    d_A_block,                                          // blockA device pointer,
+                    d_B_block,                                          // blockA device pointer,
                     data_type_AB,                                       // blockA datatype
-                    lda,                                      // blockA leading dimension
-                    d_B_block,                                          // blockB device pointer
+                    ldb,                                      // blockA leading dimension
+                    d_A_block,                                          // blockB device pointer
                     data_type_AB,                                       // blockB datatype
-                    ldb,                                             // B leading dimension
+                    lda,                                             // B leading dimension
                     &beta,
                     d_C_block, data_type_C,                             // blockC device pointer, blockC type
                     ldc,                                             // C leading dimension
@@ -761,7 +761,6 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
             //move mab and jab pointers forward
             vbmat_idx += rows_in_block*vbmatA.block_col_size;
             jab_loc++;
-
 	    }
 
     }
@@ -775,17 +774,8 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
 
-
-    //let each stream copy the relevant C block from device
-    int stream_id;
-    for (int ib = 0; ib < vbmatA.block_rows; ib++)
-    {
-        stream_id = ib % n_streams;
-        cublasSetStream(handle, streams[stream_id]);
-        rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib];
-        checkCudaErrors(cublasGetMatrixAsync(
-            rows_in_block, C_cols, sizeof(DataT_C), d_C + vbmatA.row_part[ib], C_rows, C + vbmatA.row_part[ib], C_rows, streams[stream_id]));
-    }
+    checkCudaErrors(cublasGetMatrix(
+            C_rows, C_cols, sizeof(DataT_C), d_C, C_rows, C, C_rows));
 
     cudaDeviceSynchronize();
 
