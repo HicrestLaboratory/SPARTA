@@ -127,7 +127,7 @@ void CSR::scramble()
     permute_rows(v);
 }
 
-void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only)
+void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only, MatrixFormat mat_fmt)
 //reads edgelist into the CSR.
 {
     this->pattern_only = pattern_only;
@@ -143,6 +143,7 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
     intT total_nonzeros = 0;
 
     while (infile.peek() == '#' or infile.peek() == '%') infile.ignore(2048, '\n');
+    if (mat_fmt == mtx) infile.ignore(2048, '\n');
     while (getline(infile, temp)) {
 
         total_nonzeros++;
@@ -156,8 +157,16 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
         del_pos = temp.find(delimiter);
         string second_node_string = temp.substr(0, del_pos); //retrieve the part of the string after the delimiter
         intT child = stoi(second_node_string);
+
+        if (mat_fmt == mtx)
+        {
+            swap(current_node, child);
+        }
+
+
         max_column = std::max(max_column, child);
-	    
+
+
         if (not pattern_only)
         {
             temp.erase(0, del_pos + del_size);

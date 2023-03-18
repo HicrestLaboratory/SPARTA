@@ -23,3 +23,10 @@ programs/general/TEST_similarities
 *.o
 *.o
 outpurt_exps/*
+*.mtx
+*.tmp
+test.el
+data/suitsparse_collection_1.rar
+programs/cuda/cuda_multiply
+programs/cuda/TEST_cuda
+src/scripts/prepare_mtx_files.sh

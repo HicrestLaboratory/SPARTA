@@ -3,8 +3,8 @@ export RESULTS_PATH=$2
 export PROGRAM=$3
 
 
-TAUs=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9)
-BLOCK_SIZEs=(16 32 64 128)
+TAUs=(0.01 0.05 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9)
+BLOCK_SIZEs=(32 64 128 256 512)
 ALGOs=(5)
 
 
@@ -13,12 +13,12 @@ USE_GROUP=0
 REORDERING=0
 SIM=1 #0: hamming 1:jaccard; +2 for OPENMP versions
 
-BASIC_ARGS="-P 1 -v 1 -r ${REORDERING} -m ${SIM} -p ${USE_PATTERN} -g ${USE_GROUP}"
+BASIC_ARGS="-P 1 -v 1 -r ${REORDERING} -m ${SIM} -p ${USE_PATTERN} -g ${USE_GROUP} -R 1"
 
 
 mkdir ${RESULTS_PATH}
 
-for fullpath in ${MATRICES_PATH}/*.el; do
+for fullpath in ${MATRICES_PATH}/*.*; do
 	MATRIX_FILE=$(basename -- "${fullpath}")
 	MATRIX_NAME="${MATRIX_FILE%.*}"
 	echo "============= processing matrix ${MATRIX_NAME}"

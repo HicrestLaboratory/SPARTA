@@ -28,7 +28,7 @@ struct CSR
     bool pattern_only; // 1 if the matrix is patter only; 0 otherwise
 
     void clean();
-    void read_from_edgelist(std::ifstream& infile, std::string delimiter = " ", bool pattern_only = true);
+    void read_from_edgelist(std::ifstream& infile, std::string delimiter = " ", bool pattern_only = true, MatrixFormat = mtx);
     void reorder(std::vector<intT> grouping);
     void reorder_by_degree(bool descending = true);
     void permute_rows(std::vector<intT> permutation);
@@ -48,9 +48,9 @@ struct CSR
 
 
     //constructor for edgelist data
-    CSR(std::ifstream& infile, std::string delimiter = " ", bool pattern_only = true)
+    CSR(std::ifstream& infile, std::string delimiter = " ", bool pattern_only = true, MatrixFormat mat_fmt = mtx)
     {
-        read_from_edgelist(infile, delimiter, pattern_only);
+        read_from_edgelist(infile, delimiter, pattern_only, mat_fmt);
     }
 
 
@@ -59,7 +59,7 @@ struct CSR
     {
         std::ifstream fin;
         fin.open(cli.filename_);
-        read_from_edgelist(fin, cli.reader_delimiter_, cli.pattern_only_);
+        read_from_edgelist(fin, cli.reader_delimiter_, cli.pattern_only_, cli.mat_fmt_);
         switch(cli.reorder_)
         {
             case 1:
