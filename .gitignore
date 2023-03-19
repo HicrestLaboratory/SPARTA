@@ -22,7 +22,7 @@ programs/general/TEST_similarities
 *.kdev4
 *.o
 *.o
-outpurt_exps/*
+output_exps/*
 *.mtx
 *.tmp
 test.el
@@ -31,3 +31,4 @@ programs/cuda/cuda_multiply
 programs/cuda/TEST_cuda
 src/scripts/prepare_mtx_files.sh
 programs/general/TEST_blocking_VBR_2D
+results/*

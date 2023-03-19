@@ -625,7 +625,7 @@ void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C
 }
 
 
-void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C* C, float& dt, int n_streams)
+void cublas_blockmat_multiplyBA_test(const VBR& vbmatA, DataT* B, int B_rows, DataT_C* C, float& dt, int n_streams)
 {
 //multiplies a VBS matrix (vbmatA) and dense matrix (B); stores B*A into (C)
     //vbmatA:       column-major entries (in-block) storage;
@@ -801,7 +801,7 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
 }
 
 
-void cublas_blockmat_multiplyBA_old(const VBR& vbmatA, DataT* B, int B_rows, DataT_C* C, float& dt, int n_streams)
+void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C* C, float& dt, int n_streams)
 {
 //multiplies a VBS matrix (vbmatA) and dense matrix (B); stores B*A into (C)
     //vbmatA:       column-major entries (in-block) storage;

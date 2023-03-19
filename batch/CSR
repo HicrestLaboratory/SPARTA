@@ -37,6 +37,6 @@ else
 fi
 echo "Sval = $Sval"
 
-./programs/cuda/cuda_multiply -M 2 -F 1 -P 1 -c $cval -f $matrix > outputs_exps/CSR_$matnum-$cval.out 2> outputs_exps/CSR_$matnum-$cval.err
+./programs/cuda/cuda_multiply -M 2 -F 1 -P 1 -c $cval -f $matrix -o outputs_exps/CSR_$matnum-$cval.out 2> outputs_exps/CSR_$matnum-$cval.err
 
 fi
