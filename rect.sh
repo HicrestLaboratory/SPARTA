@@ -10,11 +10,17 @@ col_blk_size=512
 
 for i in ${!Matrices[@]}; do
   echo "With $row_blk_size x $col_blk_size, matrix ${Matrices[$i]} has tau ${Taus[$i]}"
-  echo "sbatch batch/VBR $path/${Matrices[$i]} 128 512 ${Taus[$i]}"
-  sbatch batch/VBR_rect $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]}
 
-  echo "sbatch batch/CSR $path/${Matrices[$i]}"
-  sbatch batch/CSR $path/${Matrices[$i]}
+  if [ -f "$path/${Matrices[$i]}" ]
+  then
+    echo "sbatch batch/VBR $path/${Matrices[$i]} 128 512 ${Taus[$i]}"
+    sbatch batch/VBR_rect $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]}
+
+    echo "sbatch batch/CSR $path/${Matrices[$i]}"
+    sbatch batch/CSR $path/${Matrices[$i]}
+  else
+    echo "ERROR: $path/${Matrices[$i]} does not exists."
+  fi
 done
 
 echo "-----------------------------------------------------------------------"
@@ -26,12 +32,18 @@ row_blk_size=512
 col_blk_size=512
 
 for i in ${!Matrices[@]}; do
-  echo "With $row_blk_size x $col_blk_size, matrix ${Matrices[$i]} has tau ${Taus[$i]}"
-  echo "sbatch batch/VBR $path/${Matrices[$i]} 128 512 ${Taus[$i]}"
-  sbatch batch/VBR_rect $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]}
 
-  echo "sbatch batch/CSR $path/${Matrices[$i]}"
-  sbatch batch/CSR $path/${Matrices[$i]}
+  if [ -f "$path/${Matrices[$i]}" ]
+  then
+    echo "With $row_blk_size x $col_blk_size, matrix ${Matrices[$i]} has tau ${Taus[$i]}"
+    echo "sbatch batch/VBR $path/${Matrices[$i]} 128 512 ${Taus[$i]}"
+    sbatch batch/VBR_rect $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]}
+
+    echo "sbatch batch/CSR $path/${Matrices[$i]}"
+    sbatch batch/CSR $path/${Matrices[$i]}
+  else
+    echo "ERROR: $path/${Matrices[$i]} does not exists."
+  fi
 done
 
 echo "-----------------------------------------------------------------------"
@@ -45,12 +57,18 @@ row_blk_size=128
 col_blk_size=512
 
 for i in ${!Matrices[@]}; do
-  echo "With $row_blk_size x $col_blk_size, matrix ${Matrices[$i]} has tau ${Taus[$i]}"
-  echo "sbatch batch/VBR $path/${Matrices[$i]} 128 512 ${Taus[$i]}"
-  sbatch batch/VBR_rect $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]}
 
-  echo "sbatch batch/CSR $path/${Matrices[$i]}"
-  sbatch batch/CSR $path/${Matrices[$i]}
+  if [ -f "$path/${Matrices[$i]}" ]
+  then
+    echo "With $row_blk_size x $col_blk_size, matrix ${Matrices[$i]} has tau ${Taus[$i]}"
+    echo "sbatch batch/VBR $path/${Matrices[$i]} 128 512 ${Taus[$i]}"
+    sbatch batch/VBR_rect $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]}
+
+    echo "sbatch batch/CSR $path/${Matrices[$i]}"
+    sbatch batch/CSR $path/${Matrices[$i]}
+  else
+    echo "ERROR: $path/${Matrices[$i]} does not exists."
+  fi
 done
 
 echo "-----------------------------------------------------------------------"
@@ -62,10 +80,16 @@ row_blk_size=512
 col_blk_size=512
 
 for i in ${!Matrices[@]}; do
-  echo "With $row_blk_size x $col_blk_size, matrix ${Matrices[$i]} has tau ${Taus[$i]}"
-  echo "sbatch batch/VBR $path/${Matrices[$i]} 128 512 ${Taus[$i]}"
-  sbatch batch/VBR_rect $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]}
 
-  echo "sbatch batch/CSR $path/${Matrices[$i]}"
-  sbatch batch/CSR $path/${Matrices[$i]}
+  if [ -f "$path/${Matrices[$i]}" ]
+  then
+    echo "With $row_blk_size x $col_blk_size, matrix ${Matrices[$i]} has tau ${Taus[$i]}"
+    echo "sbatch batch/VBR $path/${Matrices[$i]} 128 512 ${Taus[$i]}"
+    sbatch batch/VBR_rect $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]}
+
+    echo "sbatch batch/CSR $path/${Matrices[$i]}"
+    sbatch batch/CSR $path/${Matrices[$i]}
+  else
+    echo "ERROR: $path/${Matrices[$i]} does not exists."
+  fi
 done
