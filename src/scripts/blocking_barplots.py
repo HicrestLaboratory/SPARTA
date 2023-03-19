@@ -166,8 +166,11 @@ for row_block_size in sorted(df["row_block_size"].unique()):
             x_pos = np.arange(barpos,len(matrices) + barpos)
             barpos += increment
             plt.bar(x_pos,var_values,label=f"{algoname} ", width = width)
-        if len(var_values) == 0: continue
+        if len(var_values) == 0: 
+            plt.close()    
+            continue
         plt.legend()
         plt.title(f"rowblock size = {row_block_size}, colblock size = {col_block_size}")
         plt.xticks(range(len(matrices)), matrices, rotation=90)
         plt.savefig(savename + f"_{row_block_size}_{col_block_size}.png",  bbox_inches='tight', dpi = 300)
+        plt.close()    
