@@ -1280,42 +1280,36 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
 
         while(true)
         {
-            if (nzs == 0)
-            {
-                rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
-                d_B_block = d_B + vbmatA.block_col_size*ib;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
-            }
-
             intT jb = *jab_loc;             //the block row position of a nonzero block
 
-            if (cols_up_to_row[jb] > ib) continue; //block has been already processed in a previous pass;
-
-            if (check_cols[jb]) //block has not been processed, but a block with same col idx is in queue.
+            if (cols_up_to_row[jb] > ib || check_cols[jb])
             {
-                if (skipped == 0) //check if this is the firts skipped block. In that case, save its position to start computing again from there
+                if(check_cols[jb])
                 {
-                    min_ib = ib;
-                    min_jab_loc = jab_loc;
-                    min_vbmat_idx = vbmat_idx;
+                    if (skipped == 0) //check if this is the firts skipped block. In that case, save its position to start computing again from there
+                    {
+                        min_ib = ib;
+                        min_jab_loc = jab_loc;
+                        min_vbmat_idx = vbmat_idx;
+                    }
+                    skipped++;
+                    if (skipped == max_skipped) 
+                        break; //if too many blocks skipped, send multiplication 
                 }
-                
-                skipped++;
-                if (skipped == max_skipped) 
-                    break; //if too many blocks skipped, send multiplication
-                else 
-                    continue;//else continue searching for block to add to the mult
             }
+            else             //this only happens if the block is to be send to multiplication
+            {
+                cols_up_to_row[jb] = ib;
+                check_cols[jb] = true;
 
-            cols_up_to_row[jb] = ib;
-            check_cols[jb] = true;
+                d_C_block = d_C + vbmatA.block_col_size*C_rows*jb;      //access the block on d_C.
+                d_A_block = d_A + vbmat_idx;           //access the block on d_A.
 
-            d_C_block = d_C + vbmatA.block_col_size*C_rows*jb;      //access the block on d_C.
-            d_A_block = d_A + vbmat_idx;           //access the block on d_A.
-
-            h_d_A.push_back(d_A_block);
-            h_d_B.push_back(d_B_block);
-            h_d_C.push_back(d_C_block);
-
+                h_d_A.push_back(d_A_block);
+                h_d_B.push_back(d_B_block);
+                h_d_C.push_back(d_C_block);
+            }
+                            
             jab_loc++; 
             vbmat_idx += rows_in_block*vbmatA.block_col_size;
             nzs++;
@@ -1324,8 +1318,12 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
             {
                 ib++;
                 if (ib == vbmatA.block_rows) break; 
+                rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
+                d_B_block = d_B + vbmatA.block_col_size*ib;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
                 nzs == 0;
             }
+
+            if (skipped == max_skipped) break;
         }
 
         checkCudaErrors(cudaMemcpy(d_A_array, &h_d_A[0], h_d_A.size()*sizeof(DataT*), cudaMemcpyHostToDevice));
