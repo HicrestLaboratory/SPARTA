@@ -1079,7 +1079,7 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
         memset(check_cols, false, vbmatA.block_cols);
         DataT* d_A_block, *d_B_block, *d_C_block;
 
-        while(ib < vbmat.A_block_rows)
+        while(true)
         {
             if (nzs == 0)
             {
@@ -1107,9 +1107,10 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
             vbmat_idx += rows_in_block*vbmatA.block_col_size;
             nzs++;
 
-            if (nzs == vbmatA.nzcount[ib]) //if last element of the row has been sent, increment row
+            if (nzs == vbmatA.nzcount[ib]) //if last element of the row has been sent, increment row but don't send multiplication
             {
                 ib++;
+                if (ib == vbmatA.block_rows) break; 
                 nzs == 0;
             }
         }
