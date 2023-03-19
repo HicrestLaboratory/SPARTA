@@ -72,6 +72,27 @@ void CSR::permute_rows(vector<intT> permutation)
     permute(nzcount, permutation);
 }
 
+void CSR::permute_cols(vector<intT> permutation)
+//permute the rows of the matrix according to "permutation"
+{   
+    if (permutation.size() != cols)
+        throw std::invalid_argument("CSR.permute_rows argument bust have same lenght as rows");
+
+
+    for (intT i = 0; i < rows; i++)
+    {
+        vector<intT> tmp_idxs;
+        for (intT nz = 0; nz < nzcount[i]; nz++)
+        {
+            intT permuted_idx = permutation[ja[i][nz]];
+            tmp_idxs.push_back(permuted_idx);
+        }
+        sort(tmp_idxs.begin(),tmp_idxs.end());
+        copy(tmp_idxs.begin(), tmp_idxs.end(),ja[i]);
+        if (!pattern_only) cout << "WARNING: column reordering not implemented for weighted matrices" << endl;
+    }
+}
+
 void CSR::reorder(vector<intT> grouping)
 //permute the rows so that row i and row j are adjacent if grouping[i] == grouping[j]
 {

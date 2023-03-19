@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import glob
 import operator
 import pandas as pd
+import os as os
 
 def isfloat(string):
     try:
@@ -136,31 +137,37 @@ def apply_function_per_matrix(df, variable, variable_2, constraints = {}):
     return(result_df)
 
 
-folder = "results/minitest_hamming"
-variable = "VBR_longest_row"
+folder_name = "suitsparse_collection_3"
+folder = f"results/{folder_name}"
+variable = "VBR_nzblocks_count"
 variable_2 = "tau"
-savename = f"results/minitest_hamming_{variable}"
+savename = f"results/images/{folder_name}/{folder_name}_{variable}"
+ylabel = "Total number of nonzero blocks"
 df = get_dataframe(folder)
 constraints = {}
-for block_size in [16,32,64,128]:
-    plt.figure()
-    plt.xlabel("graphs")
-    plt.ylabel(ylabel)
-    barsize = 0.4
-    barpos = -barsize/2
-    increment = barsize
-    width = increment*0.9
-    for algo,algoname in zip((2,5),("no-reordering","reordering")):
-        constraints["col_block_size"] = block_size
-        constraints["blocking_algo"] = algo
-        res_df = apply_function_per_matrix(df, variable = variable, variable_2 = variable_2, constraints = constraints)
-        matrices = res_df["matrix"].values
-        taus = res_df["tau"].values
-        var_values = res_df[variable].values
-        print(algo, block_size, matrices, taus, var_values)
-        x_pos = np.arange(barpos,len(matrices) + barpos)
-        barpos += increment
-        plt.bar(x_pos,var_values,label=f"{algoname}, block size = {block_size}", width = width)
-    plt.legend()
-    plt.xticks(range(len(matrices)), matrices, rotation=90)
-    plt.savefig(savename + f"_{block_size}.png",  bbox_inches='tight', dpi = 300)
+for row_block_size in sorted(df["row_block_size"].unique()):
+    for col_block_size in sorted(df["col_block_size"].unique()):
+        plt.figure()
+        plt.xlabel("graphs")
+        plt.ylabel(ylabel)
+        barsize = 0.4
+        barpos = -barsize/2
+        increment = barsize
+        width = increment*0.9
+        for algo,algoname in zip((2,5),("no-reordering","reordering")):
+            constraints["col_block_size"] = col_block_size
+            constraints["row_block_size"] = row_block_size
+            constraints["blocking_algo"] = algo
+            res_df = apply_function_per_matrix(df, variable = variable, variable_2 = variable_2, constraints = constraints)
+            matrices = res_df["matrix"].values
+            taus = res_df["tau"].values
+            var_values = res_df[variable].values
+            print(algo, row_block_size, col_block_size, matrices, taus, var_values)
+            x_pos = np.arange(barpos,len(matrices) + barpos)
+            barpos += increment
+            plt.bar(x_pos,var_values,label=f"{algoname} ", width = width)
+        if len(var_values) == 0: continue
+        plt.legend()
+        plt.title(f"rowblock size = {row_block_size}, colblock size = {col_block_size}")
+        plt.xticks(range(len(matrices)), matrices, rotation=90)
+        plt.savefig(savename + f"_{row_block_size}_{col_block_size}.png",  bbox_inches='tight', dpi = 300)
