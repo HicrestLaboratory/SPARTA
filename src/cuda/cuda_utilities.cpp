@@ -1045,12 +1045,6 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
     checkCudaErrors(cudaMemcpy(d_B, B, B_rows * B_cols * sizeof(DataT), cudaMemcpyHostToDevice));
     // ----------------------------------------------------------------------
 
-    //initialize cuda events
-    cudaEvent_t start, stop;
-    checkCudaErrors(cudaEventCreate(&start));
-    checkCudaErrors(cudaEventCreate(&stop));
-
-    checkCudaErrors(cudaEventRecord(start, 0));
 
     intT vbmat_idx = 0; //keeps reading position for vbmat 
     intT ja_count = 0; //keeps total nonzero blocks count;
@@ -1067,12 +1061,18 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
 
     bool check_cols[vbmatA.block_cols]{false};
 
+   //initialize cuda events
+    cudaEvent_t start, stop;
+    checkCudaErrors(cudaEventCreate(&start));
+    checkCudaErrors(cudaEventCreate(&stop));
+
+    checkCudaErrors(cudaEventRecord(start, 0));
+
     //loop through all blocks
     intT ib = 0;
     intT nzs = 0;
     while(ib < vbmatA.block_rows)      //loop vertically through block rows
     {
-        bool send_to_multiply = false;
         h_d_A.clear();
         h_d_B.clear();
         h_d_C.clear();
@@ -1267,7 +1267,6 @@ void cublas_blockmat_batchedBA_v2(const VBR& vbmatA, DataT* B, int B_rows, DataT
     intT nzs = 0;
     while(ib < vbmatA.block_rows)      //loop vertically through block rows
     {
-        bool send_to_multiply = false;
         h_d_A.clear();
         h_d_B.clear();
         h_d_C.clear();
