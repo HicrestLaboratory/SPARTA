@@ -59,7 +59,7 @@ struct CSR
     {
         std::ifstream fin;
         fin.open(cli.filename_);
-        read_from_edgelist(fin, cli.reader_delimiter_, cli.pattern_only_, cli.mat_fmt_);
+        read_from_edgelist(fin, cli.reader_delimiter_, cli.pattern_only_, (MatrixFormat) cli.mat_fmt_);
         switch(cli.reorder_)
         {
             case 1:

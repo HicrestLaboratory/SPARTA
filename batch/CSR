@@ -1,0 +1,42 @@
+#!/bin/bash
+
+#SBATCH --ntasks=1
+#SBATCH --partition=short
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=1
+#SBATCH --gres=gpu:1
+
+#SBATCH --job-name=CSR
+#SBATCH --output=outputs_exps/slurm_runtime/slurm_runtime_%x.%j.out
+#SBATCH --error=outputs_exps/slurm_runtime/slurm_runtime_%x.%j.err
+
+if [[ $# < 1 ]]
+then
+    echo "usage: sbatch exp_TEST matrix"
+else
+
+matrix=$1
+
+echo "$matrix" | sed 's|.*/||' | cut -d'.' -f1 > name.tmp
+matnum=$(<name.tmp)
+echo $matnum
+
+if [[ $# > 1 ]]
+then
+    cval=$2
+else
+    cval=1024
+fi
+echo "cval = $cval"
+
+if [[ $# > 2 ]]
+then
+    Sval=$3
+else
+    Sval=1024
+fi
+echo "Sval = $Sval"
+
+./programs/cuda/cuda_multiply -M 2 -F 1 -P 1 -c $cval -f $matrix > outputs_exps/CSR_$matnum-$cval.out 2> outputs_exps/CSR_$matnum-$cval.err
+
+fi
