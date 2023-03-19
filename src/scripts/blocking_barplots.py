@@ -137,7 +137,7 @@ def apply_function_per_matrix(df, variable, variable_2, constraints = {}):
     return(result_df)
 
 
-folder_name = "suitsparse_collection_3"
+folder_name = "suitsparse_collection_4"
 folder = f"results/{folder_name}"
 variable = "VBR_nzblocks_count"
 variable_2 = "tau"
