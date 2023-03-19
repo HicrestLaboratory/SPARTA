@@ -1,2 +1,0 @@
-terminate called after throwing an instance of 'std::invalid_argument'
-  what():  CSR.read_from_edgelist indices must be in ascending order

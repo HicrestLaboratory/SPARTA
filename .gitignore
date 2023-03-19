@@ -25,6 +25,7 @@ programs/general/TEST_similarities
 output_exps/*
 *.mtx
 *.tmp
+results/*
 test.el
 data/suitsparse_collection_1.rar
 programs/cuda/cuda_multiply

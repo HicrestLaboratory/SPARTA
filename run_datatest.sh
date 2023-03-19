@@ -1,13 +1,6 @@
 #!/bin/bash
 
-if [[ $# < 1 ]]
-then
-    echo "usage: ./run_dataset path_to_dataset"
-else
-
-dataset=$1
-
-for Matrix in $dataset/*.mtx
+for Matrix in ../SPARTA_datasets/suitsparse_collection_1/*.mtx
 do
     for script in batch/VBR batch/BELLPACK
     do
@@ -31,5 +24,3 @@ do
     done
 
 done
-
-fi
