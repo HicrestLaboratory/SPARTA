@@ -32,6 +32,7 @@ struct CSR
     void reorder(std::vector<intT> grouping);
     void reorder_by_degree(bool descending = true);
     void permute_rows(std::vector<intT> permutation);
+    void permute_cols(std::vector<intT> permutation);
     void scramble();
 
     void multiply(DataT* mat_B, intT B_cols, DataT_C* mat_C);
