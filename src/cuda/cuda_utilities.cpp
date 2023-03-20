@@ -1247,7 +1247,7 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
     checkCudaErrors(cudaMalloc((void**)&d_C_array, sizeof(DataT*)*tot_nz_blocks));
     // Create host pointer array to device matrix storage
 
-    intT cols_up_to_row[vbmatA.block_cols]{0}; //stores for each block col, the last row it has been processed in;
+    intT cols_up_to_row[vbmatA.block_cols]{0}; //stores for each block col the first row it still needs to be processed in
     intT min_ib = 0; //first row that still need processing
     intT* min_jab_loc = 0; //last row where a block needs to be processed
     intT min_vbmat_idx = 0; //last row where a block needs to be processed
@@ -1284,7 +1284,7 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
 
             if (cols_up_to_row[jb] > ib || check_cols[jb])
             {
-                if(check_cols[jb])
+                if(cols_up_to_row[jb] <= ib)
                 {
                     if (skipped == 0) //check if this is the firts skipped block. In that case, save its position to start computing again from there
                     {
@@ -1293,8 +1293,7 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
                         min_vbmat_idx = vbmat_idx;
                     }
                     skipped++;
-                    if (skipped == max_skipped) 
-                        break; //if too many blocks skipped, send multiplication 
+                    if (skipped == max_skipped) break; //if too many blocks skipped, send multiplication 
                 }
             }
             else             //this only happens if the block is to be send to multiplication
