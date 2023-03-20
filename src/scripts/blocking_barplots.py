@@ -12,98 +12,6 @@ import operator
 import pandas as pd
 import os as os
 
-def isfloat(string):
-    try:
-        float(string)
-        return True
-    except ValueError:
-        return False
-    
-
-def extract_data(filename, skip = 0):
-    #header:matrix,rows,cols,nonzeros,blocking_algo,tau,row_block_size,col_block_size,use_pattern,sim_use_groups,sim_measure,reorder,exp_name,b_cols,warmup,exp_repetitions,multiplication_algo,n_streams,time_to_block,time_to_merge,time_to_compare,VBR_nzcount,VBR_nzblocks_count,VBR_average_height,merge_counter,comparison_counter,average_merge_tau,average_row_distance,avg_time_multiply,std_time_multiply,
-
-    with open(filename) as infile:
-        complete = False
-        for idx, line in enumerate(infile):
-            line = line.split(",")[:-1]
-            if idx < skip:
-                continue
-            if idx == skip:
-                vars = line
-            elif idx == skip+1:
-                if len(line) != len(vars):
-                    print(f"ERROR: CSV ENTRIES MISMATCH IN {filename}")
-                    break
-                data = {var:(float(value) if isfloat(value) else value) for var, value in zip(vars, line)}
-        return data
-    
-
-def check_constraints(data_dict, constraints_dict):
-    for constraint in constraints_dict:
-        if not constraint in data_dict:
-            print(f"WARNING: checking non existent property: {constraint} ")
-            return False
-        else:
-            if constraints_dict[constraint] != data_dict[constraint]:
-                return False 
-    return True
-
-
-
-
-def get_results(folder, constraints, variable):
-    graph_names = []
-    values = []
-    
-    best_values = {}
-    relevant_variable = "VBR_longest_row"
-
-    for matrix_folder in glob.glob(f"{folder}/*"):
-        graph_name = matrix_folder.split("/")[-1]
-        valid_data = []
-
-        best_values[graph_name] = []
-        current_min = float('inf')
-        try:
-            for experiment in glob.glob(f"{matrix_folder}/*.txt"):
-                data = extract_data(experiment)
-                data["effective_density"] = data["nonzeros"]/data["VBR_nzcount"]
-                data["true_density"] = data["nonzeros"]/(data["rows"]*data["cols"])
-                data["relative_density"] = data["effective_density"]/(data["true_density"])
-                data["nz_per_block"] = data["nonzeros"]/data["VBR_nzblocks_count"]
-
-                if check_constraints(data,constraints):
-                    valid_data.append(data[variable])
-
-                    if constraints["blocking_algo"] == 5:
-                        if (data[relevant_variable] < current_min):
-                            current_min = data[relevant_variable]
-                            best_values[graph_name] = data["tau"]
-                        
-            values.append(max(valid_data))
-            graph_names.append(graph_name)
-        except: 
-            print(f"ERROR LOADING DATA FOR GRAPH {graph_name}", constraints)
-
-    print("FOUND BEST", relevant_variable, " : ", constraints["col_block_size"], best_values)
-    return graph_names, np.array(values)
-
-
-
-
-folder = "results/minitest"
-savename = f"{folder}/../denseAMP_miniset_relative"
-
-
-
-variable = "effective_density"
-ylabel = "density amplification relative to natural blocking"
-
-
-
-
-
 def get_dataframe(folder):
     df = pd.DataFrame()
     for matrix_folder in glob.glob(f"{folder}/*"):
@@ -113,6 +21,16 @@ def get_dataframe(folder):
                 df = pd.concat([df, df1], ignore_index=True, sort=False)
             except:
                 print(f"CANNOT LOAD {experiment}")
+    if df.empty:
+        print("ALTERNATIVE LOAD", folder)
+        for experiment in glob.glob(f"{folder}/*"):
+            print(experiment)
+            try:
+                df1 = pd.read_csv(experiment, skiprows = 0)
+                df = pd.concat([df, df1], ignore_index=True, sort=False)
+            except:
+                print(f"CANNOT LOAD {experiment}")
+    
     return df        
 
 def get_line(df, constraints):
@@ -122,7 +40,7 @@ def get_line(df, constraints):
     query = query[:-2]
     return df.query(query)
 
-def apply_function_per_matrix(df, variable, variable_2, constraints = {}):
+def get_best_blockings(df, variable, variable_2, constraints = {}):
     tmp_df = get_line(df, constraints)
     result_df = pd.DataFrame()
     for matrix_path in df["matrix"].unique():
@@ -137,40 +55,65 @@ def apply_function_per_matrix(df, variable, variable_2, constraints = {}):
     return(result_df)
 
 
-folder_name = "suitsparse_collection_4"
+folder_name = "suitsparse_collection_2"
 folder = f"results/{folder_name}"
-variable = "VBR_nzblocks_count"
+
+
+variable = "block_density"
 variable_2 = "tau"
-savename = f"results/images/{folder_name}/{folder_name}_{variable}"
-ylabel = "Total number of nonzero blocks"
-df = get_dataframe(folder)
+ylabel = "Density"
+savename = f"results/images/suitsparse_collection/suitsparse_collection_{variable}"
+df = pd.DataFrame()
+for fold_num in (3,4):
+    folder_name = "suitsparse_collection_" + str(fold_num)
+    folder = f"results/{folder_name}"
+    df = pd.concat([df,get_dataframe(folder)],ignore_index=True, sort=False)
+
 constraints = {}
 for row_block_size in sorted(df["row_block_size"].unique()):
     for col_block_size in sorted(df["col_block_size"].unique()):
         plt.figure()
         plt.xlabel("graphs")
         plt.ylabel(ylabel)
-        barsize = 0.4
-        barpos = -barsize/2
-        increment = barsize
-        width = increment*0.9
-        for algo,algoname in zip((2,5),("no-reordering","reordering")):
+        
+        var_values = {};
+        bars = 3
+        barpos = -0.45
+        increment = 0.9/bars
+        width = increment*0.95
+
+        for algo,algoname in zip((2,5),("blocking, no-reordering","blocking, reordering")):
             constraints["col_block_size"] = col_block_size
             constraints["row_block_size"] = row_block_size
             constraints["blocking_algo"] = algo
-            res_df = apply_function_per_matrix(df, variable = variable, variable_2 = variable_2, constraints = constraints)
-            matrices = res_df["matrix"].values
+            res_df = get_best_blockings(df, variable = "VBR_nzblocks_count", variable_2 = "tau", constraints = constraints)
+            matrices = [val.split("/")[-1].split(".")[0] for val in res_df["matrix"].values]
             taus = res_df["tau"].values
-            var_values = res_df[variable].values
+            res_df["density"] = res_df["nonzeros"].values/(res_df["rows"].values * res_df["cols"].values)
+            res_df["block_density"] = res_df["nonzeros"].values/res_df["VBR_nzcount"].values
+            var_values[algo] = res_df[variable].values
             print(algo, row_block_size, col_block_size, matrices, taus, var_values)
             x_pos = np.arange(barpos,len(matrices) + barpos)
             barpos += increment
-            plt.bar(x_pos,var_values,label=f"{algoname} ", width = width)
+            plt.bar(x_pos,var_values[algo],label=f"{algoname} ", width = width, hatch = "//", edgecolor = "black")
         if len(var_values) == 0: 
             plt.close()    
             continue
+        
+        dense_amp = np.nanmean(var_values[5]/var_values[2])
+        dense_amp_orig = np.nanmean(var_values[5]/res_df["density"].values)
+        print("AVG AMPLIFICATION", dense_amp)
+        print("AVG AMPLIFICATION, original", dense_amp_orig)
+        plt.text(1, 1, f"dense-amp: {dense_amp}, {dense_amp_orig}", bbox=dict(fill=False, edgecolor='red', linewidth=2))
+
+        x_pos = np.arange(barpos,len(matrices) + barpos)
+        barpos += increment
+        plt.bar(x_pos, res_df["density"].values, label = "no blocking (original)", width = width, hatch = "..", color = "white", edgecolor='black')
+        
+
         plt.legend()
-        plt.title(f"rowblock size = {row_block_size}, colblock size = {col_block_size}")
+        plt.yscale("log")
+        plt.title(f"block height = {row_block_size}, block width = {col_block_size}")
         plt.xticks(range(len(matrices)), matrices, rotation=90)
         plt.savefig(savename + f"_{row_block_size}_{col_block_size}.png",  bbox_inches='tight', dpi = 300)
         plt.close()    
