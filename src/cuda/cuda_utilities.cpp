@@ -883,10 +883,9 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
     
     if (n_streams > vbmatA.block_cols) n_streams = vbmatA.block_cols;
     cudaStream_t streams[n_streams];
-    for (intT ib = 0; ib < n_streams; ib++)
-    {
-	cudaStreamCreate(&(streams[ib]));
-        // cudaStreamCreateWithFlags(&streams[ib],cudaStreamNonBlocking);
+    for (intT ib = 0; ib < n_streams; ib++) {
+//         cudaStreamCreate(&(streams[ib]));
+        cudaStreamCreateWithFlags(&streams[ib],cudaStreamNonBlocking);
     }
 
     intT mat_idx = 0; //keeps writing position for mat

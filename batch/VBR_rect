@@ -20,11 +20,19 @@ row_block_size=$2
 col_block_size=$3
 tau=$4
 
+if [[ $# > 4 ]]
+then
+    cval=$5
+else
+    cval=1024
+fi
+echo "cval = $cval"
+
 echo "$matrix" | sed 's|.*/||' | cut -d'.' -f1 > name.tmp
 matnum=$(<name.tmp)
 echo $matnum
 
 
-./programs/cuda/cuda_multiply -a 2 -M 6 -P 1 -F 1 -t $tau -b $row_block_size -B $col_block_size -f $matrix -o outputs_exps/VBR_rect_$matnum-$row_block_size-x-$col_block_size.out 2> outputs_exps/VBR_rect_$matnum-$row_block_size-x-$col_block_size.err
+./programs/cuda/cuda_multiply -a 2 -M 6 -P 1 -F 1 -t $tau -b $row_block_size -B $col_block_size -f $matrix -S 4 -c $cval -o outputs_exps/VBR_rect_$matnum-$row_block_size-x-$col_block_size.out 2> outputs_exps/VBR_rect_$matnum-$row_block_size-x-$col_block_size.err
 
 fi
