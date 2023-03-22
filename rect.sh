@@ -1,6 +1,6 @@
 #!/bin/bash
 
-path=../SPARTA_datasets/suitsparse_collection_3_no3-5
+path=../SPARTA_datasets/suitsparse_collection_3
 
 Matrices=('ckt11752_dc_1.mtx' 'email-Enron.mtx' 'FEM_3D_thermal1.mtx' 'g7jac100sc.mtx' 'k3plates.mtx' 'lhr17.mtx' 'TEM27623.mtx')
 Taus=(0.2  0.05 0.01 0.01 0.9  0.8  0.5 )

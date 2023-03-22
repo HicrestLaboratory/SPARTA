@@ -1,6 +1,6 @@
 #!/bin/bash
 
-path=../SPARTA_datasets/suitsparse_collection_3_no3-5
+path=../SPARTA_datasets/suitsparse_collection_3
 
 Matrices=('ckt11752_dc_1.mtx' 'email-Enron.mtx' 'FEM_3D_thermal1.mtx' 'g7jac100sc.mtx' 'k3plates.mtx' 'lhr17.mtx' 'poisson3Da.mtx' 'TEM27623.mtx' 'vsp_south31_slptsk.mtx')
 
@@ -17,11 +17,14 @@ for i in ${!Matrices[@]}; do
     if [ -f "$path/${Matrices[$i]}" ]
     then
 
-      echo "sbatch batch/VBR $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]} $c"
-      sbatch batch/VBR_rect $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]}  $c
+#       echo "sbatch batch/VBR_rect_a5 $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]} $c"
+      sbatch batch/VBR_rect_a5 $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]}  $c
 
-      echo "sbatch batch/CSR $path/${Matrices[$i]}"
-      sbatch batch/CSR $path/${Matrices[$i]}
+#       echo "sbatch batch/VBR_rect_a2 $path/${Matrices[$i]} $row_blk_size $col_blk_size $c"
+      sbatch batch/VBR_rect_a2 $path/${Matrices[$i]} $row_blk_size $col_blk_size $c
+
+#       echo "sbatch batch/CSR $path/${Matrices[$i]} $c"
+      sbatch batch/CSR $path/${Matrices[$i]} $c
     else
       echo "ERROR: $path/${Matrices[$i]} does not exists."
     fi
@@ -44,11 +47,14 @@ for i in ${!Matrices[@]}; do
     if [ -f "$path/${Matrices[$i]}" ]
     then
 
-      echo "sbatch batch/VBR $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]} $c"
-      sbatch batch/VBR_rect $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]} $c
+#       echo "sbatch batch/VBR_rect_a5 $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]} $c"
+      sbatch batch/VBR_rect_a5 $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]} $c
 
-      echo "sbatch batch/CSR $path/${Matrices[$i]}"
-      sbatch batch/CSR $path/${Matrices[$i]}
+#       echo "sbatch batch/VBR_rect_a2 $path/${Matrices[$i]} $row_blk_size $col_blk_size $c"
+      sbatch batch/VBR_rect_a2 $path/${Matrices[$i]} $row_blk_size $col_blk_size $c
+
+#       echo "sbatch batch/CSR $path/${Matrices[$i]} $c"
+      sbatch batch/CSR $path/${Matrices[$i]} $c
     else
       echo "ERROR: $path/${Matrices[$i]} does not exists."
     fi
@@ -71,11 +77,14 @@ for i in ${!Matrices[@]}; do
     if [ -f "$path/${Matrices[$i]}" ]
     then
 
-      echo "sbatch batch/VBR $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]} $c"
-      sbatch batch/VBR_rect $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]} $c
+#       echo "sbatch batch/VBR_rect_a5 $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]} $c"
+      sbatch batch/VBR_rect_a5 $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]} $c
 
-      echo "sbatch batch/CSR $path/${Matrices[$i]}"
-      sbatch batch/CSR $path/${Matrices[$i]}
+#       echo "sbatch batch/VBR_rect_a2 $path/${Matrices[$i]} $row_blk_size $col_blk_size $c"
+      sbatch batch/VBR_rect_a2 $path/${Matrices[$i]} $row_blk_size $col_blk_size $c
+
+#       echo "sbatch batch/CSR $path/${Matrices[$i]} $c"
+      sbatch batch/CSR $path/${Matrices[$i]} $c
     else
       echo "ERROR: $path/${Matrices[$i]} does not exists."
     fi
@@ -98,14 +107,17 @@ for i in ${!Matrices[@]}; do
     if [ -f "$path/${Matrices[$i]}" ]
     then
 
-      echo "sbatch batch/VBR $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]} $c"
-      sbatch batch/VBR_rect $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]} $c
+#       echo "sbatch batch/VBR_rect_a5 $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]} $c"
+      sbatch batch/VBR_rect_a5 $path/${Matrices[$i]} $row_blk_size $col_blk_size ${Taus[$i]} $c
 
-      echo "sbatch batch/BELLPACK $path/${Matrices[$i]} $row_blk_size ${Taus[$i]}"
+#       echo "sbatch batch/VBR_rect_a2 $path/${Matrices[$i]} $row_blk_size $col_blk_size $c"
+      sbatch batch/VBR_rect_a2 $path/${Matrices[$i]} $row_blk_size $col_blk_size $c
+
+#       echo "sbatch batch/BELLPACK $path/${Matrices[$i]} $row_blk_size ${Taus[$i]}"
       sbatch batch/BELLPACK $path/${Matrices[$i]} $row_blk_size ${Taus[$i]} $c
 
-      echo "sbatch batch/CSR $path/${Matrices[$i]}"
-      sbatch batch/CSR $path/${Matrices[$i]}
+#       echo "sbatch batch/CSR $path/${Matrices[$i]} $c"
+      sbatch batch/CSR $path/${Matrices[$i]} $c
     else
       echo "ERROR: $path/${Matrices[$i]} does not exists."
     fi
