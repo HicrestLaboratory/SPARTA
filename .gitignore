@@ -23,6 +23,7 @@ programs/general/TEST_similarities
 *.o
 *.o
 output_exps/*
+outputs_exps/*
 *.mtx
 *.tmp
 results/*
