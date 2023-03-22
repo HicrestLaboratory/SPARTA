@@ -33,3 +33,4 @@ programs/cuda/TEST_cuda
 src/scripts/prepare_mtx_files.sh
 programs/general/TEST_blocking_VBR_2D
 results/*
+outputfile
