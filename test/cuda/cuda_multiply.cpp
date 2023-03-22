@@ -76,11 +76,13 @@ int main(int argc, char* argv[])
         break;
 
     case cublas_gemm:
-        //convert to dense. 
-        //Run dense multiplication
-        cout << "GEMM NOT IMPLEMENTED YET" << endl;
+        {
+            //convert to dense.
+            DataT *dnA = csr2dn (cmat);
+            //Run dense multiplication
+            cublas_dense_multiplyAB(cmat.rows, cmat.cols, dnA, mat_B, B_cols, mat_C, dt);
         break;
-    
+        }
     case cublas_vbr:
         {
             bEngine.GetGrouping(cmat);

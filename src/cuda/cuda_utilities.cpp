@@ -2084,7 +2084,7 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
                                  CUSPARSE_OPERATION_NON_TRANSPOSE,
                                  CUSPARSE_OPERATION_NON_TRANSPOSE,
                                  &alpha, matA, matB, &beta, matC, compute_type,
-                                 CUSPARSE_SPMM_ALG_DEFAULT, &bufferSize) );
+                                 CUSPARSE_SPMM_BLOCKED_ELL_ALG1, &bufferSize) );
     checkCudaErrors( cudaMalloc(&dBuffer, bufferSize) );
 
 
@@ -2098,7 +2098,7 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
                                 CUSPARSE_OPERATION_NON_TRANSPOSE,
                                 CUSPARSE_OPERATION_NON_TRANSPOSE,
                                 &alpha, matA, matB, &beta, matC, compute_type,
-                                CUSPARSE_SPMM_ALG_DEFAULT, dBuffer) );
+                                CUSPARSE_SPMM_BLOCKED_ELL_ALG1, dBuffer) );
 
     //record the elapsed time onto dt
     cudaDeviceSynchronize();
@@ -2211,4 +2211,156 @@ void bellpack_blockmat_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int 
         free(ellValues);
 
     return;
+}
+
+DataT* csr2dn (CSR& A) {
+    if (A.rows == 0) {
+        fprintf(stderr, "Error in %s %d.\n", __func__, __LINE__);
+        fprintf(stderr, "rows %ld cols %ld.\n", A.rows, A.cols);
+        return(NULL);
+    }
+
+    int n = A.rows, m = A.cols;
+    DataT *csrVal;
+    int *csrRowPtr, *csrColInd;
+
+    prepare_cusparse_CSR( A, &csrRowPtr, &csrColInd, &csrVal);
+    cudaDeviceSynchronize();
+
+    DataT* dn_A = (DataT*)malloc(sizeof(DataT)*(n)*(m));
+
+    int csr_j;
+    for (int i=0; i<n; i++) {
+        csr_j = csrRowPtr[i];
+        for (int j=0; j<m; j++) {
+            if (csr_j < csrRowPtr[i + 1] && j==csrColInd[csr_j]) {
+                dn_A[i*m + j] = csrVal[csr_j];
+                csr_j ++;
+            } else {
+                dn_A[i*m + j] = (DataT)0;
+            }
+
+        }
+    }
+
+    return(dn_A);
+}
+
+void cublas_dense_multiplyAB(int rows, int cols, DataT* A, DataT* B, int B_cols, DataT_C* C, float& dt) {
+//multiplies a VBS matrix (vbmatA) and dense matrix (B); stores A*B into (C)
+    //vbmatA:       column-major entries (in-block) storage;
+    //              row-major block storage;
+    //B:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+    //C:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+
+
+    cudaDataType_t data_type_AB;
+    cudaDataType_t data_type_C;
+    cublasComputeType_t compute_type;
+
+    if (typeid(DataT) == typeid(int8_t))
+    {
+        data_type_AB = CUDA_R_8I;
+        data_type_C = CUDA_R_32I;
+        compute_type = CUBLAS_COMPUTE_32I;
+    }
+    else if (typeid(DataT) == typeid(float))
+    {
+        data_type_AB = CUDA_R_16F;
+        data_type_C = CUDA_R_16F;
+        compute_type = CUBLAS_COMPUTE_16F;
+    }
+    else
+    {
+        std::cout << "WARNING! Unsopported multiplication type in cublas_blockmat_multiply(). Check matrices.h" << std::endl;
+    }
+
+
+    cublasGemmAlgo_t cuda_algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP;
+
+    intT A_rows = rows;
+    intT A_cols = cols;
+
+    intT B_rows = A_cols;
+    intT C_rows = A_rows;
+    int C_cols = B_cols;
+
+    const DataT_C alpha = 1;
+    const DataT_C beta = 1;
+
+    //allocate memory on device
+    intT size_A = A_rows * A_cols; //total nonzero entries in vbmat
+    intT mem_size_A = sizeof(DataT) * size_A;
+
+    intT size_B = B_rows * B_cols;
+    intT mem_size_B = sizeof(DataT) * size_B;
+
+    intT size_C = C_rows * C_cols;
+    intT mem_size_C = sizeof(DataT_C) * size_C;
+
+    cublasHandle_t handle;
+
+    checkCudaErrors(cublasCreate(&handle));
+
+    DataT* d_A, * d_B, * d_C;
+    checkCudaErrors(cudaMalloc((void**)&d_A, mem_size_A));
+    checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
+    checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
+
+    //copy A to device (maybe more efficient to copy it block by block?)
+    checkCudaErrors(cudaMemcpy(d_A, A, A_rows * A_cols * sizeof(DataT), cudaMemcpyHostToDevice));
+
+    //copy B to device (maybe more efficient to copy it block by block?)
+    checkCudaErrors(cudaMemcpy(d_B, B, B_rows * B_cols * sizeof(DataT), cudaMemcpyHostToDevice));
+    // ----------------------------------------------------------------------
+
+    //initialize cuda events
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start, 0);
+
+    //multiply A with B, store result in d_C_block
+    (data_type_C == CUDA_R_16F) ? printf("data_type_C == CUDA_R_16F") : printf("data_type_C != CUDA_R_16F") ;
+
+    checkCudaErrors(
+        cublasGemmEx(
+            handle, CUBLAS_OP_N, CUBLAS_OP_N,
+            A_rows,B_cols,A_cols,                                               //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+            &alpha,
+            d_A,                                          // blockA device pointer,
+            data_type_AB,                                       // blockA datatype
+            A_cols,                                      // blockA leading dimension
+            d_B,                                          // blockB device pointer
+            data_type_AB,                                       // blockB datatype
+            B_rows,                                             // B leading dimension
+            &beta,
+            d_C, data_type_C,                             // blockC device pointer, blockC type
+            C_cols,                                             // C leading dimension
+            compute_type,                                       // compute_type
+            cuda_algo)
+    );
+
+    //record the elapsed time onto dt
+    cudaDeviceSynchronize();
+    cudaEventRecord(stop, 0);
+
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&dt, start, stop);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+
+
+    //let each stream copy the relevant C block from device
+    checkCudaErrors(cublasGetMatrix(
+        C_rows, C_cols, sizeof(DataT_C), d_C, C_rows, C, C_rows));
+
+    cudaDeviceSynchronize();
+
+    checkCudaErrors(cudaFree(d_C));
+    checkCudaErrors(cudaFree(d_A));
+    checkCudaErrors(cudaFree(d_B));
+
+    checkCudaErrors(cublasDestroy(handle));
 }

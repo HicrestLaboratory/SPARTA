@@ -62,3 +62,7 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
 int prepare_cusparse_BLOCKEDELLPACK(VBR *A, int *ell_blocksize, int* ellValue_cols, int *ellColInd_rows, int *ellColInd_cols, int *num_blocks, intT** ellColInd, DataT_C** ellValues);
 
 void bellpack_blockmat_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int C_cols, float& dt, int verbose=0);
+
+DataT* csr2dn (CSR& A);
+
+void cublas_dense_multiplyAB(int rows, int cols, DataT* A, DataT* B, int B_cols, DataT_C* C, float& dt);
