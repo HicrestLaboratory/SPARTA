@@ -12,6 +12,17 @@ import operator
 import pandas as pd
 import os as os
 import seaborn as sns
+from matplotlib import cm, colors
+
+
+
+label_dict = {
+    "block_density" : "Blocked density",
+    "density" : "Original density",
+    "dense_amp" : "Density amplification (against unblocked)",
+    "block ratio": "Shape (height / width)"
+}
+
 
 bar_style_reordering = {
     "hatch" : "//",
@@ -157,9 +168,12 @@ def barplot(x_labels, x_ax_label, ys, y_labels, y_styles, y_ax_label, yscale = "
 
 
 
+#data_file = "test_all_suitsparse.csv"
+#exp_name = "suitsparse_all"
+
 data_file = "test.csv"
 exp_name = "suitsparse_3"
-image_folder = "images/blocking_images"
+image_folder = f"images/blocking_images/{exp_name}"
 try: os.mkdir(image_folder) 
 except: 1
 
@@ -168,11 +182,14 @@ df = pd.read_csv(data_file)
 
 
 print(df[df["VBR_nzblocks_count"] == 0])
-
 df = df.loc[df.groupby(["matrix","blocking_algo","col_block_size","row_block_size"])["VBR_nzblocks_count"].idxmin()]
+
 df["density"] = df["nonzeros"].values/(df["rows"].values * df["cols"].values)
 df["block_density"] = df["nonzeros"].values/df["VBR_nzcount"].values
 df["dense_amp"] = df["block_density"].values/df["density"].values
+df["block_area"] = df["row_block_size"].values*df["col_block_size"].values
+df["block ratio"] = df["row_block_size"].values/df["col_block_size"].values
+df.sort_values(by=['density','matrix'], inplace=True)
 
 #PREPARE HEATMAP FOR ALL BLOCK-SIZES
 
@@ -187,13 +204,55 @@ print(heatmap_df.columns)
 print(heatmap_df.loc[0].to_string())
 
 
-color_vars = ("relative_dense_amp","dense_amp_5","dense_amp_2")
-color_labels = ("Density Amplification (against natural blocking)", "Density Amplification (against unblocked matrix)", "Density Amplification (against unblocked matrix)")
+
+
+x_var = "density"
+y_var = "block_density"
+c_var = "block ratio"
+#MAKE SCATTER PLOT 
+for area in (64*64, 128*128, 256*256):
+    try:
+        fig,ax = plt.subplots()
+        tmp_df = df.loc[(df["blocking_algo"] == 5) & (df["block_area"] == area)]
+        ax = tmp_df.plot.scatter(
+                        x= x_var,
+                        y= y_var,
+                        c= c_var,
+                        colormap='viridis',alpha=0.5, edgecolor = "black")
+        plt.ylabel(label_dict[y_var])
+        plt.xscale("log")
+        plt.yscale("log")
+        plt.savefig(f"{image_folder}/{exp_name}_scatterplot_{x_var}_vs_{y_var}_area_{(area)**0.5}.png", bbox_inches='tight', dpi = 300)
+    except:
+        print("FAILED TO PRODUCE SCATTER PLOT FOR AREA", area)
+    plt.close()
+
+x_var = "density"
+y_var = "block_density"
+#MAKE SCATTER PLOT 
+for area in (64*64, 128*128, 256*256):
+    try:
+        fig,ax = plt.subplots()
+        tmp_df = df.loc[(df["blocking_algo"] == 5) & (df["block_area"] == area) & (df["block ratio"] == 4)]
+        ax = tmp_df.plot.scatter(
+                        x= x_var,
+                        y= y_var,
+                        colormap='viridis',alpha=0.5, edgecolor = "black")
+        plt.ylabel(label_dict[y_var])
+        plt.xscale("log")
+        plt.yscale("log")
+        plt.savefig(f"{image_folder}/{exp_name}_scatterplot_{x_var}_vs_{y_var}_area_{(area)**0.5}_best.png", bbox_inches='tight', dpi = 300)
+    except:
+        print("FAILED TO PRODUCE SCATTER PLOT FOR AREA", area)
+    plt.close()
+
+
+color_vars = ("relative_dense_amp","dense_amp_5","dense_amp_2","tau_5")
+color_labels = ("Density Amplification (against natural blocking)", "Density Amplification (against unblocked matrix)", "Density Amplification (against unblocked matrix)","tau")
 
 for colormap_variable,color_label in zip(color_vars, color_labels):
     vmin = 1
     vmax = 2 if (colormap_variable == "relative_dense_amp") else max_var_value
-
     table = heatmap_df.pivot_table(index="row_block_size", columns="col_block_size", values=colormap_variable, aggfunc='mean')
     table = table.sort_values(by=['row_block_size'], ascending=False)
     sns.heatmap(table,annot = True, cbar_kws={'label': color_label},vmin = vmin, vmax = vmax)

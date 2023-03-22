@@ -13,19 +13,28 @@ import pandas as pd
 import os as os
 import seaborn as sns
 
-bar_style_reordering = {
+
+bar_style = {}
+
+bar_style["VBR-reord"] = {
     "hatch" : "//",
     "edgecolor" : "black",
     "color" : "blue"
 }
 
-bar_style_blocking = {
+bar_style["VBR-no-reord"] = {
     "hatch" : "//",
     "edgecolor" : "black",
     "color" : "orange"
 }
 
-bar_style_natural = {
+bar_style["BELLPACK-no-reord"] = {
+    "hatch" : "/",
+    "edgecolor" : "black",
+    "color" : "green"
+}
+
+bar_style["CSR"] = {
     "hatch" : "..",
     "edgecolor" : "black",
     "color" : "white"
@@ -60,78 +69,7 @@ def get_line(df, constraints):
     return df.query(query)
 
 
-
-
-
-"""
-folder_name = "suitsparse_collection_2"
-folder = f"results/{folder_name}"
-
-
-variable = "block_density"
-variable_2 = "tau"
-ylabel = "Density"
-savename = f"results/images/suitsparse_collection/suitsparse_collection_{variable}"
-df = pd.DataFrame()
-for fold_num in (3,4):
-    folder_name = "suitsparse_collection_" + str(fold_num)
-    folder = f"results/{folder_name}"
-    df = pd.concat([df,get_dataframe(folder)],ignore_index=True, sort=False)
-
-constraints = {}
-for row_block_size in sorted(df["row_block_size"].unique()):
-    for col_block_size in sorted(df["col_block_size"].unique()):
-        plt.figure()
-        plt.xlabel("graphs")
-        plt.ylabel(ylabel)
-        
-        var_values = {};
-        bars = 3
-        barpos = -0.45
-        increment = 0.9/bars
-        width = increment*0.95
-
-        for algo,algoname in zip((2,5),("blocking, no-reordering","blocking, reordering")):
-            constraints["col_block_size"] = col_block_size
-            constraints["row_block_size"] = row_block_size
-            constraints["blocking_algo"] = algo
-            res_df = get_best_blockings(df, variable = "VBR_nzblocks_count", variable_2 = "tau", constraints = constraints)
-            matrices = [val.split("/")[-1].split(".")[0] for val in res_df["matrix"].values]
-            taus = res_df["tau"].values
-            res_df["density"] = res_df["nonzeros"].values/(res_df["rows"].values * res_df["cols"].values)
-            res_df["block_density"] = res_df["nonzeros"].values/res_df["VBR_nzcount"].values
-            var_values[algo] = res_df[variable].values
-            print(algo, row_block_size, col_block_size, matrices, taus, var_values)
-            x_pos = np.arange(barpos,len(matrices) + barpos)
-            barpos += increment
-            plt.bar(x_pos,var_values[algo],label=f"{algoname} ", width = width, hatch = "//", edgecolor = "black")
-        if len(var_values) == 0: 
-            plt.close()    
-            continue
-        
-        dense_amp = np.nanmean(var_values[5]/var_values[2])
-        dense_amp_orig = np.nanmean(var_values[5]/res_df["density"].values)
-        print("AVG AMPLIFICATION", dense_amp)
-        print("AVG AMPLIFICATION, original", dense_amp_orig)
-        plt.text(1, 1, f"dense-amp: {dense_amp}, {dense_amp_orig}", bbox=dict(fill=False, edgecolor='red', linewidth=2))
-
-        x_pos = np.arange(barpos,len(matrices) + barpos)
-        barpos += increment
-        plt.bar(x_pos, res_df["density"].values, label = "no blocking (original)", width = width, hatch = "..", color = "white", edgecolor='black')
-        
-
-        plt.legend()
-        plt.yscale("log")
-        plt.title(f"block height = {row_block_size}, block width = {col_block_size}")
-        plt.xticks(range(len(matrices)), matrices, rotation=90)
-        plt.savefig(savename + f"_{row_block_size}_{col_block_size}.png",  bbox_inches='tight', dpi = 300)
-        plt.close()    
-"""
-
-
-
-
-def barplot(x_labels, x_ax_label, ys, y_labels, y_styles, y_ax_label, yscale = "log", savename = "test_barplot"):
+def barplot(x_labels, x_ax_label, ys, y_labels, y_styles = {} , y_ax_label = "", yscale = "log", savename = "test_barplot"):
     plt.figure()
     plt.xlabel(x_ax_label)
     plt.ylabel(y_ax_label)
@@ -143,12 +81,12 @@ def barplot(x_labels, x_ax_label, ys, y_labels, y_styles, y_ax_label, yscale = "
     width = increment*0.95
 
     for y, label, style in zip(ys, y_labels, y_styles):
+        print(len(y),label)
         x_pos = np.arange(barpos,len(x_labels) + barpos)
         plt.bar(x_pos,y,label=label, width = width, **style)
         barpos += increment
 
     plt.legend()
-    plt.yscale(yscale)
     plt.grid("both")
     plt.title(f"block height = {row_block_size}, block width = {col_block_size}")
     plt.xticks(range(len(x_labels)), x_labels, rotation=45)
@@ -157,7 +95,7 @@ def barplot(x_labels, x_ax_label, ys, y_labels, y_styles, y_ax_label, yscale = "
 
 
 
-data_file = "test_multiplication.csv"
+data_file = "test_suitsparse_3_multiplication.csv"
 exp_name = "suitsparse_3_mult"
 image_folder = "images/multiplication_images"
 try: os.mkdir(image_folder) 
@@ -167,9 +105,20 @@ df = pd.read_csv(data_file)
 #df = get_dataframe_folder("results/suitsparse_collection_3")
 
 
-#df["density"] = df["nonzeros"].values/(df["rows"].values * df["cols"].values)
+df_CSR = df[df["multiplication_algo"] == 2][["matrix","b_cols","avg_time_multiply"]]
+df = pd.merge(df,df_CSR, how = "left",on = ["matrix","b_cols"], suffixes=('','_CSR') )
+df["Speed-up against cuSparse"] = df["avg_time_multiply_CSR"]/df["avg_time_multiply"]
+#df_BELLPACK = df[df["multiplication_algo"] == 3][["matrix","b_cols","avg_time_multiply","row_block_size","col_block_size"]]
+#df = pd.merge(df,df_BELLPACK, how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_BELLPACK') )
+#df_VBR_no_reord = df.loc[(df["multiplication_algo"] == 6) & df["blocking_algo"] == 2][["matrix","b_cols","avg_time_multiply","row_block_size","col_block_size"]]
+#df = pd.merge(df,df_BELLPACK, how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_VBR_no_reorder') )
+
+
+
+df["density"] = df["nonzeros"].values/(df["rows"].values * df["cols"].values)
 #df["block_density"] = df["nonzeros"].values/df["VBR_nzcount"].values
 #df["dense_amp"] = df["block_density"].values/df["density"].values
+df.sort_values(by=['density','matrix'], inplace=True)
 
 #PREPARE HEATMAP FOR ALL BLOCK-SIZES
 
@@ -180,68 +129,53 @@ exps["VBR-no-reord"] = (6,2)
 exps["BELLPACK-no-reord"] = (3,2)
 exps["CSR"] = (2,3)
 
-
-for exp_name in exps:
-    M_algo, B_algo = exps[exp_name]
-    colormap_variable = "avg_time_multiply"
-    heatmap_df = df[(df["multiplication_algo"]==M_algo) & (df["blocking_algo"]== B_algo)]
-    table = heatmap_df.pivot_table(index="row_block_size", columns="col_block_size", values=colormap_variable, aggfunc='mean')
-    sns.heatmap(table,annot = True, cbar_kws={'label': exp_name})
-    plt.ylabel("block height")
-    plt.xlabel("block width")
-    plt.savefig(f"{image_folder}/{exp_name}_heatmap_{colormap_variable}.png",  bbox_inches='tight', dpi = 300)
-    plt.close()
-
-exit()
-"""
-for algo in (2,5):
-    heatmap_df = df[df["blocking_algo"]==algo].pivot_table(index="row_block_size", columns="col_block_size", values=colormap_variable, aggfunc='mean')
-    heatmap_df = heatmap_df.sort_values(by=['row_block_size'], ascending=False)
-    sns.heatmap(heatmap_df,annot = True, cbar_kws={'label': color_label},vmin = 1, vmax = max_var_value)
-    plt.ylabel("block height")
-    plt.xlabel("block width")
-    plt.savefig(f"{image_folder}/{exp_name}_heatmap_{colormap_variable}_algo_{algo}.png",  bbox_inches='tight', dpi = 300)
-    plt.close()
-"""
+for B_cols in df["b_cols"].unique():
+        for exp_name in exps:
+            M_algo, B_algo = exps[exp_name]
+            colormap_variable = "Speed-up against cuSparse"
+            heatmap_df = df[(df["multiplication_algo"]==M_algo) & (df["blocking_algo"]== B_algo) & (df["b_cols"] == B_cols)]
+            table = heatmap_df.pivot_table(index="row_block_size", columns="col_block_size", values=colormap_variable, aggfunc='mean')
+            table = table.sort_values(by=['row_block_size'], ascending=False)
+            sns.heatmap(table,annot = True, cbar_kws={'label': exp_name})
+            plt.ylabel("block height")
+            plt.xlabel("block width")
+            plt.savefig(f"{image_folder}/{exp_name}_heatmap_{colormap_variable}_{B_cols}.png",  bbox_inches='tight', dpi = 300)
+            plt.close()
 
 
+for B_cols in df["b_cols"].unique():
+    for row_block_size in (32,64,128,512,1024):
+        for col_block_size in (32,64,128,512,1024):
+            tmp_df = df.loc[(df["col_block_size"]==col_block_size) & (df["row_block_size"] == row_block_size) & (df["b_cols"] == B_cols)]
+            matrices_names = [val.split("/")[-1].split(".")[0] for val in tmp_df["matrix"].unique()]
+
+            data_lines = {exp_name : [] for exp_name in exps}
+            if col_block_size != row_block_size: data_lines.pop("BELLPACK-no-reord")
+
+            for matrix in tmp_df["matrix"].unique():
+                for exp_name in data_lines.keys():
+                    M_algo, B_algo = exps[exp_name]
+                    values = tmp_df.loc[(tmp_df["matrix"] == matrix) & (tmp_df["multiplication_algo"] == M_algo) & (tmp_df["blocking_algo"] == B_algo)]["Speed-up against cuSparse"].values
+                    if len(values) == 0:
+                        data_lines[exp_name].append( 0 )
+                    else:
+                        data_lines[exp_name].append( values[0] )
 
 
-for row_block_size in sorted(df["row_block_size"].unique()):
-    for col_block_size in sorted(df["row_block_size"].unique()):
-        tmp_df = df.loc[(df["col_block_size"]==col_block_size) & (df["row_block_size"] == row_block_size)]
-        matrices_names = [val.split("/")[-1].split(".")[0] for val in tmp_df["matrix"].unique()]
+            print(data_lines)
+            print(f"FOUND DATA for {row_block_size} x {col_block_size}")
 
-        reorder_df = tmp_df[tmp_df["blocking_algo"] == 5]
-        no_reorder_df = tmp_df[tmp_df["blocking_algo"] == 2]
-        try:
-            assert np.equal(reorder_df["matrix"].values, no_reorder_df["matrix"].values).all() #check that there are the same n of values for all matrices
-            assert len(reorder_df) > 0
-        except:
-            print(f"MISSING DATA for blocks {row_block_size} x {col_block_size}")
-            continue
+            savename = f"{image_folder}/SpMM_time_barplot_{row_block_size}_{col_block_size}_{B_cols}"
 
-        print(f"FOUND DATA for {row_block_size} x {col_block_size}")
-        data_lines = {}
+            styles = [bar_style[exp] for exp in data_lines.keys()]
 
-        data_lines["blocking, no reordering"] = no_reorder_df["block_density"].values
-        data_lines["blocking, reordering"] = reorder_df["block_density"].values
-        data_lines["no blocking (original)"] = tmp_df["density"].unique()
-        dense_amp = np.nanmean(data_lines["blocking, reordering"]/data_lines["blocking, no reordering"])
-        dense_amp_orig = np.nanmean(data_lines["blocking, reordering"]/data_lines["no blocking (original)"])
+            print(f"*****found {len(data_lines)} series: {data_lines.keys()}; lenghts: {[len(x) for x in data_lines.values()]}")
 
-        print(f"*******DENSE_AMP (vs blocked): {dense_amp}")
-        print(f"*******DENSE_AMP (vs original): {dense_amp_orig}")
-
-        savename = f"{image_folder}/{exp_name}_Density_barplot_{row_block_size}_{col_block_size}"
-
-        styles = [bar_style_reordering, bar_style_blocking, bar_style_natural]
-
-        barplot(
-                x_labels = matrices_names,
-                x_ax_label="graphs",
-                ys=data_lines.values(),
-                y_labels=data_lines.keys(),
-                y_styles = styles, 
-                y_ax_label = "Density", 
-                savename = savename)
+            barplot(
+                        x_labels = matrices_names,
+                        x_ax_label="graphs",
+                        ys=data_lines.values(),
+                        y_labels=data_lines.keys(),
+                        y_styles = styles,
+                        y_ax_label = "SpMM time", 
+                        savename = savename)
