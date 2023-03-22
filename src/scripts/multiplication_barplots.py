@@ -157,9 +157,9 @@ def barplot(x_labels, x_ax_label, ys, y_labels, y_styles, y_ax_label, yscale = "
 
 
 
-data_file = "test.csv"
-exp_name = "suitsparse_3"
-image_folder = "images/blocking_images"
+data_file = "test_multiplication.csv"
+exp_name = "suitsparse_3_mult"
+image_folder = "images/multiplication_images"
 try: os.mkdir(image_folder) 
 except: 1
 
@@ -167,42 +167,32 @@ df = pd.read_csv(data_file)
 #df = get_dataframe_folder("results/suitsparse_collection_3")
 
 
-print(df[df["VBR_nzblocks_count"] == 0])
-
-df = df.loc[df.groupby(["matrix","blocking_algo","col_block_size","row_block_size"])["VBR_nzblocks_count"].idxmin()]
-df["density"] = df["nonzeros"].values/(df["rows"].values * df["cols"].values)
-df["block_density"] = df["nonzeros"].values/df["VBR_nzcount"].values
-df["dense_amp"] = df["block_density"].values/df["density"].values
+#df["density"] = df["nonzeros"].values/(df["rows"].values * df["cols"].values)
+#df["block_density"] = df["nonzeros"].values/df["VBR_nzcount"].values
+#df["dense_amp"] = df["block_density"].values/df["density"].values
 
 #PREPARE HEATMAP FOR ALL BLOCK-SIZES
 
-colormap_variable = "dense_amp"
-max_var_value = 50
+
+exps = {}
+exps["VBR-reord"] = (6,5)
+exps["VBR-no-reord"] = (6,2)
+exps["BELLPACK-no-reord"] = (3,2)
+exps["CSR"] = (2,3)
 
 
-print("TESTING DF MERGE****************")
-heatmap_df = pd.merge(df[df["blocking_algo"] == 2], df[df["blocking_algo"] == 5], how = "left", on = ["matrix","col_block_size","row_block_size"], suffixes=('_2','_5'))
-heatmap_df["relative_dense_amp"] = heatmap_df["dense_amp_5"]/heatmap_df["dense_amp_2"]
-print(heatmap_df.columns)
-print(heatmap_df.loc[0].to_string())
-
-
-color_vars = ("relative_dense_amp","dense_amp_5","dense_amp_2")
-color_labels = ("Density Amplification (against natural blocking)", "Density Amplification (against unblocked matrix)", "Density Amplification (against unblocked matrix)")
-
-for colormap_variable,color_label in zip(color_vars, color_labels):
-    vmin = 1
-    vmax = 2 if (colormap_variable == "relative_dense_amp") else max_var_value
-
+for exp_name in exps:
+    M_algo, B_algo = exps[exp_name]
+    colormap_variable = "avg_time_multiply"
+    heatmap_df = df[(df["multiplication_algo"]==M_algo) & (df["blocking_algo"]== B_algo)]
     table = heatmap_df.pivot_table(index="row_block_size", columns="col_block_size", values=colormap_variable, aggfunc='mean')
-    table = table.sort_values(by=['row_block_size'], ascending=False)
-    sns.heatmap(table,annot = True, cbar_kws={'label': color_label},vmin = vmin, vmax = vmax)
+    sns.heatmap(table,annot = True, cbar_kws={'label': exp_name})
     plt.ylabel("block height")
     plt.xlabel("block width")
     plt.savefig(f"{image_folder}/{exp_name}_heatmap_{colormap_variable}.png",  bbox_inches='tight', dpi = 300)
     plt.close()
-    
 
+exit()
 """
 for algo in (2,5):
     heatmap_df = df[df["blocking_algo"]==algo].pivot_table(index="row_block_size", columns="col_block_size", values=colormap_variable, aggfunc='mean')
