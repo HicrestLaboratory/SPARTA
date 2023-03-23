@@ -375,8 +375,7 @@ void VBR::multiply(DataT* B, int B_cols, DataT_C* C)
 }
 
 
-
-void serial_batched(const VBR& vbmatA, DataT* d_B, int B_rows, DataT_C* d_C)
+void serial_batched(const VBR& vbmatA, DataT* d_B, int B_cols, DataT_C* d_C)
 {
 //multiplies a VBS matrix (vbmatA) and dense matrix (B); stores B*A into (C)
     //vbmatA:       column-major entries (in-block) storage;
@@ -386,115 +385,65 @@ void serial_batched(const VBR& vbmatA, DataT* d_B, int B_rows, DataT_C* d_C)
 
     intT A_rows = vbmatA.rows;
     intT A_cols = vbmatA.cols;
-    intT B_cols = A_rows;
-    intT C_rows = B_rows;
-    intT C_cols = A_cols;
+    intT B_rows = A_cols;
+    intT C_rows = A_rows;
+    intT C_cols = B_cols;
 
     const DataT_C alpha = 1;
     const DataT_C beta = 1;
 
     intT max_blocks_in_row = 0;
     intT tot_nz_blocks = 0;
+    std::vector<intT*> jab_positions;
+    std::vector<DataT*> mab_positions;
+    intT* current_jab = vbmatA.jab;
+    DataT* current_mab = vbmatA.mab;
 
     for (intT ib = 0; ib < vbmatA.block_rows; ib++)
     {
+        jab_positions.push_back(current_jab);
+        mab_positions.push_back(current_mab);
+        current_jab += vbmatA.nzcount[ib];
+        current_mab += vbmatA.nzcount[ib]*vbmatA.block_col_size*(vbmatA.row_part[ib+1] - vbmatA.row_part[ib]);
         max_blocks_in_row = std::max(max_blocks_in_row, vbmatA.nzcount[ib]);
         tot_nz_blocks+= vbmatA.nzcount[ib];
     }
 
-    intT vbmat_idx = 0; //keeps reading position for vbmat 
-    intT ja_count = 0; //keeps total nonzero blocks count;
-    intT rows_in_block;
-    intT* jab_loc = vbmatA.jab;
+    intT row_block_size = vbmatA.row_part[1] - vbmatA.row_part[0];
+    intT block_area = row_block_size*vbmatA.block_col_size;
     std::vector<DataT*> h_d_A;
     std::vector<DataT*> h_d_B;
     std::vector<DataT*> h_d_C;
     DataT* d_A = vbmatA.mab;
-    DataT* d_A_block, *d_B_block, *d_C_block;
 
-    intT cols_up_to_row[vbmatA.block_cols]{0}; //stores for each block col the first row it still needs to be processed in
-    intT min_ib = 0; //first row that still need processing
-    intT* min_jab_loc = vbmatA.jab; //last row where a block needs to be processed
-    intT min_vbmat_idx = 0; //last row where a block needs to be processed
-    intT max_skipped = 500; //send multiplication after skipping too many blocks
-    intT min_nzs = 0;
-
-    bool check_cols[vbmatA.block_cols]{false};
-
-    //loop through all blocks
-    intT ib = 0, nzs = 0;
-    while(ib < vbmatA.block_rows)      //loop vertically through block rows
+    for (intT nzs = 0; nzs < max_blocks_in_row; nzs ++)
     {
         h_d_A.clear();
         h_d_B.clear();
         h_d_C.clear();
-        ib = min_ib;
-        nzs = min_nzs;
-        jab_loc = min_jab_loc;
-        vbmat_idx = min_vbmat_idx;
-        rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib];
-        d_B_block = d_B + vbmatA.block_col_size*ib;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
-        intT skipped = 0;
-        memset(check_cols, false, vbmatA.block_cols);
 
-        cout << "WTH?" << endl;
-        while(true)
+        for (intT ib = 0; ib < vbmatA.block_rows; ib++)
         {
-            intT jb = *jab_loc;             //the block row position of a nonzero block
-
-            if (cols_up_to_row[jb] > ib || check_cols[jb])
-            {   
-                cout << "Skipped " << jb << " at row " << ib << endl;
-                if(cols_up_to_row[jb] <= ib)
-                {
-                    cout << "**** already in list" << endl;
-                    if (skipped == 0) //check if this is the firts skipped block. In that case, save its position to start computing again from there
-                    {
-                        min_ib = ib;
-                        min_jab_loc = jab_loc;
-                        min_vbmat_idx = vbmat_idx;
-                        min_nzs = nzs;
-                    }
-                    skipped++;
-                    if (skipped == max_skipped) break; //if too many blocks skipped, send multiplication 
-                }
-            }
-            else             //this only happens if the block is to be send to multiplication
-            {
-                cout << "Sending " << jb << " at row " << ib;
-
-                cols_up_to_row[jb] = ib;
-                check_cols[jb] = true;
-
-                d_C_block = d_C + vbmatA.block_col_size*C_rows*jb;      //access the block on d_C.
-                d_A_block = d_A + vbmat_idx;           //access the block on d_A.
-
-                h_d_A.push_back(d_A_block);
-                h_d_B.push_back(d_B_block);
-                h_d_C.push_back(d_C_block);
-            }
-  
-            cout << " ---- nz: " << nzs << endl;
-
-            jab_loc++; 
-            vbmat_idx += rows_in_block*vbmatA.block_col_size;
-            nzs++;
-
-            if (nzs == vbmatA.nzcount[ib] && ib < vbmatA.block_rows) //if last element of the row has been sent, increment row but don't send multiplication
-            {
-                ib++;
-                rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
-                d_B_block = d_B + vbmatA.block_col_size*ib;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
-                nzs = 0;
-            }
-
-            if (ib ==vbmatA.block_rows) break;
-            if (skipped == max_skipped) break;
+            if (nzs >= vbmatA.nzcount[ib]) continue;
+            intT jb = *(jab_positions[ib] + nzs);
+            cout << "jb: " << jb;
+            h_d_A.push_back(mab_positions[ib] + nzs*block_area);
+            h_d_B.push_back(d_B + vbmatA.block_col_size*jb);    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
+            h_d_C.push_back(d_C + row_block_size*C_rows*ib);     //access the block on d_C.
         }
 
-        int k = rows_in_block, m = B_rows, n = vbmatA.block_col_size;
-        int lda = rows_in_block, ldb = B_rows, ldc = C_rows;
+        cout << "*************************NZS: " << nzs << endl;
+        cout << "HDA: len " << h_d_A.size() << endl;
+        for (auto ptr : h_d_A)
+            cout << (ptr)[0] << " "; 
+        cout << endl;
+
+        cout << "HDB: len " << h_d_B.size() << endl;
+        for (auto ptr : h_d_B)
+            cout << ptr[0] << "( " << d_B[5] << " )" <<endl; 
+        cout << endl;
+
+
     }
 
 }
-
