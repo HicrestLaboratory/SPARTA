@@ -114,3 +114,6 @@ struct VBR
     DataT* get_block_start(intT row_block_idx);
     void multiply(DataT* B, int B_cols, DataT_C* C);
 };
+
+
+void serial_batched(const VBR& vbmatA, DataT* d_B, int B_rows, DataT_C* d_C);

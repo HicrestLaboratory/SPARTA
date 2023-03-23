@@ -1318,7 +1318,7 @@ void cublas_blockmat_batchedBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C*
                 if (ib == vbmatA.block_rows) break; 
                 rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
                 d_B_block = d_B + vbmatA.block_col_size*ib;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
-                nzs == 0;
+                nzs = 0;
             }
 
             if (skipped == max_skipped) break;

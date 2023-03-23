@@ -69,7 +69,7 @@ def get_line(df, constraints):
     return df.query(query)
 
 
-def barplot(x_labels, x_ax_label, ys, y_labels, y_styles = {} , y_ax_label = "", yscale = "log", savename = "test_barplot"):
+def barplot(x_labels, x_ax_label, ys, y_labels, y_styles = {} , y_ax_label = "", savename = "test_barplot", title = ""):
     plt.figure()
     plt.xlabel(x_ax_label)
     plt.ylabel(y_ax_label)
@@ -88,12 +88,89 @@ def barplot(x_labels, x_ax_label, ys, y_labels, y_styles = {} , y_ax_label = "",
 
     plt.legend()
     plt.grid("both")
-    plt.title(f"block height = {row_block_size}, block width = {col_block_size}")
+    plt.title(title)
     plt.xticks(range(len(x_labels)), x_labels, rotation=45)
     plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
     plt.close()    
 
 
+exps = {}
+exps["VBR-reord"] = (6,5)
+exps["VBR-no-reord"] = (6,2)
+exps["BELLPACK-no-reord"] = (3,2)
+exps["CSR"] = (2,3)
+
+def make_barplot(df, image_folder,B_cols, row_block_size, col_block_size):
+    tmp_df = df.loc[(df["col_block_size"]==col_block_size) & (df["row_block_size"] == row_block_size) & (df["b_cols"] == B_cols)]
+    matrices_names = [val.split("/")[-1].split(".")[0] for val in tmp_df["matrix"].unique()]
+
+    data_lines = {exp_name : [] for exp_name in exps}
+    if col_block_size != row_block_size: data_lines.pop("BELLPACK-no-reord")
+
+    for matrix in tmp_df["matrix"].unique():
+        for exp_name in data_lines.keys():
+            M_algo, B_algo = exps[exp_name]
+            values = tmp_df.loc[(tmp_df["matrix"] == matrix) & (tmp_df["multiplication_algo"] == M_algo) & (tmp_df["blocking_algo"] == B_algo)]["Speed-up against cuSparse"].values
+            if len(values) == 0:
+                data_lines[exp_name].append( 0 )
+            else:
+                data_lines[exp_name].append( values[0] )
+
+    savename = f"{image_folder}/SpMM_time_barplot_{row_block_size}_{col_block_size}_{B_cols}"
+
+    styles = [bar_style[exp] for exp in data_lines.keys()]
+
+    barplot(
+                x_labels = matrices_names,
+                x_ax_label="graphs",
+                ys=data_lines.values(),
+                y_labels=data_lines.keys(),
+                y_styles = styles,
+                y_ax_label = "Speed-up against cuSparse", 
+                savename = savename)
+
+def make_barplot_best(df, image_folder,B_cols):
+    tmp_df = df.loc[df["b_cols"] == B_cols]
+    tmp_df = tmp_df.loc[tmp_df.groupby(["matrix","blocking_algo","multiplication_algo"])["avg_time_multiply"].idxmin()]
+    matrices_names = [val.split("/")[-1].split(".")[0] for val in tmp_df["matrix"].unique()]
+
+    data_lines = {exp_name : [] for exp_name in exps}
+
+    for matrix in tmp_df["matrix"].unique():
+        for exp_name in data_lines.keys():
+            M_algo, B_algo = exps[exp_name]
+            values = tmp_df.loc[(tmp_df["matrix"] == matrix) & (tmp_df["multiplication_algo"] == M_algo) & (tmp_df["blocking_algo"] == B_algo)]["Speed-up against cuSparse"].values
+            if len(values) == 0:
+                data_lines[exp_name].append( 0 )
+            else:
+                data_lines[exp_name].append( values[0] )
+
+    savename = f"{image_folder}/SpMM_time_barplot_BEST_{B_cols}"
+
+    styles = [bar_style[exp] for exp in data_lines.keys()]
+
+    barplot(
+                x_labels = matrices_names,
+                x_ax_label="graphs",
+                ys=data_lines.values(),
+                y_labels=data_lines.keys(),
+                y_styles = styles,
+                y_ax_label = "Speed-up against cuSparse", 
+                savename = savename)
+
+
+
+def make_heatmap(df,image_folder,B_cols,exp_name):     
+    M_algo, B_algo = exps[exp_name]
+    colormap_variable = "Speed-up against cuSparse"
+    heatmap_df = df[(df["multiplication_algo"]==M_algo) & (df["blocking_algo"]== B_algo) & (df["b_cols"] == B_cols)]
+    table = heatmap_df.pivot_table(index="row_block_size", columns="col_block_size", values=colormap_variable, aggfunc='mean')
+    table = table.sort_values(by=['row_block_size'], ascending=False)
+    sns.heatmap(table,annot = True, cbar_kws={'label': exp_name})
+    plt.ylabel("block height")
+    plt.xlabel("block width")
+    plt.savefig(f"{image_folder}/{exp_name}_heatmap_{colormap_variable}_{B_cols}.png",  bbox_inches='tight', dpi = 300)
+    plt.close()
 
 data_file = "test_suitsparse_3_multiplication.csv"
 exp_name = "suitsparse_3_mult"
@@ -123,59 +200,12 @@ df.sort_values(by=['density','matrix'], inplace=True)
 #PREPARE HEATMAP FOR ALL BLOCK-SIZES
 
 
-exps = {}
-exps["VBR-reord"] = (6,5)
-exps["VBR-no-reord"] = (6,2)
-exps["BELLPACK-no-reord"] = (3,2)
-exps["CSR"] = (2,3)
+for B_cols in df["b_cols"].unique():
+    make_barplot_best(df, image_folder,B_cols)
+    for row_block_size in (32,64,128,512,1024):
+        for col_block_size in (32,64,128,512,1024):
+            make_barplot(df, image_folder,B_cols, row_block_size,col_block_size)
 
 for B_cols in df["b_cols"].unique():
         for exp_name in exps:
-            M_algo, B_algo = exps[exp_name]
-            colormap_variable = "Speed-up against cuSparse"
-            heatmap_df = df[(df["multiplication_algo"]==M_algo) & (df["blocking_algo"]== B_algo) & (df["b_cols"] == B_cols)]
-            table = heatmap_df.pivot_table(index="row_block_size", columns="col_block_size", values=colormap_variable, aggfunc='mean')
-            table = table.sort_values(by=['row_block_size'], ascending=False)
-            sns.heatmap(table,annot = True, cbar_kws={'label': exp_name})
-            plt.ylabel("block height")
-            plt.xlabel("block width")
-            plt.savefig(f"{image_folder}/{exp_name}_heatmap_{colormap_variable}_{B_cols}.png",  bbox_inches='tight', dpi = 300)
-            plt.close()
-
-
-for B_cols in df["b_cols"].unique():
-    for row_block_size in (32,64,128,512,1024):
-        for col_block_size in (32,64,128,512,1024):
-            tmp_df = df.loc[(df["col_block_size"]==col_block_size) & (df["row_block_size"] == row_block_size) & (df["b_cols"] == B_cols)]
-            matrices_names = [val.split("/")[-1].split(".")[0] for val in tmp_df["matrix"].unique()]
-
-            data_lines = {exp_name : [] for exp_name in exps}
-            if col_block_size != row_block_size: data_lines.pop("BELLPACK-no-reord")
-
-            for matrix in tmp_df["matrix"].unique():
-                for exp_name in data_lines.keys():
-                    M_algo, B_algo = exps[exp_name]
-                    values = tmp_df.loc[(tmp_df["matrix"] == matrix) & (tmp_df["multiplication_algo"] == M_algo) & (tmp_df["blocking_algo"] == B_algo)]["Speed-up against cuSparse"].values
-                    if len(values) == 0:
-                        data_lines[exp_name].append( 0 )
-                    else:
-                        data_lines[exp_name].append( values[0] )
-
-
-            print(data_lines)
-            print(f"FOUND DATA for {row_block_size} x {col_block_size}")
-
-            savename = f"{image_folder}/SpMM_time_barplot_{row_block_size}_{col_block_size}_{B_cols}"
-
-            styles = [bar_style[exp] for exp in data_lines.keys()]
-
-            print(f"*****found {len(data_lines)} series: {data_lines.keys()}; lenghts: {[len(x) for x in data_lines.values()]}")
-
-            barplot(
-                        x_labels = matrices_names,
-                        x_ax_label="graphs",
-                        ys=data_lines.values(),
-                        y_labels=data_lines.keys(),
-                        y_styles = styles,
-                        y_ax_label = "SpMM time", 
-                        savename = savename)
+            make_heatmap(df,image_folder,B_cols,exp_name)

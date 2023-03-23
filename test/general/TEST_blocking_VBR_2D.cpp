@@ -27,10 +27,16 @@ int main(int argc, char* argv[])
     //CREATE VBR FROM GROUPING
     if (cli.verbose_ > 0) cout << "Filling a VBR with nonzero blocks." << endl;
     //create a VBR matrix from grouping (without reordering the original csr)
-    vector<intT> permutation = get_permutation(bEngine.grouping_result);
-    cmat.permute_cols(permutation);
     VBR vbmat;
     vbmat.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.force_fixed_size);
+
+
+    cout << "Multiplying!!!! " << endl;
+
+    DataT B[vbmat.cols*vbmat.cols]{1.};
+    DataT C[vbmat.rows*vbmat.cols]{1.};
+
+    serial_batched(vbmat,B,vbmat.cols,C);   
     if (cli.verbose_ > 0) vbmat.print(cli.verbose_);
 
     //GET BLOCK PROPERTIES FROM GROUPING WITHOUT CREATING VBR EXPLICITLY
