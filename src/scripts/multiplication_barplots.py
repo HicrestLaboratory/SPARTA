@@ -19,13 +19,13 @@ bar_style = {}
 bar_style["VBR-reord"] = {
     "hatch" : "//",
     "edgecolor" : "black",
-    "color" : "blue"
+    "color" : "orange"
 }
 
 bar_style["VBR-no-reord"] = {
     "hatch" : "//",
     "edgecolor" : "black",
-    "color" : "orange"
+    "color" : "blue"
 }
 
 bar_style["BELLPACK-no-reord"] = {
