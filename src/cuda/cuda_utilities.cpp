@@ -982,9 +982,6 @@ void cublas_blockmat_batched(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C
     const DataT_C alpha = 1;
     const DataT_C beta = 1;
 
-    std::vector<intT*> jab_positions;
-    std::vector<DataT*> mab_positions;
-
     //allocate memory on device
     intT size_A = vbmatA.nztot; //total nonzero entries in vbmat
     intT mem_size_A = sizeof(DataT) * size_A;
