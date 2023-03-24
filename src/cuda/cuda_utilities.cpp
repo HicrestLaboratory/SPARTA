@@ -1015,6 +1015,8 @@ void cublas_blockmat_batched(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C
     intT* current_jab = vbmatA.jab;
     DataT* current_mab = d_A;
     intT row_block_size = vbmatA.row_part[1] - vbmatA.row_part[0];
+    std::vector<intT*> jab_positions;
+    std::vector<DataT*> mab_positions;
     for (intT ib = 0; ib < vbmatA.block_rows; ib++)
     {
         assert(vbmatA.row_part[ib+1] - vbmatA.row_part[ib] == row_block_size);
