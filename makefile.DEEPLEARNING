@@ -63,13 +63,17 @@ $(CUDA_OBJ_DIR)/%.o : $(CUDA_SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
 	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LIBRARY) -o $@ -c $<
 
+obj/cuda/cutlass_bellpack_lib.o : src/cuda/cutlass_bellpack_lib.cu
+	@mkdir -p $(@D)
+	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LIBRARY) -o $@ -c $<
+
 $(CUDA_OBJ_DIR)/%.o : $(CUDA_TEST_DIR)/%.cpp
 	@mkdir -p $(@D)
 	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LIBRARY) -o $@ -c $<
 
 $(CUDA_APP_DIR)/% : $(CUDA_OBJ_DIR)/%.o $(CUDA_OBJECTS)
 	@mkdir -p $(@D)
-	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LDFLAGS) -o $@ $?
+	$(NVCC) $(CUDA_CXXFLAGS) $(CUDA_INCLUDE) $(CUDA_LDFLAGS) -o $@ $? obj/cuda/cutlass_bellpack_lib.o
 
 
 #-------------------------------------------------------------------------
@@ -101,4 +105,4 @@ clean:
 
 serial : build_general $(GEN_APP_DIR)/Matrix_Blocking $(GEN_APP_DIR)/TEST_matrices $(GEN_APP_DIR)/TEST_blocking_VBR $(GEN_APP_DIR)/TEST_similarities
 
-cuda : build_cuda $(CUDA_APP_DIR)/TEST_cuda  $(CUDA_APP_DIR)/cuda_multiply
+cuda : build_cuda obj/cuda/cutlass_bellpack_lib.o $(CUDA_APP_DIR)/TEST_cuda  $(CUDA_APP_DIR)/cuda_multiply

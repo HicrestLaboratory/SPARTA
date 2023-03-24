@@ -2365,187 +2365,16 @@ void cublas_dense_multiplyAB(int rows, int cols, DataT* A, DataT* B, int B_cols,
     checkCudaErrors(cublasDestroy(handle));
 }
 
-#define CUTLASS
 #ifdef CUTLASS
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <unordered_map>
+#include "cutlass_bellpack_lib.h"
 
-#include <cutlass/layout/matrix.h>
-#include "cutlass/cutlass.h"
-#include "cutlass/gemm/gemm.h"
-#include "cutlass/gemm/kernel/gemm_grouped.h"
-#include "cutlass/gemm/kernel/default_gemm_grouped.h"
-#include "cutlass/gemm/device/ell_gemm.h"
-
-#include "cutlass/util/tensor_view_io.h"
-#include "cutlass/util/host_tensor.h"
-#include "cutlass/util/reference/host/gemm.h"
-
-int compute_cutlass_bellpack (int rows, int cols, int ell_blocksize, int ellValue_cols, intT* ellColInd, Cutlass_DataT *ellValues, int B_rows, int B_cols, Cutlass_DataT *B_vals, int C_rows, int C_cols, Cutlass_DataT *C_vals) {
-
-    int i, j, ellColInd_rows = (rows/ell_blocksize), ellColInd_cols = (ellValue_cols/ell_blocksize);
-
-
-    cutlass::HostTensor<Cutlass_DataT, cutlass::layout::RowMajor> tensor({ellColInd_rows*ell_blocksize, ellColInd_cols*ell_blocksize});
-    for (i = 0; i < (ellColInd_rows*ell_blocksize); ++i) {
-        for (j = 0; j < (ellColInd_cols*ell_blocksize); ++j) {
-            // Write the element at location {i, j} in host memory
-            tensor.host_ref().at({i, j}) = ellValues[i*ellValue_cols + j];
-        }
-    }
-    // Copy host memory to device memory
-    tensor.sync_device();
-    // Obtain a device pointer usable in CUDA kernels
-    Cutlass_DataT *device_ptr = tensor.device_data();
-
-
-    cutlass::HostTensor<int32_t, cutlass::layout::RowMajor> tensor_ellIdx({ellColInd_rows, ellColInd_cols});
-    for (i = 0; i < ellColInd_rows; ++i) {
-        for (j = 0; j < ellColInd_cols; ++j) {
-            // Write the element at location {i, j} in host memory
-            tensor_ellIdx.host_ref().at({i, j}) = ellColInd[i*ellColInd_cols + j];
-        }
-    }
-    // Copy host memory to device memory
-    tensor_ellIdx.sync_device();
-    // Obtain a device pointer usable in CUDA kernels
-    int32_t *device_ptr_ellIdx = tensor_ellIdx.device_data();
-
-
-    cutlass::HostTensor<Cutlass_DataT, cutlass::layout::ColumnMajor> tensorB({B_rows, B_cols});
-    for (i = 0; i < (B_rows); ++i) {
-        for (j = 0; j < (B_cols); ++j) {
-            // Write the element at location {i, j} in host memory
-            tensorB.host_ref().at({i, j}) = B_vals[i*B_cols + j];
-        }
-    }
-    // Copy host memory to device memory
-    tensorB.sync_device();
-    // Obtain a device pointer usable in CUDA kernels
-    Cutlass_DataT *device_ptrB = tensorB.device_data();
-
-
-    cutlass::HostTensor<Cutlass_DataT, cutlass::layout::ColumnMajor> tensorC({rows, B_cols});
-    for (i = 0; i < (rows); ++i) {
-        for (j = 0; j < (B_cols); ++j) {
-            // Write the element at location {i, j} in host memory
-            tensorC.host_ref().at({i, j}) = (Cutlass_DataT) 0.0;
-        }
-    }
-    // Copy host memory to device memory
-    tensorC.sync_device();
-    // Obtain a device pointer usable in CUDA kernels
-    Cutlass_DataT *device_ptrC = tensorC.device_data();
-
-    // ================================================================================
-
-    cudaDeviceProp props;
-
-    cudaError_t error = cudaGetDeviceProperties(&props, 0);
-    if (error != cudaSuccess) {
-        std::cerr << "cudaGetDeviceProperties() returned an error: " << cudaGetErrorString(error) << std::endl;
-        return -1;
-    }
-
-    if (__CUDACC_VER_MAJOR__ < 11 || props.major < 8) {
-
-        //
-        // This example requires an NVIDIA Ampere-architecture GPU.
-        //
-
-        std::cout
-        << "CUTLASS's BlockedEll SpMM example requires a GPU of NVIDIA's Ampere Architecture or "
-        << "later (compute capability 80 or greater).\n";
-    }
-
-
-    //
-    // Define the BlockedEll type
-    //
-
-    using Gemm = typename cutlass::gemm::device::EllGemm<
-        Cutlass_DataT,
-        cutlass::layout::RowMajor,
-        Cutlass_DataT,
-        cutlass::layout::ColumnMajor,
-        Cutlass_DataT,
-        cutlass::layout::ColumnMajor,
-        float,
-        cutlass::arch::OpClassTensorOp,
-        cutlass::arch::Sm80>;
-    Gemm gemm_op;
-    cutlass::Status status;
-
-    printf("-------------------------------------------------------------------------------------------------\n");
-
-    // Configure the GEMM arguments
-    float alpha=1.0, beta=1.0;
-
-    cutlass::half_t *ptrD = tensorC.device_data();
-
-    int lda = tensor.device_ref().stride(0);
-    int ldb = tensorB.device_ref().stride(0);
-    int ldc = tensorC.device_ref().stride(0);
-    int ldd = tensorC.device_ref().stride(0);
-
-    // Configure GEMM arguments
-    status = gemm_op({
-      {rows, B_cols, cols},
-      {tensor.device_ref(), lda},
-      {tensorB.device_ref(), ldb},
-      {tensorC.device_ref(), ldc},
-      {ptrD, ldd},
-      tensor_ellIdx.device_data(),
-      ellValue_cols,
-      ell_blocksize,
-      0 /*options.a_base*/,
-      {alpha, beta}
-    });
-
-    printf("File %s at line %d\n", __FILE__, __LINE__);
-
-    if (status != cutlass::Status::kSuccess) {
-      std::cerr << "Failed to initialize CUTLASS BlockedEll SpMM kernel." << std::endl;
-      return(__LINE__);
-    }
-
-    if (status != cutlass::Status::kSuccess) {
-      std::cerr << "Failed to run CUTLASS BlockedEll SpMM kernel." << std::endl;
-      return(__LINE__);
-    }
-
-    // Wait for completion
-    error = cudaDeviceSynchronize();
-
-    if (error != cudaSuccess)  {
-      std::cerr << "Kernel execution error: " << cudaGetErrorString(error);
-      return(__LINE__);
-    }
-
-    // ================================================================================
-
-    tensorC.sync_host();
-    for (i = 0; i < C_rows; ++i) {
-        for (j = 0; j < C_cols; ++j) {
-            // Write the element at location {i, j} in host memory
-            C_vals[i*C_cols + j] = tensorC.host_ref().at({i, j});
-        }
-    }
-
-    return(0);
-
-}
-
-void bellpack_cutlass_multiplyAB(VBR* A, DataT* B, int B_cols, Cutlass_DataT* C, int C_cols, float& dt, int verbose) {
+void bellpack_cutlass_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int C_cols, float& dt, int verbose) {
 
         // ellValue_cols, int *ell_blocksize, int *ellColInd_rows, int *ellColInd_cols, int *num_blocks, intT** ellColInd, Cutlass_DataT** ellValues
         int ell_blocksize, ellColInd_rows, ellColInd_cols, ellValue_cols, num_blocks;
         intT* ellColInd;
-        Cutlass_DataT* ellValues;
+        DataT* ellValues;
         prepare_cusparse_BLOCKEDELLPACK(A, &ell_blocksize, &ellValue_cols, &ellColInd_rows, &ellColInd_cols, &num_blocks, &ellColInd, &ellValues);
 
         if (verbose > 0) {
@@ -2558,7 +2387,7 @@ void bellpack_cutlass_multiplyAB(VBR* A, DataT* B, int B_cols, Cutlass_DataT* C,
 
         cusparse_gemm_custom_ellpack(A->rows, A->cols, ell_blocksize, ellValue_cols, ellColInd_cols, ellColInd_rows, num_blocks, ellColInd, ellValues, B, B_cols, B_cols, C, C_cols, 1, 1, dt);
 
-        int compute_cutlass_bellpack (A->rows, A->cols, ell_blocksize, ellValue_cols, ellColInd, ellValues, A->cols, B_cols, B, A->rows, B_cols, C);
+        compute_cutlass_bellpack<intT,DataT>(A->rows, A->cols, ell_blocksize, ellValue_cols, ellColInd, ellValues, A->cols, B_cols, B, A->rows, B_cols, C);
 
         free(ellColInd);
         free(ellValues);
