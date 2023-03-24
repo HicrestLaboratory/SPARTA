@@ -76,8 +76,8 @@ def barplot(x_labels, x_ax_label, ys, y_labels, y_styles = {} , y_ax_label = "",
     
     bars = len(ys)
     tot_width = 0.9
-    barpos = -tot_width/2
     increment = tot_width/bars
+    barpos = -tot_width/2
     width = increment*0.95
 
     for y, label, style in zip(ys, y_labels, y_styles):
@@ -89,7 +89,7 @@ def barplot(x_labels, x_ax_label, ys, y_labels, y_styles = {} , y_ax_label = "",
     plt.legend()
     plt.grid("both")
     plt.title(title)
-    plt.xticks(range(len(x_labels)), x_labels, rotation=45)
+    plt.xticks(range(len(x_labels)), x_labels, rotation=90)
     plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
     plt.close()    
 
@@ -105,6 +105,7 @@ def make_barplot(df, image_folder,B_cols, row_block_size, col_block_size):
     matrices_names = [val.split("/")[-1].split(".")[0] for val in tmp_df["matrix"].unique()]
 
     data_lines = {exp_name : [] for exp_name in exps}
+    data_lines.pop("CSR")
     if col_block_size != row_block_size: data_lines.pop("BELLPACK-no-reord")
 
     for matrix in tmp_df["matrix"].unique():
@@ -132,6 +133,7 @@ def make_barplot(df, image_folder,B_cols, row_block_size, col_block_size):
 def make_barplot_best(df, image_folder,B_cols):
     tmp_df = df.loc[df["b_cols"] == B_cols]
     tmp_df = tmp_df.loc[tmp_df.groupby(["matrix","blocking_algo","multiplication_algo"])["avg_time_multiply"].idxmin()]
+    tmp_df.sort_values(by=['density','matrix'], inplace=True)
     matrices_names = [val.split("/")[-1].split(".")[0] for val in tmp_df["matrix"].unique()]
 
     data_lines = {exp_name : [] for exp_name in exps}

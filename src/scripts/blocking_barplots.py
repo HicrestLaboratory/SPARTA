@@ -210,22 +210,24 @@ x_var = "density"
 y_var = "block_density"
 c_var = "block ratio"
 #MAKE SCATTER PLOT 
-for area in (64*64, 128*128, 256*256):
-    try:
-        fig,ax = plt.subplots()
-        tmp_df = df.loc[(df["blocking_algo"] == 5) & (df["block_area"] == area)]
-        ax = tmp_df.plot.scatter(
-                        x= x_var,
-                        y= y_var,
-                        c= c_var,
-                        colormap='viridis',alpha=0.5, edgecolor = "black")
-        plt.ylabel(label_dict[y_var])
-        plt.xscale("log")
-        plt.yscale("log")
-        plt.savefig(f"{image_folder}/{exp_name}_scatterplot_{x_var}_vs_{y_var}_area_{(area)**0.5}.png", bbox_inches='tight', dpi = 300)
-    except:
-        print("FAILED TO PRODUCE SCATTER PLOT FOR AREA", area)
-    plt.close()
+for blocking_algo in (2,5):
+    for area in (64*64, 128*128, 256*256):
+        try:
+            fig,ax = plt.subplots()
+            tmp_df = df.loc[(df["blocking_algo"] == blocking_algo) & (df["block_area"] == area)]
+            ax = tmp_df.plot.scatter(
+                            x= x_var,
+                            y= y_var,
+                            c= c_var,
+                            colormap='viridis',alpha=0.5, edgecolor = "black")
+            plt.ylabel(label_dict[y_var])
+            plt.xscale("log")
+            plt.yscale("log")
+            plt.savefig(f"{image_folder}/{exp_name}_scatterplot_{x_var}_vs_{y_var}_area_{(area)**0.5}_algo_{blocking_algo}.png", bbox_inches='tight', dpi = 300)
+        except:
+            print("FAILED TO PRODUCE SCATTER PLOT FOR AREA", area)
+        plt.close()
+
 
 x_var = "density"
 y_var = "block_density"
@@ -247,7 +249,7 @@ for area in (64*64, 128*128, 256*256):
     plt.close()
 
 
-color_vars = ("relative_dense_amp","dense_amp_5","dense_amp_2","tau_5")
+color_vars = ("relative_dense_amp","block_density_5","block_density_2","tau_5")
 color_labels = ("Density Amplification (against natural blocking)", "Density Amplification (against unblocked matrix)", "Density Amplification (against unblocked matrix)","tau")
 
 for colormap_variable,color_label in zip(color_vars, color_labels):
