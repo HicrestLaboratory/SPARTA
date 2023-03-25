@@ -66,8 +66,3 @@ void bellpack_blockmat_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int 
 DataT* csr2dn (CSR& A);
 
 void cublas_dense_multiplyAB(int rows, int cols, DataT* A, DataT* B, int B_cols, DataT_C* C, float& dt);
-
-#define CUTLASS
-#ifdef CUTLASS
-void bellpack_cutlass_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int C_cols, float& dt, int verbose);
-#endif

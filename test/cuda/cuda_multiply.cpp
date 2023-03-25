@@ -4,6 +4,8 @@
 #include "utilities.h"
 #include "definitions.h"
 
+#include "cutlass_bellpack_lib.h"
+
 #include <numeric>
 #include <string.h>
 #include <cuda_runtime_api.h>
@@ -217,7 +219,7 @@ int main(int argc, char* argv[])
             bEngine.multiplication_timer_avg = avg(algo_times);
             bEngine.multiplication_timer_std = var(algo_times);
         #else
-            printf("To use the cultass bellpack you need to compile the code difining the macro \"CUTLASS\"\n");
+            printf("To use the cultass bellpack you need to compile the code difining the macro \"CUTLASS\" (in \"include/cutlass_bellpack_lib.h\")\n");
         #endif
             break;
         }
