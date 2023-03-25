@@ -2322,7 +2322,6 @@ void cublas_dense_multiplyAB(int rows, int cols, DataT* A, DataT* B, int B_cols,
     cudaEventRecord(start, 0);
 
     //multiply A with B, store result in d_C_block
-    (data_type_C == CUDA_R_16F) ? printf("data_type_C == CUDA_R_16F") : printf("data_type_C != CUDA_R_16F") ;
 
     checkCudaErrors(
         cublasGemmEx(
@@ -2337,7 +2336,7 @@ void cublas_dense_multiplyAB(int rows, int cols, DataT* A, DataT* B, int B_cols,
             B_rows,                                             // B leading dimension
             &beta,
             d_C, data_type_C,                             // blockC device pointer, blockC type
-            C_cols,                                             // C leading dimension
+            C_rows,                                             // C leading dimension
             compute_type,                                       // compute_type
             cuda_algo)
     );
