@@ -85,6 +85,18 @@ int main(int argc, char* argv[])
             cublas_dense_multiplyAB(cmat.rows, cmat.cols, dnA, mat_B, B_cols, mat_C, dt);
         break;
         }
+    case cutlass_gemm:
+        {
+        #ifdef CUTLASS
+            //convert to dense.
+            DataT *dnA = csr2dn (cmat);
+            //Run dense multiplication
+            cutlass_dense_multiplyAB(cmat.rows, cmat.cols, dnA, B_rows, B_cols, mat_B, mat_C, dt);
+        #else
+            printf("To use the cultass gemm you need to compile the code difining the macro \"CUTLASS\" (in \"include/cutlass_bellpack_lib.h\")\n");
+        #endif
+            break;
+        }
     case cublas_vbr:
         {
             bEngine.GetGrouping(cmat);
