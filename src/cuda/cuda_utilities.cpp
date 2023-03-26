@@ -1009,8 +1009,10 @@ void cublas_blockmat_batched(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C
     checkCudaErrors(cudaMemcpy(d_B, B, B_rows * B_cols * sizeof(DataT), cudaMemcpyHostToDevice));
     // ----------------------------------------------------------------------
 
-    intT max_blocks_in_row = 0;
     intT tot_nz_blocks = 0;
+    intT max_blocks_in_row = 0;
+    intT* jab_positions[vbmatA.block_rows];
+    DataT* mab_positions[vbmatA.block_rows];
     intT* current_jab = vbmatA.jab;
     DataT* current_mab = d_A;
     intT row_block_size = vbmatA.row_part[1] - vbmatA.row_part[0];
@@ -1019,19 +1021,19 @@ void cublas_blockmat_batched(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C
     for (intT ib = 0; ib < vbmatA.block_rows; ib++)
     {
         assert(vbmatA.row_part[ib+1] - vbmatA.row_part[ib] == row_block_size);
-        jab_positions.push_back(current_jab);
-        mab_positions.push_back(current_mab);
+        jab_positions[ib] = (current_jab);
+        mab_positions[ib] = (current_mab);
         current_jab += vbmatA.nzcount[ib];
         current_mab += vbmatA.nzcount[ib]*vbmatA.block_col_size*row_block_size;
         max_blocks_in_row = std::max(max_blocks_in_row, vbmatA.nzcount[ib]);
-        tot_nz_blocks+= vbmatA.nzcount[ib];
+        tot_nz_blocks += vbmatA.nzcount[ib];
     }
 
 
     intT block_area = row_block_size*vbmatA.block_col_size;
-    std::vector<DataT*> h_d_A;
-    std::vector<DataT*> h_d_B;
-    std::vector<DataT*> h_d_C;
+    DataT** h_d_A = (DataT**) malloc(sizeof(DataT*)*(vbmatA.block_rows));
+    DataT** h_d_B = (DataT**) malloc(sizeof(DataT*)*(vbmatA.block_rows));
+    DataT** h_d_C = (DataT**) malloc(sizeof(DataT*)*(vbmatA.block_rows));
     DataT **d_A_array, **d_B_array, **d_C_array;
     checkCudaErrors(cudaMalloc((void**)&d_A_array, sizeof(DataT*)*vbmatA.block_rows));
     checkCudaErrors(cudaMalloc((void**)&d_B_array, sizeof(DataT*)*vbmatA.block_rows));
@@ -1049,30 +1051,40 @@ void cublas_blockmat_batched(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C
     for (intT nzs = 0; nzs < max_blocks_in_row; nzs++)
     {
 
-        h_d_A.clear();
-        h_d_B.clear();
-        h_d_C.clear();
+//         h_d_A.clear();
+//         h_d_B.clear();
+//         h_d_C.clear();
 
+        int batch_cnt = 0;
         for (intT ib = 0; ib < vbmatA.block_rows; ib++)
         {
             if (nzs >= vbmatA.nzcount[ib]) continue;
             intT jb = *(jab_positions[ib] + nzs);
-            h_d_A.push_back(mab_positions[ib] + nzs*block_area);
-            h_d_B.push_back(d_B + vbmatA.block_col_size*jb);    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
-            h_d_C.push_back(d_C + vbmatA.row_part[ib]);     //access the block on d_C.
+//             DataT* tmp_vect = (DataT*)malloc(sizeof(DataT)*block_area);
+//             cudaMemcpy(tmp_vect, mab_positions[ib] + nzs*block_area, sizeof(DataT)*block_area, cudaMemcpyDeviceToHost);
+//             printf("tmp_vect: ");
+//             for (int i=0; i<block_area ; i++)
+//                 printf("%f ", tmp_vect[i]);
+//             fflush(stdout);
+//             printf("\n");
+//             free(tmp_vect);
+            h_d_A[batch_cnt]=(mab_positions[ib] + nzs*block_area);
+            h_d_B[batch_cnt]=(d_B + vbmatA.block_col_size*jb);    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
+            h_d_C[batch_cnt]=(d_C + vbmatA.row_part[ib]);     //access the block on d_C.
+            batch_cnt++;
         }
 
 
         //todo make these copies async
-        checkCudaErrors(cudaMemcpy(d_A_array, &h_d_A[0], h_d_A.size()*sizeof(DataT*), cudaMemcpyHostToDevice));
-        checkCudaErrors(cudaMemcpy(d_B_array, &h_d_B[0], h_d_A.size()*sizeof(DataT*), cudaMemcpyHostToDevice));
-        checkCudaErrors(cudaMemcpy(d_C_array, &h_d_C[0], h_d_A.size()*sizeof(DataT*), cudaMemcpyHostToDevice));
+        checkCudaErrors(cudaMemcpy(d_A_array, h_d_A, batch_cnt*sizeof(DataT*), cudaMemcpyHostToDevice));
+        checkCudaErrors(cudaMemcpy(d_B_array, h_d_B, batch_cnt*sizeof(DataT*), cudaMemcpyHostToDevice));
+        checkCudaErrors(cudaMemcpy(d_C_array, h_d_C, batch_cnt*sizeof(DataT*), cudaMemcpyHostToDevice));
 
-        int k = vbmatA.block_col_size, m = B_cols, n = row_block_size;
+        int k = vbmatA.block_col_size, n = B_cols, m = row_block_size;
         int lda = row_block_size, ldb = B_rows, ldc = C_rows;
+//         int lda = block_area, ldb = B_rows, ldc = C_rows;
 
-
-        cublasSgemmBatched(handle,
+        checkCudaErrors(cublasSgemmBatched(handle,
                        CUBLAS_OP_N, CUBLAS_OP_N,
                        m, n, k,
                        &alpha,
@@ -1080,7 +1092,7 @@ void cublas_blockmat_batched(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C
                        (const DataT**) d_B_array, ldb,
                        &beta,
                        (DataT**) d_C_array, ldc,
-                       h_d_A.size());                  
+                       batch_cnt));
     }
 
     //record the elapsed time onto dt
