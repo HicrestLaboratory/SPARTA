@@ -6,13 +6,13 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=gpu:1
 
-#SBATCH --job-name=CSR
+#SBATCH --job-name=DENSE
 #SBATCH --output=outputs_exps/slurm_runtime/slurm_runtime_%x.%j.out
 #SBATCH --error=outputs_exps/slurm_runtime/slurm_runtime_%x.%j.err
 
 if [[ $# < 1 ]]
 then
-    echo "usage: sbatch CSR matrix [input_format] [B_cols]"
+    echo "usage: sbatch DENSE matrix [input_format] [B_cols]"
 else
 
 matrix=$1
@@ -37,6 +37,6 @@ else
 fi
 echo "cval = $cval"
 
-./programs/cuda/cuda_multiply -M 2 -F 1 -P 1 -R $inputfmt -c $cval -f $matrix -o outputs_exps/CSR_$matnum-$cval.out 2> outputs_exps/CSR_$matnum-$cval.err
+./programs/cuda/cuda_multiply -M 1 -F 1 -P 1 -R $inputfmt -c $cval -f $matrix -o outputs_exps/DENSE_$matnum-$cval.out 2> outputs_exps/DENSE_$matnum-$cval.err
 
 fi
