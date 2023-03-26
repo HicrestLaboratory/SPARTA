@@ -128,11 +128,11 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,intT row_block_size, intT col_bl
         grouping.push_back(i/row_block_size);    
     }
     //fill from fixed_size grouping
-    fill_from_CSR_inplace(cmat, grouping, col_block_size, force_fixed_size);
+    fill_from_CSR_inplace(cmat, grouping, col_block_size, row_block_size, force_fixed_size);
 }
 
 
-void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, intT block_size, bool force_fixed_size)
+void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, intT col_block_size, intT row_block_size, bool force_fixed_size)
 {
     //fill the VBR with entries from a CSR, with rows permuted and grouped according to grouping.
 
@@ -141,8 +141,8 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, in
 
 
     if (force_fixed_size){
-        rows = ((cmat.rows -1)/block_size + 1)*block_size;
-        cols = ((cmat.cols -1)/block_size + 1)*block_size;
+        rows = ((cmat.rows -1)/row_block_size + 1)*row_block_size;
+        cols = ((cmat.cols -1)/col_block_size + 1)*col_block_size;
         row_partition[row_partition.size() - 1] = rows;
         for (int i = row_permutation.size(); i < rows; i++) row_permutation.push_back(i);
     }
@@ -152,8 +152,8 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, in
     }
 
 
-    block_col_size = block_size;
-    block_cols = (cols - 1)/block_size + 1;
+    block_col_size = col_block_size;
+    block_cols = (cols - 1)/col_block_size + 1;
     block_rows = row_partition.size() - 1;
 
     //partition check
@@ -218,10 +218,10 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, in
                 else d = cmat.ma[i][nz];
 
                 //find position of d in mat
-                intT j_block_position = j/block_size;
+                intT j_block_position = j/col_block_size;
                 intT tmp_block_count = std::count(nonzero_flags.begin(), nonzero_flags.begin() + j_block_position, true); //how many nz_blocks before current
                 //intT tmp_mab_pos = current_mab_size + tmp_block_count*block_col_size*row_block_size + (i_reordered - row_part[ib])*block_col_size + j%block_size; 
-                intT tmp_mab_pos = current_mab_size + tmp_block_count*block_col_size*row_block_size + row_block_size*(j%block_size) + (i_reordered - row_part[ib]); //column-major format
+                intT tmp_mab_pos = current_mab_size + tmp_block_count*block_col_size*row_block_size + row_block_size*(j%col_block_size) + (i_reordered - row_part[ib]); //column-major format
              
                 mab_vec[tmp_mab_pos] = d;
             }
