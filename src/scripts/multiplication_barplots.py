@@ -34,6 +34,12 @@ bar_style["BELLPACK-no-reord"] = {
     "color" : "green"
 }
 
+bar_style["GEMM"] = {
+    "hatch" : "--",
+    "edgecolor" : "black",
+    "color" : "red"
+}
+
 bar_style["CSR"] = {
     "hatch" : "..",
     "edgecolor" : "black",
@@ -99,6 +105,8 @@ exps["VBR-reord"] = (6,5)
 exps["VBR-no-reord"] = (6,2)
 exps["BELLPACK-no-reord"] = (3,2)
 exps["CSR"] = (2,3)
+exps["GEMM"] = (1,3)
+
 
 def make_barplot(df, image_folder,B_cols, row_block_size, col_block_size):
     tmp_df = df.loc[(df["col_block_size"]==col_block_size) & (df["row_block_size"] == row_block_size) & (df["b_cols"] == B_cols)]
@@ -174,15 +182,16 @@ def make_heatmap(df,image_folder,B_cols,exp_name):
     plt.savefig(f"{image_folder}/{exp_name}_heatmap_{colormap_variable}_{B_cols}.png",  bbox_inches='tight', dpi = 300)
     plt.close()
 
-data_file = "test_suitsparse_3_multiplication.csv"
-exp_name = "suitsparse_3_mult"
-image_folder = "images/multiplication_images"
+#data_file = "test_suitsparse_3_multiplication.csv"
+#exp_name = "suitsparse_3_mult"
+data_file = "results/csr_vs_cublas.csv"
+exp_name = "csr_vs_dense"
+image_folder = "images/multiplication_images/csr_vs_dense"
 try: os.mkdir(image_folder) 
 except: 1
 
 df = pd.read_csv(data_file)
 #df = get_dataframe_folder("results/suitsparse_collection_3")
-
 
 df_CSR = df[df["multiplication_algo"] == 2][["matrix","b_cols","avg_time_multiply"]]
 df = pd.merge(df,df_CSR, how = "left",on = ["matrix","b_cols"], suffixes=('','_CSR') )
@@ -191,7 +200,6 @@ df["Speed-up against cuSparse"] = df["avg_time_multiply_CSR"]/df["avg_time_multi
 #df = pd.merge(df,df_BELLPACK, how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_BELLPACK') )
 #df_VBR_no_reord = df.loc[(df["multiplication_algo"] == 6) & df["blocking_algo"] == 2][["matrix","b_cols","avg_time_multiply","row_block_size","col_block_size"]]
 #df = pd.merge(df,df_BELLPACK, how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_VBR_no_reorder') )
-
 
 
 df["density"] = df["nonzeros"].values/(df["rows"].values * df["cols"].values)
@@ -210,4 +218,7 @@ for B_cols in df["b_cols"].unique():
 
 for B_cols in df["b_cols"].unique():
         for exp_name in exps:
-            make_heatmap(df,image_folder,B_cols,exp_name)
+            try:
+                make_heatmap(df,image_folder,B_cols,exp_name)
+            except: 
+                print(f"no heatmap for {exp_name}")

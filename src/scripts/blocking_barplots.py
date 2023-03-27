@@ -171,7 +171,7 @@ def barplot(x_labels, x_ax_label, ys, y_labels, y_styles, y_ax_label, yscale = "
 #data_file = "test_all_suitsparse.csv"
 #exp_name = "suitsparse_all"
 
-data_file = "test.csv"
+data_file = "test_suitsparse_3.csv"
 exp_name = "suitsparse_3"
 image_folder = f"images/blocking_images/{exp_name}"
 try: os.mkdir(image_folder) 
@@ -231,22 +231,28 @@ for blocking_algo in (2,5):
 
 x_var = "density"
 y_var = "block_density"
-#MAKE SCATTER PLOT 
-for area in (64*64, 128*128, 256*256):
-    try:
-        fig,ax = plt.subplots()
-        tmp_df = df.loc[(df["blocking_algo"] == 5) & (df["block_area"] == area) & (df["block ratio"] == 4)]
-        ax = tmp_df.plot.scatter(
-                        x= x_var,
-                        y= y_var,
-                        colormap='viridis',alpha=0.5, edgecolor = "black")
-        plt.ylabel(label_dict[y_var])
-        plt.xscale("log")
-        plt.yscale("log")
-        plt.savefig(f"{image_folder}/{exp_name}_scatterplot_{x_var}_vs_{y_var}_area_{(area)**0.5}_best.png", bbox_inches='tight', dpi = 300)
-    except:
-        print("FAILED TO PRODUCE SCATTER PLOT FOR AREA", area)
-    plt.close()
+for row_block_size in (32,64,128,256,512,1024):
+    for col_block_size in (32,64,128,256,512,1024):
+        try:
+            fig,ax = plt.subplots()
+            tmp_df = df.loc[(df["blocking_algo"] == 5) & (df["row_block_size"] == row_block_size) & (df["col_block_size"] == row_block_size)]
+            tmp_df.plot.scatter(
+                            x= x_var,
+                            y= y_var,
+                            colormap='viridis',alpha=0.5, edgecolor = "black", marker = "*", ax = ax, label = "blocking, reordering")
+            tmp_df = df.loc[(df["blocking_algo"] == 2) & (df["row_block_size"] == row_block_size) & (df["col_block_size"] == row_block_size)]
+            tmp_df.plot.scatter(
+                            x= x_var,
+                            y= y_var,
+                            colormap='viridis',alpha=0.5, edgecolor = "black", marker = "s", ax = ax, label = "blocking, no reordering")
+            plt.ylabel(label_dict[y_var])
+            plt.xscale("log")
+            plt.yscale("log")
+            plt.savefig(f"{image_folder}/{exp_name}_scatterplot_{x_var}_vs_{y_var}_{row_block_size}x{col_block_size}.png", bbox_inches='tight', dpi = 300)
+        except:
+            print(f"FAILED TO PRODUCE SCATTER PLOT FOR {row_block_size} x {col_block_size}")
+        plt.close()
+
 
 
 color_vars = ("relative_dense_amp","block_density_5","block_density_2","tau_5")
@@ -279,7 +285,7 @@ for algo in (2,5):
 
 
 for row_block_size in sorted(df["row_block_size"].unique()):
-    for col_block_size in sorted(df["row_block_size"].unique()):
+    for col_block_size in sorted(df["col_block_size"].unique()):
         tmp_df = df.loc[(df["col_block_size"]==col_block_size) & (df["row_block_size"] == row_block_size)]
         matrices_names = [val.split("/")[-1].split(".")[0] for val in tmp_df["matrix"].unique()]
 
