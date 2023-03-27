@@ -98,6 +98,11 @@ int main(int argc, char* argv[])
         #ifdef CUTLASS
             //convert to dense.
             DataT *dnA = csr2dn (cmat);
+            #ifdef DEBUG_GEMM
+                for (int i=0; i<(cmat.rows*cmat.cols); i++) {
+
+                }
+            #endif
             //Run dense multiplication
             cutlass_dense_multiplyAB(cmat.rows, cmat.cols, dnA, B_rows, B_cols, mat_B, mat_C, dt);
         #else
