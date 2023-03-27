@@ -351,7 +351,7 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
     cudaStream_t streams[n_streams];
     for (intT ib = 0; ib < n_streams; ib++)
     {
-        cudaStreamCreate(&(streams[ib]));
+        cudaStreamCreateWithFlags(&streams[ib],cudaStreamNonBlocking);
     }
 
     //initialize cuda events
@@ -377,7 +377,8 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
 
             int k = vbmatA.block_col_size, m = B_cols, n = row_block_size;
             int lda = row_block_size, ldb = B_rows, ldc = C_rows;
-
+    
+            cublasSetStream(handle, streams[ib%n_streams]);               //each stream handles at most max_blocks_per_stream of block_rows    
             //multiply the blocks, store result in d_C_block
             checkCudaErrors(
                 cublasGemmEx(
@@ -1060,14 +1061,6 @@ void cublas_blockmat_batched(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C
         {
             if (nzs >= vbmatA.nzcount[ib]) continue;
             intT jb = *(jab_positions[ib] + nzs);
-//             DataT* tmp_vect = (DataT*)malloc(sizeof(DataT)*block_area);
-//             cudaMemcpy(tmp_vect, mab_positions[ib] + nzs*block_area, sizeof(DataT)*block_area, cudaMemcpyDeviceToHost);
-//             printf("tmp_vect: ");
-//             for (int i=0; i<block_area ; i++)
-//                 printf("%f ", tmp_vect[i]);
-//             fflush(stdout);
-//             printf("\n");
-//             free(tmp_vect);
             h_d_A[batch_cnt]=(mab_positions[ib] + nzs*block_area);
             h_d_B[batch_cnt]=(d_B + vbmatA.block_col_size*jb);    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
             h_d_C[batch_cnt]=(d_C + vbmatA.row_part[ib]);     //access the block on d_C.
