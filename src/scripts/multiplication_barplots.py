@@ -119,14 +119,14 @@ def barplot(x_labels, x_ax_label, ys, y_styles = {} , y_ax_label = "", savename 
 
 
 exps = {}
-exps["VBR-reord"] = (6,5)
 exps["VBR-no-reord"] = (6,2)
+exps["VBR-reord"] = (6,5)
 exps["BELLPACK-no-reord"] = (3,2)
 exps["CSR"] = (2,3)
 exps["GEMM"] = (1,3)
 
 
-def make_barplot(df, image_folder,B_cols, row_block_size, col_block_size):
+def make_barplot(df, image_folder,B_cols, row_block_size, col_block_size, variable = "speed-vs-cusparse"):
     tmp_df = df.loc[(df["col_block_size"]==col_block_size) & (df["row_block_size"] == row_block_size) & (df["b_cols"] == B_cols)]
     matrices_names = [val.split("/")[-1].split(".")[0] for val in tmp_df["matrix"].unique()]
 
@@ -137,13 +137,13 @@ def make_barplot(df, image_folder,B_cols, row_block_size, col_block_size):
     for matrix in tmp_df["matrix"].unique():
         for exp_name in data_lines.keys():
             M_algo, B_algo = exps[exp_name]
-            values = tmp_df.loc[(tmp_df["matrix"] == matrix) & (tmp_df["multiplication_algo"] == M_algo) & (tmp_df["blocking_algo"] == B_algo)]["Speed-vs-cusparse"].values
+            values = tmp_df.loc[(tmp_df["matrix"] == matrix) & (tmp_df["multiplication_algo"] == M_algo) & (tmp_df["blocking_algo"] == B_algo)][variable].values
             if len(values) == 0:
                 data_lines[exp_name].append( 0 )
             else:
                 data_lines[exp_name].append( values[0] )
 
-    savename = f"{image_folder}/SpMM_time_barplot_{row_block_size}_{col_block_size}_{B_cols}"
+    savename = f"{image_folder}/SpMM_barplot_{variable}_{row_block_size}_{col_block_size}_{B_cols}"
 
     styles = [global_exp_dict[exp] for exp in data_lines.keys()]
 
@@ -151,13 +151,13 @@ def make_barplot(df, image_folder,B_cols, row_block_size, col_block_size):
                 x_labels = matrices_names,
                 x_ax_label="graphs",
                 ys=data_lines.values(),
-                y_labels=data_lines.keys(),
                 y_styles = styles,
-                y_ax_label = "Speed-vs-cusparse", 
+                y_ax_label = global_label_dict[variable], 
                 savename = savename)
 
-def make_barplot_best(df, image_folder,B_cols):
+def make_barplot_best(df, image_folder,B_cols, variable = "speed-vs-cusparse"):
     tmp_df = df.loc[df["b_cols"] == B_cols]
+    tmp_df = tmp_df.loc[df["row_block_size"] == df["col_block_size"]]
     tmp_df = tmp_df.loc[tmp_df.groupby(["matrix","blocking_algo","multiplication_algo"])["avg_time_multiply"].idxmin()]
     tmp_df.sort_values(by=['density','matrix'], inplace=True)
     matrices_names = [val.split("/")[-1].split(".")[0] for val in tmp_df["matrix"].unique()]
@@ -167,7 +167,7 @@ def make_barplot_best(df, image_folder,B_cols):
     for matrix in tmp_df["matrix"].unique():
         for exp_name in data_lines.keys():
             M_algo, B_algo = exps[exp_name]
-            values = tmp_df.loc[(tmp_df["matrix"] == matrix) & (tmp_df["multiplication_algo"] == M_algo) & (tmp_df["blocking_algo"] == B_algo)]["Speed-vs-cusparse"].values
+            values = tmp_df.loc[(tmp_df["matrix"] == matrix) & (tmp_df["multiplication_algo"] == M_algo) & (tmp_df["blocking_algo"] == B_algo)][variable].values
             if len(values) == 0:
                 data_lines[exp_name].append( 0 )
             else:
@@ -182,12 +182,12 @@ def make_barplot_best(df, image_folder,B_cols):
                 x_ax_label="graphs",
                 ys=data_lines.values(),
                 y_styles = styles,
-                y_ax_label = "Speed-vs-cusparse", 
+                y_ax_label = global_label_dict[variable], 
                 savename = savename)
 
 
 
-def make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable = "Speed-vs-cusparse"):     
+def make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable = "speed-vs-cusparse"):     
     M_algo, B_algo = exps[exp_name]
     heatmap_df = df[(df["multiplication_algo"]==M_algo) & (df["blocking_algo"]== B_algo) & (df["b_cols"] == B_cols)]
     table = heatmap_df.pivot_table(index="row_block_size", columns="col_block_size", values=colormap_variable, aggfunc='mean')
@@ -221,7 +221,7 @@ df_VBR_no_reord = df[(df["multiplication_algo"] == 6) & (df["blocking_algo"] == 
 df = pd.merge(df,df_VBR_no_reord, how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_VBR_no_reord') )
 
 df["speed-vs-no-reord"] = df["avg_time_multiply_VBR_no_reord"]/df["avg_time_multiply"]
-df["Speed-vs-cusparse"] = df["avg_time_multiply_CSR"]/df["avg_time_multiply"]
+df["speed-vs-cusparse"] = df["avg_time_multiply_CSR"]/df["avg_time_multiply"]
 df["time-per-block"] = df["avg_time_multiply"]/df["VBR_nzblocks_count"]
 df["time-per-area"] = df["avg_time_multiply"]/df["VBR_nzcount"]
 df["time-per-true-nonzero"] = df["avg_time_multiply"]/df["nonzeros"]
@@ -246,7 +246,7 @@ for B_cols in df["b_cols"].unique():
     make_barplot_best(df, image_folder,B_cols)
     for row_block_size in (32,64,128,512,1024):
         for col_block_size in (32,64,128,512,1024):
-            #make_barplot(df, image_folder,B_cols, row_block_size,col_block_size)
+            make_barplot(df, image_folder,B_cols, row_block_size,col_block_size)
             1
 
 print("Making heatmaps")
@@ -254,8 +254,8 @@ for B_cols in df["b_cols"].unique():
         for exp_name in exps:
             try:
                 make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable= "time-per-true-nonzero")
-                make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable= "Speed-vs-cusparse")
-                make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable= "Speed-vs-no-reord")
+                make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable= "speed-vs-cusparse")
+                make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable= "speed-vs-no-reord")
                 make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable= "time-per-block")
                 make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable= "time-per-area")
             except: 

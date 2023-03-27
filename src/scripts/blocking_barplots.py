@@ -20,7 +20,7 @@ label_dict = {
     "block_density" : "Blocked density",
     "density" : "Original density",
     "dense_amp" : "Density amplification (against unblocked)",
-    "relative_dense_amp" : "Density amplification (against natural blocking)",
+    "relative-dense-amp" : "Density amplification (against natural blocking)",
     "block ratio": "Shape (height / width)"
 }
 
@@ -91,7 +91,7 @@ def barplot(x_labels, x_ax_label, ys, y_labels, y_styles, y_ax_label, yscale = "
     plt.yscale(yscale)
     plt.grid("both")
     plt.title(f"block height = {row_block_size}, block width = {col_block_size}")
-    plt.xticks(range(len(x_labels)), x_labels, rotation=45)
+    plt.xticks(range(len(x_labels)), x_labels, rotation=90)
     plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
     plt.close()    
 
@@ -118,6 +118,13 @@ df["block_density"] = df["nonzeros"].values/df["VBR_nzcount"].values
 df["dense_amp"] = df["block_density"].values/df["density"].values
 df["block_area"] = df["row_block_size"].values*df["col_block_size"].values
 df["block ratio"] = df["row_block_size"].values/df["col_block_size"].values
+
+
+df_VBR_no_reord = df[df["blocking_algo"] == 2][["matrix","col_block_size","row_block_size","dense_amp"]]
+df = pd.merge(df,df_VBR_no_reord, how = "left",on = ["matrix","row_block_size","col_block_size"], suffixes=('','_VBR_no_reord') )
+df["relative-dense-amp"] = df["dense_amp_VBR_no_reord"]/df["dense_amp"]
+
+
 df.sort_values(by=['density','matrix'], inplace=True)
 
 #PREPARE HEATMAP FOR ALL BLOCK-SIZES
@@ -169,7 +176,7 @@ for blocking_algo in (2,5):
 
 
 x_var = "density"
-y_var = "relative_dense_amp"
+y_var = "relative-dense-amp"
 for row_block_size in (32,64,128,256,512,1024):
     for col_block_size in (32,64,128,256,512,1024):
 #        try:

@@ -362,7 +362,8 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
     cudaEventRecord(start, 0);
 
     //creates streams. Each block rows is assigned a different stream.
-
+    DataT* d_C_block;
+    intT jb;
     cublasSetStream(handle, streams[0]);               //each stream handles at most max_blocks_per_stream of block_rows    
     //loop through all blocks
     for(intT nzs = 0; nzs < max_blocks_in_row; nzs++ )      //loop horizontally through block rows
@@ -370,30 +371,29 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
         for (intT ib = 0; ib < vbmatA.block_rows; ib++)
         {
             if (nzs >= vbmatA.nzcount[ib]) continue;
-            intT jb = *(jab_positions[ib] + nzs);
+            jb = *(jab_positions[ib] + nzs);
             const DataT* d_B_block = d_B + vbmatA.block_col_size*jb;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
 	        const DataT* d_A_block = mab_positions[ib] + nzs*block_area;           //access the block on d_A.
-            DataT* d_C_block = d_C + vbmatA.row_part[ib];                            //access the block on d_C.
+            d_C_block = d_C + vbmatA.row_part[ib];                            //access the block on d_C.
 
-            int k = vbmatA.block_col_size, m = B_cols, n = row_block_size;
-            int lda = row_block_size, ldb = B_rows, ldc = C_rows;
+//            int k = vbmatA.block_col_size, m = B_cols, n = row_block_size;
     
             cublasSetStream(handle, streams[ib%n_streams]);               //each stream handles at most max_blocks_per_stream of block_rows    
             //multiply the blocks, store result in d_C_block
             checkCudaErrors(
                 cublasGemmEx(
                     handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                    m,n,k,                                               //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+                    B_cols,row_block_size,vbmatA.block_col_size,                                               //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
                     &alpha,
                     d_A_block,                                          // blockA device pointer,
                     data_type_AB,                                       // blockA datatype
-                    lda,                                      // blockA leading dimension
+                    row_block_size,                                      // blockA leading dimension
                     d_B_block,                                          // blockB device pointer
                     data_type_AB,                                       // blockB datatype
-                    ldb,                                             // B leading dimension
+                    B_rows,                                             // B leading dimension
                     &beta,
                     d_C_block, data_type_C,                             // blockC device pointer, blockC type
-                    ldc,                                             // C leading dimension
+                    C_rows,                                             // C leading dimension
                     compute_type,                                       // compute_type
                     cuda_algo)
             );                                       
