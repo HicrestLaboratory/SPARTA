@@ -65,6 +65,14 @@ global_exp_dict["CSR"] = {
 
 }
 
+global_exp_dict["CUTLASS_BELLPACK"] = {
+    "hatch" : "//",
+    "edgecolor" : "black",
+    "color" : "gray",
+    "label" : "CUTLASS-BELLPACK"
+
+}
+
 
 def get_dataframe_folder(folder):
     df = pd.DataFrame()
@@ -124,6 +132,8 @@ exps["VBR-reord"] = (6,5)
 exps["BELLPACK-no-reord"] = (3,2)
 exps["CSR"] = (2,3)
 exps["GEMM"] = (1,3)
+exps["CUTLASS_BELLPACK"] = (8,5)
+
 
 
 def make_barplot(df, image_folder,B_cols, row_block_size, col_block_size, variable = "speed-vs-cusparse"):
