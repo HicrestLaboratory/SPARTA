@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
                 fill(mat_C, mat_C + C_cols*C_rows, 0);
-                cublas_blockmat_multiplyAB(vbmat_cublas, mat_B, B_cols, mat_C, dt, cli.n_streams_);
+                cublas_fixed_blocks_multiply(vbmat_cublas, mat_B, B_cols, mat_C, dt, cli.n_streams_);
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
