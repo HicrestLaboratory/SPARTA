@@ -337,7 +337,6 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
     std::vector<DataT*> mab_positions;
     for (intT ib = 0; ib < vbmatA.block_rows; ib++)
         {
-            std::cout << row_block_size << std::endl;
             jab_positions.push_back(current_jab);
             mab_positions.push_back(current_mab);
             current_jab += vbmatA.nzcount[ib];
