@@ -147,7 +147,7 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
 //            int k = vbmatA.block_col_size, m = B_cols, n = row_block_size;
 //          //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
     
-            cublasSetStream(handle, streams[ib%n_streams]);               //each stream handles at most max_blocks_per_stream of block_rows    
+            cublasSetStream(handle, &streams[ib%n_streams]);               //each stream handles at most max_blocks_per_stream of block_rows    
             //multiply the blocks, store result in d_C_block
             checkCudaErrors(
                 cublasGemmEx(
@@ -183,7 +183,7 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
 
     for (int i = 0; i < n_streams; i++)
     {
-        cudaStreamDestroy(stream[i]);
+        cudaStreamDestroy(&streams[i]);
     }
 
     //let each stream copy the relevant C block from device
