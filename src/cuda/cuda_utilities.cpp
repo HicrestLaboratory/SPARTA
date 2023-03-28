@@ -848,13 +848,6 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
     checkCudaErrors(cudaMemcpy(d_B, B, B_rows * B_cols * sizeof(DataT), cudaMemcpyHostToDevice));
     // ----------------------------------------------------------------------
 
-    //initialize cuda events
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-
-    cudaEventRecord(start, 0);
-
     //creates streams. Each block rows is assigned a different stream.
     
     if (n_streams > vbmatA.block_cols) n_streams = vbmatA.block_cols;
@@ -870,7 +863,14 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
     intT tot_nonzero_blocks = 0; //index for total nonzero blocks
     intT rows_in_block;
     intT size_block, mem_size_block;
-    intT* jab_loc = vbmatA.jab;
+    intT* jab_loc = vbmatA.jab;ù
+    
+    //initialize cuda events
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start, 0);
 
     //loop through all blocks
     for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop vertically through block rows
