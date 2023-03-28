@@ -377,13 +377,14 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
             d_C_block = d_C + vbmatA.row_part[ib];                            //access the block on d_C.
 
 //            int k = vbmatA.block_col_size, m = B_cols, n = row_block_size;
+//          //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
     
             cublasSetStream(handle, streams[ib%n_streams]);               //each stream handles at most max_blocks_per_stream of block_rows    
             //multiply the blocks, store result in d_C_block
             checkCudaErrors(
                 cublasGemmEx(
                     handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                    B_cols,row_block_size,vbmatA.block_col_size,                                               //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+                    row_block_size,B_cols,vbmatA.block_col_size,                                               //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
                     &alpha,
                     d_A_block,                                          // blockA device pointer,
                     data_type_AB,                                       // blockA datatype
