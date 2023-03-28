@@ -83,6 +83,7 @@ int main(int argc, char* argv[])
             algo_times.clear();
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
+                fill(mat_C, mat_C + C_cols*C_rows, 0);
                 cublas_dense_multiplyAB(cmat.rows, cmat.cols, dnA, mat_B, B_cols, mat_C, dt);
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
