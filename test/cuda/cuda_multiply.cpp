@@ -114,12 +114,12 @@ int main(int argc, char* argv[])
         {
             bEngine.GetGrouping(cmat);
             VBR vbmat_cublas;
-            vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_);
+            vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result,cli.row_block_size_, cli.col_block_size_);
             algo_times.clear();
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
                 fill(mat_C, mat_C + C_cols*C_rows, 0);
-                cublas_blockmat_multiplyAB(vbmat_cublas, mat_B, B_cols, mat_C, dt, cli.n_streams_);
+                cublas_fixed_blocks_multiply(vbmat_cublas, mat_B, B_cols, mat_C, dt, cli.n_streams_);
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
                     mat_B_tran[i + j*B_rows] = mat_B[j + i*B_cols]; 
                 }
             }
-            vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.force_fixed_size);
+            vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.row_block_size_, cli.force_fixed_size);
             algo_times.clear();
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
@@ -155,20 +155,12 @@ int main(int argc, char* argv[])
         {
             bEngine.GetGrouping(cmat);
             VBR vbmat_cublas;
-            DataT* mat_B_tran = new DataT[B_rows * B_cols];
-            for (int i = 0; i < B_rows; i++)
-            {
-                for (int j= 0; j < B_cols; j++)
-                {
-                    mat_B_tran[i + j*B_rows] = mat_B[j + i*B_cols]; 
-                }
-            }
-            vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.force_fixed_size);
+            vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.row_block_size_,cli.force_fixed_size);
             algo_times.clear();
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
                 fill(mat_C, mat_C + C_cols*C_rows, 0);
-                cublas_blockmat_batchedBA(vbmat_cublas, mat_B_tran, B_cols, mat_C, dt);
+                cublas_blockmat_batched(vbmat_cublas, mat_B, B_cols, mat_C, dt);
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
@@ -192,7 +184,7 @@ int main(int argc, char* argv[])
         {
             bEngine.GetGrouping(cmat);
             VBR vbmat_bellpack;
-            vbmat_bellpack.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.force_fixed_size);            
+            vbmat_bellpack.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.row_block_size_,cli.force_fixed_size);            
             algo_times.clear();
             A_rows = vbmat_bellpack.rows;
             A_cols = vbmat_bellpack.cols;

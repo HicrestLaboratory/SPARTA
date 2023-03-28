@@ -27,6 +27,7 @@ outputs_exps/*
 *.mtx
 *.tmp
 results/*
+images/*
 test.el
 data/suitsparse_collection_1.rar
 programs/cuda/cuda_multiply

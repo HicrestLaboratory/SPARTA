@@ -36,7 +36,15 @@ int main(int argc, char* argv[])
     DataT B[vbmat.cols*vbmat.cols]{1.};
     DataT C[vbmat.rows*vbmat.cols]{1.};
 
-    serial_batched(vbmat,B,vbmat.cols,C);   
+
+    for (intT i = 0; i < vbmat.cols; i++)
+    {
+        for(intT j = 0; i < vbmat.cols; j++)
+            cout << B[i*vbmat.cols + j] << " ";
+        cout << endl;
+    }
+    serial_batched(vbmat,B,vbmat.cols,C);
+    cout << B[5] << endl;   
     if (cli.verbose_ > 0) vbmat.print(cli.verbose_);
 
     //GET BLOCK PROPERTIES FROM GROUPING WITHOUT CREATING VBR EXPLICITLY
