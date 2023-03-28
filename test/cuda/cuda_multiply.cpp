@@ -80,8 +80,15 @@ int main(int argc, char* argv[])
             //convert to dense.
             DataT *dnA = csr2dn (cmat);
             //Run dense multiplication
-            cublas_dense_multiplyAB(cmat.rows, cmat.cols, dnA, mat_B, B_cols, mat_C, dt);
-        break;
+            algo_times.clear();
+            for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
+            {
+                cublas_dense_multiplyAB(cmat.rows, cmat.cols, dnA, mat_B, B_cols, mat_C, dt);
+                if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
+            }
+            bEngine.multiplication_timer_avg = avg(algo_times);
+            bEngine.multiplication_timer_std = var(algo_times); 
+            break;
         }
     case cublas_vbr:
         {
