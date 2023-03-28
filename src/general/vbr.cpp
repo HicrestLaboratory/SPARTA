@@ -236,7 +236,6 @@ void VBR::fill_from_CSR_inplace(const CSR& cmat,const vector<intT> &grouping, in
     copy(mab_vec.begin(),mab_vec.end(), mab);
 }
 
-
 void VBR::fill_from_CSR(const CSR& cmat,const vector<intT> &row_partition, intT block_size)
 {
     //fill the VBR with entries from a CSR, with rows appearing in the same order and divided according to row_partition.
