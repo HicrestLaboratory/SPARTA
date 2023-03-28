@@ -863,7 +863,7 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
     intT tot_nonzero_blocks = 0; //index for total nonzero blocks
     intT rows_in_block;
     intT size_block, mem_size_block;
-    intT* jab_loc = vbmatA.jab;ù
+    intT* jab_loc = vbmatA.jab;
     
     //initialize cuda events
     cudaEvent_t start, stop;
