@@ -654,24 +654,24 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
             //define the sub-matrices
 	        const DataT* d_A_block = d_A + vbmat_idx;           //access the block on d_A.
 
-            int k = rows_in_block, m = B_rows, n = vbmatA.block_col_size;
-            int lda = rows_in_block, ldb = B_rows, ldc = C_rows;
+//           int k = rows_in_block, m = B_rows, n = vbmatA.block_col_size;
+//           int lda = rows_in_block, ldb = B_rows, ldc = C_rows;
 
             //multiply the blocks, store result in d_C_block
             checkCudaErrors(
                 cublasGemmEx(
                     handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                    m,n,k,                                               //m, n, k <-- block_B: m*k   block_A: k*n   block_C: m*n
+                    B_rows,vbmatA.block_col_size,rows_in_block,                                               //m, n, k <-- block_B: m*k   block_A: k*n   block_C: m*n
                     &alpha,
                     d_B_block,                                          // blockA device pointer,
                     data_type_AB,                                       // blockA datatype
-                    ldb,                                      // blockA leading dimension
+                    B_rows,                                      // blockA leading dimension
                     d_A_block,                                          // blockB device pointer
                     data_type_AB,                                       // blockB datatype
-                    lda,                                             // B leading dimension
+                    rows_in_block,                                             // B leading dimension
                     &beta,
                     d_C_block, data_type_C,                             // blockC device pointer, blockC type
-                    ldc,                                             // C leading dimension
+                    C_rows,                                             // C leading dimension
                     compute_type,                                       // compute_type
                     cuda_algo)
             );                                       
@@ -694,6 +694,11 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
 
     checkCudaErrors(cublasGetMatrix(
             C_rows, C_cols, sizeof(DataT_C), d_C, C_rows, C, C_rows));
+
+    for (int i = 0; i < n_streams; i++)
+    {
+        cudaStreamDestroy(streams[i]);
+    }
 
     checkCudaErrors(cudaFree(d_C));
     checkCudaErrors(cudaFree(d_A));

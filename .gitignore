@@ -29,6 +29,8 @@ outputs_exps/*
 results/*
 images/*
 test.el
+data/suitsparse_big/*
+data/suit*
 data/suitsparse_collection_1.rar
 programs/cuda/cuda_multiply
 programs/cuda/TEST_cuda
@@ -36,3 +38,5 @@ src/scripts/prepare_mtx_files.sh
 programs/general/TEST_blocking_VBR_2D
 results/*
 outputfile
+data/suitsparse_N20000_100000_dN0.0001_0.1/ns3Da.tar.gz
+data/suitsparse_big.rar

@@ -3,8 +3,8 @@ export RESULTS_PATH=$2
 export PROGRAM=$3
 
 
-TAUs=(0.01 0.05 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9)
-BLOCK_SIZEs=(32 64 128 256 512)
+TAUs=(0.001 0.01 0.05 0.1 0.2 0.3 0.4 0.5 0.6 0.8)
+BLOCK_SIZEs=(64 128 256 512 1024)
 ALGOs=(5)
 
 
@@ -24,10 +24,11 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 	echo "============= processing matrix ${MATRIX_NAME}"
 	MATRIX_FOLDER=${RESULTS_PATH}/${MATRIX_NAME}
 	mkdir ${MATRIX_FOLDER}
-	for b in ${BLOCK_SIZEs[@]}; do
+	for block in ${BLOCK_SIZEs[@]}; do
+		B=${block}
+		b=${block}
 		for a in ${ALGOs[@]}; do
 			for t in ${TAUs[@]}; do
-				export B=${b}
 				export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_B_${B}_a_${a}_m_${SIM}_t_${t}_p_${USE_PATTERN}_g_${USE_GROUP}_r_${REORDERING}_F_1"
 				OUTFILE=${MATRIX_FOLDER}/${EXP_NAME}.txt
 				if [[ -f "${OUTFILE}" ]]; 
@@ -40,9 +41,9 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 				fi
 			done
 		done
+
 		export a=2
 		export t=0
-		export B=${b}
 		export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_B_${B}_a_${a}_t_${t}_p_${p}_g_${g}_r_${r}_F_1"
 		OUTFILE=${MATRIX_FOLDER}/${EXP_NAME}.txt
 		if [[ -f "${OUTFILE}" ]]; 
