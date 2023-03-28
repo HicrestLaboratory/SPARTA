@@ -27,22 +27,18 @@
     intT = int
 */
 
-/*
-void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, float &dt)
+void cublas_fixed_blocks_multiply_2(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt, int n_streams)
 {
+//multiplies a fixed size VBR matrix (vbmatA) and dense matrix (B); stores A*B into (C)
+    //vbmatA:       column-major entries (in-block) storage;
+    //              row-major block storage; 
+    //B:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+    //C:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
 
-    //define data types
+
     cudaDataType_t data_type_AB;
     cudaDataType_t data_type_C;
     cublasComputeType_t compute_type;
-    cublasGemmAlgo_t cuda_algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP;
-
-    int B_rows = A_cols;
-    int C_rows = A_rows;
-    int C_cols = B_cols;
-
-    const DataT_C alpha = 1;
-    const DataT_C beta = 1;
 
     if (typeid(DataT) == typeid(int8_t))
     {
@@ -61,14 +57,20 @@ void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, floa
         std::cout << "WARNING! Unsopported multiplication type in cublas_blockmat_multiply(). Check matrices.h" << std::endl;
     }
 
-    //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
-    cublasOperation_t transa = CUBLAS_OP_N, transb = CUBLAS_OP_N;
-    int m = A_rows, n = B_cols, k = A_cols;
-    int lda = A_rows, ldb = B_rows, ldc = C_rows;
-    cudaDataType_t Atype = data_type_AB, Btype = data_type_AB, Ctype = data_type_C;
+    cublasGemmAlgo_t cuda_algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP;
+
+    intT A_rows = vbmatA.rows;
+    intT A_cols = vbmatA.cols;
+
+    intT B_rows = A_cols;
+    intT C_rows = A_rows;
+    int C_cols = B_cols;
+
+    const DataT_C alpha = 1;
+    const DataT_C beta = 1;
 
     //allocate memory on device
-    intT size_A = A_rows * A_cols; //total nonzero entries in A
+    intT size_A = vbmatA.nztot; //total nonzero entries in vbmat
     intT mem_size_A = sizeof(DataT) * size_A;
 
     intT size_B = B_rows * B_cols;
@@ -78,6 +80,7 @@ void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, floa
     intT mem_size_C = sizeof(DataT_C) * size_C;
 
     cublasHandle_t handle;
+
     checkCudaErrors(cublasCreate(&handle));
 
     DataT* d_A, * d_B, * d_C;
@@ -87,114 +90,37 @@ void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, floa
 
     //copy to device the vbmat matrix (nonzero blocks are stored consecutively and in column major format)
     checkCudaErrors(cublasSetVector(
-        size_A, sizeof(DataT), A, 1, d_A, 1));
+        size_A, sizeof(DataT), vbmatA.mab, 1, d_A, 1));
 
-    checkCudaErrors(cublasSetVector(
-        size_B, sizeof(DataT), B, 1, d_B, 1));
-
-    //initialize cuda events
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-
-    cudaEventRecord(start, 0);
-
-    cublasStatus_t err = cublasGemmEx(
-        handle, transa, transb,
-        A_rows, B_cols, A_cols,           //m, n, k <-- block_B: m*k   block_A: k*n   block_C: m*n
-        &alpha,
-        d_A,                                     // blockA device pointer,
-        data_type_AB,                                      // blockA datatype
-        lda,                                  // blockA leading dimension
-        d_B,                                    // blockB device pointer
-        data_type_AB,                                      // blockB datatype
-        ldb,                                         // leading dimension
-        &beta,
-        d_C, Ctype,                           // blockC device pointer, blockC type
-        ldc,
-        compute_type,                                      // compute_type
-        cuda_algo);
-
-    checkCudaErrors( err );
-    if (err != CUBLAS_STATUS_SUCCESS) 
-    {
-        if (err == CUBLAS_STATUS_INVALID_VALUE) 
-        {
-            std::cout << "m = " << m << " n = " << n << " k = " << k << std::endl;
-            std::cout << "lda = " << lda << " >= max(1, " << m << ")? " << std::endl;
-            std::cout << "ldb = " << ldb << " >= max(1, " << k << ")? " << std::endl;
-            std::cout << "ldc = " << ldc << " >= max(1, " << n << ")? " << std::endl;
-        }
-        exit(42);
-    }
-
+    //copy B to device (maybe more efficient to copy it block by block?)
+    checkCudaErrors(cudaMemcpy(d_B, B, B_rows * B_cols * sizeof(DataT), cudaMemcpyHostToDevice));
+    // ----------------------------------------------------------------------
     
-void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, float &dt)
-{
+    intT max_blocks_in_row = 0;
+    intT tot_nz_blocks = 0;
+    intT row_block_size = vbmatA.row_part[1] - vbmatA.row_part[0];
+    intT block_area = row_block_size*vbmatA.block_col_size;
+    intT* current_jab = vbmatA.jab;
+    DataT* current_mab = d_A;
+    std::vector<intT*> jab_positions;
+    std::vector<DataT*> mab_positions;
+    for (intT ib = 0; ib < vbmatA.block_rows; ib++)
+        {
+            jab_positions.push_back(current_jab);
+            mab_positions.push_back(current_mab);
+            current_jab += vbmatA.nzcount[ib];
+            current_mab += vbmatA.nzcount[ib]*vbmatA.block_col_size*row_block_size;
+            max_blocks_in_row = std::max(max_blocks_in_row, vbmatA.nzcount[ib]);
+            tot_nz_blocks+= vbmatA.nzcount[ib];
+        }
 
-    //define data types
-    cudaDataType_t data_type_AB;
-    cudaDataType_t data_type_C;
-    cublasComputeType_t compute_type;
-    cublasGemmAlgo_t cuda_algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP;
 
-    int B_rows = A_cols;
-    int C_rows = A_rows;
-    int C_cols = B_cols;
-
-    const DataT_C alpha = 1;
-    const DataT_C beta = 1;
-
-    cudaDataType_t data_type_AB;
-    cudaDataType_t data_type_C;
-    cublasComputeType_t compute_type;
-    if (typeid(DataT) == typeid(int8_t))
+    if (n_streams > vbmatA.block_rows) n_streams = vbmatA.block_rows;
+    cudaStream_t streams[n_streams];
+    for (intT ib = 0; ib < n_streams; ib++)
     {
-        data_type_AB = CUDA_R_8I;
-        data_type_C = CUDA_R_32I;
-        compute_type = CUBLAS_COMPUTE_32I;
+        cudaStreamCreateWithFlags(&streams[ib],cudaStreamNonBlocking);
     }
-    else if (typeid(DataT) == typeid(float))
-    {
-        data_type_AB = CUDA_R_32F;
-        data_type_C = CUDA_R_32F;
-        compute_type = CUBLAS_COMPUTE_32F;
-    }
-    else
-    {
-        std::cout << "WARNING! Unsopported multiplication type in cublas_blockmat_multiply(). Check matrices.h" << std::endl;
-    }
-
-    //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
-    cublasOperation_t transa = CUBLAS_OP_N, transb = CUBLAS_OP_N;
-    int m = A_rows, n = B_cols, k = A_cols;
-    int lda = A_rows, ldb = B_rows, ldc = C_rows;
-    cudaDataType_t Atype = data_type_AB, Btype = data_type_AB, Ctype = data_type_C;
-
-    //allocate memory on device
-    intT size_A = A_rows * A_cols; //total nonzero entries in A
-    intT mem_size_A = sizeof(DataT) * size_A;
-
-    intT size_B = B_rows * B_cols;
-    intT mem_size_B = sizeof(DataT) * size_B;
-
-    intT size_C = C_rows * C_cols;
-    intT mem_size_C = sizeof(DataT_C) * size_C;
-
-    cublasHandle_t handle;
-    checkCudaErrors(cublasCreate(&handle));
-
-    DataT* d_A, * d_B, * d_C;
-    checkCudaErrors(cudaMalloc((void**)&d_A, mem_size_A));
-    checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
-    checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
-
-    //copy to device the vbmat matrix (nonzero blocks are stored consecutively and in column major format)
-    checkCudaErrors(cublasSetVector(
-        size_A, sizeof(DataT), A, 1, d_A, 1));
-
-    checkCudaErrors(cublasSetVector(
-        size_B, sizeof(DataT), B, 1, d_B, 1));
 
     //initialize cuda events
     cudaEvent_t start, stop;
@@ -203,33 +129,47 @@ void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, floa
 
     cudaEventRecord(start, 0);
 
-    cublasStatus_t err = cublasGemmEx(
-        handle, transa, transb,
-        m, n, k,           //m, n, k <-- block_B: m*k   block_A: k*n   block_C: m*n
-        &alpha,
-        d_A,                                     // blockA device pointer,
-        data_type_AB,                                      // blockA datatype
-        lda,                                  // blockA leading dimension
-        d_B,                                    // blockB device pointer
-        data_type_AB,                                      // blockB datatype
-        ldb,                                         // leading dimension
-        &beta,
-        d_C, Ctype,                           // blockC device pointer, blockC type
-        ldc,
-        compute_type,                                      // compute_type
-        cuda_algo);
-
-    checkCudaErrors( err );
-    if (err != CUBLAS_STATUS_SUCCESS) 
-    {
-        if (err == CUBLAS_STATUS_INVALID_VALUE) 
+    //creates streams. Each block rows is assigned a different stream.
+    DataT* d_C_block;
+    intT jb;
+    cublasSetStream(handle, streams[0]);               //each stream handles at most max_blocks_per_stream of block_rows    
+    //loop through all blocks
+    for(intT nzs = 0; nzs < max_blocks_in_row; nzs++ )      //loop horizontally through block rows
+    {        
+        for (intT ib = 0; ib < vbmatA.block_rows; ib++)
         {
-            std::cout << "m = " << m << " n = " << n << " k = " << k << std::endl;
-            std::cout << "lda = " << lda << " >= max(1, " << m << ")? " << std::endl;
-            std::cout << "ldb = " << ldb << " >= max(1, " << k << ")? " << std::endl;
-            std::cout << "ldc = " << ldc << " >= max(1, " << n << ")? " << std::endl;
-        }
-        exit(42);
+            if (nzs >= vbmatA.nzcount[ib]) continue;
+            jb = *(jab_positions[ib] + nzs);
+            const DataT* d_B_block = d_B + vbmatA.block_col_size*jb;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
+	        const DataT* d_A_block = mab_positions[ib] + nzs*block_area;           //access the block on d_A.
+            d_C_block = d_C + vbmatA.row_part[ib];                            //access the block on d_C.
+
+//            int k = vbmatA.block_col_size, m = B_cols, n = row_block_size;
+//          //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+    
+            cublasSetStream(handle, streams[ib%n_streams]);               //each stream handles at most max_blocks_per_stream of block_rows    
+            //multiply the blocks, store result in d_C_block
+            checkCudaErrors(
+                cublasGemmEx(
+                    handle, CUBLAS_OP_N, CUBLAS_OP_N,
+                    row_block_size,B_cols,vbmatA.block_col_size,                                               //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+                    &alpha,
+                    d_A_block,                                          // blockA device pointer,
+                    data_type_AB,                                       // blockA datatype
+                    row_block_size,                                      // blockA leading dimension
+                    d_B_block,                                          // blockB device pointer
+                    data_type_AB,                                       // blockB datatype
+                    B_rows,                                             // B leading dimension
+                    &beta,
+                    d_C_block, data_type_C,                             // blockC device pointer, blockC type
+                    C_rows,                                             // C leading dimension
+                    compute_type,                                       // compute_type
+                    cuda_algo)
+            );                                       
+            
+            //move mab and jab pointers forward
+	    }
+
     }
 
     //record the elapsed time onto dt
@@ -241,7 +181,10 @@ void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, floa
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
 
-    checkCudaErrors(cudaMemcpy(C, d_C, C_rows * C_cols * sizeof(DataT_C), cudaMemcpyDeviceToHost));
+
+    //let each stream copy the relevant C block from device
+    checkCudaErrors(cublasGetMatrix(
+            C_rows, C_cols, sizeof(DataT_C), d_C, C_rows, C, C_rows));
 
     cudaDeviceSynchronize();
 
@@ -250,13 +193,7 @@ void cublas_gemm(DataT *A, intT A_rows, intT A_cols, DataT *B, intT B_cols, floa
     checkCudaErrors(cudaFree(d_B));
 
     checkCudaErrors(cublasDestroy(handle));
-
-
 }
-
-}
-*/
-
 
 void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt, int n_streams)
 {
@@ -337,7 +274,6 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
     std::vector<DataT*> mab_positions;
     for (intT ib = 0; ib < vbmatA.block_rows; ib++)
         {
-            assert(vbmatA.row_part[ib+1] - vbmatA.row_part[ib] == row_block_size);
             jab_positions.push_back(current_jab);
             mab_positions.push_back(current_mab);
             current_jab += vbmatA.nzcount[ib];
@@ -365,25 +301,25 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
     DataT* d_C_block;
     intT jb;
     cublasSetStream(handle, streams[0]);               //each stream handles at most max_blocks_per_stream of block_rows    
-    //loop through all blocks
-    for(intT nzs = 0; nzs < max_blocks_in_row; nzs++ )      //loop horizontally through block rows
-    {        
-        for (intT ib = 0; ib < vbmatA.block_rows; ib++)
+    //loop through all blocks 
+    for (intT ib = 0; ib < vbmatA.block_rows; ib++)
+    {
+        d_C_block = d_C + vbmatA.row_part[ib];                            //access the block on d_C.
+        cublasSetStream(handle, streams[ib%n_streams]);               //each stream handles at most max_blocks_per_stream of block_rows    
+        for(intT nzs = 0; nzs < vbmatA.nzcount[ib]; nzs++ )      //loop horizontally through block rows
         {
-            if (nzs >= vbmatA.nzcount[ib]) continue;
             jb = *(jab_positions[ib] + nzs);
             const DataT* d_B_block = d_B + vbmatA.block_col_size*jb;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
 	        const DataT* d_A_block = mab_positions[ib] + nzs*block_area;           //access the block on d_A.
-            d_C_block = d_C + vbmatA.row_part[ib];                            //access the block on d_C.
 
 //            int k = vbmatA.block_col_size, m = B_cols, n = row_block_size;
+//          //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
     
-            cublasSetStream(handle, streams[ib%n_streams]);               //each stream handles at most max_blocks_per_stream of block_rows    
             //multiply the blocks, store result in d_C_block
             checkCudaErrors(
                 cublasGemmEx(
                     handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                    B_cols,row_block_size,vbmatA.block_col_size,                                               //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
+                    row_block_size,B_cols,vbmatA.block_col_size,                                               //m, n, k <-- block_A: m*k   block_B: k*n   block_C: m*n
                     &alpha,
                     d_A_block,                                          // blockA device pointer,
                     data_type_AB,                                       // blockA datatype
@@ -425,9 +361,6 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
 
     checkCudaErrors(cublasDestroy(handle));
 }
-
-
-
 
 void cublas_blockmat_multiplyAB(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt, int n_streams)
 {
@@ -847,13 +780,6 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
     checkCudaErrors(cudaMemcpy(d_B, B, B_rows * B_cols * sizeof(DataT), cudaMemcpyHostToDevice));
     // ----------------------------------------------------------------------
 
-    //initialize cuda events
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-
-    cudaEventRecord(start, 0);
-
     //creates streams. Each block rows is assigned a different stream.
     
     if (n_streams > vbmatA.block_cols) n_streams = vbmatA.block_cols;
@@ -870,6 +796,13 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
     intT rows_in_block;
     intT size_block, mem_size_block;
     intT* jab_loc = vbmatA.jab;
+    
+    //initialize cuda events
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start, 0);
 
     //loop through all blocks
     for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop vertically through block rows

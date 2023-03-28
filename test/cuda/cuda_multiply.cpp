@@ -90,8 +90,8 @@ int main(int argc, char* argv[])
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
-            bEngine.multiplication_timer_std = var(algo_times);
-        break;
+            bEngine.multiplication_timer_std = var(algo_times); 
+            break;
         }
     case cutlass_gemm:
         {
@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
         {
             bEngine.GetGrouping(cmat);
             VBR vbmat_cublas;
-            vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result,cli.row_block_size_, cli.col_block_size_);
+            vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result,cli.row_block_size_, cli.col_block_size_, cli.force_fixed_size);
             algo_times.clear();
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
