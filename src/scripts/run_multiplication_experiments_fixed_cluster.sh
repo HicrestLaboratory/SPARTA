@@ -79,7 +79,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 						export BASIC_ARGS
 						export EXP_ARGS=${experiments[$exp]}
 						echo "running $exp , b $block = ( $b $B ), t= $t cols= $b_cols"
-						#create_launch
+						create_launch
 					fi
 				fi
 			done
