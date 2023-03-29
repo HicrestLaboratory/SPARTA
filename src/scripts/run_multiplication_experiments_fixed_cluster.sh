@@ -4,6 +4,7 @@ export PROGRAM=$3
 
 
 BLOCK_SIZEs=(64 128 256 512 1024)
+B_sizes=(1024 2048 4096 8192)
 experiments=(BCSR_no_block,BCSR_block,BELLPACK_no_block,CSR,GEMM)
 
 USE_PATTERN=1
@@ -18,8 +19,8 @@ script_body="#!/bin/bash -l
 #SBATCH --job-name="${EXP_NAME}"
 #SBATCH --time=00:5:00
 #SBATCH --nodes=1
-#SBATCH --output="${RESULTS_PATH}/scripts/outputs/${EXP_NAME}".%j.o
-#SBATCH --error="${RESULTS_PATH}/scripts/errors/${EXP_NAME}".%j.e
+#SBATCH --output="${RESULTS_PATH}_scripts/outputs/${EXP_NAME}".%j.o
+#SBATCH --error="${RESULTS_PATH}_scripts/errors/${EXP_NAME}".%j.e
 #SBATCH --account="g34"
 #SBATCH --partition=normal
 #SBATCH --constraint=ssd
