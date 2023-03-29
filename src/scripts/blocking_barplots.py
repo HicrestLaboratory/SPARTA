@@ -96,9 +96,9 @@ def barplot(x_labels, x_ax_label, ys, y_styles, y_ax_label, yscale = "log", save
     increment = tot_width/bars
     width = increment*0.95
 
-    for y, label, style in zip(ys, y_labels, y_styles):
+    for y, style in zip(ys, y_styles):
         x_pos = np.arange(barpos,len(x_labels) + barpos)
-        plt.bar(x_pos,y,label=label, width = width, **style)
+        plt.bar(x_pos,y, width = width, **style)
         barpos += increment
 
     plt.legend()
@@ -119,7 +119,7 @@ parser.add_argument('-f',
 parser.add_argument('-i',
                     '--imagedir',
                     type = str,
-                    default='images/multiplication_images/',
+                    default='images/blocking_images/test_images',
                     help='The directory where to save the images')
 args = vars(parser.parse_args())
 
