@@ -153,6 +153,12 @@ df = pd.merge(df,df_VBR_no_reord, how = "left",on = ["matrix","row_block_size","
 df["relative-dense-amp"] = df["block_density"]/df["block_density_no_reord"]
 df.loc[df["relative-dense-amp"] < 1, "relative-dense-amp"] = 1
 
+for block_size in (64,128,256,512,1024):
+    print(f"BLOCK SIZE: {block_size}")
+    print("BAD", len(df.loc[(df["relative-dense-amp"] == 1) & (df["row_block_size"] == block_size)]))
+    print("GOOD", len(df.loc[(df["relative-dense-amp"] != 1) & (df["row_block_size"] == block_size)]))
+
+
 df.sort_values(by=['density','matrix'], inplace=True)
 
 np.set_printoptions(suppress = True)

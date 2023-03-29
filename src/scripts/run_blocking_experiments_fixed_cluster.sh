@@ -19,7 +19,7 @@ function create_launch {
 
 script_body="#!/bin/bash -l
 #SBATCH --job-name="${EXP_NAME}"
-#SBATCH --time=00:10:00
+#SBATCH --time=00:5:00
 #SBATCH --nodes=1
 #SBATCH --output="${RESULTS_PATH}/scripts/outputs/${EXP_NAME}".%j.o
 #SBATCH --error="${RESULTS_PATH}/scripts/errors/${EXP_NAME}".%j.e
@@ -27,7 +27,7 @@ script_body="#!/bin/bash -l
 #SBATCH --partition=normal
 #SBATCH --constraint=ssd
 
-./${PROGRAM} ${ARGS}
+./${PROGRAM} ${BASIC_ARGS} ${ARGS}
 
 sleep 1s
 "
@@ -63,7 +63,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 				else
 					export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -F 1 -a ${a} -o ${OUTFILE} -n ${EXP_NAME}"
 					echo "running ./${PROGRAM} ${ARGS} ${BASIC_ARGS}"
-					./${PROGRAM} ${ARGS} ${BASIC_ARGS}
+					create_launch
 				fi
 			done
 		done
@@ -78,7 +78,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 		else
 			export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -F 1 -a ${a} -o ${OUTFILE} -n ${EXP_NAME}"
 			echo "running ./${PROGRAM} ${ARGS} ${BASIC_ARGS}"
-			./${PROGRAM} ${ARGS} ${BASIC_ARGS}
+			create_launch
 		fi
 	done
 done
