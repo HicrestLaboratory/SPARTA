@@ -25,7 +25,14 @@ for ((i=nmin; i<=nmax; i+=increment)); do
 done
 
 for id in "${array[@]}";do
-	echo $(ssget -i $id -p name)
-	filename=$(ssget -f -i $id -e -t MM)
-	cp $filename $MATRIX_PATH
+	filename="$(ssget -f -i $id -e -t MM)"
+	basefile="$(basename -- $filename)" || echo "invalid name?"
+	if [[ ! -f "${MATRIX_PATH}/${basefile}" ]]
+	then
+		cp "$filename" "${MATRIX_PATH}/${basefile}"
+		#ssget -i $id -r
+		echo "DOWNLOADED $basefile $filename"
+	else
+		echo "${basefile} EXISTS ALREADY"
+	fi
 done

@@ -195,7 +195,6 @@ for block_size in (64,128,256,512,1024):
         #try:
         make_scatter(x_var ="block_density_no_reord", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size, drawline = 1)
         #make_scatter(x_var ="block_density_no_reord", y_var = "block_density", row_block_size = block_size, col_block_size = block_size)
-
         #except:
         #    print(f"COULD NOT MAKE SCATTER FOR {block_size} x {block_size}")
 
