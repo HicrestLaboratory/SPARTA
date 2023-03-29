@@ -55,8 +55,8 @@ for matrix in matrices:
 
         matrix.download(extract=True, destpath = f"{download_path}")
         files = glob.glob(f"{download_path}/*{matrix.name}*/*.*")
-        print(files)
         mainfile = min(files, key=len)
+        print("downloaded", matrix.name)
         dir = os.path.dirname(os.path.realpath(mainfile))
         os.rename(mainfile,f"{download_path}/{matrix.name}.mtx")
         shutil.rmtree(dir)	
