@@ -12,6 +12,8 @@ import operator
 import pandas as pd
 import os as os
 import seaborn as sns
+import argparse
+
 
 
 global_label_dict = {
@@ -56,7 +58,6 @@ global_exp_dict["BELLPACK-reord"] = {
     "label" : "cuSparse-BELLPACK (IC blocking)"
 
 }
-
 
 
 global_exp_dict["GEMM"] = {
@@ -245,13 +246,22 @@ def make_scatter(df,B_cols,var_x = "dense-amp", var_y = "speed-vs-no-reord"):
     plt.close()
 
 
+parser = argparse.ArgumentParser(description='Plots for multiplication experiments')
+parser.add_argument('-f',
+                    '--file',
+                    type=str,
+                    default='results/test_suitsparse_3_multiplication.csv',
+                    help='The csv with the results to be plotted')
+parser.add_argument('-i',
+                    '--imagedir',
+                    type = str,
+                    default='images/multiplication_images/',
+                    help='The directory where to save the images')
+args = vars(parser.parse_args())
 
 
-data_file = "test_suitsparse_3_multiplication.csv"
-exp_name = "suitsparse_3_mult"
-#data_file = "results/csr_vs_cublas.csv"
-#exp_name = "csr_vs_dense"
-image_folder = f"images/multiplication_images/{exp_name}"
+data_file = args.file
+image_folder = args.imagedir
 try: os.mkdir(image_folder) 
 except: 1
 
