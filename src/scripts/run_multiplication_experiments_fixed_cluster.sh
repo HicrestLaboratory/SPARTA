@@ -4,8 +4,15 @@ export PROGRAM=$3
 
 
 BLOCK_SIZEs=(64 128 256 512 1024)
-B_sizes=(1024 2048 4096 8192)
-experiments=(BCSR_no_block,BCSR_block,BELLPACK_no_block,CSR,GEMM)
+B_COLs=(1024 2048 4096 8192)
+EXPERIMENTs=("BCSR_no_reord" "BCSR_reord" "BELLPACK_no_block" "CSR" "GEMM")
+
+declare -A experiments
+experiments["BCSR_no_reord"]="-F 1 -a 5 -M 6"
+experiments["BCSR_reord"]="-F 1 -a 2 -M 6"
+experiments["BELLPACK_no_block"]="-F 1 -a 2 -M 3"
+experiments["CSR"]="-M 2"
+experiments["GEMM"]="-M 1"
 
 USE_PATTERN=1
 USE_GROUP=0
@@ -17,20 +24,23 @@ function create_launch {
 
 script_body="#!/bin/bash -l
 #SBATCH --job-name="${EXP_NAME}"
-#SBATCH --time=00:5:00
-#SBATCH --nodes=1
+#SBATCH --time=00:10:00
 #SBATCH --output="${RESULTS_PATH}_scripts/outputs/${EXP_NAME}".%j.o
 #SBATCH --error="${RESULTS_PATH}_scripts/errors/${EXP_NAME}".%j.e
-#SBATCH --account="g34"
-#SBATCH --partition=normal
-#SBATCH --constraint=ssd
+#SBATCH --account=flavio.vella
+#SBATCH --ntasks=1
+#SBATCH --partition=short
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=1
+#SBATCH --gres=gpu:1
 
-./${PROGRAM} ${BASIC_ARGS} ${ARGS}
+module load cuda/12.1
+./${PROGRAM} ${BASIC_ARGS} ${EXP_ARGS} ${ARGS}
 
 sleep 1s
 "
 script_name=___tmp_script_${EXP_NAME}
-script_folder=${RESULTS_PATH}/scripts
+script_folder=${RESULTS_PATH}_scripts
 
 if [[ -f "${script_folder}/${script_name}" ]]; then    
 	echo "experiment exists already"
@@ -48,35 +58,31 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 	echo "============= processing matrix ${MATRIX_NAME}"
 	MATRIX_FOLDER=${RESULTS_PATH}/${MATRIX_NAME}
 	mkdir ${MATRIX_FOLDER}
-	for block in ${BLOCK_SIZEs[@]}; do
-		B=${block}
-		b=${block}
-		for a in ${ALGOs[@]}; do
-			for t in ${TAUs[@]}; do
-				export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_B_${B}_a_${a}_m_${SIM}_t_${t}_p_${USE_PATTERN}_g_${USE_GROUP}_r_${REORDERING}_F_1"
-				OUTFILE=${MATRIX_FOLDER}/${EXP_NAME}.txt
-				if [[ -f "${OUTFILE}" ]]; 
-				then
+	for b_cols in ${B_COLs[@]};do
+		for block in ${BLOCK_SIZEs[@]}; do
+			for exp in ${EXPERIMENTs[@]}; do
+				B=$block
+				b=$block
+				export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_B_${B}_a_${a}_e_${exp}"
+				export OUTFILE=${MATRIX_FOLDER}/${EXP_NAME}.txt
+				if [[ -f "${OUTFILE}" ]]; then
 					echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 				else
-					export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -F 1 -a ${a} -o ${OUTFILE} -n ${EXP_NAME}"
-					echo "running ./${PROGRAM} ${ARGS} ${BASIC_ARGS}"
-					create_launch
+					if [ "${exp}" == "BCSR_reord" ]; then
+						export t=$(python3 -u src/scripts/get_tau.py -b ${b} -B ${B} -m ${MATRIX_NAME})
+					else
+						export t=0
+					fi
+
+					if [ $t != -1 ];then #this is a special flag for BCSR_reord experiments that are not to be run
+						export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -o ${OUTFILE} -n ${EXP_NAME}"
+						export BASIC_ARGS
+						export EXP_ARGS=${experiments[$exp]}
+						echo "running $exp , b $block = ( $b $B ), t= $t cols= $b_cols"
+						#create_launch
+					fi
 				fi
 			done
 		done
-
-		export a=2
-		export t=0
-		export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_B_${B}_a_${a}_t_${t}_p_${p}_g_${g}_r_${r}_F_1"
-		OUTFILE=${MATRIX_FOLDER}/${EXP_NAME}.txt
-		if [[ -f "${OUTFILE}" ]]; 
-		then
-			echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
-		else
-			export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -F 1 -a ${a} -o ${OUTFILE} -n ${EXP_NAME}"
-			echo "running ./${PROGRAM} ${ARGS} ${BASIC_ARGS}"
-			create_launch
-		fi
 	done
 done
