@@ -7,6 +7,7 @@ BLOCK_SIZEs=(64 128 256 512 1024)
 B_COLs=(1024 2048 4096 8192)
 EXPERIMENTs=("BCSR_no_reord" "BCSR_reord" "BELLPACK_no_block" "CSR" "GEMM")
 
+
 declare -A experiments
 experiments["BCSR_no_reord"]="-F 1 -a 5 -M 6"
 experiments["BCSR_reord"]="-F 1 -a 2 -M 6"
@@ -52,15 +53,29 @@ fi
 
 mkdir ${RESULTS_PATH}
 
+total=$((${#EXPERIMENTs[@]}*${#B_COLs[@]}*${#BLOCK_SIZEs[@]}))
+
+matrices_processed=0
 for fullpath in ${MATRICES_PATH}/*.*; do
+
+	progress=0
+	((matrices_processed++))
+	
 	MATRIX_FILE=$(basename -- "${fullpath}")
 	MATRIX_NAME="${MATRIX_FILE%.*}"
-	echo "============= processing matrix ${MATRIX_NAME}"
+	echo "============= processing matrix ${MATRIX_NAME} ($matrices_processed matrices processed)"
 	MATRIX_FOLDER=${RESULTS_PATH}/${MATRIX_NAME}
-	mkdir ${MATRIX_FOLDER}
+	mkdir ${MATRIX_FOLDER} 2>/dev/null
 	for b_cols in ${B_COLs[@]};do
 		for block in ${BLOCK_SIZEs[@]}; do
 			for exp in ${EXPERIMENTs[@]}; do
+
+				#progress bar stuff
+    			percent=$((progress * 100 / total))
+	    		echo -ne "Experiments processed: [$percent%]\r"
+				((progress++))
+				#===================
+
 				B=$block
 				b=$block
 				export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_B_${B}_a_${a}_e_${exp}"
@@ -78,8 +93,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 						export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -o ${OUTFILE} -n ${EXP_NAME}"
 						export BASIC_ARGS
 						export EXP_ARGS=${experiments[$exp]}
-						echo "running $exp , b $block = ( $b $B ), t= $t cols= $b_cols"
-						#create_launch
+						create_launch
 					fi
 				fi
 			done
