@@ -6,7 +6,7 @@ export PROGRAM=$3
 BLOCK_SIZEs=(64 128 256 512 1024)
 B_COLs=(1024 2048 4096 8192)
 EXPERIMENTs=("BCSR_no_reord" "BCSR_reord" "BELLPACK_no_block" "CSR" "GEMM")
-
+taufile=" results/collected_experiments/suitsparse_all/tau.csv"
 
 declare -A experiments
 experiments["BCSR_no_reord"]="-F 1 -a 5 -M 6"
@@ -84,13 +84,10 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 					echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 				else
 					if [ "${exp}" == "BCSR_reord" ]; then
-# 						export t=$(python3 -u src/scripts/get_tau.py -b ${b} -B ${B} -m ${MATRIX_NAME})
-                        t=$(grep ${MATRIX_NAME} tau.csv | grep "${B}, ${b}")
+                        t2=$(grep ${MATRIX_NAME} ${taufile} | grep "${B},${b}" | cut -d',' -f4)
 					else
 						export t=0
 					fi
-					echo "tau is $t"
-
 					if [ $t != -1 ];then #this is a special flag for BCSR_reord experiments that are not to be run
 						export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -o ${OUTFILE} -n ${EXP_NAME}"
 						export BASIC_ARGS

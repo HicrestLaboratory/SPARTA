@@ -84,7 +84,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 					echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 				else
 					if [ "${exp}" == "BCSR_reord" ]; then
-						export t=$(python3 -u src/scripts/get_tau.py -b ${b} -B ${B} -m ${MATRIX_NAME})
+                        t2=$(grep ${MATRIX_NAME} ${taufile} | grep "${B},${b}" | cut -d',' -f4)
 					else
 						export t=0
 					fi
