@@ -52,6 +52,8 @@ fi
 }
 
 mkdir ${RESULTS_PATH}
+mkdir ${RESULTS_PATH}/_scripts
+
 
 total=$((${#EXPERIMENTs[@]}*${#B_COLs[@]}*${#BLOCK_SIZEs[@]}))
 
