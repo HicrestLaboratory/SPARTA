@@ -1,12 +1,11 @@
-#!/bin/bash
 
 
 MATRIX_PATH=$1
 mkdir $MATRIX_PATH
 
 
-nmin=20000
-nmax=100000
+nmin=100000
+nmax=150000
 increment=5000
 
 dmin=10000
