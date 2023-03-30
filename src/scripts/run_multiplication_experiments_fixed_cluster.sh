@@ -87,12 +87,12 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 					echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 				else
 					if [ "${exp}" == "BCSR_reord" ]; then
-                        t=$(grep ${MATRIX_NAME} ${taufile} | grep -m 1 "${B},${b}" | cut -d',' -f4)
+                        t=$(grep ${MATRIX_NAME} ${taufile} | grep "${B},${b}" | cut -d',' -f4)
 					else
 						export t=0
 					fi
 
-					echo $t
+
 
 					if [ $t != -1 ];then #this is a special flag for BCSR_reord experiments that are not to be run
 						export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -o ${OUTFILE} -n ${EXP_NAME}"

@@ -31,4 +31,4 @@ outputfile
 data/suitsparse_N20000_100000_dN0.0001_0.1/ns3Da.tar.gz
 data/suitsparse_big.rar
 data/suitsparse*
-!results/collected_experiments/*
+!results/collected_experiments/
