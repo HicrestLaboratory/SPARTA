@@ -26,8 +26,8 @@ function create_launch {
 script_body="#!/bin/bash -l
 #SBATCH --job-name="${EXP_NAME}"
 #SBATCH --time=00:10:00
-#SBATCH --output="${RESULTS_PATH}_scripts/outputs/${EXP_NAME}".%j.o
-#SBATCH --error="${RESULTS_PATH}_scripts/errors/${EXP_NAME}".%j.e
+#SBATCH --output="${RESULTS_PATH}/_scripts/${EXP_NAME}".%j.o
+#SBATCH --error="${RESULTS_PATH}/_scripts/${EXP_NAME}".%j.e
 #SBATCH --account=flavio.vella
 #SBATCH --ntasks=1
 #SBATCH --partition=short
@@ -41,7 +41,7 @@ module load cuda/12.1
 sleep 1s
 "
 script_name=___tmp_script_${EXP_NAME}
-script_folder=${RESULTS_PATH}_scripts
+script_folder=${RESULTS_PATH}/_scripts
 
 if [[ -f "${script_folder}/${script_name}" ]]; then    
 	echo "experiment exists already"
