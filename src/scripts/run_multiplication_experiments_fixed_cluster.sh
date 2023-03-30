@@ -92,7 +92,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 						export t=0
 					fi
 
-
+					echo $t
 
 					if [ $t != -1 ];then #this is a special flag for BCSR_reord experiments that are not to be run
 						export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -o ${OUTFILE} -n ${EXP_NAME}"
