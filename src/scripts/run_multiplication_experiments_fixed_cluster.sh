@@ -72,7 +72,8 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 
 				#progress bar stuff
     			percent=$((progress * 100 / total))
-	    		echo -ne "Experiments processed: [$percent%]\r"
+				echo $percent
+	    		#echo -ne "Experiments processed: [$percent%]\r"
 				((progress++))
 				#===================
 
