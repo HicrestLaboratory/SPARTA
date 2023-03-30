@@ -6,7 +6,7 @@ export PROGRAM=$3
 BLOCK_SIZEs=(64 128 256 512 1024)
 B_COLs=(1024 2048 4096 8192)
 EXPERIMENTs=("BCSR_no_reord" "BCSR_reord" "BELLPACK_no_block" "CSR" "GEMM")
-
+taufile="results/collected_experiments/suitsparse_all/tau.csv"
 
 declare -A experiments
 experiments["BCSR_no_reord"]="-F 1 -a 5 -M 6"
