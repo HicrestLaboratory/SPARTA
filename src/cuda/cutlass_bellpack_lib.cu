@@ -41,6 +41,7 @@
 #include "cuda_utilities.h"
 #include "cutlass_bellpack_lib.h"
 
+
 #define DataT float
 #define DataT_Cutlass cutlass::half_t
 #define NOELL_TEST
@@ -253,150 +254,255 @@ void bellpack_cutlass_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int C
     return;
 }
 
+int cutlass_dense_multiplyAB(int m, int k, DataT* inputA, int n, DataT* inputB, float alp, float bet, DataT_C* output, float& dt) {
 
-void cutlass_dense_multiplyAB(int rows, int cols, DataT* A, int B_rows, int B_cols, DataT* B, DataT_C* C, float& dt) {
-    int i, j;
-    cutlass::HostTensor<DataT_Cutlass, cutlass::layout::ColumnMajor> tensor({rows, cols});
-    for (i = 0; i < rows; ++i) {
-        for (j = 0; j < cols; ++j) {
+  dt = -1.0;
 
-            // Write the element at location {i, j} in host memory
-            tensor.host_ref().at({i, j}) = (DataT_Cutlass)A[i*cols + j];
-
-        }
-    }
-
-    // Copy host memory to device memory
-    tensor.sync_device();
-
-    // Obtain a device pointer usable in CUDA kernels
-    DataT_Cutlass *device_ptr = tensor.device_data();
-
-//     std::cout << "view of tensor:" << std::endl;
-//     cutlass::TensorView<DataT_Cutlass, cutlass::layout::ColumnMajor> view = tensor.host_view();
-//     std::cout << view << std::endl;
-//     std::cout << std::endl;
-
-
-    cutlass::HostTensor<DataT_Cutlass, cutlass::layout::ColumnMajor> tensorB({B_rows, B_cols});
-
-
-    for (i = 0; i < (B_rows); ++i) {
-        for (j = 0; j < (B_cols); ++j) {
-
-            // Write the element at location {i, j} in host memory
-            tensorB.host_ref().at({i, j}) = B[i*B_cols + j];
-
-        }
-    }
-
-    // Copy host memory to device memory
-    tensorB.sync_device();
-
-    // Obtain a device pointer usable in CUDA kernels
-    DataT_Cutlass *device_ptrB = tensorB.device_data();
-
-//     std::cout << "view of tensorB:" << std::endl;
-//     cutlass::TensorView<DataT_Cutlass, cutlass::layout::ColumnMajor> viewB = tensorB.host_view();
-//     std::cout << viewB << std::endl;
-//     std::cout << std::endl;
-
-    cutlass::HostTensor<DataT_Cutlass, cutlass::layout::ColumnMajor> tensorC({rows, B_cols});
-
-
-    for (i = 0; i < (rows); ++i) {
-        for (j = 0; j < (B_cols); ++j) {
-
-            // Write the element at location {i, j} in host memory
-            tensorC.host_ref().at({i, j}) = (DataT_Cutlass) 0.0;
-
-        }
-    }
-
-    // Copy host memory to device memory
-    tensorC.sync_device();
-
-    // Obtain a device pointer usable in CUDA kernels
-    DataT_Cutlass *device_ptrC = tensorC.device_data();
-
-//     std::cout << "view of tensorC:" << std::endl;
-//     cutlass::TensorView<DataT_Cutlass, cutlass::layout::ColumnMajor> viewC = tensorC.host_view();
-//     std::cout << viewC << std::endl;
-//     std::cout << std::endl;
-
-  // ------------------------------------------------------------------------------
-
+  // Define the GEMM operation
   using Gemm = cutlass::gemm::device::Gemm<
-    DataT_Cutlass,                           // ElementA
+    cutlass::half_t,                           // ElementA
     cutlass::layout::ColumnMajor,              // LayoutA
-    DataT_Cutlass,                           // ElementB
+    cutlass::half_t,                           // ElementB
     cutlass::layout::ColumnMajor,              // LayoutB
-    DataT_Cutlass,                           // ElementOutput
+    cutlass::half_t,                           // ElementOutput
     cutlass::layout::ColumnMajor,              // LayoutOutput
     float,                                     // ElementAccumulator
     cutlass::arch::OpClassTensorOp,            // tag indicating Tensor Cores
     cutlass::arch::Sm80                        // tag indicating target GPU compute architecture
   >;
 
-  Gemm gemm_op_dn;
+  Gemm gemm_op;
   cutlass::Status status;
+
+  //
+  // Define the problem size
+  //
+  int M = m;
+  int N = n;
+  int K = k;
+
+  float alpha = alp;
+  float beta  = bet;
+
+  //
+  // Allocate device memory
+  //
+
+
+
+  cutlass::HostTensor<cutlass::half_t, cutlass::layout::ColumnMajor> A({M, K});
+  cutlass::HostTensor<cutlass::half_t, cutlass::layout::ColumnMajor> B({K, N});
+  cutlass::HostTensor<cutlass::half_t, cutlass::layout::ColumnMajor> C({M, N});
+
+  // Input matrices to cutlass' structures
+
+
+
+  for (int i=0; i<M; ++i)
+    for (int j=0; j<K; ++j)
+      A.host_ref().at({i, j}) = inputA[i*K +j];
+  // Copy host memory to device memory
+  A.sync_device();
+
+
+
+  for (int i=0; i<K; ++i)
+    for (int j=0; j<N; ++j)
+      B.host_ref().at({i, j}) = inputB[i*N +j];
+  // Copy host memory to device memory
+  B.sync_device();
+
+
+
+  cutlass::half_t const *ptrA = A.device_data();
+  cutlass::half_t const *ptrB = B.device_data();
+  cutlass::half_t const *ptrC = C.device_data();
+  cutlass::half_t       *ptrD = C.device_data();
+
+
+
+  int lda = A.device_ref().stride(0);
+  int ldb = B.device_ref().stride(0);
+  int ldc = C.device_ref().stride(0);
+  int ldd = C.device_ref().stride(0);
 
   //
   // Launch GEMM on the device
   //
 
-  float alpha=1.0, beta=1.0;
-  int m = rows, k = cols, n = B_cols;
 
-  DataT_Cutlass *ptrD = tensorC.device_data();
 
-  int lda = tensor.device_ref().stride(0);
-  int ldb = tensorB.device_ref().stride(0);
-  int ldc = tensorC.device_ref().stride(0);
-  int ldd = tensorC.device_ref().stride(0);
-
-  //initialize cuda events
-  cudaEvent_t start, stop;
-  checkCudaErrors(cudaEventCreate(&start));
-  checkCudaErrors(cudaEventCreate(&stop));
-  checkCudaErrors(cudaEventRecord(start, 0));
-
-  status = gemm_op_dn({
-    {m, n, k},
-    {device_ptr, lda},
-    {device_ptrB, ldb},
-    {device_ptrC, ldc},
-    {ptrD, ldd},
-    {alpha, beta}
+  status = gemm_op({
+    {M, N, K},
+    {ptrA, lda},            // TensorRef to A device tensor
+    {ptrB, ldb},            // TensorRef to B device tensor
+    {ptrC, ldc},            // TensorRef to C device tensor
+    {ptrD, ldd},            // TensorRef to D device tensor - may be the same as C
+    {alpha, beta}           // epilogue operation arguments
   });
 
+
+
   if (status != cutlass::Status::kSuccess) {
-    fprintf(stderr, "ERROR in file %s at line %d\n", __FILE__, __LINE__);
-  } else {
-    printf("SUCCESS in file %s at line %d\n", __FILE__, __LINE__);
+    return -1;
   }
 
-  // Wait for completion
-  checkCudaErrors( cudaDeviceSynchronize() );
-  checkCudaErrors( cudaEventRecord(stop, 0) );
-  checkCudaErrors( cudaEventSynchronize(stop) );
-  checkCudaErrors( cudaEventElapsedTime(&dt, start, stop) );
-  checkCudaErrors( cudaEventDestroy(start) );
-  checkCudaErrors( cudaEventDestroy(stop) );
 
-  tensorC.sync_host();
-//   std::cout << "view of tensorC:" << std::endl;
-//   std::cout << viewC << std::endl;
-//   std::cout << std::endl;
 
-  for (i = 0; i < (rows); ++i) {
-        for (j = 0; j < (B_cols); ++j) {
+  // Copy host memory to device memory
+  C.sync_host();
+  for (int i=0; i<M; ++i)
+    for (int j=0; j<N; ++j)
+      output[i*N +j] = C.host_ref().at({i, j});
 
-            // Write the element at location {i, j} in host memory
-            C[i * B_cols + j] = (DataT_C)tensorC.host_ref().at({i, j});
 
-        }
-    }
 
-  return;
+  return 0;
 }
+
+// void cutlass_dense_multiplyAB(int rows, int cols, DataT* A, int B_rows, int B_cols, DataT* B, DataT_C* C, float& dt) {
+//     int i, j;
+//     cutlass::HostTensor<DataT_Cutlass, cutlass::layout::ColumnMajor> tensor({rows, cols});
+//     for (i = 0; i < rows; ++i) {
+//         for (j = 0; j < cols; ++j) {
+//
+//             // Write the element at location {i, j} in host memory
+//             tensor.host_ref().at({i, j}) = (DataT_Cutlass)A[i*cols + j];
+//
+//         }
+//     }
+//
+//     // Copy host memory to device memory
+//     tensor.sync_device();
+//
+//     // Obtain a device pointer usable in CUDA kernels
+//     DataT_Cutlass *device_ptr = tensor.device_data();
+//
+// //     std::cout << "view of tensor:" << std::endl;
+// //     cutlass::TensorView<DataT_Cutlass, cutlass::layout::ColumnMajor> view = tensor.host_view();
+// //     std::cout << view << std::endl;
+// //     std::cout << std::endl;
+//
+//
+//     cutlass::HostTensor<DataT_Cutlass, cutlass::layout::ColumnMajor> tensorB({B_rows, B_cols});
+//
+//
+//     for (i = 0; i < (B_rows); ++i) {
+//         for (j = 0; j < (B_cols); ++j) {
+//
+//             // Write the element at location {i, j} in host memory
+//             tensorB.host_ref().at({i, j}) = B[i*B_cols + j];
+//
+//         }
+//     }
+//
+//     // Copy host memory to device memory
+//     tensorB.sync_device();
+//
+//     // Obtain a device pointer usable in CUDA kernels
+//     DataT_Cutlass *device_ptrB = tensorB.device_data();
+//
+// //     std::cout << "view of tensorB:" << std::endl;
+// //     cutlass::TensorView<DataT_Cutlass, cutlass::layout::ColumnMajor> viewB = tensorB.host_view();
+// //     std::cout << viewB << std::endl;
+// //     std::cout << std::endl;
+//
+//     cutlass::HostTensor<DataT_Cutlass, cutlass::layout::ColumnMajor> tensorC({rows, B_cols});
+//
+//
+//     for (i = 0; i < (rows); ++i) {
+//         for (j = 0; j < (B_cols); ++j) {
+//
+//             // Write the element at location {i, j} in host memory
+//             tensorC.host_ref().at({i, j}) = (DataT_Cutlass) 0.0;
+//
+//         }
+//     }
+//
+//     // Copy host memory to device memory
+//     tensorC.sync_device();
+//
+//     // Obtain a device pointer usable in CUDA kernels
+//     DataT_Cutlass *device_ptrC = tensorC.device_data();
+//
+// //     std::cout << "view of tensorC:" << std::endl;
+// //     cutlass::TensorView<DataT_Cutlass, cutlass::layout::ColumnMajor> viewC = tensorC.host_view();
+// //     std::cout << viewC << std::endl;
+// //     std::cout << std::endl;
+//
+//   // ------------------------------------------------------------------------------
+//
+//   using Gemm = cutlass::gemm::device::Gemm<
+//     DataT_Cutlass,                           // ElementA
+//     cutlass::layout::ColumnMajor,              // LayoutA
+//     DataT_Cutlass,                           // ElementB
+//     cutlass::layout::ColumnMajor,              // LayoutB
+//     DataT_Cutlass,                           // ElementOutput
+//     cutlass::layout::ColumnMajor,              // LayoutOutput
+//     float,                                     // ElementAccumulator
+//     cutlass::arch::OpClassTensorOp,            // tag indicating Tensor Cores
+//     cutlass::arch::Sm80                        // tag indicating target GPU compute architecture
+//   >;
+//
+//   Gemm gemm_op_dn;
+//   cutlass::Status status;
+//
+//   //
+//   // Launch GEMM on the device
+//   //
+//
+//   float alpha=1.0, beta=1.0;
+//   int m = rows, k = cols, n = B_cols;
+//
+//   DataT_Cutlass *ptrD = tensorC.device_data();
+//
+//   int lda = tensor.device_ref().stride(0);
+//   int ldb = tensorB.device_ref().stride(0);
+//   int ldc = tensorC.device_ref().stride(0);
+//   int ldd = tensorC.device_ref().stride(0);
+//
+//   //initialize cuda events
+//   cudaEvent_t start, stop;
+//   checkCudaErrors(cudaEventCreate(&start));
+//   checkCudaErrors(cudaEventCreate(&stop));
+//   checkCudaErrors(cudaEventRecord(start, 0));
+//
+//   status = gemm_op_dn({
+//     {m, n, k},
+//     {device_ptr, lda},
+//     {device_ptrB, ldb},
+//     {device_ptrC, ldc},
+//     {ptrD, ldd},
+//     {alpha, beta}
+//   });
+//
+//   if (status != cutlass::Status::kSuccess) {
+//     fprintf(stderr, "ERROR in file %s at line %d\n", __FILE__, __LINE__);
+//   } else {
+//     printf("SUCCESS in file %s at line %d\n", __FILE__, __LINE__);
+//   }
+//
+//   // Wait for completion
+//   checkCudaErrors( cudaDeviceSynchronize() );
+//   checkCudaErrors( cudaEventRecord(stop, 0) );
+//   checkCudaErrors( cudaEventSynchronize(stop) );
+//   checkCudaErrors( cudaEventElapsedTime(&dt, start, stop) );
+//   checkCudaErrors( cudaEventDestroy(start) );
+//   checkCudaErrors( cudaEventDestroy(stop) );
+//
+//   tensorC.sync_host();
+// //   std::cout << "view of tensorC:" << std::endl;
+// //   std::cout << viewC << std::endl;
+// //   std::cout << std::endl;
+//
+//   for (i = 0; i < (rows); ++i) {
+//         for (j = 0; j < (B_cols); ++j) {
+//
+//             // Write the element at location {i, j} in host memory
+//             C[i * B_cols + j] = (DataT_C)tensorC.host_ref().at({i, j});
+//
+//         }
+//     }
+//
+//   return;
+// }

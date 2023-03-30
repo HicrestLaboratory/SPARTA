@@ -10,6 +10,6 @@ int compute_cutlass_bellpack (int rows, int cols, int ell_blocksize, int ellValu
 
 void bellpack_cutlass_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int C_cols, float& dt, int verbose);
 
-void cutlass_dense_multiplyAB(int rows, int cols, DataT* A, int B_rows, int B_cols, DataT* B, DataT_C* C, float& dt);
+int cutlass_dense_multiplyAB(int m, int k, DataT* inputA, int n, DataT* inputB, float alp, float bet, DataT_C* output, float& dt);
 
 #endif

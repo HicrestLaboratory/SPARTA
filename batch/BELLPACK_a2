@@ -26,7 +26,7 @@ if [[ $# > 2 ]]
 then
     cval=$3
 else
-    cval=1024
+    cval=8192
 fi
 echo "cval = $cval"
 
@@ -38,6 +38,6 @@ else
 fi
 echo "Sval = $Sval"
 
-./programs/cuda/cuda_multiply -a 2 -M 3 -P 1 -F 1 -c $cval -b $block_size -B $block_size -f $matrix -o outputs_exps/BELLPACK_a2_$matnum-$block_size-$cval.out 2> outputs_exps/BELLPACK_a2_$matnum-$block_size-$cval.err
+./programs/cuda/cuda_multiply -a 2 -x 10 -M 3 -P 1 -F 1 -c $cval -b $block_size -B $block_size -f $matrix -o outputs_exps/BELLPACK_a2_$matnum-$block_size-$cval.out 2> outputs_exps/BELLPACK_a2_$matnum-$block_size-$cval.err
 
 fi

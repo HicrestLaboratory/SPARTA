@@ -23,7 +23,7 @@ if [[ $# > 3 ]]
 then
     cval=$4
 else
-    cval=1024
+    cval=8192
 fi
 echo "cval = $cval"
 
@@ -32,6 +32,6 @@ matnum=$(<name.tmp)
 echo $matnum
 
 
-./programs/cuda/cuda_multiply -a 2 -M 6 -P 1 -F 1 -b $row_block_size -B $col_block_size -f $matrix -S 4 -c $cval -o outputs_exps/VBR_rect_a2_$matnum-$row_block_size-x-$col_block_size-$cval.out 2> outputs_exps/VBR_rect_a2_$matnum-$row_block_size-x-$col_block_size-$cval.err
+./programs/cuda/cuda_multiply -a 2 -x 10 -M 6 -P 1 -F 1 -b $row_block_size -B $col_block_size -f $matrix -S 4 -c $cval -o outputs_exps/VBR_rect_a2_$matnum-$row_block_size-x-$col_block_size-$cval.out 2> outputs_exps/VBR_rect_a2_$matnum-$row_block_size-x-$col_block_size-$cval.err
 
 fi

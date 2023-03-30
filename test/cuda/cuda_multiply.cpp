@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
                 }
             #endif
             //Run dense multiplication
-            cutlass_dense_multiplyAB(cmat.rows, cmat.cols, dnA, B_rows, B_cols, mat_B, mat_C, dt);
+            cutlass_dense_multiplyAB(cmat.rows, cmat.cols, dnA, B_cols, mat_B, 1.0, 1.0, mat_C, dt);
         #else
             printf("To use the cultass gemm you need to compile the code difining the macro \"CUTLASS\" (in \"include/cutlass_bellpack_lib.h\")\n");
         #endif

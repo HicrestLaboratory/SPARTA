@@ -33,10 +33,10 @@ if [[ $# > 2 ]]
 then
     cval=$3
 else
-    cval=1024
+    cval=8192
 fi
 echo "cval = $cval"
 
-./programs/cuda/cuda_multiply -M 1 -F 1 -P 1 -R $inputfmt -c $cval -f $matrix -o outputs_exps/DENSE_$matnum-$cval.out 2> outputs_exps/DENSE_$matnum-$cval.err
+./programs/cuda/cuda_multiply -M 1 -x 10 -F 1 -P 1 -R $inputfmt -c $cval -f $matrix -o outputs_exps/DENSE_$matnum-$cval.out 2> outputs_exps/DENSE_$matnum-$cval.err
 
 fi
