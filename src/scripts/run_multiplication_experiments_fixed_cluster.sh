@@ -87,8 +87,8 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 					echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 				else
 					if [ "${exp}" == "BCSR_reord" ]; then
-                        t=$(grep $MATRIX_NAME $taufile | grep -m 1 $B,$b | cut -d',' -f4)
 						echo "(grep ${MATRIX_NAME} ${taufile} | grep -m 1 ${B},${b} | cut -d',' -f4)"
+                        t=$(grep $MATRIX_NAME $taufile | grep -m 1 $B,$b | cut -d',' -f4)
 					else
 						export t=0
 					fi
