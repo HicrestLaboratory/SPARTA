@@ -96,7 +96,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 						export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -o ${OUTFILE} -n ${EXP_NAME}"
 						export BASIC_ARGS
 						export EXP_ARGS=${experiments[$exp]}
-						create_launch
+						#create_launch
 					fi
 				fi
 			done
