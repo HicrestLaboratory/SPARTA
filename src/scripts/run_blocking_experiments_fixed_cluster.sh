@@ -19,20 +19,22 @@ function create_launch {
 
 script_body="#!/bin/bash -l
 #SBATCH --job-name="${EXP_NAME}"
-#SBATCH --time=00:5:00
+#SBATCH --time=00:10:00
+#SBATCH --output="${RESULTS_PATH}_scripts/outputs/${EXP_NAME}".%j.o
+#SBATCH --error="${RESULTS_PATH}_scripts/errors/${EXP_NAME}".%j.e
+#SBATCH --ntasks=1
+#SBATCH --partition=short
 #SBATCH --nodes=1
-#SBATCH --output="${RESULTS_PATH}/scripts/outputs/${EXP_NAME}".%j.o
-#SBATCH --error="${RESULTS_PATH}/scripts/errors/${EXP_NAME}".%j.e
-#SBATCH --account="g34"
-#SBATCH --partition=normal
-#SBATCH --constraint=ssd
+#SBATCH --cpus-per-task=1
+#SBATCH --gres=gpu:0
+#SBATCH --account=flavio.vella
 
 ./${PROGRAM} ${BASIC_ARGS} ${ARGS}
 
 sleep 1s
 "
 script_name=___tmp_script_${EXP_NAME}
-script_folder=${RESULTS_PATH}/scripts
+script_folder=${RESULTS_PATH}_scripts
 
 if [[ -f "${script_folder}/${script_name}" ]]; then    
 	echo "experiment exists already"
@@ -43,6 +45,7 @@ fi
 }
 
 mkdir ${RESULTS_PATH}
+mkdir ${RESULTS_PATH}_scripts
 
 for fullpath in ${MATRICES_PATH}/*.*; do
 	MATRIX_FILE=$(basename -- "${fullpath}")
