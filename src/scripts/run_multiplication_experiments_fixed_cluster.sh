@@ -58,7 +58,7 @@ total=$((${#EXPERIMENTs[@]}*${#B_COLs[@]}*${#BLOCK_SIZEs[@]}))
 matrices_processed=0
 for fullpath in ${MATRICES_PATH}/*.*; do
 
-	progress=0
+	progress=0 #progress bar
 	((matrices_processed++))
 	
 	MATRIX_FILE=$(basename -- "${fullpath}")
