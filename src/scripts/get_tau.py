@@ -5,14 +5,8 @@ Created on Thu Aug  4 15:35:55 2022
 @author: Paolo
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
-import glob
-import operator
 import pandas as pd
 import os as os
-import seaborn as sns
-from matplotlib import cm, colors
 import argparse   
 
 parser = argparse.ArgumentParser(description='Plots for multiplication experiments')

@@ -43,11 +43,11 @@ sleep 1s
 script_name=___tmp_script_${EXP_NAME}
 script_folder=${RESULTS_PATH}_scripts
 
-if [[ -f "${script_folder}/${script_name}" ]]; then    
+if [[ -f "${script_folder}/${script_name}" ]]; then
 	echo "experiment exists already"
 else
 	echo "${script_body}" > ${script_folder}/${script_name}.sbatch
-	sbatch ${script_folder}/${script_name}.sbatch
+# 	sbatch ${script_folder}/${script_name}.sbatch
 fi
 }
 
@@ -60,7 +60,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 
 	progress=0 #progress bar
 	((matrices_processed++))
-	
+
 	MATRIX_FILE=$(basename -- "${fullpath}")
 	MATRIX_NAME="${MATRIX_FILE%.*}"
 	echo "============= processing matrix ${MATRIX_NAME} ($matrices_processed matrices processed)"
@@ -84,16 +84,18 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 					echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 				else
 					if [ "${exp}" == "BCSR_reord" ]; then
-						export t=$(python3 -u src/scripts/get_tau.py -b ${b} -B ${B} -m ${MATRIX_NAME})
+# 						export t=$(python3 -u src/scripts/get_tau.py -b ${b} -B ${B} -m ${MATRIX_NAME})
+                        t=$(grep ${MATRIX_NAME} tau.csv | grep "${B}, ${b}")
 					else
 						export t=0
 					fi
+					echo "tau is $t"
 
 					if [ $t != -1 ];then #this is a special flag for BCSR_reord experiments that are not to be run
 						export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -o ${OUTFILE} -n ${EXP_NAME}"
 						export BASIC_ARGS
 						export EXP_ARGS=${experiments[$exp]}
-						create_launch
+# 						create_launch
 					fi
 				fi
 			done
