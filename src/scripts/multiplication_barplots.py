@@ -270,12 +270,14 @@ df = pd.read_csv(data_file)
 
 df_CSR = df[df["multiplication_algo"] == 2][["matrix","b_cols","avg_time_multiply"]]
 df = pd.merge(df,df_CSR, how = "left",on = ["matrix","b_cols"], suffixes=('','_CSR') )
-print(list(df["nonzeros"].unique()))
-df["block_density"] = np.where(df["nonzeros"].str.isnumeric(), df["nonzeros"]/df["VBR_nzcount"],np.nan)
+
+df["block_density"] = df["nonzeros"]/df["VBR_nzcount"]
 
 df_VBR_no_reord = df[(df["multiplication_algo"] == 6) & (df["blocking_algo"] == 2)][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size","block_density"]]
 
 df = pd.merge(df,df_VBR_no_reord, how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_VBR_no_reord') )
+
+df = df[df["tau"] != -1]
 
 df["dense-amp"] = df["block_density"]/df["block_density_VBR_no_reord"]
 df["speed-vs-no-reord"] = df["avg_time_multiply_VBR_no_reord"]/df["avg_time_multiply"]
@@ -283,6 +285,7 @@ df["speed-vs-cusparse"] = df["avg_time_multiply_CSR"]/df["avg_time_multiply"]
 df["time-per-block"] = df["avg_time_multiply"]/df["VBR_nzblocks_count"]
 df["time-per-area"] = df["avg_time_multiply"]/df["VBR_nzcount"]
 df["time-per-true-nonzero"] = df["avg_time_multiply"]/df["nonzeros"]
+
 
 #df_BELLPACK = df[df["multiplication_algo"] == 3][["matrix","b_cols","avg_time_multiply","row_block_size","col_block_size"]]
 #df = pd.merge(df,df_BELLPACK, how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_BELLPACK') )
