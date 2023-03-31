@@ -3,8 +3,8 @@ export RESULTS_PATH=$2
 export PROGRAM=$3
 
 
-BLOCK_SIZEs=(64 128 256 512 1024)
-B_COLs=(1024 2048 4096 8192)
+BLOCK_SIZEs=(256 512 1024)
+B_COLs=(1024 8192)
 EXPERIMENTs=("BCSR_no_reord" "BCSR_reord" "BELLPACK_no_block" "CSR" "GEMM")
 taufile="results/collected_experiments/suitsparse_all/tau.csv"
 
@@ -81,7 +81,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 
 				B=$block
 				b=$block
-				export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_B_${B}_a_${a}_e_${exp}"
+				export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_B_${B}_bcols_${b_cols}_a_${a}_e_${exp}"
 				export OUTFILE=${MATRIX_FOLDER}/${EXP_NAME}.txt
 				if [[ -f "${OUTFILE}" ]]; then
 					echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
