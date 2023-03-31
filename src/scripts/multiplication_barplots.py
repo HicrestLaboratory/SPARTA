@@ -260,8 +260,8 @@ parser.add_argument('-i',
 args = vars(parser.parse_args())
 
 
-data_file = args.file
-image_folder = args.imagedir
+data_file = args["file"]
+image_folder = args["imagedir"]
 try: os.mkdir(image_folder) 
 except: 1
 
@@ -270,7 +270,8 @@ df = pd.read_csv(data_file)
 
 df_CSR = df[df["multiplication_algo"] == 2][["matrix","b_cols","avg_time_multiply"]]
 df = pd.merge(df,df_CSR, how = "left",on = ["matrix","b_cols"], suffixes=('','_CSR') )
-df["block_density"] = df["nonzeros"].values/df["VBR_nzcount"].values
+print(list(df["nonzeros"].unique()))
+df["block_density"] = np.where(df["nonzeros"].str.isnumeric(), df["nonzeros"]/df["VBR_nzcount"],np.nan)
 
 df_VBR_no_reord = df[(df["multiplication_algo"] == 6) & (df["blocking_algo"] == 2)][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size","block_density"]]
 
