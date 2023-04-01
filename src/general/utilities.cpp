@@ -189,6 +189,7 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
     add_to_output("rows", to_string(cmat.rows));
     add_to_output("cols", to_string(cmat.cols));
     add_to_output("nonzeros", to_string(cmat.nztot()));
+    add_to_output("symmetrize", to_string(cLine.symmetrize_));
 
     //blocking info
     add_to_output("blocking_algo", to_string(cLine.blocking_algo_));
