@@ -562,9 +562,9 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_16F;
-        data_type_C = CUDA_R_16F;
-        compute_type = CUBLAS_COMPUTE_16F;
+        data_type_AB = CUDA_R_32F;
+        data_type_C = CUDA_R_32F;
+        compute_type = CUBLAS_COMPUTE_32F;
     }
     else
     {
@@ -1251,9 +1251,9 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_16F;
-        data_type_C = CUDA_R_16F;
-	compute_type = CUDA_R_32F;
+        data_type_AB = CUDA_R_32F;
+        data_type_C = CUDA_R_32F;
+        compute_type = CUDA_R_32F;
     }
     else
     {
@@ -1471,7 +1471,6 @@ void cusparse_blockmat_multiplyAB(CSR& A, DataT* B, int B_cols, DataT_C* C, int 
     int *csrRowPtr, *csrColInd;
 
     prepare_cusparse_CSR( A, &csrRowPtr, &csrColInd, &csrVal);
-    cudaDeviceSynchronize();
 
     cusparse_gemm_custom(A.rows, A.cols, (int) A.nztot(), csrRowPtr, csrColInd, csrVal, B, B_cols, B_cols, C, C_cols, 1, 1, dt);
 
@@ -1498,9 +1497,9 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_16F;
-        data_type_C = CUDA_R_16F;
-	compute_type = CUDA_R_16F;
+        data_type_AB = CUDA_R_32F;
+        data_type_C = CUDA_R_32F;
+        compute_type = CUDA_R_32F;
     }
     else
     {
@@ -1776,9 +1775,9 @@ void cublas_dense_multiplyAB(int rows, int cols, DataT* A, DataT* B, int B_cols,
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_16F;
-        data_type_C = CUDA_R_16F;
-        compute_type = CUBLAS_COMPUTE_16F;
+        data_type_AB = CUDA_R_32F;
+        data_type_C = CUDA_R_32F;
+        compute_type = CUBLAS_COMPUTE_32F;
     }
     else
     {
@@ -1862,8 +1861,12 @@ void cublas_dense_multiplyAB(int rows, int cols, DataT* A, DataT* B, int B_cols,
 
 
     //let each stream copy the relevant C block from device
+    // --------------------------------------------------------------
     checkCudaErrors(cublasGetMatrix(
         C_rows, C_cols, sizeof(DataT_C), d_C, C_rows, C, C_rows));
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+//     checkCudaErrors(cudaMemcpy(C, d_C, C_rows * C_cols * sizeof(DataT), cudaMemcpyDeviceToHost));
+    // --------------------------------------------------------------
 
     cudaDeviceSynchronize();
 
