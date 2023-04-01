@@ -98,13 +98,16 @@ int main(int argc, char* argv[])
         #ifdef CUTLASS
             //convert to dense.
             DataT *dnA = csr2dn (cmat);
-            #ifdef DEBUG_GEMM
-                for (int i=0; i<(cmat.rows*cmat.cols); i++) {
-
-                }
-            #endif
             //Run dense multiplication
-            cutlass_dense_multiplyAB(cmat.rows, cmat.cols, dnA, B_cols, mat_B, 1.0, 1.0, mat_C, dt);
+            algo_times.clear();
+            for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
+            {
+                fill(mat_C, mat_C + C_cols*C_rows, 0);
+                cutlass_dense_multiplyAB(cmat.rows, cmat.cols, dnA, B_cols, mat_B, 1.0, 1.0, mat_C, dt);
+                if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
+            }
+            bEngine.multiplication_timer_avg = avg(algo_times);
+            bEngine.multiplication_timer_std = var(algo_times);
         #else
             printf("To use the cultass gemm you need to compile the code difining the macro \"CUTLASS\" (in \"include/cutlass_bellpack_lib.h\")\n");
         #endif

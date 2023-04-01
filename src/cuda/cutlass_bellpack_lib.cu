@@ -41,6 +41,7 @@
 #include "cuda_utilities.h"
 #include "cutlass_bellpack_lib.h"
 
+#define DBG_CHK { printf("DBG_CHK: file %s at line %d\n", __FILE__, __LINE__); }
 
 #define DataT float
 #define DataT_Cutlass cutlass::half_t
@@ -232,24 +233,24 @@ int compute_cutlass_bellpack (int rows, int cols, int ell_blocksize, int ellValu
 
 void bellpack_cutlass_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int C_cols, float& dt, int verbose) {
 
-        // ellValue_cols, int *ell_blocksize, int *ellColInd_rows, int *ellColInd_cols, int *num_blocks, intT** ellColInd, Cutlass_DataT** ellValues
-        int ell_blocksize, ellColInd_rows, ellColInd_cols, ellValue_cols, num_blocks;
-        intT* ellColInd;
-        DataT* ellValues;
-        prepare_cusparse_BLOCKEDELLPACK(A, &ell_blocksize, &ellValue_cols, &ellColInd_rows, &ellColInd_cols, &num_blocks, &ellColInd, &ellValues);
+    // ellValue_cols, int *ell_blocksize, int *ellColInd_rows, int *ellColInd_cols, int *num_blocks, intT** ellColInd, Cutlass_DataT** ellValues
+    int ell_blocksize, ellColInd_rows, ellColInd_cols, ellValue_cols, num_blocks;
+    intT* ellColInd;
+    DataT* ellValues;
+    prepare_cusparse_BLOCKEDELLPACK(A, &ell_blocksize, &ellValue_cols, &ellColInd_rows, &ellColInd_cols, &num_blocks, &ellColInd, &ellValues);
 
-        if (verbose > 1) {
-            int pad_num = 0;
-            for (int i=0; i<ellColInd_rows*ellColInd_cols; i++)
-                if (ellColInd[i] == -1)
-                    pad_num++;
-            printf("ell_blocksize = %d, ellColInd has dimensions %d x %d with %d padding blocks, ellValues has dimensions %ld x %d\n", ell_blocksize, ellColInd_rows, ellColInd_cols, pad_num, A->rows, ellValue_cols);
-        }
+    if (verbose > 1) {
+        int pad_num = 0;
+        for (int i=0; i<ellColInd_rows*ellColInd_cols; i++)
+            if (ellColInd[i] == -1)
+                pad_num++;
+        printf("ell_blocksize = %d, ellColInd has dimensions %d x %d with %d padding blocks, ellValues has dimensions %ld x %d\n", ell_blocksize, ellColInd_rows, ellColInd_cols, pad_num, A->rows, ellValue_cols);
+    }
 
-        compute_cutlass_bellpack<intT,DataT>(A->rows, A->cols, ell_blocksize, ellValue_cols, ellColInd, ellValues, A->cols, B_cols, B, A->rows, B_cols, C, dt);
+    compute_cutlass_bellpack<intT,DataT>(A->rows, A->cols, ell_blocksize, ellValue_cols, ellColInd, ellValues, A->cols, B_cols, B, A->rows, B_cols, C, dt);
 
-        free(ellColInd);
-        free(ellValues);
+    free(ellColInd);
+    free(ellValues);
 
     return;
 }
@@ -277,9 +278,9 @@ int cutlass_dense_multiplyAB(int m, int k, DataT* inputA, int n, DataT* inputB, 
   //
   // Define the problem size
   //
-  int M = m;
-  int N = n;
-  int K = k;
+  int M = ((m % 16) == 0) ? m : (m/16 +1)*16;
+  int N = ((n % 16) == 0) ? n : (n/16 +1)*16;
+  int K = ((k % 16) == 0) ? k : (k/16 +1)*16;
 
   float alpha = alp;
   float beta  = bet;
@@ -300,7 +301,7 @@ int cutlass_dense_multiplyAB(int m, int k, DataT* inputA, int n, DataT* inputB, 
 
   for (int i=0; i<M; ++i)
     for (int j=0; j<K; ++j)
-      A.host_ref().at({i, j}) = inputA[i*K +j];
+      A.host_ref().at({i, j}) = (i<m && j<k) ? inputA[i*k +j] : 0;
   // Copy host memory to device memory
   A.sync_device();
 
@@ -308,11 +309,9 @@ int cutlass_dense_multiplyAB(int m, int k, DataT* inputA, int n, DataT* inputB, 
 
   for (int i=0; i<K; ++i)
     for (int j=0; j<N; ++j)
-      B.host_ref().at({i, j}) = inputB[i*N +j];
+      B.host_ref().at({i, j}) = (i<k && j<n) ? inputB[i*n +j] : 0;
   // Copy host memory to device memory
   B.sync_device();
-
-
 
   cutlass::half_t const *ptrA = A.device_data();
   cutlass::half_t const *ptrB = B.device_data();
@@ -330,7 +329,11 @@ int cutlass_dense_multiplyAB(int m, int k, DataT* inputA, int n, DataT* inputB, 
   // Launch GEMM on the device
   //
 
-
+    //initialize cuda events
+  cudaEvent_t start, stop;
+  checkCudaErrors(cudaEventCreate(&start));
+  checkCudaErrors(cudaEventCreate(&stop));
+  checkCudaErrors(cudaEventRecord(start, 0));
 
   status = gemm_op({
     {M, N, K},
@@ -341,19 +344,24 @@ int cutlass_dense_multiplyAB(int m, int k, DataT* inputA, int n, DataT* inputB, 
     {alpha, beta}           // epilogue operation arguments
   });
 
-
-
   if (status != cutlass::Status::kSuccess) {
     return -1;
   }
 
+    // Wait for completion
+  cudaError_t error = cudaDeviceSynchronize();
+  checkCudaErrors( cudaEventRecord(stop, 0) );
+  checkCudaErrors( cudaEventSynchronize(stop) );
+  checkCudaErrors( cudaEventElapsedTime(&dt, start, stop) );
+  checkCudaErrors( cudaEventDestroy(start) );
+  checkCudaErrors( cudaEventDestroy(stop) );
 
 
   // Copy host memory to device memory
   C.sync_host();
-  for (int i=0; i<M; ++i)
-    for (int j=0; j<N; ++j)
-      output[i*N +j] = C.host_ref().at({i, j});
+  for (int i=0; i<m; ++i)
+    for (int j=0; j<n; ++j)
+      output[i*n +j] = C.host_ref().at({i, j});
 
 
 
