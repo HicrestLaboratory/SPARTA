@@ -13,6 +13,7 @@
 #include <random>
 #include <algorithm> //fill, equal
 
+#define DBG_CHK { printf("DBG_CHK: file %s at line %d\n", __FILE__, __LINE__); }
 
 using namespace std;
 
@@ -90,7 +91,11 @@ int main(int argc, char* argv[])
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
-            bEngine.multiplication_timer_std = var(algo_times); 
+            bEngine.multiplication_timer_std = var(algo_times);
+
+            if (cli.verbose_ > 2)
+                pico_print_DnM("mat_C", C_rows, C_cols, mat_C);
+
             break;
         }
     case cutlass_gemm:
@@ -108,6 +113,10 @@ int main(int argc, char* argv[])
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
             bEngine.multiplication_timer_std = var(algo_times);
+
+            if (cli.verbose_ > 2)
+                pico_print_DnM("mat_C", C_rows, C_cols, mat_C);
+
         #else
             printf("To use the cultass gemm you need to compile the code difining the macro \"CUTLASS\" (in \"include/cutlass_bellpack_lib.h\")\n");
         #endif
@@ -126,7 +135,11 @@ int main(int argc, char* argv[])
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
-            bEngine.multiplication_timer_std = var(algo_times); 
+            bEngine.multiplication_timer_std = var(algo_times);
+
+            if (cli.verbose_ > 2)
+                pico_print_DnM("mat_C", C_rows, C_cols, mat_C);
+
             break;
         }
     case cublas_vbr_inverted:
@@ -151,6 +164,10 @@ int main(int argc, char* argv[])
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
             bEngine.multiplication_timer_std = var(algo_times); 
+
+            if (cli.verbose_ > 2)
+                pico_print_DnM("mat_C", C_rows, C_cols, mat_C);
+
             break;
         }
 
@@ -167,7 +184,11 @@ int main(int argc, char* argv[])
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
-            bEngine.multiplication_timer_std = var(algo_times); 
+            bEngine.multiplication_timer_std = var(algo_times);
+
+            if (cli.verbose_ > 2)
+                pico_print_DnM("mat_C", C_rows, C_cols, mat_C);
+
             break;
         }
     case cusparse_spmm:
@@ -180,7 +201,11 @@ int main(int argc, char* argv[])
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
-            bEngine.multiplication_timer_std = var(algo_times); 
+            bEngine.multiplication_timer_std = var(algo_times);
+
+            if (cli.verbose_ > 2)
+                pico_print_DnM("mat_C", C_rows, C_cols, mat_C);
+
             break;
         }
     case cusparse_bellpack:
@@ -189,26 +214,19 @@ int main(int argc, char* argv[])
             VBR vbmat_bellpack;
             vbmat_bellpack.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.row_block_size_,cli.force_fixed_size);            
             algo_times.clear();
-            A_rows = vbmat_bellpack.rows;
-            A_cols = vbmat_bellpack.cols;
-            B_rows = A_cols;
-            C_rows = A_rows;
-            DataT* mat_B_bell = new DataT[B_rows * B_cols];
-            for (int n = 0; n < B_rows*B_cols; n++) 
-            {
-                mat_B_bell[n] = dist(e2);
-            }
-
-            DataT* mat_C_bell = new DataT[C_rows * C_cols];
 
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
-                fill(mat_C_bell, mat_C_bell + C_cols*C_rows, 0);
-                bellpack_blockmat_multiplyAB(&vbmat_bellpack, mat_B_bell, B_cols, mat_C_bell, C_cols, dt, cli.verbose_);
+                fill(mat_C, mat_C + C_cols*C_rows, 0);
+                bellpack_blockmat_multiplyAB(&vbmat_bellpack, mat_B, B_cols, mat_C, C_cols, dt, cli.verbose_);
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
-            bEngine.multiplication_timer_std = var(algo_times); 
+            bEngine.multiplication_timer_std = var(algo_times);
+
+            if (cli.verbose_ > 2)
+                pico_print_DnM("mat_C", C_rows, C_cols, mat_C);
+
             break;
         }
     case cutlass_bellpack:
@@ -218,26 +236,18 @@ int main(int argc, char* argv[])
             VBR vbmat_bellpack;
             vbmat_bellpack.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.force_fixed_size);
             algo_times.clear();
-            A_rows = vbmat_bellpack.rows;
-            A_cols = vbmat_bellpack.cols;
-            B_rows = A_cols;
-            C_rows = A_rows;
-            DataT* mat_B_bell = new DataT[B_rows * B_cols];
-            for (int n = 0; n < B_rows*B_cols; n++)
-            {
-                mat_B_bell[n] = dist(e2);
-            }
-
-            DataT* mat_C_bell = new DataT[C_rows * C_cols];
 
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
-                fill(mat_C_bell, mat_C_bell + C_cols*C_rows, 0);
-                bellpack_cutlass_multiplyAB(&vbmat_bellpack, mat_B_bell, B_cols, mat_C_bell, C_cols, dt, cli.verbose_);
+                fill(mat_C, mat_C + C_cols*C_rows, 0);
+                bellpack_cutlass_multiplyAB(&vbmat_bellpack, mat_B, B_cols, mat_C, C_cols, dt, cli.verbose_);
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
             bEngine.multiplication_timer_std = var(algo_times);
+
+            if (cli.verbose_ > 2)
+                pico_print_DnM("mat_C", C_rows, C_cols, mat_C);
         #else
             printf("To use the cultass bellpack you need to compile the code difining the macro \"CUTLASS\" (in \"include/cutlass_bellpack_lib.h\")\n");
         #endif
