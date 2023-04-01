@@ -12,12 +12,14 @@ import operator
 import pandas as pd
 import os as os
 import seaborn as sns
+import argparse
+
 
 
 global_label_dict = {
     "block_density" : "Blocked density",
     "density" : "Original density",
-    "dense_amp" : "Density amplification (against unblocked)",
+    "dense-amp" : "Density amplification vs natural blocking",
     "relative_dense_amp" : "Density amplification (against natural blocking)",
     "block ratio": "Shape (height / width)",
     "speed-vs-cusparse": "Speed-up against cuSparse-CSR",
@@ -30,7 +32,7 @@ global_exp_dict["VBR-reord"] = {
     "hatch" : "//",
     "edgecolor" : "black",
     "color" : "orange",
-    "label" : "cuBLAS-BCSR (our blocking)"
+    "label" : "cuBLAS-BCSR (IC blocking)"
 
 }
 
@@ -49,6 +51,15 @@ global_exp_dict["BELLPACK-no-reord"] = {
 
 }
 
+global_exp_dict["BELLPACK-reord"] = {
+    "hatch" : "//",
+    "edgecolor" : "black",
+    "color" : "green",
+    "label" : "cuSparse-BELLPACK (IC blocking)"
+
+}
+
+
 global_exp_dict["GEMM"] = {
     "hatch" : "--",
     "edgecolor" : "black",
@@ -62,6 +73,14 @@ global_exp_dict["CSR"] = {
     "edgecolor" : "black",
     "color" : "white",
     "label" : "cuSparse-CSR"
+
+}
+
+global_exp_dict["CUTLASS_BELLPACK"] = {
+    "hatch" : "//",
+    "edgecolor" : "black",
+    "color" : "gray",
+    "label" : "CUTLASS-BELLPACK"
 
 }
 
@@ -94,8 +113,7 @@ def get_line(df, constraints):
     return df.query(query)
 
 
-def barplot(x_labels, x_ax_label, ys, y_styles = {} , y_ax_label = "", savename = "test_barplot", title = ""):
-    plt.figure()
+def barplot(x_labels, x_ax_label, ys, y_styles = {} , y_ax_label = "", title = ""):
     plt.xlabel(x_ax_label)
     plt.ylabel(y_ax_label)
     
@@ -110,20 +128,21 @@ def barplot(x_labels, x_ax_label, ys, y_styles = {} , y_ax_label = "", savename 
         plt.bar(x_pos,y, width = width, **style)
         barpos += increment
 
-    plt.legend()
     plt.grid("both")
     plt.title(title)
     plt.xticks(range(len(x_labels)), x_labels, rotation=90)
-    plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
-    plt.close()    
+ 
 
 
 exps = {}
 exps["VBR-no-reord"] = (6,2)
 exps["VBR-reord"] = (6,5)
 exps["BELLPACK-no-reord"] = (3,2)
+#exps["BELLPACK-reord"] = (3,5)
 exps["CSR"] = (2,3)
-exps["GEMM"] = (1,3)
+#exps["GEMM"] = (1,3)
+#exps["CUTLASS_BELLPACK"] = (8,5)
+
 
 
 def make_barplot(df, image_folder,B_cols, row_block_size, col_block_size, variable = "speed-vs-cusparse"):
@@ -147,13 +166,19 @@ def make_barplot(df, image_folder,B_cols, row_block_size, col_block_size, variab
 
     styles = [global_exp_dict[exp] for exp in data_lines.keys()]
 
+
+    plt.figure()
     barplot(
                 x_labels = matrices_names,
                 x_ax_label="graphs",
                 ys=data_lines.values(),
                 y_styles = styles,
-                y_ax_label = global_label_dict[variable], 
-                savename = savename)
+                y_ax_label = global_label_dict[variable]
+                )
+    plt.legend()
+    plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
+    plt.close()   
+    
 
 def make_barplot_best(df, image_folder,B_cols, variable = "speed-vs-cusparse"):
     tmp_df = df.loc[df["b_cols"] == B_cols]
@@ -163,6 +188,7 @@ def make_barplot_best(df, image_folder,B_cols, variable = "speed-vs-cusparse"):
     matrices_names = [val.split("/")[-1].split(".")[0] for val in tmp_df["matrix"].unique()]
 
     data_lines = {exp_name : [] for exp_name in exps}
+    data_lines.pop("CSR")
 
     for matrix in tmp_df["matrix"].unique():
         for exp_name in data_lines.keys():
@@ -177,13 +203,20 @@ def make_barplot_best(df, image_folder,B_cols, variable = "speed-vs-cusparse"):
 
     styles = [global_exp_dict[exp] for exp in data_lines.keys()]
 
+
+    plt.figure()
     barplot(
                 x_labels = matrices_names,
-                x_ax_label="graphs",
+                x_ax_label="Sparse matrices",
                 ys=data_lines.values(),
                 y_styles = styles,
-                y_ax_label = global_label_dict[variable], 
-                savename = savename)
+                y_ax_label = global_label_dict[variable])
+    plt.axhline(linewidth=2, y = 1, color = "red", label = global_exp_dict["CSR"]["label"])
+    plt.legend()
+    plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
+    plt.close()   
+
+
 
 
 
@@ -202,11 +235,33 @@ def make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable = "speed-vs-
     plt.savefig(f"{image_folder}/{exp_name}_heatmap_{colormap_variable}_{B_cols}.png",  bbox_inches='tight', dpi = 300)
     plt.close()
 
-data_file = "test_suitsparse_3_multiplication.csv"
-exp_name = "suitsparse_3_mult"
-#data_file = "results/csr_vs_cublas.csv"
-#exp_name = "csr_vs_dense"
-image_folder = f"images/multiplication_images/{exp_name}"
+
+def make_scatter(df,B_cols,var_x = "dense-amp", var_y = "speed-vs-no-reord"):
+    plt.figure()
+    tmp_df = df.loc[(df["b_cols"] == B_cols) & (df["multiplication_algo"] == 6) & (df["blocking_algo"] == 5)]
+    sns.scatterplot(data=tmp_df, x=var_x, y=var_y)
+    plt.xlabel(global_label_dict[var_x])
+    plt.ylabel(global_label_dict[var_y])
+    plt.savefig(f"{image_folder}/scatter_plot_{var_x}_vs_{var_y}",  bbox_inches='tight', dpi = 300)
+    plt.close()
+
+
+parser = argparse.ArgumentParser(description='Plots for multiplication experiments')
+parser.add_argument('-f',
+                    '--file',
+                    type=str,
+                    default='results/test_suitsparse_3_multiplication.csv',
+                    help='The csv with the results to be plotted')
+parser.add_argument('-i',
+                    '--imagedir',
+                    type = str,
+                    default='images/multiplication_images/',
+                    help='The directory where to save the images')
+args = vars(parser.parse_args())
+
+
+data_file = args["file"]
+image_folder = args["imagedir"]
 try: os.mkdir(image_folder) 
 except: 1
 
@@ -215,11 +270,14 @@ df = pd.read_csv(data_file)
 
 df_CSR = df[df["multiplication_algo"] == 2][["matrix","b_cols","avg_time_multiply"]]
 df = pd.merge(df,df_CSR, how = "left",on = ["matrix","b_cols"], suffixes=('','_CSR') )
+print(list(df["nonzeros"].unique()))
+df["block_density"] = np.where(df["nonzeros"].str.isnumeric(), df["nonzeros"]/df["VBR_nzcount"],np.nan)
 
-df_VBR_no_reord = df[(df["multiplication_algo"] == 6) & (df["blocking_algo"] == 2)][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size"]]
+df_VBR_no_reord = df[(df["multiplication_algo"] == 6) & (df["blocking_algo"] == 2)][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size","block_density"]]
 
 df = pd.merge(df,df_VBR_no_reord, how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_VBR_no_reord') )
 
+df["dense-amp"] = df["block_density"]/df["block_density_VBR_no_reord"]
 df["speed-vs-no-reord"] = df["avg_time_multiply_VBR_no_reord"]/df["avg_time_multiply"]
 df["speed-vs-cusparse"] = df["avg_time_multiply_CSR"]/df["avg_time_multiply"]
 df["time-per-block"] = df["avg_time_multiply"]/df["VBR_nzblocks_count"]
@@ -242,10 +300,11 @@ df.sort_values(by=['density','matrix'], inplace=True)
 
 print("Making barplots")
 for B_cols in df["b_cols"].unique():
+    make_scatter(df,B_cols)
     print(f"***** for B_cols = {B_cols}")
     make_barplot_best(df, image_folder,B_cols)
-    for row_block_size in (32,64,128,512,1024):
-        for col_block_size in (32,64,128,512,1024):
+    for row_block_size in (32,64,128,256,512,1024):
+        for col_block_size in (32,64,128,256,512,1024):
             make_barplot(df, image_folder,B_cols, row_block_size,col_block_size)
             1
 

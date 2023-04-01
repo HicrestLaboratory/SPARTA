@@ -320,8 +320,6 @@ void VBR::fill_from_CSR(const CSR& cmat,const vector<intT> &row_partition, intT 
     copy(mab_vec.begin(),mab_vec.end(), mab);
 }
 
-
-
 void VBR::multiply(DataT* B, int B_cols, DataT_C* C)
 {
 //multiplies a VBS matrix (vbmatA) and dense matrix (B); stores A*B into (C)
@@ -372,7 +370,6 @@ void VBR::multiply(DataT* B, int B_cols, DataT_C* C)
     }
 
 }
-
 
 void serial_batched(const VBR& vbmatA, DataT* d_B, int B_cols, DataT_C* d_C)
 {

@@ -4,20 +4,11 @@
 .vscode/settings.json
 .vscode/targets.log
 *.swp
-programs/general/TEST_blocking
-programs/general/TEST_matrices
 *.json
-programs/general/TEST_blocking_VBR
 cuda-repo-wsl-ubuntu-12-0-local_12.0.0-1_amd64.deb
-programs/general/TEST_blocking_VBR
 results/scripts/
 data/real_world/nd12k.el
-programs/general/Matrix_Blocking
-programs/general/TEST_blocking_VBR
-programs/general/TEST_similarities
-programs/general/TEST_blocking_VBR
-programs/general/TEST_matrices
-programs/general/TEST_similarities
+programs/*
 .kdev4/*
 *.kdev4
 *.o
@@ -29,6 +20,7 @@ outputs_exps/*
 results/*
 images/*
 test.el
+data/suitsparse_big/*
 data/suitsparse_collection_1.rar
 programs/cuda/cuda_multiply
 programs/cuda/TEST_cuda
@@ -36,3 +28,7 @@ src/scripts/prepare_mtx_files.sh
 programs/general/TEST_blocking_VBR_2D
 results/*
 outputfile
+data/suitsparse_N20000_100000_dN0.0001_0.1/ns3Da.tar.gz
+data/suitsparse_big.rar
+data/suitsparse*
+!results/collected_experiments/

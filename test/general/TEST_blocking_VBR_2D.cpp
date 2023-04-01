@@ -28,9 +28,9 @@ int main(int argc, char* argv[])
     if (cli.verbose_ > 0) cout << "Filling a VBR with nonzero blocks." << endl;
     //create a VBR matrix from grouping (without reordering the original csr)
     VBR vbmat;
-    vbmat.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.force_fixed_size);
-
     
+
+    vbmat.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.force_fixed_size);
 
 
     //GET BLOCK PROPERTIES FROM GROUPING WITHOUT CREATING VBR EXPLICITLY
