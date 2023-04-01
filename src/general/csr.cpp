@@ -7,6 +7,7 @@
 
 #include <algorithm>    // std::sort
 #include <numeric> //std::iota
+#include <iterator>
 #include "matrices.h"
 #include "utilities.h"
 
@@ -148,7 +149,7 @@ void CSR::scramble()
     permute_rows(v);
 }
 
-void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only, MatrixFormat mat_fmt)
+void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only, MatrixFormat mat_fmt, bool symmetrize)
 //reads edgelist into the CSR.
 {
     this->pattern_only = pattern_only;
@@ -217,6 +218,27 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
 
         pos_holder[i].push_back(child);
     	if (not pattern_only) val_holder[i].push_back(val);
+    }
+
+
+    if (symmetrize)
+    {
+        for (intT i = 0; i < pos_holder.size(); i++)
+        {
+            for (intT nz = 0; nz < pos_holder[i].size(); nz++)
+            {
+                intT j = pos_holder[i][nz];
+                auto it = lower_bound(pos_holder[j].begin(), pos_holder[j].end(), i);
+                if (it == pos_holder[j].end() || *it != i) {
+                    pos_holder[j].insert(it, i);
+                    if (not pattern_only) 
+                    {
+                        throw std::invalid_argument("Invalid option: -e 1; symmetrize only implemented for unweighted graphs");
+                    }
+                }
+            }
+
+        }
     }
 
 

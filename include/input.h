@@ -22,6 +22,7 @@ class CLineReader
         bool sim_use_pattern_ = 1;
         bool pattern_only_ = 0;
         bool force_fixed_size = 0;
+        bool symmetrize_ = false;
 
         int blocking_algo_ = 3; // 0 for iterative; 1 for structured; 2 for fixed, 3 for iterative_clocked
         int seed_ = 0;
@@ -77,7 +78,7 @@ class CLineReader
         void ParseArgs(int argc, char* argv[])
         {
             char c_opt;
-            while ((c_opt = getopt(argc, argv, "a:b:B:c:f:F:g:m:M:n:o:p:P:r:R:s:S:t:v:w:x:")) != -1)
+            while ((c_opt = getopt(argc, argv, "a:b:B:c:e:f:F:g:m:M:n:o:p:P:r:R:s:S:t:v:w:x:")) != -1)
             {
                 switch(c_opt) 
                 {
@@ -85,6 +86,7 @@ class CLineReader
                     case 'b': col_block_size_ = std::stoi(optarg);                      break;
                     case 'B': row_block_size_ = std::stoi(optarg);                      break;
                     case 'c': B_cols_ = std::stoi(optarg);                          break;
+                    case 'e': symmetrize_ = (std::stoi(optarg) == 1);                          break;
                     case 'f': filename_ = std::string(optarg);                      break;
                     case 'F': force_fixed_size = (std::stoi(optarg) == 1);                      break;
                     case 'g': sim_use_groups_ = (std::stoi(optarg) == 1);           break;

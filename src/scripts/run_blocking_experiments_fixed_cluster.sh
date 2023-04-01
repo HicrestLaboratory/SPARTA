@@ -20,15 +20,14 @@ function create_launch {
 script_body="#!/bin/bash -l
 #SBATCH --job-name="${EXP_NAME}"
 #SBATCH --time=00:10:00
-#SBATCH --output="${RESULTS_PATH}_scripts/outputs/${EXP_NAME}".%j.o
-#SBATCH --error="${RESULTS_PATH}_scripts/errors/${EXP_NAME}".%j.e
+#SBATCH --output="${RESULTS_PATH}/_scripts/${EXP_NAME}".%j.o
+#SBATCH --error="${RESULTS_PATH}/_scripts/${EXP_NAME}".%j.e
+#SBATCH --account=flavio.vella
 #SBATCH --ntasks=1
 #SBATCH --partition=short
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=gpu:0
-#SBATCH --account=flavio.vella
-
 ./${PROGRAM} ${BASIC_ARGS} ${ARGS}
 
 sleep 1s
