@@ -41,7 +41,7 @@ module load cuda/12.1
 sleep 1s
 "
 script_name=___tmp_script_${EXP_NAME}
-script_folder=${RESULTS_PATH}/_scripts
+script_folder=${RESULTS_PATH}_scripts
 
 if [[ -f "${script_folder}/${script_name}" ]]; then    
 	echo "experiment exists already"
@@ -52,7 +52,7 @@ fi
 }
 
 mkdir ${RESULTS_PATH}
-mkdir ${RESULTS_PATH}/_scripts
+mkdir ${RESULTS_PATH}_scripts
 
 
 total=$((${#EXPERIMENTs[@]}*${#B_COLs[@]}*${#BLOCK_SIZEs[@]}))
