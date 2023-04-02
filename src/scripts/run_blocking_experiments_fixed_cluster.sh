@@ -13,7 +13,7 @@ USE_GROUP=0
 REORDERING=0
 SIM=1 #0: hamming 1:jaccard; +2 for OPENMP versions
 
-BASIC_ARGS="-P 1 -v 1 -r ${REORDERING} -m ${SIM} -p ${USE_PATTERN} -g ${USE_GROUP} -R 1"
+BASIC_ARGS="-P 1 -v 1 -r ${REORDERING} -m ${SIM} -p ${USE_PATTERN} -g ${USE_GROUP} -R 1 -e 1"
 
 function create_launch {
 
