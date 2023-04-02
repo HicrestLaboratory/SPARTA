@@ -1,11 +1,12 @@
 
 
 MATRIX_PATH=$1
+SYMMETRIC=$2
 mkdir $MATRIX_PATH
 
 
-nmin=100000
-nmax=150000
+nmin=20000
+nmax=21000
 increment=5000
 
 dmin=10000
@@ -18,7 +19,12 @@ for ((i=nmin; i<=nmax; i+=increment)); do
 	nmax_tmp=$((i+increment))
 	nzmin=$((nmin_tmp*nmin_tmp/dmin))
 	nzmax=$((nmax_tmp*nmax_tmp/dmax))
-	ssget_line="[ @cols -ge ${nmin_tmp} ] && [ @cols -le ${nmax_tmp} ] && [ @rows -ge ${nmin_tmp} ] && [ @rows -le ${nmax_tmp} ] && [ @nonzeros -ge ${nzmin} ] && [ @nonzeros -le ${nzmax} ]"
+	if [ $SYMMETRIC == 1 ]
+	then
+		ssget_line='[ @cols -ge ${nmin_tmp} ] && [ @cols -le ${nmax_tmp} ] && [ @rows -ge ${nmin_tmp} ] && [ @rows -le ${nmax_tmp} ] && [ @nonzeros -ge ${nzmin} ] && [ @nonzeros -le ${nzmax} ] && [$(awk "BEGIN{print(@psym == 1)}") -eq 1 ]'
+	else
+		ssget_line="[ @cols -ge ${nmin_tmp} ] && [ @cols -le ${nmax_tmp} ] && [ @rows -ge ${nmin_tmp} ] && [ @rows -le ${nmax_tmp} ] && [ @nonzeros -ge ${nzmin} ] && [ @nonzeros -le ${nzmax} ] && [ $(awk "BEGIN{print(@psym < 1)}") -eq 1 ]"
+	fi
 	tmp_array=($(ssget -s "${ssget_line}"))
 	array+=("${tmp_array[@]}")
 done
