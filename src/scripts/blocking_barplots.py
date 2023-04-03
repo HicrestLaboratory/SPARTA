@@ -230,6 +230,8 @@ def make_scatter_hist(x_var="density", y_var="relative-dense-amp", row_block_siz
 
     # Compute histogram of y_var > 1 at each x_var bin
     bins = np.logspace(np.log10(tmp_df[x_var].min()), np.log10(tmp_df[x_var].max()), 10)
+    #vals = np.log10(tmp_df[x_var].values)
+    #bins = [vals[i] for i in range(0,len(vals),25)]
     mask = tmp_df[y_var] > 1
     weights = mask.astype(int)
     hist, bin_edges = np.histogram(tmp_df[x_var], bins=bins, weights=weights)
