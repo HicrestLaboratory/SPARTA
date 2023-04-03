@@ -143,15 +143,20 @@ df = df[(df["rows"] >= n[0]) & (df["rows"] <= n[1])]
 df = df[(df["cols"] >= n[0]) & (df["cols"] <= n[1])]
 
 df["block_density"] = df["nonzeros"].values/df["VBR_nzcount"].values
+
 df["dense-amp"] = df["block_density"].values/df["density"].values
 df["block_area"] = df["row_block_size"].values*df["col_block_size"].values
 df["block ratio"] = df["row_block_size"].values/df["col_block_size"].values
 
 
 df_VBR_no_reord = df[df["blocking_algo"] == 2][["matrix","col_block_size","row_block_size","block_density"]]
-df = pd.merge(df,df_VBR_no_reord, how = "left",on = ["matrix","row_block_size","col_block_size"], suffixes=('','_no_reord') )
+df = pd.merge(df[df["blocking_algo"] == 5],df_VBR_no_reord, how = "left",on = ["matrix","row_block_size","col_block_size"], suffixes=('','_no_reord') )
 df["relative-dense-amp"] = df["block_density"]/df["block_density_no_reord"]
 df.loc[df["relative-dense-amp"] < 1, "relative-dense-amp"] = 1
+
+print("MAX RELATIVE ")
+print(df["relative-dense-amp"].max())
+
 
 for block_size in (64,128,256,512,1024):
     print(f"BLOCK SIZE: {block_size}")
@@ -173,12 +178,12 @@ for row_block_size in (32,64,128,256,512,1024):
 
 def make_scatter(x_var = "density", y_var = "relative-dense-amp", row_block_size = 128, col_block_size = 128, xscale = "log", yscale = "linear", drawline = 0):
     blocking_algo = 5
-    fig,ax = plt.subplots()
+    fig, axs = plt.subplots(2, 1, sharex=True)
     tmp_df = df.loc[(df["blocking_algo"] == blocking_algo) & (df["row_block_size"] == row_block_size) & (df["col_block_size"] == col_block_size)]
-    ax = tmp_df.plot.scatter(
+    tmp_df.plot.scatter(
                     x= x_var,
                     y= y_var,
-                    colormap='viridis',alpha=0.5, edgecolor = "black")
+                    colormap='viridis',alpha=0.5, edgecolor = "black", ax = axs[0])
     plt.ylabel(global_label_dict[y_var])
     if drawline:
         plt.axhline(drawline,color = "red", linestyle= "--")
@@ -186,17 +191,28 @@ def make_scatter(x_var = "density", y_var = "relative-dense-amp", row_block_size
     #plt.ylim(0.00001,1)
     plt.xscale(xscale)
     plt.yscale(yscale)
+
+    # Compute histogram of y_var > 1 at each x_var bin
+    bins = np.logspace(np.log10(tmp_df[x_var].min()), np.log10(tmp_df[x_var].max()), 20)
+    mask = tmp_df[y_var] > 1
+    weights = mask.astype(int)
+    hist, bin_edges = np.histogram(tmp_df[x_var], bins=bins, weights=weights)
+
+    # Plot histogram
+    axs[1].bar(bin_edges[:-1], hist, width=np.diff(bin_edges), alpha=0.5, edgecolor="black")
+    axs[1].set_ylabel('Count')
+
     #plt.yscale("log")
     plt.xlabel(global_label_dict[x_var])
     plt.savefig(f"{image_folder}/scatterplot_{x_var}_vs_{y_var}_b{row_block_size}_B{col_block_size}_algo_{blocking_algo}.png", bbox_inches='tight', dpi = 300)
     plt.close()
 
 for block_size in (64,128,256,512,1024):
-        #try:
-        make_scatter(x_var ="block_density_no_reord", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size, drawline = 1)
-        #make_scatter(x_var ="block_density_no_reord", y_var = "block_density", row_block_size = block_size, col_block_size = block_size)
-        #except:
-        #    print(f"COULD NOT MAKE SCATTER FOR {block_size} x {block_size}")
+        try:
+            make_scatter(x_var ="block_density_no_reord", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size, drawline = 1)
+            make_scatter(x_var ="density", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size)
+        except:
+            print(f"COULD NOT MAKE SCATTER FOR {block_size} x {block_size}")
 
 
 """
