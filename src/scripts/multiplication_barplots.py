@@ -65,7 +65,13 @@ global_exp_dict["GEMM"] = {
     "edgecolor" : "black",
     "color" : "red",
     "label" : "cuBLAS-gemm"
+}
 
+global_exp_dict["CUTLASS_GEMM"] = {
+    "hatch" : "-",
+    "edgecolor" : "black",
+    "color" : "red",
+    "label" : "CUTLASS-gemm"
 }
 
 global_exp_dict["CSR"] = {
@@ -140,7 +146,8 @@ exps["VBR-reord"] = (6,5)
 exps["BELLPACK-no-reord"] = (3,2)
 #exps["BELLPACK-reord"] = (3,5)
 exps["CSR"] = (2,3)
-#exps["GEMM"] = (1,3)
+exps["GEMM"] = (1,3)
+exps["CUTLASS_GEMM"] = (9,3)
 #exps["CUTLASS_BELLPACK"] = (8,5)
 
 
