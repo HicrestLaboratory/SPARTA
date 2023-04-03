@@ -22,7 +22,7 @@ global_label_dict = {
     "density" : "Original density",
     "nonzeros" : "# of nonzeros in the original matrix",
     "dense-amp" : "Density amplification (against unblocked)",
-    "relative-dense-amp" : "Density amplification (against natural blocking)",
+    "relative-dense-amp" : "Density amplification",
     "block ratio": "Shape (height / width)",
     "block_density_no_reord" : "Blocked density (natural)"
 }
@@ -132,8 +132,8 @@ except: 1
 df = pd.read_csv(data_file)
 #df = get_dataframe_folder("results/suitsparse_collection_3")
 
-d = (0.00005, 0.1)
-n = (20000,100000)
+d = (0.00001, 0.1)
+n = (20000,200000)
 
 df = df.loc[df.groupby(["matrix","blocking_algo","col_block_size","row_block_size"])["VBR_nzblocks_count"].idxmin()]
 
@@ -160,30 +160,32 @@ print(df["relative-dense-amp"].max())
 
 for block_size in (64,128,256,512,1024):
     print(f"BLOCK SIZE: {block_size}")
-    print("BAD", len(df.loc[(df["relative-dense-amp"] == 1) & (df["row_block_size"] == block_size)]))
-    print("GOOD", len(df.loc[(df["relative-dense-amp"] != 1) & (df["row_block_size"] == block_size)]))
-
+    bad = len(df.loc[(df["relative-dense-amp"] == 1) & (df["row_block_size"] == block_size)])
+    good = len(df.loc[(df["relative-dense-amp"] > 1) & (df["row_block_size"] == block_size)])
+    print("BAD", bad)
+    print("GOOD", good)
+    print("PERCENT:", good/(good+bad+0.00001))
 
 df.sort_values(by=['density','matrix'], inplace=True)
 
 np.set_printoptions(suppress = True)
 
-print(df["matrix"].unique())
+#print(df["matrix"].unique())
 for row_block_size in (32,64,128,256,512,1024):
     for col_block_size in (64,128,256,512,1024):
         print(f"row_block_size, col_block_size = {row_block_size},{col_block_size}")
         tmp_df = df.loc[(df["blocking_algo"] == 5) & (df["col_block_size"] == col_block_size) & (df["row_block_size"] == row_block_size)]
-        print(tmp_df["tau"].values)
+        #print(tmp_df["tau"].values)
 
 
 def make_scatter(x_var = "density", y_var = "relative-dense-amp", row_block_size = 128, col_block_size = 128, xscale = "log", yscale = "linear", drawline = 0):
     blocking_algo = 5
-    fig, axs = plt.subplots(2, 1, sharex=True)
+    fig, ax = plt.subplots()
     tmp_df = df.loc[(df["blocking_algo"] == blocking_algo) & (df["row_block_size"] == row_block_size) & (df["col_block_size"] == col_block_size)]
     tmp_df.plot.scatter(
                     x= x_var,
                     y= y_var,
-                    colormap='viridis',alpha=0.5, edgecolor = "black", ax = axs[0])
+                    colormap='viridis',alpha=0.5, edgecolor = "black", ax = ax)
     plt.ylabel(global_label_dict[y_var])
     if drawline:
         plt.axhline(drawline,color = "red", linestyle= "--")
@@ -193,23 +195,65 @@ def make_scatter(x_var = "density", y_var = "relative-dense-amp", row_block_size
     plt.yscale(yscale)
 
     # Compute histogram of y_var > 1 at each x_var bin
-    bins = np.logspace(np.log10(tmp_df[x_var].min()), np.log10(tmp_df[x_var].max()), 20)
-    mask = tmp_df[y_var] > 1
-    weights = mask.astype(int)
-    hist, bin_edges = np.histogram(tmp_df[x_var], bins=bins, weights=weights)
+    #bins = np.logspace(np.log10(tmp_df[x_var].min()), np.log10(tmp_df[x_var].max()), 20)
+    #mask = tmp_df[y_var] > 1
+    #mask = mask / (mask + (tmp_df[y_var] <= 2))
+    #weights = mask.astype(float)
+    #hist, bin_edges = np.histogram(tmp_df[x_var], bins=bins, weights=weights)
 
     # Plot histogram
-    axs[1].bar(bin_edges[:-1], hist, width=np.diff(bin_edges), alpha=0.5, edgecolor="black")
-    axs[1].set_ylabel('Count')
+    #axs[1].bar(bin_edges[:-1], hist, width=np.diff(bin_edges), alpha=0.5, edgecolor="black")
+    #axs[1].set_ylabel('Count')
 
     #plt.yscale("log")
     plt.xlabel(global_label_dict[x_var])
     plt.savefig(f"{image_folder}/scatterplot_{x_var}_vs_{y_var}_b{row_block_size}_B{col_block_size}_algo_{blocking_algo}.png", bbox_inches='tight', dpi = 300)
     plt.close()
 
+def make_scatter_hist(x_var="density", y_var="relative-dense-amp", row_block_size=128, col_block_size=128, xscale="log", yscale="linear", drawline=0):
+    blocking_algo = 5
+    fig, axs = plt.subplots(nrows=2, ncols=1, sharex=True, figsize=(8, 6), gridspec_kw={"height_ratios": [3, 4], "hspace": 0.05})
+    tmp_df = df.loc[(df["blocking_algo"] == blocking_algo) & (df["row_block_size"] == row_block_size) & (df["col_block_size"] == col_block_size)]
+
+    # Plot scatter plot
+    tmp_df.plot.scatter(
+        x=x_var,
+        y=y_var,
+        colormap='viridis', alpha=0.5, edgecolor="black", ax=axs[0]
+    )
+    axs[0].set_ylabel(global_label_dict[y_var])
+    if drawline:
+        axs[0].axhline(drawline, color="red", linestyle="--")
+    axs[0].set_xscale(xscale)
+    axs[0].set_yscale(yscale)
+    axs[0].set_xlabel(global_label_dict[x_var])
+
+    # Compute histogram of y_var > 1 at each x_var bin
+    bins = np.logspace(np.log10(tmp_df[x_var].min()), np.log10(tmp_df[x_var].max()), 10)
+    mask = tmp_df[y_var] > 1
+    weights = mask.astype(int)
+    hist, bin_edges = np.histogram(tmp_df[x_var], bins=bins, weights=weights)
+    hist2, bin_edges = np.histogram(tmp_df[x_var], bins=bins)
+
+    # Normalize counts to percentages
+    hist_pct = 100.0 * hist / hist2
+
+    # Plot histogram
+    axs[1].bar(bin_edges[:-1], hist_pct, width=np.diff(bin_edges)*0.6, alpha=0.5, edgecolor="black")
+    axs[1].set_ylabel('\% of successfully amplified')
+    axs[1].set_xscale(xscale)
+    axs[1].set_xlabel(global_label_dict[x_var])
+    axs[1].set_ylim([0, 100])
+
+    plt.subplots_adjust(wspace=0.3)
+    plt.savefig(f"{image_folder}/scatterplot_{x_var}_vs_{y_var}_b{row_block_size}_B{col_block_size}_algo_{blocking_algo}.png",
+                bbox_inches='tight', dpi=300)
+    plt.close()
+
 for block_size in (64,128,256,512,1024):
         try:
             make_scatter(x_var ="block_density_no_reord", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size, drawline = 1)
+            make_scatter_hist(x_var ="block_density_no_reord", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size, drawline = 1)
             make_scatter(x_var ="density", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size)
         except:
             print(f"COULD NOT MAKE SCATTER FOR {block_size} x {block_size}")

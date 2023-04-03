@@ -164,6 +164,8 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
     DataT val;
     intT total_nonzeros = 0;
 
+    bool triangular = true;
+
     while (infile.peek() == '#' or infile.peek() == '%') infile.ignore(2048, '\n');
     if (mat_fmt == mtx) infile.ignore(2048, '\n');
     while (getline(infile, temp)) {
@@ -185,6 +187,7 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
             swap(current_node, child);
         }
 
+        if (child < current_node) triangular = false;
 
         max_column = std::max(max_column, child);
 
@@ -221,7 +224,7 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
     }
 
 
-    if (symmetrize)
+    if (symmetrize && triangular)
     {
         for (intT i = 0; i < pos_holder.size(); i++)
         {
