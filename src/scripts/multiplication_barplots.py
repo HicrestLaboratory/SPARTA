@@ -19,7 +19,7 @@ import argparse
 global_label_dict = {
     "block_density" : "Blocked density",
     "density" : "Original density",
-    "dense-amp" : "Density amplification vs natural blocking",
+    "dense-amp" : "Density amplification",
     "relative_dense_amp" : "Density amplification (against natural blocking)",
     "block ratio": "Shape (height / width)",
     "speed-vs-cusparse": "Speed-up against cuSparse-CSR",
@@ -148,7 +148,7 @@ exps["BELLPACK-no-reord"] = (3,2)
 exps["CSR"] = (2,3)
 exps["GEMM"] = (1,3)
 exps["CUTLASS_GEMM"] = (9,3)
-#exps["CUTLASS_BELLPACK"] = (8,5)
+exps["CUTLASS_BELLPACK"] = (8,2)
 
 
 
@@ -224,6 +224,27 @@ def make_barplot_best(df, image_folder,B_cols, variable = "speed-vs-cusparse"):
     plt.close()   
 
 
+def make_boxplot_best(df, image_folder,B_cols, variable = "speed-vs-cusparse"):
+    plt.figure()
+    tmp_df = df.loc[df["b_cols"] == B_cols]
+    tmp_df = tmp_df.loc[df["row_block_size"] == df["col_block_size"]]
+    tmp_df = tmp_df.loc[tmp_df.groupby(["matrix","blocking_algo","multiplication_algo"])["avg_time_multiply"].idxmin()]
+    tmp_df.sort_values(by=['density','matrix'], inplace=True)
+
+    tmp_df = tmp_df[["speed-vs-no-reord","speed-vs-cusparse"]]
+    tmp_df = tmp_df[tmp_df[["speed-vs-no-reord","speed-vs-cusparse"]] < 10]
+    plt.axhline(y = 1, color = "red")
+
+    ax = sns.violinplot(data = tmp_df, trim=(1,5), cut = 0)
+    ax.set_xticklabels(["Speed-up against cuBLAS-BCSR", "Speed-up against cuSPARSE-CSR"])
+
+    savename = f"{image_folder}/SpMM_time_boxplot_BEST_{B_cols}"
+    plt.legend()
+    plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
+    plt.close()   
+
+
+
 
 
 
@@ -246,6 +267,7 @@ def make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable = "speed-vs-
 def make_scatter(df,B_cols,var_x = "dense-amp", var_y = "speed-vs-no-reord"):
     plt.figure()
     tmp_df = df.loc[(df["b_cols"] == B_cols) & (df["multiplication_algo"] == 6) & (df["blocking_algo"] == 5)]
+    print("SCATTER!", tmp_df)
     sns.scatterplot(data=tmp_df, x=var_x, y=var_y)
     plt.xlabel(global_label_dict[var_x])
     plt.ylabel(global_label_dict[var_y])
@@ -275,14 +297,16 @@ except: 1
 df = pd.read_csv(data_file)
 #df = get_dataframe_folder("results/suitsparse_collection_3")
 
-df_CSR = df[df["multiplication_algo"] == 2][["matrix","b_cols","avg_time_multiply"]]
+df_CSR = df.loc[df["multiplication_algo"] == 2][["matrix","b_cols","avg_time_multiply"]]
+df["block_density"] = df["nonzeros"]/df["VBR_nzcount"]
+df_VBR_no_reord = df.loc[(df["multiplication_algo"] == 6) & (df["blocking_algo"] == 2)][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size","block_density"]]
+
+
+df = df.loc[(df["blocking_algo"] == 5) & (df["multiplication_algo"] == 6)]
+df = pd.merge(df,df_VBR_no_reord, how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_VBR_no_reord') )
 df = pd.merge(df,df_CSR, how = "left",on = ["matrix","b_cols"], suffixes=('','_CSR') )
 
-df["block_density"] = df["nonzeros"]/df["VBR_nzcount"]
 
-df_VBR_no_reord = df[(df["multiplication_algo"] == 6) & (df["blocking_algo"] == 2)][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size","block_density"]]
-
-df = pd.merge(df,df_VBR_no_reord, how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_VBR_no_reord') )
 
 df = df[df["tau"] != -1]
 
@@ -292,6 +316,7 @@ df["speed-vs-cusparse"] = df["avg_time_multiply_CSR"]/df["avg_time_multiply"]
 df["time-per-block"] = df["avg_time_multiply"]/df["VBR_nzblocks_count"]
 df["time-per-area"] = df["avg_time_multiply"]/df["VBR_nzcount"]
 df["time-per-true-nonzero"] = df["avg_time_multiply"]/df["nonzeros"]
+df = df[df["dense-amp"] > 1]
 
 
 #df_BELLPACK = df[df["multiplication_algo"] == 3][["matrix","b_cols","avg_time_multiply","row_block_size","col_block_size"]]
@@ -312,7 +337,7 @@ print("Making barplots")
 for B_cols in df["b_cols"].unique():
     make_scatter(df,B_cols)
     print(f"***** for B_cols = {B_cols}")
-    make_barplot_best(df, image_folder,B_cols)
+    make_boxplot_best(df, image_folder,B_cols)
     for row_block_size in (32,64,128,256,512,1024):
         for col_block_size in (32,64,128,256,512,1024):
             make_barplot(df, image_folder,B_cols, row_block_size,col_block_size)

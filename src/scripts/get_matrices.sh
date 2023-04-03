@@ -4,9 +4,9 @@ MATRIX_PATH=$1
 mkdir $MATRIX_PATH
 
 
-nmin=100000
-nmax=200000
-increment=5000
+nmin=200000
+nmax=500000
+increment=10000
 
 dmin=100000
 dmax=100
