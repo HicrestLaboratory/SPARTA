@@ -5,7 +5,7 @@ export PROGRAM=$3
 
 BLOCK_SIZEs=(64 256 512 1024)
 B_COLs=(1024 8192)
-EXPERIMENTs=("BCSR_no_reord" "BCSR_reord" "BELLPACK_no_block" "CSR" "GEMM")
+EXPERIMENTs=("BCSR_no_reord" "BCSR_reord" "BELLPACK_no_block" "CSR" "GEMM" "CUTLASS_GEMM" "CUTLASS_BELLPACK")
 taufile="results/collected_experiments/suitsparse_all/tau.csv"
 
 declare -A experiments
@@ -14,6 +14,9 @@ experiments["BCSR_reord"]="-F 1 -a 2 -M 6"
 experiments["BELLPACK_no_block"]="-F 1 -a 2 -M 3"
 experiments["CSR"]="-M 2"
 experiments["GEMM"]="-M 1"
+experiments["CUTLASS_GEMM"]="-M 9"
+experiments["CUTLASS_BELLPACK"]="-F 1 -M 8 -a 2"
+
 
 USE_PATTERN=1
 USE_GROUP=0
