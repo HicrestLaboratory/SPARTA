@@ -26,8 +26,8 @@ function create_launch {
 script_body="#!/bin/bash -l
 #SBATCH --job-name="${EXP_NAME}"
 #SBATCH --time=00:10:00
-#SBATCH --output="${RESULTS_PATH}/_scripts/${EXP_NAME}".%j.o
-#SBATCH --error="${RESULTS_PATH}/_scripts/${EXP_NAME}".%j.e
+#SBATCH --output="${RESULTS_PATH}_scripts/${EXP_NAME}".%j.o
+#SBATCH --error="${RESULTS_PATH}_scripts/${EXP_NAME}".%j.e
 #SBATCH --account=flavio.vella
 #SBATCH --ntasks=1
 #SBATCH --partition=short
@@ -81,7 +81,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 
 				B=$block
 				b=$block
-				export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_B_${B}_bcols_${b_cols}_a_${a}_e_${exp}"
+				export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_B_${B}_bcols_${b_cols}_e_${exp}"
 				export OUTFILE=${MATRIX_FOLDER}/${EXP_NAME}.txt
 				if [[ -f "${OUTFILE}" ]]; then
 					echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
