@@ -3,7 +3,7 @@ export RESULTS_PATH=$2
 export PROGRAM=$3
 
 
-BLOCK_SIZEs=(256 512 1024)
+BLOCK_SIZEs=(64 256 512 1024)
 B_COLs=(1024 8192)
 EXPERIMENTs=("BCSR_no_reord" "BCSR_reord" "BELLPACK_no_block" "CSR" "GEMM")
 taufile="results/collected_experiments/suitsparse_all/tau.csv"
@@ -19,15 +19,15 @@ USE_PATTERN=1
 USE_GROUP=0
 REORDERING=0
 SIM=1 #0: hamming 1:jaccard; +2 for OPENMP versions
-BASIC_ARGS="-P 1 -v 1 -r ${REORDERING} -m ${SIM} -p ${USE_PATTERN} -g ${USE_GROUP} -R 1"
+BASIC_ARGS="-P 1 -v 1 -r ${REORDERING} -m ${SIM} -p ${USE_PATTERN} -g ${USE_GROUP} -R 1 -e 1"
 
 function create_launch {
 
 script_body="#!/bin/bash -l
 #SBATCH --job-name="${EXP_NAME}"
 #SBATCH --time=00:10:00
-#SBATCH --output="${RESULTS_PATH}/_scripts/${EXP_NAME}".%j.o
-#SBATCH --error="${RESULTS_PATH}/_scripts/${EXP_NAME}".%j.e
+#SBATCH --output="${RESULTS_PATH}_scripts/${EXP_NAME}".%j.o
+#SBATCH --error="${RESULTS_PATH}_scripts/${EXP_NAME}".%j.e
 #SBATCH --account=flavio.vella
 #SBATCH --ntasks=1
 #SBATCH --partition=short
@@ -41,7 +41,7 @@ module load cuda/12.1
 sleep 1s
 "
 script_name=___tmp_script_${EXP_NAME}
-script_folder=${RESULTS_PATH}/_scripts
+script_folder=${RESULTS_PATH}_scripts
 
 if [[ -f "${script_folder}/${script_name}" ]]; then    
 	echo "experiment exists already"
@@ -52,7 +52,7 @@ fi
 }
 
 mkdir ${RESULTS_PATH}
-mkdir ${RESULTS_PATH}/_scripts
+mkdir ${RESULTS_PATH}_scripts
 
 
 total=$((${#EXPERIMENTs[@]}*${#B_COLs[@]}*${#BLOCK_SIZEs[@]}))
@@ -81,7 +81,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 
 				B=$block
 				b=$block
-				export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_B_${B}_bcols_${b_cols}_a_${a}_e_${exp}"
+				export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_B_${B}_bcols_${b_cols}_e_${exp}"
 				export OUTFILE=${MATRIX_FOLDER}/${EXP_NAME}.txt
 				if [[ -f "${OUTFILE}" ]]; then
 					echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"

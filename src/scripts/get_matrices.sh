@@ -5,11 +5,11 @@ mkdir $MATRIX_PATH
 
 
 nmin=100000
-nmax=150000
+nmax=200000
 increment=5000
 
-dmin=10000
-dmax=50
+dmin=100000
+dmax=100
 
 array=()
 

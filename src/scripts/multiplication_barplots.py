@@ -65,7 +65,13 @@ global_exp_dict["GEMM"] = {
     "edgecolor" : "black",
     "color" : "red",
     "label" : "cuBLAS-gemm"
+}
 
+global_exp_dict["CUTLASS_GEMM"] = {
+    "hatch" : "-",
+    "edgecolor" : "black",
+    "color" : "red",
+    "label" : "CUTLASS-gemm"
 }
 
 global_exp_dict["CSR"] = {
@@ -140,7 +146,8 @@ exps["VBR-reord"] = (6,5)
 exps["BELLPACK-no-reord"] = (3,2)
 #exps["BELLPACK-reord"] = (3,5)
 exps["CSR"] = (2,3)
-#exps["GEMM"] = (1,3)
+exps["GEMM"] = (1,3)
+exps["CUTLASS_GEMM"] = (9,3)
 #exps["CUTLASS_BELLPACK"] = (8,5)
 
 
@@ -186,7 +193,7 @@ def make_barplot_best(df, image_folder,B_cols, variable = "speed-vs-cusparse"):
     tmp_df = tmp_df.loc[tmp_df.groupby(["matrix","blocking_algo","multiplication_algo"])["avg_time_multiply"].idxmin()]
     tmp_df.sort_values(by=['density','matrix'], inplace=True)
     matrices_names = [val.split("/")[-1].split(".")[0] for val in tmp_df["matrix"].unique()]
-
+    print(tmp_df)
     data_lines = {exp_name : [] for exp_name in exps}
     data_lines.pop("CSR")
 

@@ -4,7 +4,7 @@ export PROGRAM=$3
 
 
 TAUs=(0.001 0.01 0.1 0.2 0.4 0.6 0.8)
-BLOCK_SIZEs=(64 128 256 512 1024)
+BLOCK_SIZEs=(64 256 512 1024)
 ALGOs=(5)
 
 
@@ -13,21 +13,22 @@ USE_GROUP=0
 REORDERING=0
 SIM=1 #0: hamming 1:jaccard; +2 for OPENMP versions
 
-BASIC_ARGS="-P 1 -v 1 -r ${REORDERING} -m ${SIM} -p ${USE_PATTERN} -g ${USE_GROUP} -R 1"
+BASIC_ARGS="-P 1 -v 1 -r ${REORDERING} -m ${SIM} -p ${USE_PATTERN} -g ${USE_GROUP} -R 1 -e 1"
 
 function create_launch {
 
 script_body="#!/bin/bash -l
 #SBATCH --job-name="${EXP_NAME}"
 #SBATCH --time=00:10:00
-#SBATCH --output="${RESULTS_PATH}/_scripts/${EXP_NAME}".%j.o
-#SBATCH --error="${RESULTS_PATH}/_scripts/${EXP_NAME}".%j.e
+#SBATCH --output="${RESULTS_PATH}_scripts/${EXP_NAME}".%j.o
+#SBATCH --error="${RESULTS_PATH}_scripts/${EXP_NAME}".%j.e
 #SBATCH --account=flavio.vella
 #SBATCH --ntasks=1
 #SBATCH --partition=short
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=gpu:0
+
 ./${PROGRAM} ${BASIC_ARGS} ${ARGS}
 
 sleep 1s
