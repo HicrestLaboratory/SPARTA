@@ -87,7 +87,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 					echo "no tau for FILE ${OUTFILE}. SKIPPING"
 					continue 2
 				fi
-				export ARGS="-f ${fullpath} -o ${OUTFILE} -c {b_cols} -n ${EXP_NAME}"
+				export ARGS="-f ${fullpath} -o ${OUTFILE} -c ${b_cols} -n ${EXP_NAME}"
 				export BASIC_ARGS
 				export EXP_ARGS=${experiments[$exp]}
 				create_launch
@@ -118,7 +118,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 					if [ "$t" == "-1" ];then #this is a special flag for BCSR_reord experiments that are not to be run
 						echo "no tau for FILE ${OUTFILE}. SKIPPING"
 					else
-						export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -c {b_cols} -o ${OUTFILE} -n ${EXP_NAME}"
+						export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -c ${b_cols} -o ${OUTFILE} -n ${EXP_NAME}"
 						export BASIC_ARGS
 						export EXP_ARGS=${experiments[$exp]}
 						create_launch
