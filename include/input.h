@@ -38,7 +38,7 @@ class CLineReader
         int multiplication_algo_ = 0;
         int B_cols_ = 1024;
         int warmup_ = 1; //how many warmup multiplications
-        int exp_repetitions_ = 10; //how many multiplications rep
+        int exp_repetitions_ = 5; //how many multiplications rep
         int n_streams_ = 4;
 
         CLineReader(int argc, char* argv[])
