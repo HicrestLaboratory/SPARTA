@@ -91,7 +91,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 				else
 					if [ "${exp}" == "BCSR_reord" ]; then
 						#echo "(grep ${MATRIX_NAME} ${taufile} | grep -m 1 ${B},${b} | cut -d',' -f4)"
-						if [ grep -q ${MATRIX_NAME} ${taufile} file ]; then
+						if [ grep -q ${MATRIX_NAME} ${taufile} ]; then
                         	t=$(grep $MATRIX_NAME $taufile | grep -m 1 $B,$b | cut -d',' -f4)
 						else
 						t=-1
