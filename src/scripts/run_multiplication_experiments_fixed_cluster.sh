@@ -91,12 +91,17 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 				else
 					if [ "${exp}" == "BCSR_reord" ]; then
 						#echo "(grep ${MATRIX_NAME} ${taufile} | grep -m 1 ${B},${b} | cut -d',' -f4)"
-                        t=$(grep $MATRIX_NAME $taufile | grep -m 1 $B,$b | cut -d',' -f4)
+						if [ grep -q ${MATRIX_NAME} ${taufile} file ]; then
+                        	t=$(grep $MATRIX_NAME $taufile | grep -m 1 $B,$b | cut -d',' -f4)
+						else
+						t=-1
 					else
-						export t=0
+						t=0
 					fi
 					
-					if [ $t != -1 ];then #this is a special flag for BCSR_reord experiments that are not to be run
+					if [ $t -eq -1 ];then #this is a special flag for BCSR_reord experiments that are not to be run
+						echo "no tau for FILE ${OUTFILE}. SKIPPING"
+					else
 						export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -o ${OUTFILE} -n ${EXP_NAME}"
 						export BASIC_ARGS
 						export EXP_ARGS=${experiments[$exp]}
