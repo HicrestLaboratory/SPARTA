@@ -128,6 +128,7 @@ int main(int argc, char* argv[])
             VBR vbmat_cublas;
             vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result,cli.row_block_size_, cli.col_block_size_, cli.force_fixed_size);
             algo_times.clear();
+            DataT* mat_C = new DataT[B_cols * vbmat_cublas.rows]; 
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
                 fill(mat_C, mat_C + C_cols*C_rows, 0);
