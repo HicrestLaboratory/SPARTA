@@ -240,7 +240,7 @@ int main(int argc, char* argv[])
         #ifdef CUTLASS
             bEngine.GetGrouping(cmat);
             VBR vbmat_bellpack;
-            vbmat_bellpack.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.force_fixed_size);
+            vbmat_bellpack.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.row_block_size_, cli.force_fixed_size);
             algo_times.clear();
             B_rows = vbmat_bellpack.cols;
             DataT* mat_B = new DataT[B_rows * B_cols];
