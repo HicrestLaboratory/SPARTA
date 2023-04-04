@@ -28,8 +28,8 @@ class CLineReader
         int seed_ = 0;
         int sim_measure_ = 1;
         int reorder_ = 0; //-1 for ascending. 0 for nothing. 1 for descending. 2 for scramble
-        int col_block_size_ = 1;
-        int row_block_size_ = 1;
+        int col_block_size_ = 3;
+        int row_block_size_ = 3;
         float tau_ = 0.5;
 
         int verbose_ = 1;
@@ -38,8 +38,8 @@ class CLineReader
         int multiplication_algo_ = 0;
         int B_cols_ = 1024;
         int warmup_ = 1; //how many warmup multiplications
-        int exp_repetitions_ = 3; //how many multiplications rep
-        int n_streams_ = 16;
+        int exp_repetitions_ = 10; //how many multiplications rep
+        int n_streams_ = 4;
 
         CLineReader(int argc, char* argv[])
         {
