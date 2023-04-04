@@ -634,6 +634,9 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
 
     cudaEventRecord(start, 0);
 
+
+    intT jb;
+    DataT* d_C_block;
     //loop through all blocks
     for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop vertically through block rows
     {
@@ -644,10 +647,9 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
         for(intT nzs = 0; nzs < vbmatA.nzcount[ib]; nzs++)        //loop horizontally through nonzero blocks
         {
             
-            intT jb = *jab_loc;             //the block row position of a nonzero block 
+            jb = *jab_loc;             //the block row position of a nonzero block 
 
-            DataT* d_C_block = d_C + vbmatA.block_col_size*C_rows*jb;      //access the block on d_C.
-
+            d_C_block = d_C + vbmatA.block_col_size*C_rows*jb;      //access the block on d_C.
 
             cublasSetStream(handle, streams[jb%n_streams]);               //each stream handles a separate block-row
             
@@ -706,8 +708,6 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
 
     checkCudaErrors(cublasDestroy(handle));
 }
-
-
 
 void cublas_blockmat_batched(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt)
 {
