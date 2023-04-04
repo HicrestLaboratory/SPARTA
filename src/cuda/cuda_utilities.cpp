@@ -637,10 +637,12 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
 
     intT jb;
     DataT* d_C_block;
+    rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
+
     //loop through all blocks
     for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop vertically through block rows
     {
-        rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
+//      rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
         
         const DataT* d_B_block = d_B + vbmatA.block_col_size*ib;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
 
