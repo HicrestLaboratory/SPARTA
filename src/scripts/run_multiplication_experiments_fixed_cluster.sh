@@ -9,8 +9,8 @@ EXPERIMENTs=("BCSR_no_reord" "BCSR_reord" "BELLPACK_no_block" "CSR" "GEMM" "CUTL
 taufile="tau_marzola.csv"
 
 declare -A experiments
-experiments["BCSR_no_reord"]="-F 1 -a 5 -M 6"
-experiments["BCSR_reord"]="-F 1 -a 2 -M 6"
+experiments["BCSR_no_reord"]="-F 1 -a 2 -M 6"
+experiments["BCSR_reord"]="-F 1 -a 5 -M 6"
 experiments["BELLPACK_no_block"]="-F 1 -a 2 -M 3"
 experiments["CSR"]="-M 2"
 experiments["GEMM"]="-M 1"
