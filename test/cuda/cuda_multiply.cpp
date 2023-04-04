@@ -147,16 +147,14 @@ int main(int argc, char* argv[])
         {
             bEngine.GetGrouping(cmat);
             VBR vbmat_cublas;
-            DataT* mat_B_tran = new DataT[B_rows * B_cols];
-            for (int i = 0; i < B_rows; i++)
-            {
-                for (int j= 0; j < B_cols; j++)
-                {
-                    mat_B_tran[i + j*B_rows] = mat_B[j + i*B_cols]; 
-                }
-            }
             vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.row_block_size_, cli.force_fixed_size);
             algo_times.clear();
+            B_cols = vbmat_cublas.rows;
+            DataT* mat_B_tran = new DataT[B_rows * B_cols];
+            for (int n = 0; n < B_rows*B_cols; n++) 
+            {
+                mat_B[n] = dist(e2);
+            }
             DataT* mat_C = new DataT[B_rows * vbmat_cublas.cols]; 
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
@@ -216,7 +214,13 @@ int main(int argc, char* argv[])
             VBR vbmat_bellpack;
             vbmat_bellpack.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.row_block_size_,cli.force_fixed_size);            
             algo_times.clear();
-
+            B_cols = vbmat_bellpack.rows;
+            DataT* mat_B_tran = new DataT[B_rows * B_cols];
+            for (int n = 0; n < B_rows*B_cols; n++) 
+            {
+                mat_B[n] = dist(e2);
+            }
+            DataT* mat_C = new DataT[B_rows * vbmat_bellpack.cols]; 
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
                 fill(mat_C, mat_C + C_cols*C_rows, 0);
@@ -238,7 +242,13 @@ int main(int argc, char* argv[])
             VBR vbmat_bellpack;
             vbmat_bellpack.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.force_fixed_size);
             algo_times.clear();
-
+            B_cols = vbmat_bellpack.rows;
+            DataT* mat_B_tran = new DataT[B_rows * B_cols];
+            for (int n = 0; n < B_rows*B_cols; n++) 
+            {
+                mat_B[n] = dist(e2);
+            }
+            DataT* mat_C = new DataT[B_rows * vbmat_bellpack.cols];
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
                 fill(mat_C, mat_C + C_cols*C_rows, 0);
