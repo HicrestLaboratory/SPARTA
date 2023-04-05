@@ -12,4 +12,6 @@ void bellpack_cutlass_multiplyAB(VBR* A, DataT* B, int B_cols, DataT_C* C, int C
 
 int cutlass_dense_multiplyAB(int m, int k, DataT* inputA, int n, DataT* inputB, float alp, float bet, DataT_C* output, float& dt);
 
+void cutlas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt, int n_streams);
+
 #endif
