@@ -236,7 +236,6 @@ def make_boxplot_best(df, image_folder,B_cols, exps = ("VBR-no-reord","GEMM")):
     plt.axhline(y = 1, color = "red")
 
     ax = sns.violinplot(data = tmp_df, trim=(1,5), cut = 0)
-    ax.set_xtickslabel
     savename = f"{image_folder}/SpMM_time_violin_BEST_{B_cols}"
     plt.legend()
     plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
@@ -264,7 +263,7 @@ def make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable = "speed-vs-
 
 
 def make_scatter(df,B_cols,var_x = "dense-amp", var_y = "speed-vs-VBR-no-reord"):
-    plt.figure()
+    plt.figure(figsize=(8,4))
     tmp_df = df.loc[(df["b_cols"] == B_cols) & (df["multiplication_algo"] == 6) & (df["blocking_algo"] == 5)]
     print("SCATTER!", tmp_df)
     print(np.max(tmp_df["dense-amp"]))
