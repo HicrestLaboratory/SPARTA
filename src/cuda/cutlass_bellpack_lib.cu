@@ -41,6 +41,15 @@
 #include "cuda_utilities.h"
 #include "cutlass_bellpack_lib.h"
 
+// ------ batched --------
+
+#include "cutlass/gemm/device/gemm_array.h"
+#include "cutlass/gemm/device/gemm_batched.h"
+
+#pragma warning( disable : 4503)
+
+// --------------
+
 #define DBG_CHK { printf("DBG_CHK: file %s at line %d\n", __FILE__, __LINE__); }
 // #define DEBUG
 
@@ -368,7 +377,7 @@ int cutlass_dense_multiplyAB(int m, int k, DataT* inputA, int n, DataT* inputB, 
 }
 
 
-void cutlas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt, int n_streams)
+void cutlas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt)
 {
 //multiplies a fixed size VBR matrix (vbmatA) and dense matrix (B); stores A*B into (C)
     //vbmatA:       column-major entries (in-block) storage;
@@ -393,17 +402,6 @@ void cutlas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
     intT size_C = C_rows * C_cols;
     intT mem_size_C = sizeof(DataT_C) * size_C;
 
-
-//     DataT* d_A, * d_B, * d_C;
-//     checkCudaErrors(cudaMalloc((void**)&d_A, mem_size_A));
-//     checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
-//     checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
-//
-//     //copy to device the vbmat matrix (nonzero blocks are stored consecutively and in column major format)
-//     checkCudaErrors(cudaMemcpy(d_A, vbmatA.mab, size_A*sizeof(DataT), cudaMemcpyHostToDevice));
-//
-//     //copy B to device (maybe more efficient to copy it block by block?)
-//     checkCudaErrors(cudaMemcpy(d_B, B, B_rows * B_cols * sizeof(DataT), cudaMemcpyHostToDevice));
     // ----------------------------------------------------------------------
 
     intT max_blocks_in_row = 0;
@@ -468,7 +466,7 @@ void cutlas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
     checkCudaErrors( cudaEventCreate(&stop)  );
 
     //creates streams. Each block rows is assigned a different stream.
-    DataT* d_C_block;
+    DataT* C_block;
     intT jb;
     //loop through all blocks
 
@@ -487,7 +485,7 @@ void cutlas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
             jb = *(jab_positions[ib] + nzs);
             const DataT* B_block = B + vbmatA.block_col_size*jb;           //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
 	        const DataT* A_block = mab_positions[ib] + nzs*block_area;     //access the block on A.
-            DataT* C_block = C + vbmatA.row_part[ib];                      //access the block on C.
+            C_block = C + vbmatA.row_part[ib];                      //access the block on C.
 
             // Input matrices to cutlass' structures
             for (int i=0; i<M; ++i)
@@ -536,7 +534,7 @@ void cutlas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
             checkCudaErrors( cudaEventElapsedTime(&partial_dt, start, stop) );
             dt += partial_dt;
 
-            //  TODO: copy back  tensor_C to host
+            // Copy back  tensor_C to host
             C_tensor.sync_host();
             for (int i=0; i<m; ++i)
                 for (int j=0; j<n; ++j)
@@ -547,18 +545,535 @@ void cutlas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
 
     }
 
-    //record the elapsed time onto dt
     checkCudaErrors( cudaEventDestroy(start) );
     checkCudaErrors( cudaEventDestroy(stop)  );
 
+}
 
-    //let each stream copy the relevant C block from device
-//     checkCudaErrors( cudaMemcpy(C, d_C, sizeof(DataT_C)*C_rows*C_cols, cudaMemcpyDeviceToHost) );
+void cutlas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C* C, float& dt)
+{
+//multiplies a VBS matrix (vbmatA) and dense matrix (B); stores B*A into (C)
+    //vbmatA:       column-major entries (in-block) storage;
+    //              row-major block storage;
+    //B:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+    //C:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
 
-//     cudaDeviceSynchronize();
 
-//     checkCudaErrors(cudaFree(d_C));
-//     checkCudaErrors(cudaFree(d_A));
-//     checkCudaErrors(cudaFree(d_B));
+    intT A_rows = vbmatA.rows;
+    intT A_cols = vbmatA.cols;
+    intT B_cols = A_rows;
+    intT C_rows = B_rows;
+    intT C_cols = B_cols;
 
+    //allocate memory on device
+    intT size_A = vbmatA.nztot; //total nonzero entries in vbmat
+    intT mem_size_A = sizeof(DataT) * size_A;
+
+    intT size_B = B_rows * B_cols;
+    intT mem_size_B = sizeof(DataT) * size_B;
+
+    intT size_C = C_rows * C_cols;
+    intT mem_size_C = sizeof(DataT_C) * size_C;
+    // ----------------------------------------------------------------------
+
+    intT vbmat_idx = 0; //keeps reading position for vbmat
+    intT rows_in_block;
+    intT* jab_loc = vbmatA.jab;
+
+    // Define the GEMM operation
+    using Gemm = cutlass::gemm::device::Gemm<
+      DataT_Cutlass,                             // ElementA
+      cutlass::layout::ColumnMajor,              // LayoutA
+      DataT_Cutlass,                             // ElementB
+      cutlass::layout::ColumnMajor,              // LayoutB
+      DataT_Cutlass,                             // ElementOutput
+      cutlass::layout::ColumnMajor,              // LayoutOutput
+      float,                                     // ElementAccumulator
+      cutlass::arch::OpClassTensorOp,            // tag indicating Tensor Cores
+      cutlass::arch::Sm80                        // tag indicating target GPU compute architecture
+    >;
+
+    Gemm gemm_op;
+    cutlass::Status status;
+
+    float alpha = 1.0;
+    float beta  = 1.0;
+
+    //
+    // Define the problem size
+    //
+    rows_in_block = vbmatA.row_part[1] - vbmatA.row_part[0]; //the row height of the block
+    int m = B_rows, M = ((m % 16) == 0) ? m : (m/16 +1)*16;
+    int n = vbmatA.block_col_size, N = ((n % 16) == 0) ? n : (n/16 +1)*16;
+    int k = rows_in_block, K = ((k % 16) == 0) ? k : (k/16 +1)*16;
+
+#ifdef DEBUG
+    printf("file %s line %d: m = %d, M = %d, n = %d, N = %d, k  = %d, K = %d\n", __FILE__, __LINE__, m, M, n, N, k, K);
+#endif
+
+    cutlass::HostTensor<DataT_Cutlass, cutlass::layout::ColumnMajor> A_tensor({M, K});
+    cutlass::HostTensor<DataT_Cutlass, cutlass::layout::ColumnMajor> B_tensor({K, N});
+    cutlass::HostTensor<DataT_Cutlass, cutlass::layout::ColumnMajor> C_tensor({M, N});
+
+    //initialize cuda events
+    dt = 0.0;
+    float partial_dt = 0.0;
+    cudaEvent_t start, stop;
+    checkCudaErrors( cudaEventCreate(&start) );
+    checkCudaErrors( cudaEventCreate(&stop)  );
+
+
+    intT jb;
+    DataT* C_block;
+
+    //loop through all blocks
+    for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop vertically through block rows
+    {
+//      rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
+
+        const DataT* B_block = B + vbmatA.block_col_size*ib;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
+
+        for(intT nzs = 0; nzs < vbmatA.nzcount[ib]; nzs++)        //loop horizontally through nonzero blocks
+        {
+
+            jb = *jab_loc;             //the block row position of a nonzero block
+
+            C_block = C + vbmatA.block_col_size*C_rows*jb;      //access the block on d_C.
+
+            //define the sub-matrices
+            const DataT* A_block = vbmatA.mab + vbmat_idx;           //access the block on d_A.
+
+
+            // Input matrices to cutlass' structures
+            for (int i=0; i<M; ++i)
+                for (int j=0; j<K; ++j)
+                    A_tensor.host_ref().at({i, j}) = (i<m && j<k) ? A_block[i*k +j] : 0;     // BUG ??
+            // Copy host memory to device memory
+            A_tensor.sync_device();
+
+            for (int i=0; i<K; ++i)
+                for (int j=0; j<N; ++j)
+                    B_tensor.host_ref().at({i, j}) = (i<k && j<n) ? B_block[i*n +j] : 0;     // BUG ??
+            // Copy host memory to device memory
+            B_tensor.sync_device();
+
+            DataT_Cutlass const *ptrA = A_tensor.device_data();
+            DataT_Cutlass const *ptrB = B_tensor.device_data();
+            DataT_Cutlass const *ptrC = C_tensor.device_data();
+            DataT_Cutlass       *ptrD = C_tensor.device_data();
+
+            int lda = A_tensor.device_ref().stride(0);
+            int ldb = B_tensor.device_ref().stride(0);
+            int ldc = C_tensor.device_ref().stride(0);
+            int ldd = C_tensor.device_ref().stride(0);
+
+            partial_dt = 0.0;
+            checkCudaErrors( cudaEventRecord(start, 0) );
+
+            status = gemm_op({
+              {M, N, K},
+              {ptrA, lda},            // TensorRef to A device tensor
+              {ptrB, ldb},            // TensorRef to B device tensor
+              {ptrC, ldc},            // TensorRef to C device tensor
+              {ptrD, ldd},            // TensorRef to D device tensor - may be the same as C
+              {alpha, beta}           // epilogue operation arguments
+            });
+
+            if (status != cutlass::Status::kSuccess) {
+              fprintf(stderr, "ERROR al line %d of %s\n", __LINE__, __FILE__);
+            }
+
+            checkCudaErrors( cudaDeviceSynchronize()    );
+            checkCudaErrors( cudaEventRecord(stop, 0)   );
+            checkCudaErrors( cudaEventSynchronize(stop) );
+            checkCudaErrors( cudaEventElapsedTime(&partial_dt, start, stop) );
+            dt += partial_dt;
+
+            // copy back  tensor_C to host
+            C_tensor.sync_host();
+            for (int i=0; i<m; ++i)
+                for (int j=0; j<n; ++j)
+                    C_block[i*n +j] = C_tensor.host_ref().at({i, j});
+
+            //move mab and jab pointers forward
+            vbmat_idx += rows_in_block*vbmatA.block_col_size;
+            jab_loc++;
+	    }
+
+    }
+
+    checkCudaErrors( cudaEventDestroy(start) );
+    checkCudaErrors( cudaEventDestroy(stop)  );
+
+}
+
+void cutlas_blockmat_multiplyBA_streams(const VBR& vbmatA, DataT* B, int B_rows, DataT_C* C, float& dt, int n_streams)
+{
+//multiplies a VBS matrix (vbmatA) and dense matrix (B); stores B*A into (C)
+    //vbmatA:       column-major entries (in-block) storage;
+    //              row-major block storage;
+    //B:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+    //C:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+
+
+    intT A_rows = vbmatA.rows;
+    intT A_cols = vbmatA.cols;
+    intT B_cols = A_rows;
+    intT C_rows = B_rows;
+    intT C_cols = B_cols;
+
+    //allocate memory on device
+    intT size_A = vbmatA.nztot; //total nonzero entries in vbmat
+    intT mem_size_A = sizeof(DataT) * size_A;
+
+    intT size_B = B_rows * B_cols;
+    intT mem_size_B = sizeof(DataT) * size_B;
+
+    intT size_C = C_rows * C_cols;
+    intT mem_size_C = sizeof(DataT_C) * size_C;
+    // ----------------------------------------------------------------------
+
+    if (n_streams > vbmatA.block_cols) n_streams = vbmatA.block_cols;
+    cudaStream_t streams[n_streams];
+    for (intT ib = 0; ib < n_streams; ib++) {
+        cudaStreamCreateWithFlags(&streams[ib],cudaStreamNonBlocking);
+    }
+
+    intT vbmat_idx = 0; //keeps reading position for vbmat
+    intT rows_in_block;
+    intT* jab_loc = vbmatA.jab;
+
+    // Define the GEMM operation
+    using Gemm = cutlass::gemm::device::Gemm<
+      DataT_Cutlass,                             // ElementA
+      cutlass::layout::ColumnMajor,              // LayoutA
+      DataT_Cutlass,                             // ElementB
+      cutlass::layout::ColumnMajor,              // LayoutB
+      DataT_Cutlass,                             // ElementOutput
+      cutlass::layout::ColumnMajor,              // LayoutOutput
+      float,                                     // ElementAccumulator
+      cutlass::arch::OpClassTensorOp,            // tag indicating Tensor Cores
+      cutlass::arch::Sm80                        // tag indicating target GPU compute architecture
+    >;
+
+    Gemm gemm_op;
+    cutlass::Status status;
+
+    float alpha = 1.0;
+    float beta  = 1.0;
+
+    //
+    // Define the problem size
+    //
+    rows_in_block = vbmatA.row_part[1] - vbmatA.row_part[0]; //the row height of the block
+    int m = B_rows, M = ((m % 16) == 0) ? m : (m/16 +1)*16;
+    int n = vbmatA.block_col_size, N = ((n % 16) == 0) ? n : (n/16 +1)*16;
+    int k = rows_in_block, K = ((k % 16) == 0) ? k : (k/16 +1)*16;
+
+#ifdef DEBUG
+    printf("file %s line %d: m = %d, M = %d, n = %d, N = %d, k  = %d, K = %d\n", __FILE__, __LINE__, m, M, n, N, k, K);
+#endif
+
+    cutlass::HostTensor<DataT_Cutlass, cutlass::layout::ColumnMajor> A_tensor({M, K});
+    cutlass::HostTensor<DataT_Cutlass, cutlass::layout::ColumnMajor> B_tensor({K, N});
+    cutlass::HostTensor<DataT_Cutlass, cutlass::layout::ColumnMajor> C_tensor({M, N});
+
+    //initialize cuda events
+    dt = 0.0;
+    float partial_dt = 0.0;
+    cudaEvent_t start, stop;
+    checkCudaErrors( cudaEventCreate(&start) );
+    checkCudaErrors( cudaEventCreate(&stop)  );
+
+
+    intT jb;
+    DataT* C_block;
+
+    //loop through all blocks
+    for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop vertically through block rows
+    {
+//      rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
+
+        const DataT* B_block = B + vbmatA.block_col_size*ib;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
+
+        for(intT nzs = 0; nzs < vbmatA.nzcount[ib]; nzs++)        //loop horizontally through nonzero blocks
+        {
+
+            jb = *jab_loc;             //the block row position of a nonzero block
+
+            C_block = C + vbmatA.block_col_size*C_rows*jb;      //access the block on d_C.
+
+            //define the sub-matrices
+            const DataT* A_block = vbmatA.mab + vbmat_idx;           //access the block on d_A.
+
+
+            // Input matrices to cutlass' structures
+            for (int i=0; i<M; ++i)
+                for (int j=0; j<K; ++j)
+                    A_tensor.host_ref().at({i, j}) = (i<m && j<k) ? A_block[i*k +j] : 0;     // BUG ??
+            // Copy host memory to device memory
+            A_tensor.sync_device();
+
+            for (int i=0; i<K; ++i)
+                for (int j=0; j<N; ++j)
+                    B_tensor.host_ref().at({i, j}) = (i<k && j<n) ? B_block[i*n +j] : 0;     // BUG ??
+            // Copy host memory to device memory
+            B_tensor.sync_device();
+
+            DataT_Cutlass const *ptrA = A_tensor.device_data();
+            DataT_Cutlass const *ptrB = B_tensor.device_data();
+            DataT_Cutlass const *ptrC = C_tensor.device_data();
+            DataT_Cutlass       *ptrD = C_tensor.device_data();
+
+            int lda = A_tensor.device_ref().stride(0);
+            int ldb = B_tensor.device_ref().stride(0);
+            int ldc = C_tensor.device_ref().stride(0);
+            int ldd = C_tensor.device_ref().stride(0);
+
+            partial_dt = 0.0;
+            checkCudaErrors( cudaEventRecord(start, 0) );
+
+            status = gemm_op({
+              {M, N, K},
+              {ptrA, lda},            // TensorRef to A device tensor
+              {ptrB, ldb},            // TensorRef to B device tensor
+              {ptrC, ldc},            // TensorRef to C device tensor
+              {ptrD, ldd},            // TensorRef to D device tensor - may be the same as C
+              {alpha, beta},          // epilogue operation arguments
+            }, streams[jb%n_streams]);
+
+            if (status != cutlass::Status::kSuccess) {
+              fprintf(stderr, "ERROR al line %d of %s\n", __LINE__, __FILE__);
+            }
+
+            checkCudaErrors( cudaDeviceSynchronize()    );
+            checkCudaErrors( cudaEventRecord(stop, 0)   );
+            checkCudaErrors( cudaEventSynchronize(stop) );
+            checkCudaErrors( cudaEventElapsedTime(&partial_dt, start, stop) );
+            dt += partial_dt;
+
+            // copy back  tensor_C to host
+            C_tensor.sync_host();
+            for (int i=0; i<m; ++i)
+                for (int j=0; j<n; ++j)
+                    C_block[i*n +j] = C_tensor.host_ref().at({i, j});
+
+            //move mab and jab pointers forward
+            vbmat_idx += rows_in_block*vbmatA.block_col_size;
+            jab_loc++;
+	    }
+
+    }
+
+    for (int i = 0; i < n_streams; i++) {
+        cudaStreamDestroy(streams[i]);
+    }
+
+    checkCudaErrors( cudaEventDestroy(start) );
+    checkCudaErrors( cudaEventDestroy(stop)  );
+
+}
+
+cudaError_t cutlass_array_sgemm(
+  int m,
+  int n,
+  int k,
+  float alpha,
+  float const * const *A,
+  int lda,
+  float const * const *B,
+  int ldb,
+  float * const *C,
+  int ldc,
+  float beta,
+  int batch_count) {
+
+  using Gemm = cutlass::gemm::device::GemmArray<
+    float, cutlass::layout::ColumnMajor,
+    float, cutlass::layout::ColumnMajor,
+    float, cutlass::layout::ColumnMajor
+  >;
+
+  Gemm gemm_op;
+
+  cutlass::Status status = gemm_op({
+    {m, n, k},
+    A, lda,
+    B, ldb,
+    C, ldc,
+    C, ldc,
+    {alpha, beta},
+    batch_count
+  });
+
+  if (status != cutlass::Status::kSuccess) {
+    return cudaErrorUnknown;
+  }
+
+  return cudaSuccess;
+}
+
+cudaError_t cutlas_blockmat_multiplyBA_batched(const VBR& vbmatA, DataT* B, int B_rows, DataT_C* C, float& dt, int n_streams)
+{
+//multiplies a VBS matrix (vbmatA) and dense matrix (B); stores B*A into (C)
+    //vbmatA:       column-major entries (in-block) storage;
+    //              row-major block storage;
+    //B:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+    //C:            column-major storage; TODO: allow general storage format (implement through cublas transpose)
+
+    intT A_rows = vbmatA.rows;
+    intT A_cols = vbmatA.cols;
+    intT B_cols = A_rows;
+    intT C_rows = B_rows;
+    intT C_cols = B_cols;
+
+    const DataT_C alpha = 1;
+    const DataT_C beta = 1;
+
+    //allocate memory on device
+    intT size_A = vbmatA.nztot; //total nonzero entries in vbmat
+    intT mem_size_A = sizeof(DataT) * size_A;
+
+    intT size_B = B_rows * B_cols;
+    intT mem_size_B = sizeof(DataT) * size_B;
+
+    intT size_C = C_rows * C_cols;
+    intT mem_size_C = sizeof(DataT_C) * size_C;
+
+    DataT* d_A, * d_B, * d_C;
+    checkCudaErrors(cudaMalloc((void**)&d_A, mem_size_A));
+    checkCudaErrors(cudaMalloc((void**)&d_B, mem_size_B));
+    checkCudaErrors(cudaMalloc((void**)&d_C, mem_size_C));
+
+    //copy to device the vbmat matrix (nonzero blocks are stored consecutively and in column major format)
+    checkCudaErrors(cudaMemcpy(d_A, vbmatA.mab, size_A * sizeof(DataT), cudaMemcpyHostToDevice));
+
+    //copy B to device (maybe more efficient to copy it block by block?)
+    checkCudaErrors(cudaMemcpy(d_B, B, B_rows * B_cols * sizeof(DataT), cudaMemcpyHostToDevice));
+    // ----------------------------------------------------------------------
+
+    //creates streams. Each block rows is assigned a different stream.
+
+    intT vbmat_idx = 0; //keeps reading position for vbmat
+    intT rows_in_block;
+    intT* jab_loc = vbmatA.jab;
+
+    DBG_CHK
+
+    int batch_count = vbmatA.nztot; // BUG ??
+    std::vector<DataT*> host_ptr_A(batch_count);
+    std::vector<DataT*> host_ptr_B(batch_count);
+    std::vector<DataT*> host_ptr_C(batch_count);
+
+    intT jb, tot_nzs = 0;
+    DataT* d_C_block;
+    rows_in_block = vbmatA.row_part[1] - vbmatA.row_part[0]; //the row height of the block
+
+    //loop through all blocks
+    for(intT ib = 0; ib < vbmatA.block_rows; ib++ )      //loop vertically through block rows
+    {
+//      rows_in_block = vbmatA.row_part[ib + 1] - vbmatA.row_part[ib]; //the row height of the block
+
+        DataT* d_B_block = d_B + vbmatA.block_col_size*ib;    //access the vertical block of B that is going to be multiplied with blocks of A in block-row ib
+
+        for(intT nzs = 0; nzs < vbmatA.nzcount[ib]; nzs++)        //loop horizontally through nonzero blocks
+        {
+
+            jb = *jab_loc;             //the block row position of a nonzero block
+
+            d_C_block = d_C + vbmatA.block_col_size*C_rows*jb;      //access the block on d_C.
+
+            //define the sub-matrices
+	        DataT* d_A_block = d_A + vbmat_idx;           //access the block on d_A.
+
+            //multiply the blocks, store result in d_C_block
+            host_ptr_A[tot_nzs] = d_A_block;
+            host_ptr_B[tot_nzs] = d_B_block;
+            host_ptr_C[tot_nzs] = d_C_block;
+
+
+            //move mab and jab pointers forward
+            vbmat_idx += rows_in_block*vbmatA.block_col_size;
+            jab_loc++;
+            tot_nzs++;
+	    }
+
+    }
+
+    DBG_CHK
+
+    int m = B_rows;
+    int n = vbmatA.block_col_size;
+    int k = rows_in_block;
+
+    int const lda = m;
+    int const ldb = k * batch_count;
+    int const ldc = m;
+
+    // allocate the corresponding device memory
+    float const **ptr_A;
+    float const **ptr_B;
+    float **ptr_C;
+
+    cudaError_t result = cudaSuccess;
+    result = cudaMalloc(&ptr_A, batch_count * sizeof(DataT*));
+    if (result != cudaSuccess) {
+      std::cerr << "cudaMalloc result = " << result << std::endl;
+      return result;
+    }
+    result = cudaMalloc(&ptr_B, batch_count * sizeof(DataT*));
+    if (result != cudaSuccess) {
+      std::cerr << "cudaMalloc result = " << result << std::endl;
+      return result;
+    }
+    result = cudaMalloc(&ptr_C, batch_count * sizeof(DataT*));
+    if (result != cudaSuccess) {
+      std::cerr << "cudaMalloc result = " << result << std::endl;
+      return result;
+    }
+
+    // copy the matrix pointers to the device
+    result = cudaMemcpy(ptr_A, host_ptr_A.data(), batch_count * sizeof(DataT*), cudaMemcpyHostToDevice);
+    if (result != cudaSuccess) {
+      std::cerr << "cudaMemcpy result = " << result << std::endl;
+      return result;
+    }
+    result = cudaMemcpy(ptr_B, host_ptr_B.data(), batch_count * sizeof(DataT*), cudaMemcpyHostToDevice);
+    if (result != cudaSuccess) {
+      std::cerr << "cudaMemcpy result = " << result << std::endl;
+      return result;
+    }
+
+    DBG_CHK
+
+    //initialize cuda events
+    cudaEvent_t start, stop;
+    checkCudaErrors( cudaEventCreate(&start)   );
+    checkCudaErrors( cudaEventCreate(&stop)    );
+
+    checkCudaErrors( cudaEventRecord(start, 0) );
+
+    result = cutlass_array_sgemm(m, n, k, alpha, ptr_A, lda, ptr_B, ldb, ptr_C, ldc, beta, batch_count);
+    checkCudaErrors( result );
+    if (result != cudaSuccess) {
+      std::cerr << "cutlass_array_sgemm result = " << result << std::endl;
+      return result;
+    }
+
+    //record the elapsed time onto dt
+    checkCudaErrors(cudaDeviceSynchronize()  );
+    checkCudaErrors(cudaEventRecord(stop, 0) );
+
+    checkCudaErrors( cudaEventSynchronize(stop) );
+    checkCudaErrors( cudaEventElapsedTime(&dt, start, stop) );
+    checkCudaErrors( cudaEventDestroy(start) );
+    checkCudaErrors( cudaEventDestroy(stop) );
+
+    checkCudaErrors(cudaMemcpy(C, d_C, C_rows*C_cols*sizeof(DataT_C), cudaMemcpyDeviceToHost));
+
+    DBG_CHK
+
+    checkCudaErrors(cudaFree(d_C));
+    checkCudaErrors(cudaFree(d_A));
+    checkCudaErrors(cudaFree(d_B));
 }

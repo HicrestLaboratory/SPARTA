@@ -152,7 +152,7 @@ int main(int argc, char* argv[])
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
                 fill(mat_C, mat_C + C_cols*C_rows, 0);
-                cutlas_fixed_blocks_multiply(vbmat_cublas, mat_B, B_cols, mat_C, dt, cli.n_streams_);
+                cutlas_fixed_blocks_multiply(vbmat_cublas, mat_B, B_cols, mat_C, dt);
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
@@ -185,6 +185,62 @@ int main(int argc, char* argv[])
             }
             bEngine.multiplication_timer_avg = avg(algo_times);
             bEngine.multiplication_timer_std = var(algo_times); 
+
+            if (cli.verbose_ > 2)
+                pico_print_DnM("mat_C", B_rows, cmat.cols, mat_C);
+
+            break;
+        }
+    case cutlas_vbr_inverted:
+        {
+            bEngine.GetGrouping(cmat);
+            VBR vbmat_cublas;
+            vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.row_block_size_, cli.force_fixed_size);
+            algo_times.clear();
+            B_rows = B_cols;
+            B_cols = vbmat_cublas.rows;
+            DataT* mat_B_tran = new DataT[B_rows * B_cols];
+            for (int n = 0; n < B_rows*B_cols; n++)
+            {
+                mat_B_tran[n] = dist(e2);
+            }
+            DataT* mat_C = new DataT[B_rows * vbmat_cublas.cols];
+            for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
+            {
+                fill(mat_C, mat_C + B_rows*cmat.cols, 0);
+                cutlas_blockmat_multiplyBA(vbmat_cublas, mat_B_tran, B_rows, mat_C, dt);
+                if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
+            }
+            bEngine.multiplication_timer_avg = avg(algo_times);
+            bEngine.multiplication_timer_std = var(algo_times);
+
+            if (cli.verbose_ > 2)
+                pico_print_DnM("mat_C", B_rows, cmat.cols, mat_C);
+
+            break;
+        }
+    case cutlas_vbr_inverted_batched:
+        {
+            bEngine.GetGrouping(cmat);
+            VBR vbmat_cublas;
+            vbmat_cublas.fill_from_CSR_inplace(cmat, bEngine.grouping_result, cli.col_block_size_, cli.row_block_size_, cli.force_fixed_size);
+            algo_times.clear();
+            B_rows = B_cols;
+            B_cols = vbmat_cublas.rows;
+            DataT* mat_B_tran = new DataT[B_rows * B_cols];
+            for (int n = 0; n < B_rows*B_cols; n++)
+            {
+                mat_B_tran[n] = dist(e2);
+            }
+            DataT* mat_C = new DataT[B_rows * vbmat_cublas.cols];
+            for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
+            {
+                fill(mat_C, mat_C + B_rows*cmat.cols, 0);
+                cutlas_blockmat_multiplyBA_batched(vbmat_cublas, mat_B_tran, B_rows, mat_C, dt, cli.n_streams_);
+                if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
+            }
+            bEngine.multiplication_timer_avg = avg(algo_times);
+            bEngine.multiplication_timer_std = var(algo_times);
 
             if (cli.verbose_ > 2)
                 pico_print_DnM("mat_C", B_rows, cmat.cols, mat_C);
