@@ -13,6 +13,8 @@ import pandas as pd
 import os as os
 import seaborn as sns
 from matplotlib import cm, colors
+import matplotlib.ticker as mtick
+
 import argparse
 
 
@@ -210,23 +212,10 @@ def make_scatter(x_var = "density", y_var = "relative-dense-amp", row_block_size
     plt.savefig(f"{image_folder}/scatterplot_{x_var}_vs_{y_var}_b{row_block_size}_B{col_block_size}_algo_{blocking_algo}.png", bbox_inches='tight', dpi = 300)
     plt.close()
 
-def make_scatter_hist(x_var="density", y_var="relative-dense-amp", row_block_size=128, col_block_size=128, xscale="log", yscale="linear", drawline=0):
+def make_density_hist(x_var="density", y_var="relative-dense-amp", row_block_size=128, col_block_size=128, xscale="log", yscale="linear", drawline=0):
     blocking_algo = 5
-    fig, axs = plt.subplots(nrows=2, ncols=1, sharex=True, figsize=(8, 6), gridspec_kw={"height_ratios": [3, 4], "hspace": 0.05})
+    fig, ax = plt.subplots( figsize=(8, 4))
     tmp_df = df.loc[(df["blocking_algo"] == blocking_algo) & (df["row_block_size"] == row_block_size) & (df["col_block_size"] == col_block_size)]
-
-    # Plot scatter plot
-    tmp_df.plot.scatter(
-        x=x_var,
-        y=y_var,
-        colormap='viridis', alpha=0.5, edgecolor="black", ax=axs[0]
-    )
-    axs[0].set_ylabel(global_label_dict[y_var])
-    if drawline:
-        axs[0].axhline(drawline, color="red", linestyle="--")
-    axs[0].set_xscale(xscale)
-    axs[0].set_yscale(yscale)
-    axs[0].set_xlabel(global_label_dict[x_var])
 
     # Compute histogram of y_var > 1 at each x_var bin
     bins = np.logspace(np.log10(tmp_df[x_var].min()), np.log10(tmp_df[x_var].max()), 10)
@@ -241,21 +230,134 @@ def make_scatter_hist(x_var="density", y_var="relative-dense-amp", row_block_siz
     hist_pct = 100.0 * hist / hist2
 
     # Plot histogram
-    axs[1].bar(bin_edges[:-1], hist_pct, width=np.diff(bin_edges)*0.6, alpha=0.5, edgecolor="black")
-    axs[1].set_ylabel('\% of successfully amplified')
-    axs[1].set_xscale(xscale)
-    axs[1].set_xlabel(global_label_dict[x_var])
-    axs[1].set_ylim([0, 100])
+    ax.bar(bin_edges[:-1], hist_pct, width=np.diff(bin_edges)*0.6, alpha=0.5, edgecolor="black")
+    ax.set_ylabel('\% of successfully amplified')
+    ax.set_xscale(xscale)
+    ax.set_xlabel(global_label_dict[x_var])
+    ax.set_ylim([0, 100])
 
-    plt.subplots_adjust(wspace=0.3)
-    plt.savefig(f"{image_folder}/scatterplot_{x_var}_vs_{y_var}_b{row_block_size}_B{col_block_size}_algo_{blocking_algo}.png",
+    plt.savefig(f"{image_folder}/dense_hist_{x_var}_vs_{y_var}_b{row_block_size}_B{col_block_size}_algo_{blocking_algo}.png",
                 bbox_inches='tight', dpi=300)
     plt.close()
 
+def make_success_hist_all_size(x_var="density", y_var="relative-dense-amp"):
+    blocking_algo = 5
+    fig, ax = plt.subplots(figsize=(8, 4))
+    tmp_df = df.loc[(df["blocking_algo"] == blocking_algo)]
+
+    # Create histogram
+    bin_num = 10  # Adjust bin size as needed
+    bin_edges = np.logspace(np.log10(tmp_df[x_var].min()), np.log10(tmp_df[x_var].max()), bin_num)
+
+
+    tmp_df["density_bin"] = pd.cut(tmp_df[x_var], bins=bin_edges)
+    total_counts = tmp_df.groupby(["density_bin", "row_block_size"]).size().reset_index(name="total_counts")
+    success_counts = tmp_df[tmp_df[y_var] > 1].groupby(["density_bin", "row_block_size"]).size().reset_index(name="success_counts")
+
+    # Merge total_counts and success_counts on density_bin and row_block_size
+    merged_counts = pd.merge(total_counts, success_counts, on=["density_bin", "row_block_size"], how="left")
+
+    # Compute percentage success as a new column
+    merged_counts["percent_success"] = 100 * merged_counts["success_counts"] / merged_counts["total_counts"]
+
+    print(merged_counts)
+    # Plot histogram
+    sns.barplot(data=merged_counts, x="density_bin", y="percent_success", ax=ax, edgecolor="black", hue = "row_block_size")
+    ax.set_xlabel(global_label_dict[x_var])
+    ax.set_ylabel("Percentage of successful denseAMP")
+    
+    # Set minor ticks to the bin edges
+    ax.xaxis.set_minor_locator(mtick.FixedLocator(bin_edges))
+
+    # Set x-tick labels to the lower end of each bin
+    xtick_labels = [f"{10**np.log10(bin_edges[i]):.1e}" for i in range(len(bin_edges)-1)]
+    ax.set_xticklabels(xtick_labels, rotation=45, ha="right")
+
+
+    #ax.set_xticks(np.arange(0.5,len(bin_edges), 1))  # Set xticks to the lower edge of each bin
+    # Set the x-axis tick locations to the powers of 10
+    #xticks_shifted = [tick-0.5 for tick in range(tick_labels)]
+    #ax.set_xticks(xticks_shifted)  # Set xticks to the shifted values
+    plt.legend (title = "Block size")
+
+    plt.savefig(f"{image_folder}/hist_success_{x_var}_vs_{y_var}_all_block_size.png",
+                bbox_inches='tight', dpi=300)
+    plt.close()
+
+
+def make_hist(x_var="density", y_var="relative-dense-amp", row_block_size=128, col_block_size=128, xscale="log", yscale="linear", drawline=0):
+    blocking_algo = 5
+    fig, ax = plt.subplots(figsize=(8, 4))
+    tmp_df = df.loc[(df["blocking_algo"] == blocking_algo) & (df["row_block_size"] == row_block_size) & (df["col_block_size"] == col_block_size)]
+
+    # Create histogram
+    bin_size = 0.1  # Adjust bin size as needed
+    bin_edges = [0.9999, 1.001]  # Define custom bin edges
+    bin_edges += list(np.arange(1.1, 1.4*tmp_df["relative-dense-amp"].mean() + bin_size, bin_size))
+    bin_edges += [tmp_df["relative-dense-amp"].max()]
+
+    tmp_df["density_bin"] = pd.cut(tmp_df["relative-dense-amp"], bins=bin_edges)    
+    density_counts = tmp_df.groupby("density_bin").size().reset_index(name="counts")
+    print(density_counts)
+    density_counts["percentage"] = density_counts["counts"] / len(tmp_df["relative-dense-amp"]) * 100
+
+    # Plot histogram
+    sns.barplot(data=density_counts, x="density_bin", y="percentage", ax=ax, edgecolor="black")
+    ax.set_xlabel("Density amplification (against natural blocking)")
+    ax.set_ylabel("Percentage of Points")
+    #ax.set_xticks(np.arange(0.5,len(bin_edges), 1))  # Set xticks to the lower edge of each bin
+    tick_labels = [f"{bin_edges[i]:.1f}" for i in range(len(bin_edges)-1)]
+    ax.set_xticklabels(tick_labels, rotation=45, ha="right")
+    #xticks_shifted = [tick-0.5 for tick in range(tick_labels)]
+    #ax.set_xticks(xticks_shifted)  # Set xticks to the shifted values
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter())
+
+    plt.savefig(f"{image_folder}/hist_{x_var}_vs_{y_var}_b{row_block_size}_B{col_block_size}_algo_{blocking_algo}.png",
+                bbox_inches='tight', dpi=300)
+    plt.close()
+
+def make_hist_all_block_sizes(x_var="density", y_var="relative-dense-amp"):
+    blocking_algo = 5
+    fig, ax = plt.subplots(figsize=(8, 4))
+    tmp_df = df.loc[(df["blocking_algo"] == blocking_algo)]
+
+    # Create histogram
+    bin_size = 0.1  # Adjust bin size as needed
+    bin_edges = [0.9999, 1.001]  # Define custom bin edges
+    bin_edges += list(np.arange(1.1, 1.4*tmp_df["relative-dense-amp"].mean() + bin_size, bin_size))
+    bin_edges += [tmp_df["relative-dense-amp"].max()]
+
+    tmp_df["density_bin"] = pd.cut(tmp_df["relative-dense-amp"], bins=bin_edges)    
+    density_counts = tmp_df.groupby(["density_bin", "row_block_size"]).size().reset_index(name="counts")
+    print(density_counts)
+    density_counts["percentage"] = density_counts.groupby("row_block_size")["counts"].transform(lambda x: x / x.sum() * 100)
+
+    # Plot histogram
+    sns.barplot(data=density_counts, x="density_bin", y="percentage", ax=ax, edgecolor="black", hue = "row_block_size")
+    ax.set_xlabel("Density amplification (against natural blocking)")
+    ax.set_ylabel("Percentage of Points")
+    #ax.set_xticks(np.arange(0.5,len(bin_edges), 1))  # Set xticks to the lower edge of each bin
+    tick_labels = [f"{bin_edges[i]:.1f}" for i in range(len(bin_edges)-1)]
+    ax.set_xticklabels(tick_labels, rotation=45, ha="right")
+    #xticks_shifted = [tick-0.5 for tick in range(tick_labels)]
+    #ax.set_xticks(xticks_shifted)  # Set xticks to the shifted values
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter())
+    plt.legend (title = "Block size")
+
+    plt.savefig(f"{image_folder}/hist_{x_var}_vs_{y_var}_all_block_size.png",
+                bbox_inches='tight', dpi=300)
+    plt.close()
+
+
+make_hist_all_block_sizes(x_var="density", y_var="relative-dense-amp")
+make_success_hist_all_size(x_var="density", y_var="relative-dense-amp")
+make_success_hist_all_size(x_var="block_density_no_reord", y_var="relative-dense-amp")
+
 for block_size in (64,128,256,512,1024):
         try:
+            make_hist(x_var ="block_density_no_reord", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size)
             make_scatter(x_var ="block_density_no_reord", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size, drawline = 1)
-            make_scatter_hist(x_var ="block_density_no_reord", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size, drawline = 1)
+            make_density_hist(x_var ="block_density_no_reord", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size, drawline = 1)
             make_scatter(x_var ="density", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size)
         except:
             print(f"COULD NOT MAKE SCATTER FOR {block_size} x {block_size}")
