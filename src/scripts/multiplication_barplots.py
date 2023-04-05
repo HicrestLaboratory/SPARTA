@@ -262,6 +262,28 @@ def make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable = "speed-vs-
     plt.close()
 
 
+def make_scatter_block_size(df,B_cols = 1024,var_x = "dense-amp", var_y = "speed-vs-VBR-no-reord", col_block_size = 1024, row_block_size = 1024):
+    plt.figure(figsize=(8,2))
+    tmp_df = df.loc[(df["b_cols"] == B_cols) & (df["multiplication_algo"] == 6) & (df["blocking_algo"] == 5) & (df["col_block_size"]==col_block_size) & (df["row_block_size"] == row_block_size)]
+    print("SCATTER!", tmp_df)
+    print(np.max(tmp_df["dense-amp"]))
+    print(tmp_df.head())
+    ax = sns.scatterplot(data=tmp_df, x=var_x, y=var_y)
+    ax.axhline(y=1, color='red',alpha = 0.7)
+    plt.ylim(ymin=0)
+
+    #point = (0.95,1)
+    #transformed_point = ax.transAxes.transform(point)
+    #transformed_point_data = ax.transData.inverted().transform(transformed_point)
+    #ax.text(transformed_point_data[0], 1.05, 'density amplification resulted in speed-up', ha='center', va='bottom', transform=ax.transData)
+    #ax.text(transformed_point_data[0], 0.95, 'density amplification resulted in slow-down', ha='center', va='top', transform=ax.transData)
+
+    plt.xlabel(global_label_dict[var_x])
+    plt.ylabel(global_label_dict[var_y])
+    plt.savefig(f"{image_folder}/scatter_plot_{var_x}_vs_{var_y}_B_cols_{B_cols}_b_{col_block_size}_B_{row_block_size}",  bbox_inches='tight', dpi = 300)
+    plt.close()
+
+
 def make_scatter(df,B_cols,var_x = "dense-amp", var_y = "speed-vs-VBR-no-reord"):
     plt.figure(figsize=(8,4))
     tmp_df = df.loc[(df["b_cols"] == B_cols) & (df["multiplication_algo"] == 6) & (df["blocking_algo"] == 5)]
@@ -281,6 +303,7 @@ def make_scatter(df,B_cols,var_x = "dense-amp", var_y = "speed-vs-VBR-no-reord")
     plt.ylabel(global_label_dict[var_y])
     plt.savefig(f"{image_folder}/scatter_plot_{var_x}_vs_{var_y}_B_cols_{B_cols}",  bbox_inches='tight', dpi = 300)
     plt.close()
+
 
 
 parser = argparse.ArgumentParser(description='Plots for multiplication experiments')
@@ -364,9 +387,8 @@ for B_cols in df["b_cols"].unique():
     print(f"***** for B_cols = {B_cols}")
     make_boxplot_best(df, image_folder,B_cols)
     for row_block_size in (32,64,128,256,512,1024):
-        for col_block_size in (32,64,128,256,512,1024):
-            #make_barplot(df, image_folder,B_cols, row_block_size,col_block_size)
-            1
+        col_block_size = row_block_size
+        make_scatter_block_size(df,B_cols,col_block_size=col_block_size,row_block_size=row_block_size)
 
 print("Making heatmaps")
 for B_cols in df["b_cols"].unique():
