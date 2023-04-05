@@ -3,7 +3,7 @@ export RESULTS_PATH=$2
 export PROGRAM=$3
 
 
-BLOCK_SIZEs=(64 256 512 1024)
+BLOCK_SIZEs=(64 128 256 512 1024)
 B_COLs=(1024 8192)
 EXPERIMENTs_BLOCKED=("BCSR_no_reord" "BCSR_reord" "BELLPACK_no_block" "CUTLASS_BELLPACK")
 EXPERIMENTs_NORMAL=("CSR" "GEMM" "CUTLASS_GEMM")
@@ -73,6 +73,11 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 	echo "============= processing matrix ${MATRIX_NAME} ($matrices_processed matrices processed)"
 	MATRIX_FOLDER=${RESULTS_PATH}/${MATRIX_NAME}
 	mkdir ${MATRIX_FOLDER} 2>/dev/null
+
+	if ! grep -q "${MATRIX_NAME}" "${taufile}"; then
+		continue
+	fi
+
 	for b_cols in ${B_COLs[@]};do
 
 		for exp in ${EXPERIMENTs_NORMAL[@]}; do
@@ -83,10 +88,6 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 			if [[ -f "${OUTFILE}" ]]; then
 				echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 			else
-				if ! grep -q "${MATRIX_NAME}" "${taufile}"; then
-					echo "no tau for FILE ${OUTFILE}. SKIPPING"
-					continue 2
-				fi
 				export ARGS="-f ${fullpath} -o ${OUTFILE} -c ${b_cols} -n ${EXP_NAME}"
 				export BASIC_ARGS
 				export EXP_ARGS=${experiments[$exp]}
@@ -105,12 +106,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 					echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 				else
 					if [ "${exp}" == "BCSR_reord" ]; then
-						#echo "(grep ${MATRIX_NAME} ${taufile} | grep -m 1 ${B},${b} | cut -d',' -f4)"
-						if grep -q "${MATRIX_NAME}" "${taufile}"; then
-							t=$(grep "${MATRIX_NAME}" "${taufile}" | grep -m 1 "${B},${b}" | cut -d',' -f4)
-						else
-							t="-1"
-						fi
+						t=$(grep "${MATRIX_NAME}" "${taufile}" | grep -m 1 "${B},${b}" | cut -d',' -f4)
 					else
 						t=0
 					fi
