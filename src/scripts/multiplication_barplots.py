@@ -17,7 +17,7 @@ import argparse
 
 
 global_label_dict = {
-    "block_density" : "Blocked density",
+    "block_density" : "Blocked density after DenseAMP",
     "density" : "Original density",
     "dense-amp" : "Density amplification",
     "relative_dense_amp" : "Density amplification (against natural blocking)",
@@ -246,6 +246,34 @@ def make_boxplot_best(df, image_folder,B_cols, exps = ("VBR-no-reord","GEMM")):
     plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
     plt.close()   
 
+def make_histo_best(df, image_folder,B_cols):
+    plt.figure()
+
+    x_var = 'density'
+    tmp_df = df.loc[df["b_cols"] == B_cols]
+    tmp_df = tmp_df.loc[df["row_block_size"] == df["col_block_size"]]
+    tmp_df = tmp_df.loc[tmp_df.groupby(["matrix","blocking_algo","multiplication_algo"])["avg_time_multiply"].idxmin()]
+
+    exps = ("VBR-reord", "CSR","BELLPACK-no-reord")
+    vars = ["avg_time_multiply_" + exp for exp in exps]
+    tmp_df['fastest_time'] = df[vars].min(axis=1)
+    tmp_df['fastest_routine'] = df[vars].idxmin(axis=1)
+
+    bin_num = 10  # Adjust bin size as needed
+    bin_edges = np.logspace(np.log10(tmp_df[x_var].min()), np.log10(tmp_df[x_var].max()), bin_num)
+    tmp_df["density_bin"] = pd.cut(tmp_df[x_var], bins=bin_edges)
+    best = tmp_df.groupby("density_bin")
+    best = best["fastest_routine"].value_counts()
+
+    best = best.unstack().fillna(0)
+
+    print(best)
+    
+    savename = f"{image_folder}/SpMM_hist_BEST_{B_cols}"
+    plt.legend()
+    plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
+    plt.close()   
+
 def make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable = "speed-vs-cusparse"):     
     M_algo, B_algo = experiments[exp_name]
     heatmap_df = df[(df["multiplication_algo"]==M_algo) & (df["blocking_algo"]== B_algo) & (df["b_cols"] == B_cols)]
@@ -312,12 +340,14 @@ def make_scatter_all_blocks(df,B_cols,var_x = "blocked_density", var_y = "speed-
     ax = sns.scatterplot(data=tmp_df, x=var_x, y=var_y, hue = "row_block_size")
     ax.axhline(y=1, color='red',alpha = 0.7)
 
+
     #point = (0.95,1)
     #transformed_point = ax.transAxes.transform(point)
     #transformed_point_data = ax.transData.inverted().transform(transformed_point)
     #ax.text(transformed_point_data[0], 1.05, 'density amplification resulted in speed-up', ha='center', va='bottom', transform=ax.transData)
-    #ax.text(transformed_point_data[0], 0.95, 'density amplification resulted in slow-down', ha='center', va='top', transform=ax.transData)
+    #ax.text(transformed_point_data[0], 0.95, 'density amplification resulted in slow-down', ha='center', va='top', transform=ax.transData)ù
 
+    plt.ylim(ymin= 0, ymax = 10)
     plt.xscale(xscale)
     plt.yscale(yscale)
     plt.xlabel(global_label_dict[var_x])
@@ -370,9 +400,10 @@ for exp, params in experiments.items():
         df = pd.merge(df,dfs[exp], how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_' + exp) )
 
 
-df = df[df["tau"] != -1]
 print(df.columns)
 df["dense-amp"] = df["block_density"]/df["block_density_VBR-no-reord"]
+df[df["dense-amp"] <= 1]["avg_time_multiply"] = df["avg_time_multiply_VBR-no-reord"]
+
 print(df["dense-amp"])
 print("MAAAAX", df.loc[df["dense-amp"].idxmax()])
 
@@ -380,6 +411,9 @@ for exp in experiments.keys():
     if exp == "VBR-reord": continue
     print("recording speed-up: ", exp)
     df["speed-vs-" + exp] = df["avg_time_multiply_" + exp]/df["avg_time_multiply"]
+
+
+
 
 df["time-per-block"] = df["avg_time_multiply"]/df["VBR_nzblocks_count"]
 df["time-per-area"] = df["avg_time_multiply"]/df["VBR_nzcount"]
@@ -404,6 +438,7 @@ print(df["speed-vs-GEMM"])
 
 print("Making barplots")
 for B_cols in df["b_cols"].unique():
+    make_histo_best(df, image_folder,B_cols)
     make_scatter(df,B_cols)
     for exp in experiments.keys():
         if exp != "VBR-reord":

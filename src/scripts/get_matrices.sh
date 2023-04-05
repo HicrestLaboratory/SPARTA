@@ -4,12 +4,12 @@ MATRIX_PATH=$1
 mkdir $MATRIX_PATH
 
 
-nmin=200000
-nmax=500000
+nmin=10000
+nmax=200000
 increment=10000
 
 dmin=100000
-dmax=100
+dmax=10000
 
 array=()
 

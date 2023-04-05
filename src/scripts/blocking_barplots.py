@@ -268,7 +268,7 @@ def make_success_hist_all_size(x_var="density", y_var="relative-dense-amp"):
 
     # Create histogram
     bin_num = 10  # Adjust bin size as needed
-    bin_edges = np.logspace(np.log10(tmp_df[x_var].min()), np.log10(tmp_df[x_var].max()), bin_num)
+    bin_edges = np.logspace(-5, -1, bin_num)
 
 
     tmp_df["density_bin"] = pd.cut(tmp_df[x_var], bins=bin_edges)
