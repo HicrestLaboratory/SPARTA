@@ -22,8 +22,8 @@ global_label_dict = {
     "dense-amp" : "Density amplification",
     "relative_dense_amp" : "Density amplification (against natural blocking)",
     "block ratio": "Shape (height / width)",
-    "speed-vs-cusparse": "Speed-up against cuSparse-CSR",
-    "speed-vs-no-reord": "Speed-up against cuBLAS-BCSR with natural blocking"
+    "speed-vs-CSR": "Speed-up against cuSparse-CSR",
+    "speed-vs-VBR-no-reord": "Speed-up against BCSR (natural blocking)"
 }
 
 global_exp_dict = {}
@@ -140,15 +140,14 @@ def barplot(x_labels, x_ax_label, ys, y_styles = {} , y_ax_label = "", title = "
  
 
 
-exps = {}
-exps["VBR-no-reord"] = (6,2)
-exps["VBR-reord"] = (6,5)
-exps["BELLPACK-no-reord"] = (3,2)
-#exps["BELLPACK-reord"] = (3,5)
-exps["CSR"] = (2,3)
-exps["GEMM"] = (1,3)
-exps["CUTLASS_GEMM"] = (9,3)
-exps["CUTLASS_BELLPACK"] = (8,2)
+experiments = {}
+experiments["VBR-no-reord"] = {"multiplication_algo": 6, "blocking_algo": 2}
+experiments["VBR-reord"] = {"multiplication_algo": 6, "blocking_algo": 5}
+experiments["BELLPACK-no-reord"] = {"multiplication_algo": 3, "blocking_algo": 2}
+experiments["CSR"] = {"multiplication_algo": 2, "blocking_algo": 3}
+experiments["GEMM"] = {"multiplication_algo": 1, "blocking_algo": 3}
+experiments["CUTLASS_GEMM"] = {"multiplication_algo":9, "blocking_algo": 3}
+experiments["CUTLASS_BELLPACK"] = {"multiplication_algo":8, "blocking_algo": 2}
 
 
 
@@ -156,13 +155,13 @@ def make_barplot(df, image_folder,B_cols, row_block_size, col_block_size, variab
     tmp_df = df.loc[(df["col_block_size"]==col_block_size) & (df["row_block_size"] == row_block_size) & (df["b_cols"] == B_cols)]
     matrices_names = [val.split("/")[-1].split(".")[0] for val in tmp_df["matrix"].unique()]
 
-    data_lines = {exp_name : [] for exp_name in exps}
+    data_lines = {exp_name : [] for exp_name in experiments}
     data_lines.pop("CSR")
     if col_block_size != row_block_size: data_lines.pop("BELLPACK-no-reord")
 
     for matrix in tmp_df["matrix"].unique():
         for exp_name in data_lines.keys():
-            M_algo, B_algo = exps[exp_name]
+            M_algo, B_algo = experiments[exp_name]
             values = tmp_df.loc[(tmp_df["matrix"] == matrix) & (tmp_df["multiplication_algo"] == M_algo) & (tmp_df["blocking_algo"] == B_algo)][variable].values
             if len(values) == 0:
                 data_lines[exp_name].append( 0 )
@@ -194,12 +193,12 @@ def make_barplot_best(df, image_folder,B_cols, variable = "speed-vs-cusparse"):
     tmp_df.sort_values(by=['density','matrix'], inplace=True)
     matrices_names = [val.split("/")[-1].split(".")[0] for val in tmp_df["matrix"].unique()]
     print(tmp_df)
-    data_lines = {exp_name : [] for exp_name in exps}
+    data_lines = {exp_name : [] for exp_name in experiments}
     data_lines.pop("CSR")
 
     for matrix in tmp_df["matrix"].unique():
         for exp_name in data_lines.keys():
-            M_algo, B_algo = exps[exp_name]
+            M_algo, B_algo = experiments[exp_name].values()
             values = tmp_df.loc[(tmp_df["matrix"] == matrix) & (tmp_df["multiplication_algo"] == M_algo) & (tmp_df["blocking_algo"] == B_algo)][variable].values
             if len(values) == 0:
                 data_lines[exp_name].append( 0 )
@@ -224,21 +223,21 @@ def make_barplot_best(df, image_folder,B_cols, variable = "speed-vs-cusparse"):
     plt.close()   
 
 
-def make_boxplot_best(df, image_folder,B_cols, variable = "speed-vs-cusparse"):
+def make_boxplot_best(df, image_folder,B_cols, exps = ("VBR-no-reord","GEMM")):
     plt.figure()
     tmp_df = df.loc[df["b_cols"] == B_cols]
     tmp_df = tmp_df.loc[df["row_block_size"] == df["col_block_size"]]
     tmp_df = tmp_df.loc[tmp_df.groupby(["matrix","blocking_algo","multiplication_algo"])["avg_time_multiply"].idxmin()]
     tmp_df.sort_values(by=['density','matrix'], inplace=True)
 
-    tmp_df = tmp_df[["speed-vs-no-reord","speed-vs-cusparse"]]
-    tmp_df = tmp_df[tmp_df[["speed-vs-no-reord","speed-vs-cusparse"]] < 10]
+    variables = ["speed-vs-" + exp for exp in exps] 
+    tmp_df = tmp_df[variables]
+    tmp_df = tmp_df[tmp_df[variables] < 10]
     plt.axhline(y = 1, color = "red")
 
     ax = sns.violinplot(data = tmp_df, trim=(1,5), cut = 0)
-    ax.set_xticklabels(["Speed-up against cuBLAS-BCSR", "Speed-up against cuSPARSE-CSR"])
-
-    savename = f"{image_folder}/SpMM_time_boxplot_BEST_{B_cols}"
+    ax.set_xtickslabel
+    savename = f"{image_folder}/SpMM_time_violin_BEST_{B_cols}"
     plt.legend()
     plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
     plt.close()   
@@ -249,7 +248,7 @@ def make_boxplot_best(df, image_folder,B_cols, variable = "speed-vs-cusparse"):
 
 
 def make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable = "speed-vs-cusparse"):     
-    M_algo, B_algo = exps[exp_name]
+    M_algo, B_algo = experiments[exp_name]
     heatmap_df = df[(df["multiplication_algo"]==M_algo) & (df["blocking_algo"]== B_algo) & (df["b_cols"] == B_cols)]
     table = heatmap_df.pivot_table(index="row_block_size", columns="col_block_size", values=colormap_variable, aggfunc='mean')
     table = table.sort_values(by=['row_block_size'], ascending=False)
@@ -264,14 +263,24 @@ def make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable = "speed-vs-
     plt.close()
 
 
-def make_scatter(df,B_cols,var_x = "dense-amp", var_y = "speed-vs-no-reord"):
+def make_scatter(df,B_cols,var_x = "dense-amp", var_y = "speed-vs-VBR-no-reord"):
     plt.figure()
     tmp_df = df.loc[(df["b_cols"] == B_cols) & (df["multiplication_algo"] == 6) & (df["blocking_algo"] == 5)]
     print("SCATTER!", tmp_df)
-    sns.scatterplot(data=tmp_df, x=var_x, y=var_y)
+    print(np.max(tmp_df["dense-amp"]))
+    print(tmp_df.head())
+    ax = sns.scatterplot(data=tmp_df, x=var_x, y=var_y)
+    ax.axhline(y=1, color='red',alpha = 0.7)
+
+    #point = (0.95,1)
+    #transformed_point = ax.transAxes.transform(point)
+    #transformed_point_data = ax.transData.inverted().transform(transformed_point)
+    #ax.text(transformed_point_data[0], 1.05, 'density amplification resulted in speed-up', ha='center', va='bottom', transform=ax.transData)
+    #ax.text(transformed_point_data[0], 0.95, 'density amplification resulted in slow-down', ha='center', va='top', transform=ax.transData)
+
     plt.xlabel(global_label_dict[var_x])
     plt.ylabel(global_label_dict[var_y])
-    plt.savefig(f"{image_folder}/scatter_plot_{var_x}_vs_{var_y}",  bbox_inches='tight', dpi = 300)
+    plt.savefig(f"{image_folder}/scatter_plot_{var_x}_vs_{var_y}_B_cols_{B_cols}",  bbox_inches='tight', dpi = 300)
     plt.close()
 
 
@@ -297,22 +306,39 @@ except: 1
 df = pd.read_csv(data_file)
 #df = get_dataframe_folder("results/suitsparse_collection_3")
 
-df_CSR = df.loc[df["multiplication_algo"] == 2][["matrix","b_cols","avg_time_multiply"]]
+
+#df_CSR = df.loc[df["multiplication_algo"] == 2][["matrix","b_cols","avg_time_multiply"]]
 df["block_density"] = df["nonzeros"]/df["VBR_nzcount"]
-df_VBR_no_reord = df.loc[(df["multiplication_algo"] == 6) & (df["blocking_algo"] == 2)][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size","block_density"]]
+#df_VBR_no_reord = df.loc[(df["multiplication_algo"] == 6) & (df["blocking_algo"] == 2)][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size","block_density"]]
+
+dfs = {}
+for exp, params in experiments.items():
+    if params["blocking_algo"] != 3: #if blocking is involved
+        dfs[exp] = df.loc[(df["multiplication_algo"] == params["multiplication_algo"]) & (df["blocking_algo"] == params["blocking_algo"])][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size","block_density"]]
+    else:
+        dfs[exp] = df.loc[(df["multiplication_algo"] == params["multiplication_algo"])][["matrix","b_cols","avg_time_multiply"]]
 
 
 df = df.loc[(df["blocking_algo"] == 5) & (df["multiplication_algo"] == 6)]
-df = pd.merge(df,df_VBR_no_reord, how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_VBR_no_reord') )
-df = pd.merge(df,df_CSR, how = "left",on = ["matrix","b_cols"], suffixes=('','_CSR') )
 
+for exp, params in experiments.items():
+    print("collecting experiment:", exp, params)
+    if params["blocking_algo"] == 3: #if blocking is not involved
+        df = pd.merge(df,dfs[exp], how = "left",on = ["matrix","b_cols"], suffixes=('','_' + exp) )
+    else:
+        df = pd.merge(df,dfs[exp], how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_' + exp) )
 
 
 df = df[df["tau"] != -1]
+print(df.columns)
+df["dense-amp"] = df["block_density"]/df["block_density_VBR-no-reord"]
+print("MAAAAX", df.loc[df["dense-amp"].idxmax()])
 
-df["dense-amp"] = df["block_density"]/df["block_density_VBR_no_reord"]
-df["speed-vs-no-reord"] = df["avg_time_multiply_VBR_no_reord"]/df["avg_time_multiply"]
-df["speed-vs-cusparse"] = df["avg_time_multiply_CSR"]/df["avg_time_multiply"]
+for exp in experiments.keys():
+    if exp == "VBR-reord": continue
+    print("recording speed-up: ", exp)
+    df["speed-vs-" + exp] = df["avg_time_multiply_" + exp]/df["avg_time_multiply"]
+
 df["time-per-block"] = df["avg_time_multiply"]/df["VBR_nzblocks_count"]
 df["time-per-area"] = df["avg_time_multiply"]/df["VBR_nzcount"]
 df["time-per-true-nonzero"] = df["avg_time_multiply"]/df["nonzeros"]
@@ -340,12 +366,12 @@ for B_cols in df["b_cols"].unique():
     make_boxplot_best(df, image_folder,B_cols)
     for row_block_size in (32,64,128,256,512,1024):
         for col_block_size in (32,64,128,256,512,1024):
-            make_barplot(df, image_folder,B_cols, row_block_size,col_block_size)
+            #make_barplot(df, image_folder,B_cols, row_block_size,col_block_size)
             1
 
 print("Making heatmaps")
 for B_cols in df["b_cols"].unique():
-        for exp_name in exps:
+        for exp_name in experiments:
             try:
                 make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable= "time-per-true-nonzero")
                 make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable= "speed-vs-cusparse")

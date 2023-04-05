@@ -3,9 +3,11 @@ export RESULTS_PATH=$2
 export PROGRAM=$3
 
 
-BLOCK_SIZEs=(64 256 512 1024)
+BLOCK_SIZEs=(64 128 256 512 1024)
 B_COLs=(1024 8192)
-EXPERIMENTs=("BCSR_no_reord" "BCSR_reord" "BELLPACK_no_block" "CSR" "GEMM" "CUTLASS_GEMM" "CUTLASS_BELLPACK")
+EXPERIMENTs_BLOCKED=("BCSR_no_reord" "BCSR_reord" "BELLPACK_no_block" "CUTLASS_BELLPACK")
+EXPERIMENTs_NORMAL=("CSR" "GEMM" "CUTLASS_GEMM")
+
 taufile="tau_marzola.csv"
 
 declare -A experiments
@@ -71,17 +73,31 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 	echo "============= processing matrix ${MATRIX_NAME} ($matrices_processed matrices processed)"
 	MATRIX_FOLDER=${RESULTS_PATH}/${MATRIX_NAME}
 	mkdir ${MATRIX_FOLDER} 2>/dev/null
+
+	if ! grep -q "${MATRIX_NAME}" "${taufile}"; then
+		continue
+	fi
+
 	for b_cols in ${B_COLs[@]};do
+
+		for exp in ${EXPERIMENTs_NORMAL[@]}; do
+			B=$block
+			b=$block
+			export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_B_${B}_bcols_${b_cols}_e_${exp}"
+			export OUTFILE=${MATRIX_FOLDER}/${EXP_NAME}.txt
+			if [[ -f "${OUTFILE}" ]]; then
+				echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
+			else
+				export ARGS="-f ${fullpath} -o ${OUTFILE} -c ${b_cols} -n ${EXP_NAME}"
+				export BASIC_ARGS
+				export EXP_ARGS=${experiments[$exp]}
+				create_launch
+			fi
+		done
+
+
 		for block in ${BLOCK_SIZEs[@]}; do
-			for exp in ${EXPERIMENTs[@]}; do
-
-				#progress bar stuff
-    			percent=$((progress * 100 / total))
-				#echo $percent
-	    		echo -ne "Experiments processed: [$percent%]\r"
-				((progress++))
-				#===================
-
+			for exp in ${EXPERIMENTs_BLOCKED[@]}; do
 				B=$block
 				b=$block
 				export EXP_NAME="blocking_G_${MATRIX_NAME}_b_${b}_B_${B}_bcols_${b_cols}_e_${exp}"
@@ -90,12 +106,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 					echo "FILE ${OUTFILE} ALREADY EXISTS. SKIPPING"
 				else
 					if [ "${exp}" == "BCSR_reord" ]; then
-						#echo "(grep ${MATRIX_NAME} ${taufile} | grep -m 1 ${B},${b} | cut -d',' -f4)"
-						if grep -q "${MATRIX_NAME}" "${taufile}"; then
-							t=$(grep "${MATRIX_NAME}" "${taufile}" | grep -m 1 "${B},${b}" | cut -d',' -f4)
-						else
-							t="-1"
-						fi
+						t=$(grep "${MATRIX_NAME}" "${taufile}" | grep -m 1 "${B},${b}" | cut -d',' -f4)
 					else
 						t=0
 					fi
@@ -103,7 +114,7 @@ for fullpath in ${MATRICES_PATH}/*.*; do
 					if [ "$t" == "-1" ];then #this is a special flag for BCSR_reord experiments that are not to be run
 						echo "no tau for FILE ${OUTFILE}. SKIPPING"
 					else
-						export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -o ${OUTFILE} -n ${EXP_NAME}"
+						export ARGS="-f ${fullpath} -b ${b} -B ${B} -t ${t} -c ${b_cols} -o ${OUTFILE} -n ${EXP_NAME}"
 						export BASIC_ARGS
 						export EXP_ARGS=${experiments[$exp]}
 						create_launch
