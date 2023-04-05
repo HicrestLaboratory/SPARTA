@@ -21,6 +21,15 @@
 #include <numeric>
 #include <vector>
 
+#define Z_DATATYPE_AB CUDA_R_8I
+#define Z_DATATYPE_C CUDA_R_32I
+#define Z_CUBLAS_COMPUTE CUBLAS_COMPUTE_32I
+// BUG? Does it needs Z_CUSPARSE_COMPUTE?
+
+#define Q_DATATYPE_AB CUDA_R_16F
+#define Q_DATATYPE_C CUDA_R_16F
+#define Q_CUBLAS_COMPUTE CUBLAS_COMPUTE_16F
+#define Q_CUSPARSE_COMPUTE CUDA_R_16F       // NOTE: cusparse_gemm_custom not supports CUDA_R_16F, fixed as CUDA_R_32F
 
 /*ONLY WORKS WITH 
     DataT = float, double, int;
@@ -42,15 +51,15 @@ void cublas_fixed_blocks_multiply(const VBR& vbmatA, DataT* B, int B_cols, DataT
 
     if (typeid(DataT) == typeid(int8_t))
     {
-        data_type_AB = CUDA_R_8I;
-        data_type_C = CUDA_R_32I;
-        compute_type = CUBLAS_COMPUTE_32I;
+        data_type_AB = Z_DATATYPE_AB;
+        data_type_C =  Z_DATATYPE_C;
+        compute_type = Z_CUBLAS_COMPUTE;
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_32F;
-        data_type_C = CUDA_R_32F;
-        compute_type = CUBLAS_COMPUTE_32F;
+        data_type_AB = Q_DATATYPE_AB;
+        data_type_C =  Q_DATATYPE_C;
+        compute_type = Q_CUBLAS_COMPUTE;
     }
     else
     {
@@ -214,15 +223,15 @@ void cublas_fixed_blocks_multiply_v2(const VBR& vbmatA, DataT* B, int B_cols, Da
 
     if (typeid(DataT) == typeid(int8_t))
     {
-        data_type_AB = CUDA_R_8I;
-        data_type_C = CUDA_R_32I;
-        compute_type = CUBLAS_COMPUTE_32I;
+        data_type_AB = Z_DATATYPE_AB;
+        data_type_C =  Z_DATATYPE_C;
+        compute_type = Z_CUBLAS_COMPUTE;
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_32F;
-        data_type_C = CUDA_R_32F;
-        compute_type = CUBLAS_COMPUTE_32F;
+        data_type_AB = Q_DATATYPE_AB;
+        data_type_C =  Q_DATATYPE_C;
+        compute_type = Q_CUBLAS_COMPUTE;
     }
     else
     {
@@ -381,15 +390,15 @@ void cublas_blockmat_multiplyBA_test(const VBR& vbmatA, DataT* B, int B_rows, Da
 
     if (typeid(DataT) == typeid(int8_t))
     {
-        data_type_AB = CUDA_R_8I;
-        data_type_C = CUDA_R_32I;
-        compute_type = CUBLAS_COMPUTE_32I;
+        data_type_AB = Z_DATATYPE_AB;
+        data_type_C =  Z_DATATYPE_C;
+        compute_type = Z_CUBLAS_COMPUTE;
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_16F;
-        data_type_C = CUDA_R_16F;
-        compute_type = CUBLAS_COMPUTE_16F;
+        data_type_AB = Q_DATATYPE_AB;
+        data_type_C =  Q_DATATYPE_C;
+        compute_type = Q_CUBLAS_COMPUTE;
     }
     else
     {
@@ -556,15 +565,15 @@ void cublas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
 
     if (typeid(DataT) == typeid(int8_t))
     {
-        data_type_AB = CUDA_R_8I;
-        data_type_C = CUDA_R_32I;
-        compute_type = CUBLAS_COMPUTE_32I;
+        data_type_AB = Z_DATATYPE_AB;
+        data_type_C =  Z_DATATYPE_C;
+        compute_type = Z_CUBLAS_COMPUTE;
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_32F;
-        data_type_C = CUDA_R_32F;
-        compute_type = CUBLAS_COMPUTE_32F;
+        data_type_AB = Q_DATATYPE_AB;
+        data_type_C =  Q_DATATYPE_C;
+        compute_type = Q_CUBLAS_COMPUTE;
     }
     else
     {
@@ -726,15 +735,15 @@ void cublas_blockmat_batched(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C
 
     if (typeid(DataT) == typeid(int8_t))
     {
-        data_type_AB = CUDA_R_8I;
-        data_type_C = CUDA_R_32I;
-        compute_type = CUBLAS_COMPUTE_32I;
+        data_type_AB = Z_DATATYPE_AB;
+        data_type_C =  Z_DATATYPE_C;
+        compute_type = Z_CUBLAS_COMPUTE;
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_16F;
-        data_type_C = CUDA_R_16F;
-        compute_type = CUBLAS_COMPUTE_16F;
+        data_type_AB = Q_DATATYPE_AB;
+        data_type_C =  Q_DATATYPE_C;
+        compute_type = Q_CUBLAS_COMPUTE;
     }
     else
     {
@@ -1248,14 +1257,14 @@ int cusparse_gemm_custom(int rows, int cols, int nnz, int* csrRowPtr, int* csrCo
 
     if (typeid(DataT) == typeid(int8_t))
     {
-        data_type_AB = CUDA_R_8I;
-        data_type_C = CUDA_R_32I;
+        data_type_AB = Z_DATATYPE_AB;
+        data_type_C =  Z_DATATYPE_C;
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_32F;
-        data_type_C = CUDA_R_32F;
-        compute_type = CUDA_R_32F;
+        data_type_AB = Q_DATATYPE_AB;
+        data_type_C =  Q_DATATYPE_C;
+        compute_type = CUDA_R_32F;    // NOTE: CUDA_R_16F not supported
     }
     else
     {
@@ -1494,14 +1503,14 @@ int cusparse_gemm_custom_ellpack(int rows, int cols, int A_ell_blocksize, int A_
 
     if (typeid(DataT) == typeid(int8_t))
     {
-        data_type_AB = CUDA_R_8I;
-        data_type_C = CUDA_R_32I;
+        data_type_AB = Z_DATATYPE_AB;
+        data_type_C =  Z_DATATYPE_C;
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_32F;
-        data_type_C = CUDA_R_32F;
-        compute_type = CUDA_R_32F;
+        data_type_AB = Q_DATATYPE_AB;
+        data_type_C =  Q_DATATYPE_C;
+        compute_type = Q_CUSPARSE_COMPUTE;
     }
     else
     {
@@ -1771,15 +1780,15 @@ void cublas_dense_multiplyAB(int rows, int cols, DataT* A, DataT* B, int B_cols,
 
     if (typeid(DataT) == typeid(int8_t))
     {
-        data_type_AB = CUDA_R_8I;
-        data_type_C = CUDA_R_32I;
-        compute_type = CUBLAS_COMPUTE_32I;
+        data_type_AB = Z_DATATYPE_AB;
+        data_type_C =  Z_DATATYPE_C;
+        compute_type = Z_CUBLAS_COMPUTE;
     }
     else if (typeid(DataT) == typeid(float))
     {
-        data_type_AB = CUDA_R_32F;
-        data_type_C = CUDA_R_32F;
-        compute_type = CUBLAS_COMPUTE_32F;
+        data_type_AB = Q_DATATYPE_AB;
+        data_type_C =  Q_DATATYPE_C;
+        compute_type = Q_CUBLAS_COMPUTE;
     }
     else
     {
