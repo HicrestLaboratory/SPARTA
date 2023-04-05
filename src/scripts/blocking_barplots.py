@@ -26,6 +26,9 @@ global_label_dict = {
     "dense-amp" : "Density amplification (against unblocked)",
     "relative-dense-amp" : "Density amplification",
     "block ratio": "Shape (height / width)",
+    "time_to_block" : "DenseAMP runtime (ms)",
+    "rows" : "Sparse matrix rows (N)",
+    "cols" : "Sparse matrix columns (M)",
     "block_density_no_reord" : "Blocked density (natural)"
 }
 
@@ -212,6 +215,24 @@ def make_scatter(x_var = "density", y_var = "relative-dense-amp", row_block_size
     plt.savefig(f"{image_folder}/scatterplot_{x_var}_vs_{y_var}_b{row_block_size}_B{col_block_size}_algo_{blocking_algo}.png", bbox_inches='tight', dpi = 300)
     plt.close()
 
+
+def make_scatter_all_block(x_var = "nonzeros", y_var = "time_to_block"):
+    blocking_algo = 5
+    fig, ax = plt.subplots()
+    tmp_df = df.loc[(df["blocking_algo"] == blocking_algo)]
+    sns.scatterplot(data=tmp_df,
+                        x= x_var,
+                        y= y_var,
+                        alpha=0.5, edgecolor = "black", ax = ax, label = row_block_size, hue = "row_block_size")
+    plt.ylabel(global_label_dict[y_var])
+    plt.yscale("log")
+    plt.xscale("log")
+
+    plt.xlabel(global_label_dict[x_var])
+    plt.yscale("log")
+    plt.savefig(f"{image_folder}/scatterplot_{x_var}_vs_{y_var}.png", bbox_inches='tight', dpi = 300)
+    plt.close()
+
 def make_density_hist(x_var="density", y_var="relative-dense-amp", row_block_size=128, col_block_size=128, xscale="log", yscale="linear", drawline=0):
     blocking_algo = 5
     fig, ax = plt.subplots( figsize=(8, 4))
@@ -349,14 +370,18 @@ def make_hist_all_block_sizes(x_var="density", y_var="relative-dense-amp"):
     plt.close()
 
 
+print(df["time_to_block"])
+
 make_hist_all_block_sizes(x_var="density", y_var="relative-dense-amp")
+make_scatter_all_block(x_var = "rows", y_var = "time_to_block")
+make_scatter_all_block(x_var = "nonzeros", y_var = "time_to_block")
 make_success_hist_all_size(x_var="density", y_var="relative-dense-amp")
 make_success_hist_all_size(x_var="block_density_no_reord", y_var="relative-dense-amp")
 
 for block_size in (64,128,256,512,1024):
         try:
             make_hist(x_var ="block_density_no_reord", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size)
-            make_scatter(x_var ="block_density_no_reord", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size, drawline = 1)
+            make_scatter(x_var ="rows", y_var = "time_to_block", row_block_size = block_size, col_block_size = block_size)
             make_density_hist(x_var ="block_density_no_reord", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size, drawline = 1)
             make_scatter(x_var ="density", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size)
         except:
