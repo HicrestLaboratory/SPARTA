@@ -371,11 +371,14 @@ def make_hist_all_block_sizes(x_var="density", y_var="relative-dense-amp"):
 
 print(df["time_to_block"])
 
-make_hist_all_block_sizes(x_var="density", y_var="relative-dense-amp")
-make_scatter_all_block(x_var = "rows", y_var = "time_to_block")
-make_scatter_all_block(x_var = "nonzeros", y_var = "time_to_block")
-make_success_hist_all_size(x_var="density", y_var="relative-dense-amp")
-make_success_hist_all_size(x_var="block_density_no_reord", y_var="relative-dense-amp")
+try:
+    make_hist_all_block_sizes(x_var="density", y_var="relative-dense-amp")
+    make_scatter_all_block(x_var = "rows", y_var = "time_to_block")
+    make_scatter_all_block(x_var = "nonzeros", y_var = "time_to_block")
+    make_success_hist_all_size(x_var="density", y_var="relative-dense-amp")
+    make_success_hist_all_size(x_var="block_density_no_reord", y_var="relative-dense-amp")
+except: 
+    "PROBLEMS!"
 
 for block_size in (64,128,256,512,1024):
         try:

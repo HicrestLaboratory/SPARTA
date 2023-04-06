@@ -267,8 +267,6 @@ def make_histo_best(df, image_folder,B_cols, x_var = 'density'):
     best = best.unstack().fillna(0)
 
     best["total"] = best[vars].sum(axis=1)
-
-
     print(best)
 
     for exp in exps: 
@@ -278,7 +276,6 @@ def make_histo_best(df, image_folder,B_cols, x_var = 'density'):
     ax = sns.barplot(data=best.reset_index().melt(id_vars="density_bin", value_vars=[f"percent_{exp}" for exp in exps], var_name="routine"), x="density_bin", y="value", hue="routine", alpha=0.5)
     sns.despine()
     xticks = np.arange(bin_num -1) + 0.5
-    print(bin_edges)
     xticklabels = [np.format_float_scientific(bin, precision=0, exp_digits=1) for bin in bin_edges[:-1]]
     ax.set_xticks(xticks)
     ax.set_xticklabels(xticklabels)
@@ -399,22 +396,34 @@ df = pd.read_csv(data_file)
 df["block_density"] = df["nonzeros"]/df["VBR_nzcount"]
 #df_VBR_no_reord = df.loc[(df["multiplication_algo"] == 6) & (df["blocking_algo"] == 2)][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size","block_density"]]
 
+print("MATRICES:", len(df["matrix"].unique()))
+
+def count_failed(df, b_cols):
+    failed_df = df.loc[df["avg_time_multiply"] < 0.001]
+    completed_df = df.loc[(df["b_cols"] == b_cols) & (df["avg_time_multiply"] > 0.001)]
+    completed = len(completed_df["matrix"].unique())
+    return completed
 dfs = {}
 for exp, params in experiments.items():
     if exp in ("VBR-no-reord","VBR-reord"): #if blocking is involved
         dfs[exp] = df.loc[(df["multiplication_algo"] == params["multiplication_algo"]) & (df["blocking_algo"] == params["blocking_algo"])][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size","block_density"]]
-    elif exp in("BELLPACK-no-reord","CUTLASS-BELLPACK"):
+    elif exp in("BELLPACK-no-reord","CUTLASS-BELLPACK"): #if blocking is involved b ut needs to be taken out
         dfs[exp] = df.loc[(df["multiplication_algo"] == params["multiplication_algo"]) & (df["blocking_algo"] == params["blocking_algo"])][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size","block_density"]]
-        dfs[exp] = dfs[exp].loc[dfs[exp].groupby(["matrix"])["avg_time_multiply"].idxmin()]
     else:
         dfs[exp] = df.loc[(df["multiplication_algo"] == params["multiplication_algo"])][["matrix","b_cols","avg_time_multiply"]]
+
+for exp in experiments.keys():
+    for b in df["b_cols"].unique():
+        print(f"COMPLETED at block_size {b}: ", count_failed(dfs[exp],b))
 
 
 df = df.loc[(df["blocking_algo"] == 5) & (df["multiplication_algo"] == 6)]
 
+
+
 for exp, params in experiments.items():
     print("collecting experiment:", exp, params)
-    if exp in ("VBR-no-reord","VBR-reord"): #if blocking is not involved
+    if exp in ("VBR-no-reord","VBR-reord"):
         df = pd.merge(df,dfs[exp], how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_' + exp) )
     else:
         df = pd.merge(df,dfs[exp], how = "left",on = ["matrix","b_cols"], suffixes=('','_' + exp) )
@@ -456,14 +465,17 @@ df.sort_values(by=['density','matrix'], inplace=True)
 print(df["speed-vs-GEMM"])
 
 print("Making barplots")
-for B_cols in df["b_cols"].unique():
-    make_histo_best(df, image_folder,B_cols)
-    make_scatter(df,B_cols)
-    for exp in experiments.keys():
-        if exp != "VBR-reord":
-            make_scatter_all_blocks(df,B_cols,var_x="block_density",var_y="speed-vs-" + exp)
-            make_scatter_all_blocks(df,B_cols,var_x="density",var_y="speed-vs-" + exp)
-
+for B_cols in (1024, 8192):
+    try:
+        make_histo_best(df, image_folder,B_cols)
+        make_scatter(df,B_cols)
+    except:
+        print(f"FAILED GENERAL IMAGES for bcols {B_cols}")
+        for exp in experiments.keys():
+            if exp != "VBR-reord":
+                make_scatter_all_blocks(df,B_cols,var_x="block_density",var_y="speed-vs-" + exp)
+                make_scatter_all_blocks(df,B_cols,var_x="density",var_y="speed-vs-" + exp)
+    
     print(f"***** for B_cols = {B_cols}")
     make_boxplot_best(df, image_folder,B_cols)
     for row_block_size in (32,64,128,256,512,1024):
