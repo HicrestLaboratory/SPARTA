@@ -137,8 +137,11 @@ except: 1
 df = pd.read_csv(data_file)
 #df = get_dataframe_folder("results/suitsparse_collection_3")
 
-d = (0.00001, 0.1)
-n = (20000,200000)
+d = (0.000001, 0.1)
+n = (20000,500000)
+
+print("*************SIZES:")
+print("MIN:", df["rows"].min(), "MAX: ", df["rows"].max())
 
 df = df.loc[df.groupby(["matrix","blocking_algo","col_block_size","row_block_size"])["VBR_nzblocks_count"].idxmin()]
 
@@ -235,7 +238,7 @@ def make_scatter_all_block(x_var = "nonzeros", y_var = "time_to_block"):
 
 def make_success_hist(x_var="density", y_var="relative-dense-amp", row_block_size=128, col_block_size=128, xscale="log", yscale="linear", drawline=0):
     blocking_algo = 5
-    fig, ax = plt.subplots( figsize=(8, 4))
+    fig, ax = plt.subplots( figsize=(8, 2.5))
     tmp_df = df.loc[(df["blocking_algo"] == blocking_algo) & (df["row_block_size"] == row_block_size) & (df["col_block_size"] == col_block_size)]
 
     # Compute histogram of y_var > 1 at each x_var bin
@@ -251,7 +254,7 @@ def make_success_hist(x_var="density", y_var="relative-dense-amp", row_block_siz
     xticklabels = [np.format_float_scientific(bin, precision=0, exp_digits=1) for bin in bins[:-1]]
     ax.set_xticks(xticks)
     ax.set_xticklabels(xticklabels)
-    ax.set_ylabel('\% of successfully amplified')
+    ax.set_ylabel('% of successfully amplified')
     #ax.set_xscale(xscale)
     ax.set_xlabel(global_label_dict[x_var])
     ax.set_ylim([0, 100])
@@ -305,7 +308,7 @@ def make_success_hist_all_size(x_var="density", y_var="relative-dense-amp"):
 
 def make_hist(x_var="density", y_var="relative-dense-amp", row_block_size=128, col_block_size=128, xscale="log", yscale="linear", drawline=0):
     blocking_algo = 5
-    fig, ax = plt.subplots(figsize=(8, 4))
+    fig, ax = plt.subplots(figsize=(8, 3))
     tmp_df = df.loc[(df["blocking_algo"] == blocking_algo) & (df["row_block_size"] == row_block_size) & (df["col_block_size"] == col_block_size)]
 
     # Create histogram
@@ -385,7 +388,8 @@ for block_size in (64,128,256,512,1024):
             make_success_hist(x_var ="density", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size)
             make_success_hist(x_var ="block_density_no_reord", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size)
             make_hist(x_var ="block_density_no_reord", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size)
-            make_scatter(x_var ="rows", y_var = "time_to_block", row_block_size = block_size, col_block_size = block_size)
+            make_hist(x_var ="density", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size)
+            make_scatter(x_var ="rows", y_var = "time_to_block", row_block_size = block_size, col_block_size = block_size, yscale="log")
             make_scatter(x_var ="density", y_var = "relative-dense-amp", row_block_size = block_size, col_block_size = block_size)
         except:
             print(f"COULD NOT MAKE SCATTER FOR {block_size} x {block_size}")

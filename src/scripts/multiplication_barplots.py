@@ -288,6 +288,50 @@ def make_histo_best(df, image_folder,B_cols, x_var = 'density'):
     plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
     plt.close()   
 
+
+def make_histo_best_blocksize(df, image_folder,B_cols, x_var = 'density'):
+    plt.figure()
+
+    tmp_df = df.loc[(df["b_cols"] == B_cols) & (df["multiplication_algo"] == 6) & (df["blocking_algo"] == 5)]
+    tmp_df = tmp_df.loc[df["row_block_size"] == df["col_block_size"]]
+
+    idx = tmp_df.groupby('matrix')['avg_time_multiply'].idxmin()
+    result = tmp_df.loc[idx, "row_block_size"]
+    exps = ("VBR-reord", "CSR","BELLPACK-no-reord")
+    vars = ["avg_time_multiply_" + exp for exp in exps]
+    tmp_df['fastest_time'] = df[vars].min(axis=1)
+    tmp_df['fastest_routine'] = df[vars].idxmin(axis=1)
+
+    bin_num = 10  # Adjust bin size as needed
+    bin_edges = np.logspace(np.log10(tmp_df[x_var].min()), np.log10(tmp_df[x_var].max()), bin_num)
+    tmp_df["density_bin"] = pd.cut(tmp_df[x_var], bins=bin_edges)
+    best = tmp_df.groupby("density_bin")
+    best = best["fastest_routine"].value_counts()
+
+    best = best.unstack().fillna(0)
+
+    best["total"] = best[vars].sum(axis=1)
+    print(best)
+
+    for exp in exps: 
+        var = "percent_" + exp
+        best[var] = best["avg_time_multiply_" + exp]/best["total"] *100
+
+    ax = sns.barplot(data=best.reset_index().melt(id_vars="density_bin", value_vars=[f"percent_{exp}" for exp in exps], var_name="routine"), x="density_bin", y="value", hue="routine", alpha=0.5)
+    sns.despine()
+    xticks = np.arange(bin_num -1) + 0.5
+    xticklabels = [np.format_float_scientific(bin, precision=0, exp_digits=1) for bin in bin_edges[:-1]]
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xticklabels)
+    # plot histogram with one bar for each column
+    
+    plt.xlabel(global_label_dict[x_var])
+    plt.ylabel("Fastest routine on % of the matrices")
+    savename = f"{image_folder}/SpMM_hist_BEST_{B_cols}"
+    plt.legend()
+    plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
+    plt.close()   
+
 def make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable = "speed-vs-cusparse"):     
     M_algo, B_algo = experiments[exp_name]
     heatmap_df = df[(df["multiplication_algo"]==M_algo) & (df["blocking_algo"]== B_algo) & (df["b_cols"] == B_cols)]
@@ -331,7 +375,7 @@ def make_scatter(df,B_cols,var_x = "dense-amp", var_y = "speed-vs-VBR-no-reord")
     tmp_df = df.loc[(df["b_cols"] == B_cols) & (df["multiplication_algo"] == 6) & (df["blocking_algo"] == 5)]
     print(tmp_df.columns)
     #print("SCATTER!", tmp_df)
-    ax = sns.scatterplot(data=tmp_df, x=var_x, y=var_y)
+    ax = sns.scatterplot(data=tmp_df, x=var_x, y=var_y, hue = "row_block_size")
     ax.axhline(y=1, color='red',alpha = 0.7)
 
     #point = (0.95,1)
@@ -396,6 +440,15 @@ df = pd.read_csv(data_file)
 df["block_density"] = df["nonzeros"]/df["VBR_nzcount"]
 #df_VBR_no_reord = df.loc[(df["multiplication_algo"] == 6) & (df["blocking_algo"] == 2)][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size","block_density"]]
 
+
+d = (0.000001, 0.1)
+n = (20000,500000)
+
+df["density"] = df["nonzeros"].values/(df["rows"].values * df["cols"].values)
+df = df[(df["density"] >= d[0]) & (df["density"] <= d[1])]
+df = df[(df["rows"] >= n[0]) & (df["rows"] <= n[1])]
+df = df[(df["cols"] >= n[0]) & (df["cols"] <= n[1])]
+
 print("MATRICES:", len(df["matrix"].unique()))
 
 def count_failed(df, b_cols):
@@ -403,6 +456,14 @@ def count_failed(df, b_cols):
     completed_df = df.loc[(df["b_cols"] == b_cols) & (df["avg_time_multiply"] > 0.001)]
     completed = len(completed_df["matrix"].unique())
     return completed
+
+def count_failed_block(df, b_cols, row_block_size):
+    failed_df = df.loc[df["avg_time_multiply"] < 0.001]
+    completed_df = df.loc[(df["b_cols"] == b_cols) & (df["avg_time_multiply"] > 0.001) & (df["row_block_size"] == row_block_size)]
+    completed = len(completed_df["matrix"].unique())
+    return completed
+
+
 dfs = {}
 for exp, params in experiments.items():
     if exp in ("VBR-no-reord","VBR-reord"): #if blocking is involved
@@ -414,12 +475,17 @@ for exp, params in experiments.items():
 
 for exp in experiments.keys():
     for b in df["b_cols"].unique():
-        print(f"COMPLETED at block_size {b}: ", count_failed(dfs[exp],b))
+        print(f"{exp} ***COMPLETED at block_size {b}: ", count_failed(dfs[exp],b))
+        if "VBR" in exp:
+            for row_block_size in df["row_block_size"].unique():
+                print(row_block_size, count_failed_block(dfs[exp], b, row_block_size))
+
 
 
 df = df.loc[(df["blocking_algo"] == 5) & (df["multiplication_algo"] == 6)]
 
 
+#make_histo_best_blocksize(df, image_folder,1024, x_var = 'density')
 
 for exp, params in experiments.items():
     print("collecting experiment:", exp, params)
