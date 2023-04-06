@@ -219,7 +219,7 @@ int main(int argc, char* argv[])
 
             break;
         }
-    case cutlas_vbr_inverted_batched:
+    case cutlas_vbr_batched:
         {
             bEngine.GetGrouping(cmat);
             VBR vbmat_cublas;
@@ -236,7 +236,7 @@ int main(int argc, char* argv[])
             for (int i = -cli.warmup_; i < cli.exp_repetitions_; i++)
             {
                 fill(mat_C, mat_C + B_rows*cmat.cols, 0);
-                cutlas_blockmat_multiplyBA_batched(vbmat_cublas, mat_B_tran, B_rows, mat_C, dt, cli.n_streams_);
+                cutlas_blockmat_batched(vbmat_cublas, mat_B_tran, B_rows, mat_C, dt);
                 if (i >= 0) algo_times.push_back(dt); //only saves non-warmup runs
             }
             bEngine.multiplication_timer_avg = avg(algo_times);

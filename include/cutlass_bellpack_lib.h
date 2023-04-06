@@ -22,6 +22,6 @@ void cutlas_blockmat_multiplyBA(const VBR& vbmatA, DataT* B, int B_rows, DataT_C
 
 void cutlas_blockmat_multiplyBA_streams(const VBR& vbmatA, DataT* B, int B_rows, DataT_C* C, float& dt, int n_streams);
 
-cudaError_t cutlas_blockmat_multiplyBA_batched(const VBR& vbmatA, DataT* B, int B_rows, DataT_C* C, float& dt, int n_streams);
+void cutlas_blockmat_batched(const VBR& vbmatA, DataT* B, int B_cols, DataT_C* C, float& dt);
 
 #endif
