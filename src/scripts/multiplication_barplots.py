@@ -246,10 +246,9 @@ def make_boxplot_best(df, image_folder,B_cols, exps = ("VBR-no-reord","GEMM")):
     plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
     plt.close()   
 
-def make_histo_best(df, image_folder,B_cols):
+def make_histo_best(df, image_folder,B_cols, x_var = 'density'):
     plt.figure()
 
-    x_var = 'density'
     tmp_df = df.loc[df["b_cols"] == B_cols]
     tmp_df = tmp_df.loc[df["row_block_size"] == df["col_block_size"]]
     tmp_df = tmp_df.loc[tmp_df.groupby(["matrix","blocking_algo","multiplication_algo"])["avg_time_multiply"].idxmin()]
@@ -267,8 +266,26 @@ def make_histo_best(df, image_folder,B_cols):
 
     best = best.unstack().fillna(0)
 
+    best["total"] = best[vars].sum(axis=1)
+
+
     print(best)
+
+    for exp in exps: 
+        var = "percent_" + exp
+        best[var] = best["avg_time_multiply_" + exp]/best["total"] *100
+
+    ax = sns.barplot(data=best.reset_index().melt(id_vars="density_bin", value_vars=[f"percent_{exp}" for exp in exps], var_name="routine"), x="density_bin", y="value", hue="routine", alpha=0.5)
+    sns.despine()
+    xticks = np.arange(bin_num -1) + 0.5
+    print(bin_edges)
+    xticklabels = [np.format_float_scientific(bin, precision=0, exp_digits=1) for bin in bin_edges[:-1]]
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xticklabels)
+    # plot histogram with one bar for each column
     
+    plt.xlabel(global_label_dict[x_var])
+    plt.ylabel("Fastest routine on % of the matrices")
     savename = f"{image_folder}/SpMM_hist_BEST_{B_cols}"
     plt.legend()
     plt.savefig(savename + ".png",  bbox_inches='tight', dpi = 300)
@@ -384,8 +401,11 @@ df["block_density"] = df["nonzeros"]/df["VBR_nzcount"]
 
 dfs = {}
 for exp, params in experiments.items():
-    if params["blocking_algo"] != 3: #if blocking is involved
+    if exp in ("VBR-no-reord","VBR-reord"): #if blocking is involved
         dfs[exp] = df.loc[(df["multiplication_algo"] == params["multiplication_algo"]) & (df["blocking_algo"] == params["blocking_algo"])][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size","block_density"]]
+    elif exp in("BELLPACK-no-reord","CUTLASS-BELLPACK"):
+        dfs[exp] = df.loc[(df["multiplication_algo"] == params["multiplication_algo"]) & (df["blocking_algo"] == params["blocking_algo"])][["matrix","b_cols","avg_time_multiply","col_block_size","row_block_size","block_density"]]
+        dfs[exp] = dfs[exp].loc[dfs[exp].groupby(["matrix"])["avg_time_multiply"].idxmin()]
     else:
         dfs[exp] = df.loc[(df["multiplication_algo"] == params["multiplication_algo"])][["matrix","b_cols","avg_time_multiply"]]
 
@@ -394,11 +414,10 @@ df = df.loc[(df["blocking_algo"] == 5) & (df["multiplication_algo"] == 6)]
 
 for exp, params in experiments.items():
     print("collecting experiment:", exp, params)
-    if params["blocking_algo"] == 3: #if blocking is not involved
-        df = pd.merge(df,dfs[exp], how = "left",on = ["matrix","b_cols"], suffixes=('','_' + exp) )
-    else:
+    if exp in ("VBR-no-reord","VBR-reord"): #if blocking is not involved
         df = pd.merge(df,dfs[exp], how = "left",on = ["matrix","b_cols","row_block_size","col_block_size"], suffixes=('','_' + exp) )
-
+    else:
+        df = pd.merge(df,dfs[exp], how = "left",on = ["matrix","b_cols"], suffixes=('','_' + exp) )
 
 print(df.columns)
 df["dense-amp"] = df["block_density"]/df["block_density_VBR-no-reord"]
