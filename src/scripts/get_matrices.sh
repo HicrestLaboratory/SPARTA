@@ -8,8 +8,8 @@ nmin=10000
 nmax=200000
 increment=10000
 
-dmin=100000
-dmax=10000
+dmin=10000
+dmax=100
 
 array=()
 
