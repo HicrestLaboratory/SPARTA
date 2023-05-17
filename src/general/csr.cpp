@@ -149,6 +149,20 @@ void CSR::scramble()
     permute_rows(v);
 }
 
+
+void CSR::save_to_edgelist(std::ofstream& outfile, std::string delimiter, bool pattern_only, MatrixFormat mat_fmt)
+{
+    for (int i = 0; i < rows; i++)
+    {
+        for (int nz = 0; nz < nzcount[i]; nz++)
+        {
+            if (mat_fmt == mtx) outfile << ja[i][nz] << delimiter << i << "\n";
+            else outfile << i << delimiter << ja[i][nz] << "\n";
+        }
+    }
+}
+
+
 void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only, MatrixFormat mat_fmt, bool symmetrize)
 //reads edgelist into the CSR.
 {

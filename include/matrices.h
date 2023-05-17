@@ -28,7 +28,9 @@ struct CSR
     bool pattern_only; // 1 if the matrix is patter only; 0 otherwise
 
     void clean();
-    void read_from_edgelist(std::ifstream& infile, std::string delimiter = " ", bool pattern_only = true, MatrixFormat = mtx, bool symmetrize = false);
+    void read_from_edgelist(std::ifstream& infile, std::string delimiter = " ", bool pattern_only = true, MatrixFormat mat_fmt = mtx, bool symmetrize = false);
+    void save_to_edgelist(std::ofstream& outfile, std::string delimiter = " ", bool pattern_only = true, MatrixFormat mat_fmt = mtx);
+
     void reorder(std::vector<intT> grouping);
     void reorder_by_degree(bool descending = true);
     void permute_rows(std::vector<intT> permutation);
