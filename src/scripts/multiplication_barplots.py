@@ -28,7 +28,8 @@ global_label_dict = {
     "speed-vs-BELLPACK-no-reord": "Speed-up against BELLPACK (natural blocking)",
     "speed-vs-CUTLASS_GEMM": "Speed-up against CUTLASS GEMM",
     "speed-vs-CUTLASS_BELLPACK": "Speed-up against CUTLASS BELLPACK",
-
+    "GFLOPs": "GFLOPs",
+    "VBR_nzblocks_count" : "Number of nonzero blocks"
 }
 
 global_exp_dict = {}
@@ -396,7 +397,7 @@ def make_scatter_all_blocks(df,B_cols,var_x = "blocked_density", var_y = "speed-
     print(tmp_df.columns)
     #print("SCATTER!", tmp_df)
     ax = sns.scatterplot(data=tmp_df, x=var_x, y=var_y, hue = "row_block_size")
-    ax.axhline(y=1, color='red',alpha = 0.7)
+    #ax.axhline(y=1, color='red',alpha = 0.7)
 
 
     #point = (0.95,1)
@@ -405,7 +406,7 @@ def make_scatter_all_blocks(df,B_cols,var_x = "blocked_density", var_y = "speed-
     #ax.text(transformed_point_data[0], 1.05, 'density amplification resulted in speed-up', ha='center', va='bottom', transform=ax.transData)
     #ax.text(transformed_point_data[0], 0.95, 'density amplification resulted in slow-down', ha='center', va='top', transform=ax.transData)ù
 
-    plt.ylim(ymin= 0, ymax = 10)
+    #plt.ylim(ymin= 0, ymax = 10)
     plt.xscale(xscale)
     plt.yscale(yscale)
     plt.xlabel(global_label_dict[var_x])
@@ -511,6 +512,8 @@ for exp in experiments.keys():
 
 df["time-per-block"] = df["avg_time_multiply"]/df["VBR_nzblocks_count"]
 df["time-per-area"] = df["avg_time_multiply"]/df["VBR_nzcount"]
+df["GFLOPs"] = df["b_cols"]*df["VBR_nzcount"]/(df["avg_time_multiply"]*1000*1000*1000)
+
 df["time-per-true-nonzero"] = df["avg_time_multiply"]/df["nonzeros"]
 df = df[df["dense-amp"] > 1]
 
@@ -537,16 +540,19 @@ for B_cols in (1024, 8192):
         make_scatter(df,B_cols)
     except:
         print(f"FAILED GENERAL IMAGES for bcols {B_cols}")
-        for exp in experiments.keys():
-            if exp != "VBR-reord":
-                make_scatter_all_blocks(df,B_cols,var_x="block_density",var_y="speed-vs-" + exp)
-                make_scatter_all_blocks(df,B_cols,var_x="density",var_y="speed-vs-" + exp)
+    make_scatter_all_blocks(df,B_cols,var_x="VBR_nzblocks_count",var_y="GFLOPs")
+    for exp in experiments.keys():
+        if exp != "VBR-reord":
+            make_scatter_all_blocks(df,B_cols,var_x="block_density",var_y="speed-vs-" + exp)
+            make_scatter_all_blocks(df,B_cols,var_x="density",var_y="speed-vs-" + exp)
     
     print(f"***** for B_cols = {B_cols}")
     make_boxplot_best(df, image_folder,B_cols)
     for row_block_size in (32,64,128,256,512,1024):
         col_block_size = row_block_size
         make_scatter_block_size(df,B_cols,col_block_size=col_block_size,row_block_size=row_block_size)
+
+"""
 
 print("Making heatmaps")
 for B_cols in df["b_cols"].unique():
@@ -559,3 +565,6 @@ for B_cols in df["b_cols"].unique():
                 make_heatmap(df,image_folder,B_cols,exp_name, colormap_variable= "time-per-area")
             except: 
                 print(f"no heatmap for {exp_name}")
+
+
+"""
