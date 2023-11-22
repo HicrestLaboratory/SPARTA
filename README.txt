@@ -28,7 +28,7 @@ OPTIONS:
 		2: fixed_size 
 		3: iterative_clocked
 		4: iterative_queue 
-		5: iterative_max_size
+		5: iterative_max_size (BEST fixed block)
 
 -b: column block size
 
@@ -73,6 +73,10 @@ OPTIONS:
 	0: do nothing (default)
 	1: reorder rows by nonzero count (descending)
 	2: scramble rows
+
+-R: matrix format (how each line in the edgelist looks like)
+	0: row col (default)
+	1: col row
 
 -s: random seed
 

@@ -16,7 +16,7 @@ class CLineReader
         std::string outfile_ = "results/TEST_results.txt";
         std::string exp_name_ = "";
         std::string reader_delimiter_ = " ";
-        int mat_fmt_ = 1;
+        int mat_fmt_ = 0;
 
         bool sim_use_groups_ = 0;
         bool sim_use_pattern_ = 1;

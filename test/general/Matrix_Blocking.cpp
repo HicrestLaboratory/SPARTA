@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
     if (cli.verbose_ > 0) bEngine.print();
 
     ofstream outfile;
-    bool save_grouping = false;
+    bool save_grouping = true;
     outfile.open(cli.outfile_);
 
     ofstream outfile_grouping;
