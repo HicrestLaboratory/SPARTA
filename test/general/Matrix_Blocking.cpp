@@ -34,4 +34,6 @@ int main(int argc, char* argv[])
     {
         save_blocking_data(cout, cli, bEngine, cmat, false, outfile_grouping);
     }
+
+    if (cli.verbose_> 0) cout << "Nonzero Blocks:" << bEngine.VBR_nzblocks_count << endl;
 }
