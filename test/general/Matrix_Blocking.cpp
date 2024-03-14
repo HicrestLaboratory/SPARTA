@@ -40,7 +40,9 @@ int main(int argc, char* argv[])
     if (save_reordered_matrix) {
         cmat.reorder(grouping);
         outfile.close();
-        outfile.open(cli.outfile_ + "_reordered.el");
+        size_t lastindex = cli.filename_.find_last_of(".");
+        string rawname = cli.filename_.substr(0, lastindex);
+        outfile.open(rawname + "_reordered.el");
         cmat.save_to_edgelist(outfile, " ", true, 0);
     }
     
