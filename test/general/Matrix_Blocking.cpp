@@ -15,8 +15,9 @@ int main(int argc, char* argv[])
     if (cli.verbose_ > 1) cmat.print(cli.verbose_);
     BlockingEngine bEngine(cli);
 
+    
     //evaluate the grouping
-    bEngine.GetGrouping(cmat); 
+    vector<intT> grouping = bEngine.GetGrouping(cmat); 
     if (cli.verbose_ > 0) bEngine.print();
 
     ofstream outfile;
@@ -35,5 +36,12 @@ int main(int argc, char* argv[])
         save_blocking_data(cout, cli, bEngine, cmat, false, outfile_grouping);
     }
 
+    bool save_reordered_matrix = true;
+    if (save_reordered_matrix) {
+        cmat.reorder(grouping);
+        outfile.open(cli.outfile_ + "_reordered.el");
+        cmat.save_to_edgelist(outfile, " ", true, 0);
+    }
+    
     if (cli.verbose_> 0) cout << "Nonzero Blocks:" << bEngine.VBR_nzblocks_count << endl;
 }
