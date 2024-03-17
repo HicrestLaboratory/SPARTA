@@ -30,7 +30,7 @@ class CLineReader
         int reorder_ = 0; //-1 for ascending. 0 for nothing. 1 for descending. 2 for scramble
         int col_block_size_ = 3;
         int row_block_size_ = 3;
-        float tau_ = 0.5;
+        float tau_ = 0.1;
 
         int verbose_ = 1;
 
