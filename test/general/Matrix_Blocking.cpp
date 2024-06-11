@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
         save_blocking_data(cout, cli, bEngine, cmat, false, outfile_grouping);
     }
 
-    bool save_reordered_matrix = true;
+    bool save_reordered_matrix = false;
     if (save_reordered_matrix) {
         cmat.reorder(grouping);
         outfile.close();

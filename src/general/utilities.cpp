@@ -232,9 +232,11 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
     outfile << header << endl;
     outfile << values << endl;
 
-    if (save_blocking)
+
+    //Save blocking
+    for (int i = 0; i < bEngine.grouping_result.size(); i++)
     {
-        blocking_outfile << "GROUPING,";
-        print_vec(bEngine.grouping_result, blocking_outfile, ",");
+        blocking_outfile << bEngine.grouping_result[i] << "\n";
     }
+//    print_vec(bEngine.grouping_result, blocking_outfile, ",");
 }
