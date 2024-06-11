@@ -9,6 +9,8 @@
 #include <queue>
 #include <set>
 #include <algorithm>
+#include <random>
+
 
 using namespace std::chrono;
 
@@ -559,6 +561,18 @@ vector<intT> FixedBlocking(const CSR& cmat, intT row_block_size)
   return grouping;
 }
 
+
+vector<intT> Scramble(const CSR& cmat, int seed = 123)
+{
+  vector<intT> grouping(cmat.rows);
+  for(intT i = 0; i < cmat.rows; i++)
+  {
+    grouping[i] = i;
+  }
+  shuffle(grouping.begin(), grouping.end(), default_random_engine(seed));
+  return grouping;
+}
+
 void BlockingEngine::CollectBlockingInfo(const CSR& cmat)
 {
   //will fill the three variables:
@@ -646,6 +660,8 @@ vector<intT> BlockingEngine::GetGrouping(const CSR& cmat)
       case fixed_size:
         grouping_result = FixedBlocking(cmat, row_block_size);
         break;
+      case scramble:
+        grouping_result = Scramble(cmat);
     }
     
     if (force_fixed_size && blocking_algo != fixed_size)

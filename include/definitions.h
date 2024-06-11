@@ -14,6 +14,6 @@ typedef float (*distFuncGroup)(std::vector<intT>,intT,intT*,intT,intT,intT);
 
 enum MatrixFormat {el, mtx};
 
-enum BlockingType {iterative, iterative_structured, fixed_size, iterative_clocked, iterative_queue, iterative_max_size};
+enum BlockingType {iterative, iterative_structured, fixed_size, iterative_clocked, iterative_queue, iterative_max_size, scramble};
 
 enum MultiplicationAlgo {NO_MULT, cublas_gemm, cusparse_spmm, cusparse_bellpack, cublas_vbr, cublas_vbr_fixed, cublas_vbr_inverted, cublas_vbr_batched, cutlass_bellpack, cutlass_gemm, cutlas_vbr, cutlas_vbr_inverted, cutlas_vbr_batched};
