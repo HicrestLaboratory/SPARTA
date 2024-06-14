@@ -234,7 +234,7 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
 
 
     //Save blocking
-    for (int i = 0; i < bEngine.grouping_result.size(); i++)
+    for (int i = 0; i < cmat.rows; i++)
     {
         blocking_outfile << bEngine.grouping_result[i] << "\n";
     }
