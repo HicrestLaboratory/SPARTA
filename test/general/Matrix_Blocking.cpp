@@ -31,11 +31,6 @@ int main(int argc, char* argv[])
     }
     save_blocking_data(outfile, cli, bEngine, cmat, save_grouping, outfile_grouping);
 
-    if (cli.verbose_ > 0)
-    {
-        save_blocking_data(cout, cli, bEngine, cmat, false, outfile_grouping);
-    }
-
     bool save_reordered_matrix = false;
     if (save_reordered_matrix) {
         cmat.reorder(grouping);
