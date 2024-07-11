@@ -233,6 +233,9 @@ void save_blocking_data(ostream &outfile, CLineReader &cLine, BlockingEngine &bE
     outfile << values << endl;
 
 
+    std::cout << "ROWS: " << cmat.rows << " COLS: " << cmat.cols << std::endl;
+    std::cout << "BLOCKING SIZE: " << bEngine.grouping_result.size() << std::endl;
+
     //Save blocking
     for (int i = 0; i < cmat.rows; i++)
     {

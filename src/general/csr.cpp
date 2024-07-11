@@ -10,6 +10,7 @@
 #include <iterator>
 #include "matrices.h"
 #include "utilities.h"
+#include <sstream>
 
 using namespace std;
 
@@ -181,7 +182,16 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
     bool triangular = true;
 
     while (infile.peek() == '#' or infile.peek() == '%') infile.ignore(2048, '\n');
-    if (mat_fmt == mtx) infile.ignore(2048, '\n');
+    getline(infile, temp);
+    std::istringstream iss(temp);
+    int input_rows, input_cols, input_nnz;
+    if (mat_fmt == mtx) 
+    {
+        iss >> input_rows >> input_cols >> input_nnz;
+        infile.ignore(2048, '\n'); 
+        cout << "Reading. Max rows: " << input_rows << " max cols: " << input_cols << endl;
+    }
+
     while (getline(infile, temp)) {
 
         total_nonzeros++;
@@ -237,6 +247,21 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
     	if (not pattern_only) val_holder[i].push_back(val);
     }
 
+    if (mat_fmt == mtx)
+    {
+        max_column = input_cols;
+        while (current_node < input_rows)
+        {
+            vector<intT> new_pos_row;
+            pos_holder.push_back(new_pos_row);
+            if (not pattern_only)
+            {
+                vector<DataT> new_val_row;
+                val_holder.push_back(new_val_row);
+            }
+            current_node++;
+        }
+    }
 
     if (symmetrize && triangular)
     {
