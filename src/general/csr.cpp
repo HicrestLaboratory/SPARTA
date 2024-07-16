@@ -78,15 +78,18 @@ void CSR::permute_cols(vector<intT> permutation)
 //permute the rows of the matrix according to "permutation"
 {   
     if (permutation.size() != cols)
-        throw std::invalid_argument("CSR.permute_cols argument bust have same lenght as rows");
-
+        throw std::invalid_argument("CSR.permute_cols argument bust have same lenght as cols");
+    
+    std::vector<intT> inverse_permutation(permutation.size());
+    for (intT i = 0; i < permutation.size(); i++)
+        inverse_permutation[permutation[i]] = i;
 
     for (intT i = 0; i < rows; i++)
     {
         vector<intT> tmp_idxs;
         for (intT nz = 0; nz < nzcount[i]; nz++)
         {
-            intT permuted_idx = permutation[ja[i][nz]];
+            intT permuted_idx = inverse_permutation[ja[i][nz]];
             tmp_idxs.push_back(permuted_idx);
         }
         sort(tmp_idxs.begin(),tmp_idxs.end());
