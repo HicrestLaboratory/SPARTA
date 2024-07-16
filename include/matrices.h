@@ -32,6 +32,7 @@ struct CSR
     void save_to_edgelist(std::ofstream& outfile, std::string delimiter = " ", bool pattern_only = true, MatrixFormat mat_fmt = mtx);
 
     void reorder(std::vector<intT> grouping);
+    void reorder2d(std::vector<intT> grouping);
     void reorder_by_degree(bool descending = true);
     void permute_rows(std::vector<intT> permutation);
     void permute_cols(std::vector<intT> permutation);

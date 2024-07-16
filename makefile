@@ -95,6 +95,6 @@ clean:
 	-@rm -rvf $(APP_DIR)/*
 
 
-serial : build_general $(GEN_APP_DIR)/Matrix_Blocking $(GEN_APP_DIR)/reorder_matrix $(GEN_APP_DIR)/TEST_matrices $(GEN_APP_DIR)/TEST_blocking_VBR_2D $(GEN_APP_DIR)/TEST_blocking_VBR $(GEN_APP_DIR)/TEST_similarities
+serial : build_general $(GEN_APP_DIR)/Matrix_Blocking $(GEN_APP_DIR)/Matrix_Analysis $(GEN_APP_DIR)/reorder_matrix $(GEN_APP_DIR)/TEST_matrices $(GEN_APP_DIR)/TEST_blocking_VBR_2D $(GEN_APP_DIR)/TEST_blocking_VBR $(GEN_APP_DIR)/TEST_similarities
 
 cuda : build_cuda $(CUDA_APP_DIR)/TEST_cuda  $(CUDA_APP_DIR)/cuda_multiply

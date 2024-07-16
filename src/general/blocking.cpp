@@ -583,6 +583,9 @@ void BlockingEngine::CollectBlockingInfo(const CSR& cmat)
   vector<intT> row_partition = get_partition(grouping_result);
   vector<intT> row_permutation = get_permutation(grouping_result);
 
+  //std::cout << "PARTITION: " << std::endl; print_vec(row_partition); 
+  //std::cout << "PERMUTATION: " << std::endl; print_vec(row_permutation); 
+
   intT block_cols = std::ceil(((float) cmat.cols)/col_block_size);
   intT block_rows = row_partition.size() - 1;
 

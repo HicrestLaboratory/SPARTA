@@ -78,7 +78,7 @@ void CSR::permute_cols(vector<intT> permutation)
 //permute the rows of the matrix according to "permutation"
 {   
     if (permutation.size() != cols)
-        throw std::invalid_argument("CSR.permute_rows argument bust have same lenght as rows");
+        throw std::invalid_argument("CSR.permute_cols argument bust have same lenght as rows");
 
 
     for (intT i = 0; i < rows; i++)
@@ -91,7 +91,6 @@ void CSR::permute_cols(vector<intT> permutation)
         }
         sort(tmp_idxs.begin(),tmp_idxs.end());
         copy(tmp_idxs.begin(), tmp_idxs.end(),ja[i]);
-        if (!pattern_only) cout << "WARNING: column reordering not implemented for weighted matrices" << endl;
     }
 }
 
@@ -99,11 +98,23 @@ void CSR::reorder(vector<intT> grouping)
 //permute the rows so that row i and row j are adjacent if grouping[i] == grouping[j]
 {
     if (grouping.size() != rows)
-        throw std::invalid_argument("CSR.reorder argument bust have same lenght as rows");
+        throw std::invalid_argument("CSR.reorder argument bust have same lenght as rows; grouping:" + to_string(grouping.size()) + " rows " + to_string(rows));
 
     vector<intT> v = get_permutation(grouping);
     permute_rows(v);
 }
+
+void CSR::reorder2d(vector<intT> grouping)
+//permute the rows so that row i and row j are adjacent if grouping[i] == grouping[j]
+{
+    if (grouping.size() != rows)
+        throw std::invalid_argument("CSR.reorder argument bust have same lenght as rows");
+
+    vector<intT> v = get_permutation(grouping);
+    permute_rows(v);
+    permute_cols(v);
+}
+
 
 void CSR::reorder_by_degree(bool descending)
 {
@@ -175,7 +186,7 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
     vector<vector<intT>> pos_holder;
     vector<vector<DataT>> val_holder;
     intT max_column = 0;
-    intT i = -1; 
+    intT i = -1; //count rows from 0 or 1
     DataT val;
     intT total_nonzeros = 0;
 
@@ -209,6 +220,8 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
         if (mat_fmt == mtx)
         {
             swap(current_node, child);
+            current_node--;
+            child--;
         }
 
         if (child < current_node) triangular = false;
@@ -249,8 +262,8 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
 
     if (mat_fmt == mtx)
     {
-        max_column = input_cols;
-        while (current_node < input_rows)
+        max_column = input_cols - 1;
+        while (current_node < input_rows - 1)
         {
             vector<intT> new_pos_row;
             pos_holder.push_back(new_pos_row);
