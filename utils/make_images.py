@@ -22,19 +22,24 @@ metis_columns = [
     "VBR_nzcount", "VBR_nzblocks_count", "VBR_average_height", "VBR_longest_row"
 ]
 
-# Iterate over files in the directory
-for filename in os.listdir(directory):
-    filepath = os.path.join(directory, filename)
-    
-    # Check if the file is a 'clubs' or 'metis' file and read it into the appropriate dataframe
-    if filename.startswith("clubs"):
-        temp_df = pd.read_csv(filepath, delim_whitespace=True, names=clubs_columns,header=0)
-        clubs_df = pd.concat([clubs_df, temp_df], ignore_index=True)
-    elif filename.startswith("metis"):
-        temp_df = pd.read_csv(filepath, delim_whitespace=True, names=metis_columns,header=0)
-        metis_df = pd.concat([metis_df, temp_df], ignore_index=True)
+# Read and concatenate the data into dataframes
+clubs_files = [os.path.join(directory, f) for f in os.listdir(directory) if f.startswith('clubs')]
+metis_files = [os.path.join(directory, f) for f in os.listdir(directory) if f.startswith('metis')]
 
-combined_df = pd.concat([clubs_df, metis_df], ignore_index=True)
+# Helper function to read and concatenate files, ignoring empty ones
+def read_and_concat(files):
+    dfs = []
+    for file in files:
+        df = pd.read_csv(file, delim_whitespace=True, header=0)
+        if not df.empty:
+            dfs.append(df)
+    if dfs:
+        return pd.concat(dfs, ignore_index=True)
+    else:
+        return pd.DataFrame()
+
+clubs_df = read_and_concat(clubs_files)
+metis_df = read_and_concat(metis_files)
 
 # Function to get the best result for each matrix
 def get_best_results(df, group_cols, value_col='VBR_nzblocks_count'):
@@ -57,7 +62,6 @@ def create_bar_plots(clubs_df, metis_df, output_dir):
             metis_best = get_best_results(filtered_metis_df, ['matrix_name'])
 
             combined_best = pd.concat([clubs_best, metis_best])
-            combined_best['algo'] = combined_best['algo'].map(lambda x: 'clubs' if x == 'clubs' else 'metis')
 
             pivot_df = combined_best.pivot_table(index='matrix_name', columns='algo', values='VBR_nzblocks_count', fill_value=0)
             pivot_df.plot(kind='bar', figsize=(14, 8))
