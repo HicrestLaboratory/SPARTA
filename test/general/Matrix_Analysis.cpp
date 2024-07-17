@@ -80,12 +80,12 @@ int main(int argc, char* argv[])
         //PERMUTE MATRIX
         if (!symmetric_reorder){
             csr_matrix.reorder(grouping);
-            std::cerr << "Matrix successfully reordered (only rows) according to file: " << grouping_file << std::endl;
+            //std::cerr << "Matrix successfully reordered (only rows) according to file: " << grouping_file << std::endl;
         }
         else 
         {
             csr_matrix.reorder2d(grouping);
-            std::cerr << "Matrix successfully reordered (2d) according to file: " << grouping_file << std::endl;
+            //std::cerr << "Matrix successfully reordered (2d) according to file: " << grouping_file << std::endl;
         }
     }
 
@@ -94,9 +94,8 @@ int main(int argc, char* argv[])
     bEngine.row_block_size = block_size;
     bEngine.force_fixed_size = false;
     bEngine.grouping_result = FixedBlocking(csr_matrix, block_size);
-    //std::cout << "block size: " << block_size << ", printing blocking engine group vector: " << std::endl; print_vec(bEngine.grouping_result);
     bEngine.CollectBlockingInfo(csr_matrix);
-    std::cerr <<  bEngine.VBR_nzcount << " " << bEngine.VBR_nzblocks_count << " " << bEngine.VBR_average_height << " " << bEngine.VBR_longest_row << std::endl;
+    std::cout << bEngine.VBR_nzcount << " " << bEngine.VBR_nzblocks_count << " " << bEngine.VBR_average_height << " " << bEngine.VBR_longest_row << std::endl;
 
 
 

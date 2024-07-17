@@ -203,7 +203,7 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
     {
         iss >> input_rows >> input_cols >> input_nnz;
         infile.ignore(2048, '\n'); 
-        cout << "Reading. Max rows: " << input_rows << " max cols: " << input_cols << endl;
+        //cout << "Reading. Max rows: " << input_rows << " max cols: " << input_cols << endl;
     }
 
     while (getline(infile, temp)) {
