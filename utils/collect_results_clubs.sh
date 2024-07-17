@@ -5,7 +5,7 @@ taus=("01" "03" "06" "09")
 centroids=(16 32 64 128)
 col_reorder="0" #0: 1dim, 1: 2dim
 
-
+echo "ARGS: " "$@"
 SCRIPT_DIR=$(dirname "$0")
 source "$SCRIPT_DIR/parse_args.sh" "$@"
 
@@ -17,8 +17,9 @@ echo ${output_file}
 echo "matrix_name rows cols nnz block_size scramble algo mask tau centroid VBR_nzcount VBR_nzblocks_count VBR_average_height VBR_longest_row" >> ${output_file}
 
 
-for matrix_file in $(find "$matrix_dir" -type f -name "*.mtx"); do
-    
+for matrix_folder in $(find "$matrix_dir" -mindepth 1 -maxdepth 1 -type d); do
+    matrix_file=${matrix_folder}/$(basename "$matrix_folder").mtx
+
     echo "************************************************"
     matrix_name=$(basename "$matrix_file" .mtx)
     echo " Processing matrix: $matrix_name"
@@ -36,7 +37,7 @@ for matrix_file in $(find "$matrix_dir" -type f -name "*.mtx"); do
     fi 
     
     for centroid in "${centroids[@]}"; do
-    echo "*Processing for centroids $centroid"
+#    echo "*Processing for centroids $centroid"
 
         matrix_result_dir="$result_dir/${matrix_name}/cent${centroid}"
                 
@@ -47,7 +48,7 @@ for matrix_file in $(find "$matrix_dir" -type f -name "*.mtx"); do
         fi 
 
         for mask in "${masks[@]}"; do
-        echo "*****processing for mask $mask"
+#        echo "*****processing for mask $mask"
 
             for tau in "${taus[@]}"; do
 
@@ -74,4 +75,5 @@ for matrix_file in $(find "$matrix_dir" -type f -name "*.mtx"); do
             done
         done
     done
+echo "___________DONE"
 done

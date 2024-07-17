@@ -7,9 +7,9 @@ usage() {
 }
 
 # Default values for the variables
-matrix_dir="../Clubs_tmp/matrices/toy"
-result_dir="../../../Downloads/Club_result/Club_result/toy"
-output_dir="tmp_results.txt"
+matrix_dir="../Clubs_tmp/matrices/medium"
+result_dir="../../../Downloads/Club_result/Club_result/medium"
+output_dir="results/results_2024/medium"
 block_size=64
 metis_obj="edge-cut"
 metis_part=128
@@ -77,11 +77,3 @@ export tau
 export centroids
 export mask
 export scramble
-
-
-# Debugging output (optional)
-echo "matrix_dir = ${matrix_dir}"
-echo "result_dir = ${result_dir}"
-echo "output_dir = ${output_dir}"
-echo "block_size = ${block_size}"
-echo "scramble = ${scramble}"

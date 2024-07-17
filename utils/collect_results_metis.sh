@@ -13,7 +13,8 @@ output_file=${output_dir}/metis_scramble${scramble}_bsize${block_size}.txt
 echo "matrix_name rows cols nnz block_size scramble algo metis_obj metis_part VBR_nzcount VBR_nzblocks_count VBR_average_height VBR_longest_row" >> ${output_file}
 
 
-for matrix_file in $(find "$matrix_dir" -type f -name "*.mtx"); do
+for matrix_folder in $(find "$matrix_dir" -mindepth 1 -maxdepth 1 -type d); do
+    matrix_file=${matrix_folder}/$(basename "$matrix_folder").mtx
 
     echo "************************************************"
     matrix_name=$(basename "$matrix_file" .mtx)
@@ -24,26 +25,26 @@ for matrix_file in $(find "$matrix_dir" -type f -name "*.mtx"); do
     header_line=$(grep -v '^%' "$matrix_file" | head -n 1)
     read -r rows cols nnz <<< "$header_line"
 
-    matrix_result_dir="$result_dir/${matrix_name}"
+    matrix_result_dir="$result_dir/${matrix_name}/GP"
     
     if [ ! -d "$matrix_result_dir" ]; then
         echo "Result folder not found: $matrix_result_dir"
         continue
     fi 
 
-    for metis_obj in "${metis_objs[@]}"; do
 
-        for metis_part in "${metis_parts[@]}"; do
+    for metis_part in "${metis_parts[@]}"; do
 
-            matrix_result_dir="$result_dir/${matrix_name}/GP/${metis_part}"
-            echo "Searching results in ${matrix_result_dir}"
+        matrix_result_dir="$result_dir/${matrix_name}/GP/${metis_part}"
+
+        #check dir exists
+        if [ ! -d "$matrix_result_dir" ]; then
+        echo "Result folder not found for $matrix_name , $metis_parts parts"
+        continue
+        fi 
             
-            #check dir exists
-            if [ ! -d "$matrix_result_dir" ]; then
-            echo "Result folder not found for $matrix_name"
-            continue
-            fi 
-            
+        for metis_obj in "${metis_objs[@]}"; do
+
             if [ "${scramble}" == "0" ]; then
                 grouping_file="${matrix_result_dir}/${matrix_name}_metis_${metis_obj}_part${metis_part}.txt"
             else    
@@ -66,4 +67,6 @@ for matrix_file in $(find "$matrix_dir" -type f -name "*.mtx"); do
             fi
         done
     done
+echo "___________DONE"
 done
+
