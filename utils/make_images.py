@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Define the directory containing the files
 directory = 'results/results_2024'
@@ -73,6 +74,9 @@ def create_bar_plots(original_df, clubs_df, metis_df, output_dir):
             metis_best = get_best_results(filtered_metis_df, ['matrix_name'])
             original_best = get_best_results(filtered_original_df, ["matrix_name"])
 
+            geometric_mean_ratios(original_best, clubs_best, 'clubs')
+            geometric_mean_ratios(original_best, metis_best, 'metis')
+
             combined_best = pd.concat([original_best,clubs_best, metis_best])
 
             pivot_df = combined_best.pivot_table(index='matrix_name', columns='algo', values='VBR_nzblocks_count', fill_value=0)
@@ -89,5 +93,28 @@ def create_bar_plots(original_df, clubs_df, metis_df, output_dir):
             plt.savefig(plot_filename)
             plt.close()
 
+# Function to calculate the geometric mean of ratios
+def geometric_mean_ratios(original_df, processed_df, algo_name):
+    ratios = []
+    for matrix_name in processed_df['matrix_name'].unique():
+        original_nzblocks = original_df[original_df['matrix_name'] == matrix_name]['VBR_nzblocks_count'].values
+        processed_nzblocks = processed_df[processed_df['matrix_name'] == matrix_name]['VBR_nzblocks_count'].values
+        if original_nzblocks.size > 0 and processed_nzblocks.size > 0:
+            ratio = processed_nzblocks[0] / original_nzblocks[0]
+            ratios.append(ratio)
+    if ratios:
+        geomean = np.exp(np.mean(np.log(ratios)))
+        print(f"Geometric mean of {algo_name} ratios: {geomean}")
+    else:
+        print(f"No valid ratios to calculate for {algo_name}")
+
+
 # Create bar plots
 create_bar_plots(clubs_df, metis_df, original_df, output_plot_dir)
+
+
+
+
+
+
+
