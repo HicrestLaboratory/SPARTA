@@ -8,11 +8,11 @@ SCRIPT_DIR=$(dirname "$0")
 source "$SCRIPT_DIR/parse_args.sh" "$@"
 
 mkdir -p "$output_dir"
-output_file="${output_dir}/saad_scramble${scramble}_bsize${block_size}.txt"
+output_file="${output_dir}/denseamp_scramble${scramble}_bsize${block_size}.txt"
 echo ${output_file}
 
 > ${output_file}
-echo "matrix_name rows cols nnz block_size scramble algo tau VBR_nzcount VBR_nzblocks_count VBR_average_height VBR_longest_row" >> ${output_file}
+echo "matrix_name rows cols nnz block_size scramble algo mask tau VBR_nzcount VBR_nzblocks_count VBR_average_height VBR_longest_row" >> ${output_file}
 
 
 for matrix_folder in $(find "$matrix_dir" -mindepth 1 -maxdepth 1 -type d); do
@@ -37,9 +37,9 @@ for matrix_folder in $(find "$matrix_dir" -mindepth 1 -maxdepth 1 -type d); do
     for tau in "${taus[@]}"; do
      
         if [ "${scramble}" == "1" ]; then
-        grouping_file="${matrix_result_dir}/${matrix_name}-scramble_tau${tau}.g"
+        grouping_file="${matrix_result_dir}/${matrix_name}-scramble_mask${mask}_tau${tau}.g"
         else    
-        grouping_file="${matrix_result_dir}/${matrix_name}_tau${tau}.g"
+        grouping_file="${matrix_result_dir}/${matrix_name}_mask${mask}_tau${tau}.g"
         #check file exists
         fi
         if [ ! -f "$grouping_file" ]; then
@@ -47,11 +47,11 @@ for matrix_folder in $(find "$matrix_dir" -mindepth 1 -maxdepth 1 -type d); do
         continue
         fi 
 
-        params=$( echo "$matrix_name" "$rows" "$cols" "$nnz" "$block_size" "${scramble}" "saad" "$tau")
-        saad_outputs=$(./programs/general/Matrix_Analysis "$matrix_file" "$block_size" "$grouping_file" "$col_reorder")
+        params=$( echo "$matrix_name" "$rows" "$cols" "$nnz" "$block_size" "${scramble}" "denseamp" "$mask" "$tau")
+        denseamp_outputs=$(./programs/general/Matrix_Analysis "$matrix_file" "$block_size" "$grouping_file" "$col_reorder")
         if [ $? -eq 0 ]; then
             # Only print and log the output if the command succeeds
-            echo "$params $saad_outputs" >> "${output_file}"
+            echo "$params $denseamp_outputs" >> "${output_file}"
         else
             echo "Matrix_Analysis command failed for $matrix_file with block size $block_size"
         fi

@@ -5,7 +5,7 @@
 #************************************************************************************************************************************************
 
 # Default values
-root_dir="../../../Downloads/mult_outputs_24"
+root_dir="../../../Downloads/outputs_2024-07-26/SbatchMan/outputs/marzola"
 routine="spmmcsr"
 method="ALL" # Options: saad, metis, original, clubs, ALL
 

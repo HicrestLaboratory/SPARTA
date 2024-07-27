@@ -32,10 +32,11 @@ def read_and_concat(files):
         return pd.DataFrame()
 
 #Fill all dataframes
-for method in methods:
+for method in methods:        
     dfs[method] = read_and_concat(files[method])
     print(method, dfs[method])
 
+#remove mismatched metis objectives
 for metis_obj in ["edge-cut","volume"]:
     key = "metis-" + metis_obj
     df = dfs[key]
