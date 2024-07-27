@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Define the directory containing the files
-directory = 'results/results_2024'
+directory = 'results/results_2024/reorder_csv_25_07'
 output_plot_dir = 'results/results_2024/plots'
 os.makedirs(output_plot_dir, exist_ok=True)
 
@@ -101,13 +101,41 @@ def geometric_mean_ratios(original_df, processed_df, algo_name):
         processed_nzblocks = processed_df[processed_df['matrix_name'] == matrix_name]['VBR_nzblocks_count'].values
         if original_nzblocks.size > 0 and processed_nzblocks.size > 0:
             ratio = processed_nzblocks[0] / original_nzblocks[0]
-            ratios.append(ratio)
+            if ratio < 1:
+                ratios.append(ratio)
     if ratios:
         geomean = np.exp(np.mean(np.log(ratios)))
         print(f"Geometric mean of {algo_name} ratios: {geomean}")
     else:
         print(f"No valid ratios to calculate for {algo_name}")
 
+# Function to count unique matrices for each method
+def count_unique_matrices(dfs, methods):
+    unique_matrix_counts = {}
+    for method in methods:
+        if not dfs[method].empty:
+            unique_matrix_counts[method] = dfs[method]['matrix'].nunique()
+        else:
+            unique_matrix_counts[method] = 0
+    return unique_matrix_counts
+
+# Function to count how many matrices each method is the best
+def count_best_methods(dfs, methods):
+    best_method_counts = {method: 0 for method in methods}
+    all_best_results = pd.DataFrame()
+
+    for method in methods:
+        if not dfs[method].empty:
+            best_results = get_best_results(dfs[method], ['matrix'])
+            best_results['method'] = method
+            all_best_results = pd.concat([all_best_results, best_results])
+
+    overall_best_results = get_best_results(all_best_results, ['matrix'], 'time')
+    
+    for method in methods:
+        best_method_counts[method] = (overall_best_results['method'] == method).sum()
+
+    return best_method_counts
 
 # Create bar plots
 create_bar_plots(clubs_df, metis_df, original_df, output_plot_dir)
