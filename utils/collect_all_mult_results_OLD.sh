@@ -5,15 +5,15 @@
 #************************************************************************************************************************************************
 
 # Default values
-root_dir="results/results_2024/mult_data"
+root_dir="../../../Downloads/outputs_2024-07-26/SbatchMan/outputs/marzola"
 routine="spmmcsr"
 method="ALL" # Options: saad, metis, denseAMP, original, clubs, ALL
 
 # Function to display usage
 usage() {
     echo "Usage: $0 [-r root_dir] [-u routine] [-m method]"
-    echo "  -r  Root directory (default: $root_dir)"
-    echo "  -u  Routine (default: $routine)"
+    echo "  -r  Root directory (default: ../../../Downloads/mult_outputs_24)"
+    echo "  -u  Routine (default: spmvcsr)"
     echo "  -m  Method (default: ALL)"
     exit 1
 }
@@ -42,21 +42,25 @@ while getopts ":r:u:m:" opt; do
 done
 shift $((OPTIND -1))
 
+# Define directories based on the parsed or default values
+routine_dir="$root_dir/$routine/finished"
+routine_gp_dir="$root_dir/${routine}gp/finished"
 
 # Print the values to check
-echo "root directory: $root_dir"
+echo "Root directory: $root_dir"
 echo "Routine: $routine"
+echo "Routine directory: $routine_dir"
+echo "Routine GP directory: $routine_gp_dir"
 echo "Method: $method"
 
-if [ ! -d "$root_dir" ]; then
-  echo "ERROR: COULD NOT FIND RESULT DIRECTORY $root_dir"
+if [ ! -d "$routine_dir" ]; then
+  echo "ERROR: COULD NOT FIND RESULT DIRECTORY $routine_dir"
   exit 1
 fi
 
 # Output CSV file
 output_dir="results/results_2024/mult/$routine"
 mkdir -p "$output_dir"
-echo "storing csvs in output directory: $output_dir"
 
 #************************************
 #************************************
@@ -133,13 +137,14 @@ extract_time_and_variables() {
 extract_variables_club() {
   local filename=$1
   IFS='_' read -ra PARTS <<< "$filename"
-  local matrix=${PARTS[1]%-mtx}
-  local collection=${PARTS[2]#"$matrix-"}
+  local matrix=$( echo ${PARTS[1]} | sed "s/-mtx"// )
+  local collection=${PARTS[2]}
+  collection=${collection#"$matrix-"}
   IFS='-' read -ra VARS <<< "$collection"
 
-  local cents=${VARS[0]#cent}
-  local msk=${VARS[1]#msk}
-  local tau=${VARS[2]#tau}
+  local cents=$(echo ${VARS[0]} | sed 's/cent//')
+  local msk=$(echo ${VARS[1]} | sed 's/msk//')
+  local tau=$(echo ${VARS[2]} | sed 's/tau//')
 
   echo "$matrix clubs $msk $cents $tau"
 }
@@ -148,11 +153,12 @@ extract_variables_club() {
 extract_variables_saad() {
   local filename=$1
   IFS='_' read -ra PARTS <<< "$filename"
-  local matrix=${PARTS[1]%-mtx}
-  local collection=${PARTS[2]#"$matrix-"}
+  local matrix=$( echo ${PARTS[1]} | sed "s/-mtx"// )
+  local collection=${PARTS[2]}
+  collection=${collection#"$matrix-"}
   IFS='-' read -ra VARS <<< "$collection"
 
-  local tau=${VARS[1]#tau}
+  local tau=$(echo ${VARS[1]} | sed "s/tau"// )
 
   echo "$matrix saad $tau"
 }
@@ -173,20 +179,22 @@ extract_variables_denseAMP() {
 extract_variables_metis() {
   local filename=$1
   IFS='_' read -ra PARTS <<< "$filename"
-  local matrix=${PARTS[1]%-mtx}
-  local collection=${PARTS[2]#"$matrix-metis"}
+  local matrix=$( echo ${PARTS[1]} | sed "s/-mtx"// )
+  local collection=${PARTS[2]}
+  collection=${collection#"$matrix-metis"}
   local obj
   local parts
   IFS='-' read -ra VARS <<< "$collection"
 
   if [[ $collection == *"volume"* ]]; then
     obj="volume"
-    parts=${VARS[2]#part}
+    parts=$(echo ${VARS[2]} | sed 's/part//')
   else
     obj="edge-cut"
-    parts=${VARS[3]#part}
+    parts=$(echo ${VARS[3]} | sed 's/part//')
   fi
 
+  #TODO ADD PARAMS
   echo "$matrix metis $obj $parts"
 }
 
@@ -200,10 +208,31 @@ extract_variables_original() {
 }
 
 
+find_file_type() {
+  local file_name=$1
+
+  if [[ $file_name == *"msk"* && $file_name == *"cent"* && $file_name == *"tau"* ]]; then
+    file_type="clubs"
+  elif [[ $file_name == *"metis"* ]]; then # TODO CHECK
+    if [[ $file_name == *"edge"* ]];then
+      file_type="metis-edge-cut"
+    else
+      file_type="metis-volume"
+    fi
+  elif [[ $file_name == *"Saad"* ]]; then # TODO CHECK
+    file_type="saad"
+  elif [[ $file_name == *"DenseAMP"* ]]; then # TODO CHECK
+    file_type="denseAMP"
+  else
+    file_type="original"
+  fi
+
+  echo $file_type
+}
+
 process_file()
 {
   local file_path=$1
-  local algo=$2
 
   local file_name=$(basename "$file_path")
 
@@ -214,7 +243,12 @@ process_file()
   local n=$(echo "$time_vars" | awk '{print $3}')
   local nnz=$(echo "$time_vars" | awk '{print $4}')
 
-  case $algo in
+  file_type=$(find_file_type "$file_name")
+  if [[ "$method" != "$file_type" && "$method" != "ALL" ]]; then
+     return 0
+  fi
+
+  case $file_type in
     clubs)
       variables=$(extract_variables_club "$file_name")
       ;;
@@ -234,14 +268,14 @@ process_file()
       variables=$(extract_variables_original "$file_name")
       ;;
     *)
-      echo "COULD NOT CLASSIFY $file_name for $algo"
+      echo "COULD NOT CLASSIFY $file_name"
       return 1
       ;;
   esac
 
   #echo "--Assigned to $file_type"
   #echo "--printing results in $(get_outfile "$file_type")"
-  echo "$routine $variables $m $n $nnz $time" >> "$(get_outfile "$algo")"
+  echo "$routine $variables $m $n $nnz $time" >> "$(get_outfile "$file_type")"
 }
 
 
@@ -265,20 +299,36 @@ for algo in "${algos[@]}"; do
   echo "creating csv:" "$(get_outfile "$algo")"
   get_header "$algo" > "$(get_outfile "$algo")" # Print header for each algo
 done
+#-----------------------------------------
 
-for algo in "${algos[@]}";do
-    counter=0
-    algo_dir=$root_dir/$routine/$algo
-    total_files=$(find "$algo_dir" -name '*.out' | wc -l)
-    echo "PROCESSING $total_files mult files from $algo_dir for $algo"
-    find "$algo_dir" -name '*.out' | grep "${routine}" | while read -r "file_path"; do
-      process_file $file_path $algo
-      counter=$(($counter + 1))
-      if (( counter % 10 == 0 )); then
-        show_progress $counter $total_files
-      fi
-    done
-    echo "Processed $counter files"
-done
 
+
+#find files
+total_files=$(find "$routine_dir" -name '*.out' | wc -l)
+gp_files=$(find "$routine_gp_dir" -name '*.out' | wc -l)
+echo "Found files to process: $total_files + gp: $gp_files"
+#------------------------------------------------------
+
+counter=0
+
+if [[ "$method" != "metis-edge-cut" && "$method" != "metis-volume" ]]; then
+    echo "Processing non-METIS files"
+  # Iterate through each .out file in the method directory
+  find "$routine_dir" -name '*.out' | grep "${routine}_" | while read -r file_path; do
+    process_file $file_path
+    counter=$(($counter + 1))
+    show_progress $counter $total_files
+  done
+fi
+
+if [[ "$method" == "metis-edge-cut" || "$method" == "metis-volume" || "$method" == "ALL" ]]; then
+  echo "Processing METIS files"
+  find "$routine_gp_dir" -name '*.out' | grep "${routine}" | while read -r file_path; do
+    process_file $file_path
+    counter=$(($counter + 1))
+    show_progress $counter $gp_files
+  done
+fi
+
+echo "Processed $counter files"
 echo "Results saved to $output_dir"

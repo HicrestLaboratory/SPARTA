@@ -57,7 +57,8 @@ def calculate_geometric_mean_ratios(dfs, methods):
         best_results = get_best_results(dfs[method],'matrix')
         merged = pd.merge(original_best[['matrix', 'time']], best_results[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
         merged['ratio'] = merged['time_method'] / merged['time_original']
-        merged = merged[merged["ratio"] < 1] #only counts effective reorderings
+        #merged = merged[merged["ratio"] < 1] #only counts effective reorderings
+        #merged["ratio"][merged["ratio"] > 1] = 1 #take the original when reordering is bad
         ratios[method] = gmean(merged['ratio'])
 
     return ratios
