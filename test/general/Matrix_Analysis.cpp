@@ -99,7 +99,6 @@ int main(int argc, char* argv[])
 
 
 
-
     //    vector<intT> grouping = //LOAD GROUPING FROM FILE
 
 }

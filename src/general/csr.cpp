@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <random> //std::shuffle
 #include <stdexcept>
 
@@ -178,7 +179,21 @@ void CSR::save_to_edgelist(std::ofstream& outfile, std::string delimiter, bool p
 }
 
 
+
 void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_only, MatrixFormat mat_fmt, bool symmetrize)
+{
+    if (mat_fmt == mtx)
+    {
+        read_from_edgelist_mtx(infile, delimiter);
+    }
+    else
+    {
+        read_from_edgelist_el(infile, delimiter, pattern_only, symmetrize);
+    }
+
+}
+
+void CSR::read_from_edgelist_el(ifstream& infile, string delimiter, bool pattern_only, bool symmetrize)
 //reads edgelist into the CSR.
 {
     this->pattern_only = pattern_only;
@@ -199,12 +214,6 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
     getline(infile, temp);
     std::istringstream iss(temp);
     int input_rows, input_cols, input_nnz;
-    if (mat_fmt == mtx) 
-    {
-        iss >> input_rows >> input_cols >> input_nnz;
-        infile.ignore(2048, '\n'); 
-        //cout << "Reading. Max rows: " << input_rows << " max cols: " << input_cols << endl;
-    }
 
     while (getline(infile, temp)) {
 
@@ -220,17 +229,9 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
         string second_node_string = temp.substr(0, del_pos); //retrieve the part of the string after the delimiter
         intT child = stoi(second_node_string);
 
-        if (mat_fmt == mtx)
-        {
-            swap(current_node, child);
-            current_node--;
-            child--;
-        }
-
         if (child < current_node) triangular = false;
 
         max_column = std::max(max_column, child);
-
 
         if (not pattern_only)
         {
@@ -239,7 +240,6 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
             string val_string = temp.substr(0, del_pos); //retrieve the part of the string after the delimiter
             val = stof(val_string);
         }
-
 
         //fill with empty lines to reach current row
         if (current_node > i)
@@ -263,22 +263,6 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
     	if (not pattern_only) val_holder[i].push_back(val);
     }
 
-    if (mat_fmt == mtx)
-    {
-        max_column = input_cols - 1;
-        while (current_node < input_rows - 1)
-        {
-            vector<intT> new_pos_row;
-            pos_holder.push_back(new_pos_row);
-            if (not pattern_only)
-            {
-                vector<DataT> new_val_row;
-                val_holder.push_back(new_val_row);
-            }
-            current_node++;
-        }
-    }
-
     if (symmetrize && triangular)
     {
         for (intT i = 0; i < pos_holder.size(); i++)
@@ -298,7 +282,6 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
 
         }
     }
-
 
     rows = pos_holder.size();
     cols = max_column + 1;
@@ -329,6 +312,58 @@ void CSR::read_from_edgelist(ifstream& infile, string delimiter, bool pattern_on
     pos_holder.clear();
     val_holder.clear();
 }
+
+
+
+void CSR::read_from_edgelist_mtx(ifstream& infile, string delimiter)
+//reads edgelist into the CSR.
+{
+    this->pattern_only = true;
+
+    string temp;
+
+    while (infile.peek() == '#' or infile.peek() == '%') infile.ignore(2048, '\n');
+    getline(infile, temp);
+    std::istringstream iss(temp);
+    int input_rows, input_cols, input_nnz;
+
+    iss >> input_rows >> input_cols >> input_nnz;
+    infile.ignore(2048, '\n'); 
+    //cout << "Reading. Max rows: " << input_rows << " max cols: " << input_cols << endl;
+
+    vector<vector<intT>> pos_holder(input_rows);
+    vector<vector<DataT>> val_holder(input_rows);
+
+    for (int nz = 0; nz < input_nnz; nz++) {
+        int i, j;
+        float val;
+        getline(infile, temp);
+        istringstream line_stream(temp);
+
+        line_stream >> i >> j;
+        i--;  // adjust from 1-based to 0-based
+        j--;
+        pos_holder[i].push_back(j);
+    }
+
+    rows = input_rows;
+    cols = input_cols;
+    nzcount = new intT[input_rows];
+    ja = new intT*[input_rows];
+
+    for (intT i = 0; i < pos_holder.size(); i++)
+    {
+        auto row_pos = pos_holder[i];
+        nzcount[i] = row_pos.size();
+        ja[i] = new intT[nzcount[i]]; 
+        std::copy(row_pos.begin(), row_pos.end(), ja[i]);
+	    pos_holder[i].clear();
+    }
+
+    pos_holder.clear();
+    val_holder.clear();
+}
+
 
 void CSR::print(intT verbose)
 {
