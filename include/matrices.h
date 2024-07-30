@@ -29,6 +29,9 @@ struct CSR
 
     void clean();
     void read_from_edgelist(std::ifstream& infile, std::string delimiter = " ", bool pattern_only = true, MatrixFormat mat_fmt = mtx, bool symmetrize = false);
+    void read_from_edgelist_el(std::ifstream& infile, std::string delimiter = " ", bool pattern_only = true, bool symmetrize = false);
+    void read_from_edgelist_mtx(std::ifstream& infile, std::string delimiter = " ");
+
     void save_to_edgelist(std::ofstream& outfile, std::string delimiter = " ", bool pattern_only = true, MatrixFormat mat_fmt = mtx);
 
     void reorder(std::vector<intT> grouping);

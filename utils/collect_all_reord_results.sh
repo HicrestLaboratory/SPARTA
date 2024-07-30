@@ -98,4 +98,20 @@ for scramble in "${scrambles[@]}"; do
         "./utils/collect_results_metis.sh" "${args[@]}" -s "$scramble"
     fi
 
+    echo "                        ***************************************"
+    echo "*************************************** DENSEAMP *****************"
+    echo "                        ***************************************"
+    
+    if [[ "$script_choice" == "all" || "$script_choice" == "denseamp" ]]; then
+        "./utils/collect_results_denseamp.sh" "${args[@]}" -s "$scramble"
+    fi
+
+    echo "                        ***************************************"
+    echo "*************************************** SAAD *****************"
+    echo "                        ***************************************"
+    
+    if [[ "$script_choice" == "all" || "$script_choice" == "saad" ]]; then
+        "./utils/collect_results_saad.sh" "${args[@]}" -s "$scramble"
+    fi
+
 done
