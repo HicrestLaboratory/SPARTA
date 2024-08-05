@@ -40,6 +40,12 @@ for method in methods:
     dfs[method] = read_and_concat(files[method])
     print(dfs[method])
 
+
+#metis only accepts square matrices
+for method in ["metis-edge-cut", "metis-volume"]:
+    dfs[method] = dfs[method][dfs[method]['rows'] == dfs[method]['cols']] 
+
+
 # Function to get the best result for each matrix
 def get_best_results(df, group_cols, value_col='time'):
     return df.loc[df.groupby(group_cols)[value_col].idxmin()]
@@ -52,16 +58,34 @@ def calculate_geometric_mean_ratios(dfs, methods):
     for method in methods:
         if dfs[method].empty:
             continue
-        if method == 'original':
-            continue
         best_results = get_best_results(dfs[method],'matrix')
         merged = pd.merge(original_best[['matrix', 'time']], best_results[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
+        #print("MERGED DATASET", method, merged)
         merged['ratio'] = merged['time_method'] / merged['time_original']
         #merged = merged[merged["ratio"] < 1] #only counts effective reorderings
         #merged["ratio"][merged["ratio"] > 1] = 1 #take the original when reordering is bad
         ratios[method] = gmean(merged['ratio'])
 
     return ratios
+
+# Calculate the total time
+def calculate_total_time_ratio(dfs, methods):
+    ratios = {method: [] for method in methods if method != 'original'}
+    original_best = get_best_results(dfs['original'], ['matrix'])
+
+    for method in methods:
+        if dfs[method].empty:
+            continue
+        best_results = get_best_results(dfs[method],'matrix')
+        merged = pd.merge(original_best[['matrix', 'time']], best_results[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
+        #print("MERGED DATASET", method, merged)
+        merged['ratio'] = merged['time_method'] / merged['time_original']
+        #merged = merged[merged["ratio"] < 1] #only counts effective reorderings
+        #merged["ratio"][merged["ratio"] > 1] = 1 #take the original when reordering is bad
+        ratios[method] = sum(merged['time_method'])/sum(merged["time_original"])
+
+    return ratios
+
 
 # Function to count how many matrices each method is the best
 def count_best_methods(dfs, methods):
@@ -93,11 +117,15 @@ def count_unique_matrices(dfs, methods):
 
 # Calculate geometric mean ratios
 geometric_mean_ratios = calculate_geometric_mean_ratios(dfs, methods)
-print(geometric_mean_ratios)
+print("geometric_mean_ratios", geometric_mean_ratios)
+
+total_time_ratios = calculate_geometric_mean_ratios(dfs, methods)
+print("total_time_ratios", total_time_ratios)
+
 
 # Count best methods
 best_method_counts = count_best_methods(dfs, methods)
-print(best_method_counts)
+print("best_method_counts", best_method_counts)
 
 # Count unique matrices for each method
 unique_matrix_counts = count_unique_matrices(dfs, methods)
