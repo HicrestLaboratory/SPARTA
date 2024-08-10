@@ -14,7 +14,7 @@ usage() {
     echo "Usage: $0 [-r root_dir] [-u routine] [-m method]"
     echo "  -r  Root directory (default: $root_dir)"
     echo "  -u  Routine (default: $routine)"
-    echo "  -m  Method (default: ALL)"
+    echo "  -m  Method (default: $method)"
     exit 1
 }
 
