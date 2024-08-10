@@ -6,6 +6,7 @@
 
 # Default values
 root_dir="results/results_2024/mult_data"
+csv_dir="results/results_2024/mult_csv"
 routine="spmmcsr"
 method="ALL" # Options: saad, metis, denseAMP, original, clubs, ALL
 
@@ -15,11 +16,12 @@ usage() {
     echo "  -r  Root directory (default: $root_dir)"
     echo "  -u  Routine (default: $routine)"
     echo "  -m  Method (default: $method)"
+    echo "  -c  CSV directory (default $csv_dir)"
     exit 1
 }
 
 # Parse options
-while getopts ":r:u:m:" opt; do
+while getopts ":r:u:m:c:" opt; do
     case ${opt} in
         r )
             root_dir=$OPTARG
@@ -29,6 +31,9 @@ while getopts ":r:u:m:" opt; do
             ;;
         m )
             method=$OPTARG
+            ;;
+        c )
+            csv_dir=$OPTARG
             ;;
         \? )
             echo "Invalid option: -$OPTARG" 1>&2
@@ -54,7 +59,7 @@ if [ ! -d "$root_dir" ]; then
 fi
 
 # Output CSV file
-output_dir="results/results_2024/mult/$routine"
+output_dir="$csv_dir/$routine"
 mkdir -p "$output_dir"
 echo "storing csvs in output directory: $output_dir"
 

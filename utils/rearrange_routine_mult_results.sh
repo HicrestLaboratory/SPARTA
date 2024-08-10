@@ -7,24 +7,33 @@
 # Default values
 root_dir="../../../Downloads/outputs_2024-07-26/SbatchMan/outputs/marzola"
 routine="spmmcsr"
-output_dir="results/results_2024/mult_data"
+collected_data_folder="results/results_2024/mult_data"
+clean_folders="0"
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 [-r root_dir] [-u routine] [-m method]"
+    echo "Usage: $0 [-r root_dir] [-u routine] [-x clean folders]"
     echo "  -r  Root directory (default: $root_dir)"
+    echo "  -o  data storage directory (default: $collected_data_folder)"
     echo "  -u  Routine (default: $routine)"
+    echo "  -x  Clean output folders"
     exit 1
 }
 
 # Parse options
-while getopts ":r:u:" opt; do
+while getopts ":r:u:o:x" opt; do
     case ${opt} in
         r )
             root_dir=$OPTARG
             ;;
         u )
             routine=$OPTARG
+            ;;
+        x )
+            clean_folders="1"
+            ;;
+        o )
+            collected_data_folder=$OPTARG
             ;;
         \? )
             echo "Invalid option: -$OPTARG" 1>&2
@@ -44,6 +53,7 @@ routine_gp_dir="$root_dir/${routine}gp/finished"
 
 # Print the values to check
 echo "Root directory: $root_dir"
+echo "Data collection folder: $collected_data_folder"
 echo "Routine: $routine"
 echo "Routine directory: $routine_dir"
 echo "Routine GP directory: $routine_gp_dir"
@@ -53,13 +63,15 @@ if [ ! -d "$routine_dir" ]; then
   exit 1
 fi
 
-# Output CSV file
-out_routine_dir=$output_dir/$routine
+out_routine_dir=$collected_data_folder/$routine
 echo $out_routine_dir
 mkdir -p "$out_routine_dir"
 
 algos=( "metis-edge-cut" "metis-volume" "clubs" "denseAMP" "saad" "original")
 for algo in "${algos[@]}"; do
+  if [ "$clean_folders" -eq 1 ]; then
+    rm -rf "$out_routine_dir/$algo"
+  fi
   mkdir -p "$out_routine_dir/$algo"
 done
 #************************************

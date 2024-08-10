@@ -14,7 +14,11 @@ Using the utils to analyze the clubs experiments
 *Multiplication results
 
 #copy and sort the mult files. Organizes them in the root_dir: SPARTA/results/results_2024/mult_data
-./rearrange_mult_results
+./rearrange_routine_mult_results
+echo "Usage: $0 [-r root_dir] [-u routine] [-x clean folders]"
+./utils/rearrange_routine_mult_results.sh -x -r ../../../Downloads/outputs_2024-08-01/SbatchMan/outputs/marzola/ -u spmmcsr
 
-./collect_all_mult_results
+#create csv files
+./collect_routine_mult_results 
 echo "Usage: $0 [-r root_dir] [-u routine] [-m method]"
+./utils/collect_routine_mult_results.sh -r results/results_2024/mult_data/ -u spmmcsr
