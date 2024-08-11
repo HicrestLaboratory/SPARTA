@@ -48,7 +48,8 @@ for method in methods:
 
 #metis only accepts square matrices
 for method in ["metis-edge-cut", "metis-volume"]:
-    dfs[method] = dfs[method][dfs[method]['rows'] == dfs[method]['cols']] 
+    if method in dfs.keys():
+        dfs[method] = dfs[method][dfs[method]['rows'] == dfs[method]['cols']] 
 
 
 # Function to get the best result for each matrix
@@ -143,9 +144,6 @@ print("Unique matrix counts:", unique_matrix_counts)
 
 matrices_with_original = dfs["original"]['matrix'].unique()
 print("ALLOWED MATRICES (original time exists): ", len(matrices_with_original))
-for method in methods: 
-    dfs[method] = dfs[method][dfs[method]['matrix'].isin(matrices_with_original)]
-
 
 
 
