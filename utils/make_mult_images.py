@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import gmean
 
-routine="spmvcsr"
-methods=["original", "clubs", "saad", "metis-edge-cut", "metis-volume", "denseAMP"]
+routine="spmmcsr"
+methods=["original", "clubs", "metis-edge-cut", "metis-volume", "saad"]
+#methods=["original", "clubs", "saad", "metis-edge-cut", "metis-volume", "denseAMP"]
 
 # Define the directory containing the files
 root_dir="results/results_10-08-2024/"
@@ -51,6 +52,9 @@ for method in ["metis-edge-cut", "metis-volume"]:
     if method in dfs.keys():
         dfs[method] = dfs[method][dfs[method]['rows'] == dfs[method]['cols']] 
 
+#cut diagonal matrices
+for method in methods:
+    dfs[method] = dfs[method].loc[dfs[method]["nnz"] >= 16*dfs[method]["rows"]]
 
 # Function to get the best result for each matrix
 def get_best_results(df, group_cols, value_col='time'):
