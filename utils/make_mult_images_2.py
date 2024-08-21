@@ -3,12 +3,38 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import gmean
+import argparse
 
-def count_best_method(best_dfs, matrices):
+#----------------------ARGUMENTS
+#______________________________________________________
+parser = argparse.ArgumentParser(description="Analysis of multiplication times after reordering")
+parser.add_argument("--routine", nargs="?", type=str, default="spmmcsr", help="the multiplication routine to report on, e.g. spmmcsr")
+parser.add_argument("--root_dir", nargs="?", type=str, default="results/results_10-08-2024/", help="the directory where the csv of the experiments are stored")
+
+args = parser.parse_args()
+
+allowed_routines = ["spmmcsr", "spmvcsr", "spmmbsr", "spmvbsr"]
+routine = args.routine
+if routine not in allowed_routines:
+    print(f"{routine} is not a valid routine {allowed_routines}")
+    exit(1)
+root_dir=args.root_dir
+
+if not os.path.isdir(root_dir):
+    print(f"ERROR: Experiment directory {root_dir} does not exists.")
+    exit(1)
+#______________________________________________________
+
+
+
+#----------------------FUNCTIONS
+# _____________________________________________________
+def count_best_method(best_dfs, methods):
     all_results_df = pd.DataFrame()
+    common_matrices= find_common_matrices(best_dfs, methods)
     for method in methods:
         df = best_dfs[method].copy()
-        df = set_allowed_matrices(df, matrices)
+        df = set_allowed_matrices(df, common_matrices)
         df["method"] = method
         all_results_df = pd.concat([all_results_df,df])
 
@@ -22,14 +48,43 @@ def count_best_method(best_dfs, matrices):
 
     return best_method_counts
 
-def calculate_total_times(best_dfs, matrices):
+def calculate_speedups(best_dfs, methods):
+    common_matrices = find_common_matrices(best_dfs,methods)
+    speedups = {}
+    for method in methods:
+        original_df = best_dfs["original"].copy()
+        original_df = set_allowed_matrices(original_df,common_matrices)
+        method_df = best_dfs[method].copy()
+        method_df = set_allowed_matrices(method_df, common_matrices)
+        merged = pd.merge(original_df[['matrix', 'time']], method_df[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
+        merged['ratio'] = merged['time_method'] / merged['time_original']
+        speedups[method] = 1/gmean(merged['ratio'])
+    return speedups
+
+
+def calculate_total_times(best_dfs, methods):
     sum_dict = {}
+    common_matrices= find_common_matrices(best_dfs, methods)
     for method in methods:
         df = best_dfs[method].copy()
-        clean_df = set_allowed_matrices(df,matrices)
+        clean_df = set_allowed_matrices(df,common_matrices)
         sum_dict[method] = sum(clean_df["time"])
 
     return sum_dict
+
+def calculate_total_best_time(best_dfs, methods):
+    common_matrices= find_common_matrices(best_dfs, methods)
+    all_results_df = pd.DataFrame()
+    for method in methods:
+        df = best_dfs[method].copy()
+        df = set_allowed_matrices(df,common_matrices)
+        df["method"] =  method
+        all_results_df = pd.concat([all_results_df,df])
+    
+    all_results_df = all_results_df.sort_values(by="method", ascending=False, key=lambda x: x == "original") #ensures ties are win by original
+    overall_best_results = find_best(all_results_df)
+    
+    return sum(overall_best_results["time"]) 
 
 # Helper function to read and concatenate files, ignoring empty ones
 def read_and_concat(files):
@@ -50,20 +105,49 @@ def find_best(df):
 def set_allowed_matrices(df, allowed_matrices):
     return df[(df["matrix"]).isin(allowed_matrices)]
 
+def find_common_matrices(dfs, methods):
+    matrices_with_original = dfs["original"]['matrix'].unique()
+    common_matrices=set(matrices_with_original)
+    for method in methods:
+        if method != "original":
+            common_matrices &= set(dfs[method]['matrix'].unique())
+    return common_matrices
+
+
+def make_plot(values_dict, title="Plot", ylabel="Value", save_path = "test.png"):
+    """    
+    Parameters:
+    values_dict (dict): A dictionary containing results for each method.
+    """
+
+    # Sort values by method names for consistent plotting
+    methods_sorted = list(values_dict.keys())
+    method_values = list(values_dict.values())
+
+    # Plot the bar chart
+    plt.figure(figsize=(10, 6))
+    plt.bar(methods_sorted, method_values, color='skyblue')
+    
+    # Add titles and labels
+    plt.title(title)
+    plt.xlabel("Reordering technique")
+    plt.ylabel(ylabel)
+    
+    # Rotate the x-axis labels for better readability if necessary
+    plt.xticks(rotation=45, ha="right")
+    
+    # Display the plot
+    plt.tight_layout()
+    plt.savefig(save_path)
+
 #-____________________ END OF FUNCTIONS_____________________________
 
 
 
 
-routine="spmvcsr"
 methods=["original", "clubs", "metis-edge-cut", "metis-volume"]
 
-# Define the directory containing the files
-root_dir="results/results_10-08-2024/"
-if not os.path.isdir(root_dir):
-    print(f"ERROR: Experiment directory {root_dir} exists.")
-    exit(1)
-
+#subdirectories
 csv_dir = root_dir + "mult_csv/" + routine
 output_plot_dir = root_dir + "mult_plots/" + routine
 os.makedirs(output_plot_dir, exist_ok=True)
@@ -80,17 +164,17 @@ for method in methods:
 for method in ["metis-edge-cut", "metis-volume"]:
     dfs[method] = dfs[method][dfs[method]['rows'] == dfs[method]['cols']] 
 
+#fix the tau for clubs 
+#dfs["clubs"] = dfs["clubs"][dfs["clubs"]["tau"] == 1]
+
+
 #clean data
-cutoff = 2
-for method in methods:
-    
-    #remove diagonal matrices
-    dfs[method] = dfs[method].loc[dfs[method]["nnz"] >= 2*dfs[method]["rows"]]
+cutoff = 3
+for method in methods: 
+    #remove unorderable matrices
+    dfs[method] = dfs[method].loc[dfs[method]["nnz"] >= cutoff*dfs[method]["rows"]]
 
-    #remove long
-    #dfs[method] = dfs[method][dfs[method]["time"] < 0.05]
-
-#remove matrices for which original does not exist
+#find matrices for which original exist
 matrices_with_original = dfs["original"]['matrix'].unique()
 for method in methods:
     dfs[method] = dfs[method][(dfs[method]["matrix"]).isin(matrices_with_original)]
@@ -102,11 +186,11 @@ common_matrices=set(matrices_with_original)
 for method in methods:
     if method != "original":
         common_matrices &= set(dfs[method]['matrix'].unique())
-
 print(f"Found {len(common_matrices)} common matrices")
 
-method_matrices = {method : set(dfs[method]["matrix"].unique()) - common_matrices for method in methods}
 
+#find matrices that exist only for a method
+method_matrices = {method : set(dfs[method]["matrix"].unique()) - common_matrices for method in methods}
 best_dfs = {}
 for method in methods:
     best_dfs[method] = find_best(dfs[method])
@@ -115,14 +199,39 @@ for method in methods:
         
 
 
-print("ALL BEST: ", count_best_method(best_dfs, matrices_with_original))
+comparisons = [methods, ["original", "clubs", "metis-edge-cut"], ["original", "clubs"], ["original", "metis-edge-cut", "metis-volume"]]
 
-print("COMMON BEST: ", count_best_method(best_dfs, common_matrices))
-print("TOTAL TIMES COMMON:", calculate_total_times(best_dfs, common_matrices))
+for exp_methods in comparisons:
+    exp_methods_string = "_".join(exp_methods)
+    print("*****************")
+    print("Comparing: ", exp_methods)
 
-print("CLUBS MATRICES: ", count_best_method(best_dfs, method_matrices["clubs"]))
-print("TOTAL TIMES CLUBS:", calculate_total_times(best_dfs, method_matrices["clubs"]))
+    n_matrices = len(find_common_matrices(best_dfs, exp_methods))
+    print(f"Found {n_matrices} common matrices")
 
+    counts = count_best_method(best_dfs, exp_methods)
+    print("BEST COUNT ON COMMON MATRICES: ", counts)
+    make_plot(values_dict=counts, 
+              title=f"Best reordering method for {routine} on {n_matrices} matrices for {exp_methods}",
+              ylabel="# of times X is the best method",
+              save_path= f"{output_plot_dir}/{routine}_best_count_plot_{exp_methods_string}")
+
+
+    speedups = calculate_speedups(best_dfs, exp_methods)
+    print("SPEEDUPS GEOMETRIC MEAN ON COMMON MATRICES: ", speedups)
+    make_plot(values_dict=speedups, 
+              title=f"Geometric mean of {routine} speedup on {n_matrices} matrices for {exp_methods}",
+              ylabel="Speed-up against non-reordered matrix",
+              save_path= f"{output_plot_dir}/{routine}_speedup_geomean_{exp_methods_string}")
+
+    total_times = calculate_total_times(best_dfs, exp_methods)
+    print("TOTAL TIMES ON COMMON MATRICES:", total_times)
+    make_plot(values_dict=total_times, 
+              title=f"Total time to run {routine} on {n_matrices} matrices for {exp_methods}",
+              ylabel=f"Total {routine} time",
+              save_path= f"{output_plot_dir}/{routine}_total_times_{exp_methods_string}")
+
+    print("TOTAL TIME USING BEST: ", calculate_total_best_time(best_dfs, exp_methods))
 
 #TRY: CALCULATE TOTAL INCLUDING RECTANGULAR FOR METIS
 
