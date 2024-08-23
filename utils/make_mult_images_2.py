@@ -58,7 +58,8 @@ def calculate_speedups(best_dfs, methods):
         method_df = set_allowed_matrices(method_df, common_matrices)
         merged = pd.merge(original_df[['matrix', 'time']], method_df[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
         merged['ratio'] = merged['time_method'] / merged['time_original']
-        speedups[method] = 1/gmean(merged['ratio'])
+        #merged[merged["ratio"] > 1] = 1 
+        speedups[method] = 1/np.mean(merged['ratio'])
     return speedups
 
 
