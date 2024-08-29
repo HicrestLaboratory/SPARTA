@@ -59,7 +59,7 @@ def calculate_speedups(best_dfs, methods):
         merged = pd.merge(original_df[['matrix', 'time']], method_df[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
         merged['ratio'] = merged['time_method'] / merged['time_original']
         #merged[merged["ratio"] > 1] = 1 
-        speedups[method] = 1/np.mean(merged['ratio'])
+        speedups[method] = 1./np.mean(merged['ratio'])
     return speedups
 
 
@@ -140,6 +140,42 @@ def make_plot(values_dict, title="Plot", ylabel="Value", save_path = "test.png")
     # Display the plot
     plt.tight_layout()
     plt.savefig(save_path)
+
+def plot_speedup_distribution(best_dfs, methods, num_bins=20, save_path= "test_hist.png"):
+    """
+    Plots the distribution (histogram) of speedups across matrices for each method.
+
+    Parameters:
+    - best_dfs: Dictionary of DataFrames for each method containing matrix times.
+    - methods: List of methods to compare.
+    - num_bins: Number of bins to use for the histogram (default is 10).
+    """
+    common_matrices = find_common_matrices(best_dfs, methods)
+    plt.figure(figsize=(10, 6))
+    
+    for method in methods:
+        original_df = best_dfs["original"].copy()
+        original_df = set_allowed_matrices(original_df, common_matrices)
+        method_df = best_dfs[method].copy()
+        method_df = set_allowed_matrices(method_df, common_matrices)
+        merged = pd.merge(original_df[['matrix', 'time']], method_df[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
+        merged['ratio'] = merged['time_method'] / merged['time_original']
+
+        speedups = 1 / merged['ratio']
+        for s in speedups: 
+            if s<1: s =1
+        
+        custom_bins = [0.99,1.001,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2.0,2.5,3.0]
+        plt.hist(speedups, bins=custom_bins, histtype='step', linewidth=2, label=f'{method}')
+        #plt.scatter(x = speedups, label = f'{method}')
+    plt.xlabel('Speedup')
+    plt.ylabel('Frequency')
+    plt.title('Distribution of Speedups Across Matrices')
+    plt.legend(loc='upper right')
+    plt.tight_layout()
+    plt.savefig(save_path)
+
+
 
 #-____________________ END OF FUNCTIONS_____________________________
 
@@ -233,6 +269,14 @@ for exp_methods in comparisons:
               save_path= f"{output_plot_dir}/{routine}_total_times_{exp_methods_string}")
 
     print("TOTAL TIME USING BEST: ", calculate_total_best_time(best_dfs, exp_methods))
+
+    plot_speedup_distribution(best_dfs, 
+                              exp_methods, 
+                              num_bins=20, 
+                              save_path= f"{output_plot_dir}/{routine}_hist_{exp_methods_string}.png"
+                              )
+
+
 
 #TRY: CALCULATE TOTAL INCLUDING RECTANGULAR FOR METIS
 
