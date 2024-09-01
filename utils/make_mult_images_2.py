@@ -25,6 +25,22 @@ if not os.path.isdir(root_dir):
     exit(1)
 #______________________________________________________
 
+#____________PLOTTING PARAMS________________
+color_dict = {
+    "original": "blue",
+    "clubs": "orange",
+    "metis-edge-cut" : "red",
+    "metis-volume" : "purple"
+}
+
+marker_dict = {
+    "original": "o",
+    "clubs": "x",
+    "metis-edge-cut" : ".",
+    "metis-volume" : "."
+}
+
+
 
 
 #----------------------FUNCTIONS
@@ -126,7 +142,7 @@ def make_plot(values_dict, title="Plot", ylabel="Value", save_path = "test.png")
 
     # Plot the bar chart
     plt.figure(figsize=(10, 6))
-    plt.bar(methods_sorted, method_values, color='skyblue')
+    plt.bar(methods_sorted, method_values, color=[color_dict[method] for method in methods_sorted])
     
     # Add titles and labels
     plt.title(title)
@@ -153,6 +169,7 @@ def plot_speedup_distribution(best_dfs, methods, title = 'Distribution of Speedu
     plt.figure(figsize=(10, 6))
     
     for method in methods:
+        if method == "original": continue
         original_df = best_dfs["original"].copy()
         original_df = set_allowed_matrices(original_df, common_matrices)
         method_df = best_dfs[method].copy()
@@ -161,11 +178,10 @@ def plot_speedup_distribution(best_dfs, methods, title = 'Distribution of Speedu
         merged['ratio'] = merged['time_method'] / merged['time_original']
 
         speedups = 1 / merged['ratio']
-        for s in speedups: 
-            if s<1: s =1
+        speedups = [max(s, 1) for s in speedups]
         
-        custom_bins = [1.0,1.001,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2.0,2.5,3.0]
-        plt.hist(speedups, bins=custom_bins, cumulative=True, histtype='step', linewidth=2, label=f'{method}')
+        custom_bins = np.arange(1,3,0.05)
+        plt.hist(speedups, bins=custom_bins, cumulative=True, color = color_dict[method], histtype='step', linewidth=2, label=f'{method}')
     plt.xlabel('Speedup')
     plt.ylabel('Frequency')
     plt.title(title)
@@ -204,7 +220,7 @@ def plot_speedup_vs_param(best_dfs, methods, param="density", title='Speedup vs 
         param_values = merged[param]
         
         # Plot the data
-        plt.plot(param_values, speedups, marker='o', linestyle='',markersize= 1, label=f'{method}')
+        plt.plot(param_values, speedups, color = color_dict[method], marker='o', linestyle='',markersize= 3, label=f'{method}')
     
     plt.xscale('log')
     plt.ylim(0.9, 1.5)
@@ -215,6 +231,57 @@ def plot_speedup_vs_param(best_dfs, methods, param="density", title='Speedup vs 
     plt.tight_layout()
     plt.savefig(save_path)
     plt.close()
+
+
+def plot_speedup_by_matrix(best_dfs, methods, title='Speedup for each matrix (sorted)', save_path="test_speedup_by_matrix.png"):
+    """
+    Plots the speedup for each matrix, sorted by speedups, for each method.
+
+    Parameters:
+    - best_dfs: Dictionary of DataFrames for each method containing matrix times.
+    - methods: List of methods to compare.
+    """
+    common_matrices = find_common_matrices(best_dfs, methods)
+    plt.figure(figsize=(10, 6))
+    
+    for method in methods:
+        if method == "original" : continue
+        original_df = best_dfs["original"].copy()
+        original_df = set_allowed_matrices(original_df, common_matrices)
+        
+        method_df = best_dfs[method].copy()
+        method_df = set_allowed_matrices(method_df, common_matrices)
+        
+        merged = pd.merge(original_df[['matrix', 'time']], 
+                          method_df[['matrix', 'time']], 
+                          on=['matrix'], 
+                          suffixes=('_original', '_method'))
+        
+        # Calculate the speedup ratio
+        merged['ratio'] = merged['time_method'] / merged['time_original']
+        merged['speedup'] = 1 / merged['ratio']
+        
+        # Ensure speedups are capped at 1
+        merged.loc[merged['speedup'] < 1, 'speedup'] = 1
+        
+        # Sort the DataFrame by speedup
+        merged_sorted = merged.sort_values(by='speedup')
+        
+        # Plot the sorted speedup values
+        plt.plot(range(len(merged_sorted)), merged_sorted['speedup'], color = color_dict[method], marker='o', linestyle='', markersize=3, label=f'{method}')
+    
+    plt.axhline(1, color = color_dict["original"])
+    plt.ylim(0.9, 2)
+    plt.yscale("log")
+    plt.xlabel('Matrix (sorted by speedup)')
+    plt.ylabel('Speedup')
+    plt.title(title)
+    plt.legend(loc='upper right')
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
+
+
 
 
 
@@ -331,6 +398,12 @@ for exp_methods in comparisons:
                             param=param,
                             title=f"Cumulative distribution of speedups for {routine} on {n_matrices} matrices \n ({exp_methods})",
                             save_path= f"{output_plot_dir}/{routine}_speedup_vs_{param}_{exp_methods_string}.png"
+                              )
+    
+    plot_speedup_by_matrix( best_dfs, 
+                            exp_methods, 
+                            title=f"Speedup by matrix for {routine} on {n_matrices} matrices \n ({exp_methods})",
+                            save_path= f"{output_plot_dir}/{routine}_speedup_by_matrix_{exp_methods_string}.png"
                               )
 
 
