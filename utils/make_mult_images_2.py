@@ -58,8 +58,7 @@ def calculate_speedups(best_dfs, methods):
         method_df = set_allowed_matrices(method_df, common_matrices)
         merged = pd.merge(original_df[['matrix', 'time']], method_df[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
         merged['ratio'] = merged['time_method'] / merged['time_original']
-        #merged[merged["ratio"] > 1] = 1 
-        speedups[method] = 1./np.mean(merged['ratio'])
+        speedups[method] = 1./np.mean(merged['ratio'])        
     return speedups
 
 
@@ -141,7 +140,7 @@ def make_plot(values_dict, title="Plot", ylabel="Value", save_path = "test.png")
     plt.tight_layout()
     plt.savefig(save_path)
 
-def plot_speedup_distribution(best_dfs, methods, num_bins=20, save_path= "test_hist.png"):
+def plot_speedup_distribution(best_dfs, methods, title = 'Distribution of Speedups Across Matrices', save_path= "test_dist.png"):
     """
     Plots the distribution (histogram) of speedups across matrices for each method.
 
@@ -165,15 +164,57 @@ def plot_speedup_distribution(best_dfs, methods, num_bins=20, save_path= "test_h
         for s in speedups: 
             if s<1: s =1
         
-        custom_bins = [0.99,1.001,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2.0,2.5,3.0]
-        plt.hist(speedups, bins=custom_bins, histtype='step', linewidth=2, label=f'{method}')
-        #plt.scatter(x = speedups, label = f'{method}')
+        custom_bins = [1.0,1.001,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2.0,2.5,3.0]
+        plt.hist(speedups, bins=custom_bins, cumulative=True, histtype='step', linewidth=2, label=f'{method}')
     plt.xlabel('Speedup')
     plt.ylabel('Frequency')
-    plt.title('Distribution of Speedups Across Matrices')
+    plt.title(title)
     plt.legend(loc='upper right')
     plt.tight_layout()
     plt.savefig(save_path)
+
+def plot_speedup_vs_param(best_dfs, methods, param="density", title='Speedup vs matrix density', save_path="test_hist.png"):
+    common_matrices = find_common_matrices(best_dfs, methods)
+    plt.figure(figsize=(10, 6))
+    
+    for method in methods:
+        original_df = best_dfs["original"].copy()
+        original_df = set_allowed_matrices(original_df, common_matrices)
+        
+        # Include the 'param' column in the merge operation
+        method_df = best_dfs[method].copy()
+        method_df = set_allowed_matrices(method_df, common_matrices)
+        
+        # Merge including the 'param' column
+        merged = pd.merge(original_df[['matrix', param, 'time']], 
+                          method_df[['matrix', 'time']], 
+                          on=['matrix'], 
+                          suffixes=('_original', '_method'))
+        
+        merged = merged.sort_values(by=param)
+        
+        # Calculate the speedup ratio
+        merged['ratio'] = merged['time_method'] / merged['time_original']
+        speedups = 1 / merged['ratio']
+        
+        # Ensure speedups are capped at 1
+        speedups[speedups < 1] = 1
+        
+        # Extract the values of the parameter to plot against
+        param_values = merged[param]
+        
+        # Plot the data
+        plt.plot(param_values, speedups, marker='o', linestyle='',markersize= 1, label=f'{method}')
+    
+    plt.xscale('log')
+    plt.ylim(0.9, 1.5)
+    plt.xlabel(param.capitalize())
+    plt.ylabel('Speedup')
+    plt.title(title)
+    plt.legend(loc='upper right')
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
 
 
 
@@ -196,6 +237,7 @@ files ={method: [os.path.join(csv_dir + "/" + method + "/", f) for f in os.listd
 #Fill all dataframes
 for method in methods:
     dfs[method] = read_and_concat(files[method])
+    dfs[method]["density"] = dfs[method]["nnz"]/(dfs[method]["rows"]*dfs[method]["cols"])
 
 #metis only accepts square matrices
 for method in ["metis-edge-cut", "metis-volume"]:
@@ -232,8 +274,6 @@ best_dfs = {}
 for method in methods:
     best_dfs[method] = find_best(dfs[method])
 
-
-        
 
 
 comparisons = [methods, ["original", "clubs", "metis-edge-cut"], ["original", "clubs"], ["original", "metis-edge-cut", "metis-volume"]]
@@ -272,9 +312,27 @@ for exp_methods in comparisons:
 
     plot_speedup_distribution(best_dfs, 
                               exp_methods, 
-                              num_bins=20, 
-                              save_path= f"{output_plot_dir}/{routine}_hist_{exp_methods_string}.png"
+                              title=f"Cumulative distribution of speedups for {routine} on {n_matrices} matrices \n ({exp_methods})",
+
+                              save_path= f"{output_plot_dir}/{routine}_cumulative_hist_{exp_methods_string}.png"
                               )
+
+    param = "rows"
+    plot_speedup_vs_param(  best_dfs, 
+                            exp_methods, 
+                            param=param,
+                            title=f"Cumulative distribution of speedups for {routine} on {n_matrices} matrices \n ({exp_methods})",
+                            save_path= f"{output_plot_dir}/{routine}_speedup_vs_{param}_{exp_methods_string}.png"
+                              )
+
+    param = "density"
+    plot_speedup_vs_param(  best_dfs, 
+                            exp_methods, 
+                            param=param,
+                            title=f"Cumulative distribution of speedups for {routine} on {n_matrices} matrices \n ({exp_methods})",
+                            save_path= f"{output_plot_dir}/{routine}_speedup_vs_{param}_{exp_methods_string}.png"
+                              )
+
 
 
 
