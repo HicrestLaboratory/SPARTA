@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import gmean
 import argparse
+import seaborn as sns
 
 #____________PLOTTING PARAMS________________
 color_dict = {
@@ -91,9 +92,11 @@ def read_and_concat(files):
     else:
         return pd.DataFrame()
 
-def find_best(df):
+def find_best(df, params = []):
     df = df.reset_index(drop=True)  # Ensure unique index
-    return df.loc[df.groupby("matrix")["time"].idxmin()]
+    params = ["matrix",] + params
+    print(params)
+    return df.loc[df.groupby(params)["time"].idxmin()]
 
 def set_allowed_matrices(df, allowed_matrices):
     return df[(df["matrix"]).isin(allowed_matrices)]
@@ -169,9 +172,8 @@ def plot_speedup_distribution(best_dfs, methods, matrices = None, title = 'Distr
     plt.tight_layout()
     plt.savefig(save_path)
 
-def plot_speedup_vs_param(best_dfs, methods, matrices = None, param="density", title='Speedup vs matrix density', save_path="test_hist.png"):
+def plot_speedup_vs_matrix_param(best_dfs, methods, matrices = None, param="density", title='Speedup vs matrix density', save_path="test_hist.png"):
 
-    
     common_matrices = find_common_matrices(best_dfs, methods)
     if matrices != None: 
         common_matrices &= matrices
@@ -294,38 +296,71 @@ def plot_speedup_by_matrix(best_dfs, order_by, methods, matrices = None, title='
     plt.savefig(save_path)
     plt.close()
 
-def plot_club_performance_by_param(df, param = "mask", fixed_param = [["centroids", 64],["tau",6]], title='Performance Variation under Mask', save_name=""):
+def plot_club_performance_by_param(dfs, method, param = "mask", title='Performance Variation under Mask', save_name=""):
     """
     Plots the performance variation for a specific method under different mask values,
     with one curve for each tau value, keeping centroid fixed.
     """
     # Filter the DataFrame for the selected method and fixed centroid value
-    method_df = df.copy()
-    for filter in fixed_param:
-        method_df = method_df[method_df[filter[0]] == filter[1]]
+    
+    method_df = dfs[method].copy()
+    original_df = dfs["original"]
+    method_df = find_best(method_df, [param,])
+    
     plt.figure(figsize=(10, 6))
 
-    i = 0
-    for matrix in method_df["matrix"].unique():
-        i += 1
+    merged = pd.merge(original_df[['matrix', 'time']], 
+                        method_df[['matrix', param,'time']], 
+                        on=['matrix'], 
+                        suffixes=('_original', '_method'))
+    
+    merged = merged.sort_values(by=param)
+
+    merged['speedup'] = np.maximum(1, merged['time_original'] / merged['time_method'])
+
+    # Ensure speedups are capped at 1
+
+    plot_data = merged[[param,"speedup"]]
+
+    #adds best plot
+    best_merged = merged.loc[merged.groupby(by="matrix")["speedup"].idxmax()]
+    speeds = best_merged["speedup"].values
+    best_data = pd.DataFrame({param: ["Best"] * len(best_merged), "speedup": best_merged["speedup"].values})
+    #---------------
+
+    plot_data = pd.concat([plot_data, best_data], ignore_index=True)
+
+    sns.violinplot(x=param, y='speedup', data=plot_data, inner='quartile', color=color_dict["clubs"])
+# Plot the data with asymmetric error bars
+    #plt.errorbar(param_values, speedups, yerr=[lower_errors, upper_errors], color=color_dict["clubs"], marker='o', linestyle='--', markersize=3, capsize=5)
+
+    plt.ylim(0.9,1.3)
+    plt.xlabel(param)
+    plt.ylabel('Geometric mean of the speedup')
+    plt.title(title)
+    plt.tight_layout()
+    plt.savefig(save_name)
+    plt.close()
+
+
+    return 
+    #lineplot
+    speedups = []
+    lower_errors = []
+    upper_errors = []
+
+    param_values = merged[param].values
+    for param_value in param_values:
+        speeds = merged[merged[param] == param_value]["speedup"].values
+        speedup = gmean(speeds)
+        speedups.append(speedup)
         
-        # Sort the DataFrame by mask to ensure a consistent plot
-        val_df_sorted = method_df.sort_values(by=param)
-        val_df_sorted = val_df_sorted[val_df_sorted["matrix"] == matrix]
-        # Plot the performance metric (e.g., time) vs. mask
-        plt.plot(val_df_sorted[param], val_df_sorted['time'], marker='o', linestyle='-', markersize=5, label=f'')
-        plt.xlabel(param)
-        plt.ylabel('Time')
-        plt.title(title)
-        plt.tight_layout()
-
-        if i % 20 == 0: 
-            plt.savefig(f"{save_name}_{matrix}.png")
-            plt.close()
-            plt.figure(figsize=(10, 6))
-
-
-
+        # Calculate percentiles for asymmetric error bars
+        lower_error = speedup - np.percentile(speeds, 25)
+        upper_error = np.percentile(speeds, 75) - speedup
+        # Ensure errors are non-negative
+        lower_errors.append(max(0, lower_error))
+        upper_errors.append(max(0, upper_error))
 
 #-____________________ END OF FUNCTIONS_____________________________
 

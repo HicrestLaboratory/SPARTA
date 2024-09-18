@@ -129,7 +129,7 @@ for exp_methods in comparisons:
                               )
 
     param = "rows"
-    plot_speedup_vs_param(  best_dfs, 
+    plot_speedup_vs_matrix_param(  best_dfs, 
                             exp_methods, 
                             param=param,
                             title=f"Cumulative distribution of speedups for {routine} on {n_matrices} matrices \n ({exp_methods})",
@@ -137,7 +137,7 @@ for exp_methods in comparisons:
                               )
 
     param = "density"
-    plot_speedup_vs_param(  best_dfs, 
+    plot_speedup_vs_matrix_param(  best_dfs, 
                             exp_methods, 
                             param=param,
                             title=f"Cumulative distribution of speedups for {routine} on {n_matrices} matrices \n ({exp_methods})",
@@ -184,14 +184,15 @@ plot_speedup_by_matrix( best_dfs,
                         save_path= f"{output_plot_dir}/{routine}_matrices_square_order_by_{order_by}_{exp_methods_string}.png"
                             )
 
-matrix_plot_dir = f"{output_plot_dir}/plots_by_matrix/"
+matrix_plot_dir = f"{output_plot_dir}/parameter_studies/"
 os.makedirs(matrix_plot_dir, exist_ok=True)
-fixed_param = [["centroid", 128], ["tau",6]] 
-plot_club_performance_by_param(dfs["clubs"], 
-                               param = "mask", 
-                               fixed_param = fixed_param, 
-                               title=f'Performance Variation under mask, {fixed_param[0]} = {fixed_param[1]}', 
-                               save_name=f"{matrix_plot_dir}/{routine}_performance_variation_by_mask_{fixed_param[0]}_{fixed_param[1]}")
+method = "clubs"
+for param in ["mask","centroid","tau"]:
+    plot_club_performance_by_param(dfs, 
+                                method=method,
+                                param = param, 
+                                title=f'Performance variation under {param}', 
+                                save_name=f"{matrix_plot_dir}/{routine}_{method}_performance_variation_by_{param}")
 
 #TRY: CALCULATE TOTAL INCLUDING RECTANGULAR FOR METIS
 
