@@ -5,6 +5,7 @@ import numpy as np
 from scipy.stats import gmean
 import argparse
 import seaborn as sns
+from matplotlib.ticker import FuncFormatter
 
 #____________PLOTTING PARAMS________________
 color_dict = {
@@ -110,7 +111,7 @@ def find_common_matrices(dfs, methods):
     return common_matrices
 
 
-def make_plot(values_dict, title="Plot", ylabel="Value", save_path = "test.png"):
+def make_plot(values_dict, title="Plot", ylabel="Value", percent = False, save_path = "test.png"):
     """    
     Parameters:
     values_dict (dict): A dictionary containing results for each method.
@@ -122,14 +123,19 @@ def make_plot(values_dict, title="Plot", ylabel="Value", save_path = "test.png")
 
     # Plot the bar chart
     plt.figure(figsize=(10, 6))
-    plt.bar(methods_sorted, method_values, color=[color_dict[method] for method in methods_sorted])
     
     # Add titles and labels
     plt.title(title)
     plt.xlabel("Reordering technique")
     plt.ylabel(ylabel)
     
+    if percent:
+        method_values = [m*100 - 100 for m in method_values]
+        plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda y, _: f'{y:.0f}%'))
     # Rotate the x-axis labels for better readability if necessary
+
+    
+    plt.bar(methods_sorted, method_values, color=[color_dict[method] for method in methods_sorted])
     plt.xticks(rotation=45, ha="right")
     
     # Display the plot
@@ -162,9 +168,12 @@ def plot_speedup_distribution(best_dfs, methods, matrices = None, title = 'Distr
 
         speedups = 1 / merged['ratio']
         speedups = [max(s, 1) for s in speedups]
+        speedups_percent = [s*100 - 100 for s in speedups]
         
-        custom_bins = np.arange(1,3,0.05)
-        plt.hist(speedups, bins=custom_bins, cumulative=True, color = color_dict[method], histtype='step', linewidth=2, label=f'{method}')
+        custom_bins = np.arange(0,200,5)
+        plt.hist(speedups_percent, bins=custom_bins, cumulative=True, color = color_dict[method], histtype='step', linewidth=2, label=f'{method}')
+    
+    plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda y, _: f'{y:.0f}%'))
     plt.xlabel('Speedup')
     plt.ylabel('Frequency')
     plt.title(title)
@@ -275,7 +284,8 @@ def plot_speedup_by_matrix(best_dfs, order_by, methods, matrices = None, title='
         # Calculate the speedup ratio
         merged['ratio'] = merged['time_method'] / merged['time_original']
         merged['speedup'] = 1 / merged['ratio']
-        
+        merged['speedup_percent'] = merged['speedup'] * 100 - 100
+
         # Ensure speedups are capped at 1
         #merged.loc[merged['speedup'] < 1, 'speedup'] = 1
         
@@ -284,11 +294,12 @@ def plot_speedup_by_matrix(best_dfs, order_by, methods, matrices = None, title='
         merged_sorted = merged.sort_values(by='matrix')
         
         # Plot the sorted speedup values
-        plt.plot(range(len(merged_sorted)), merged_sorted['speedup'], color=color_dict[method], marker='o', linestyle='', markersize=3, label=f'{method}')
+        plt.plot(range(len(merged_sorted)), merged_sorted['speedup_percent'], color=color_dict[method], marker='o', linestyle='', markersize=3, label=f'{method}')
     
-    plt.axhline(1, color=color_dict["original"])
-    plt.ylim(0.9, 2)
-    plt.xlabel('Matrix (sorted by speedup on clubs)')
+    plt.axhline(0, color=color_dict["original"])
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda y, _: f'{y:.0f}%'))
+    plt.ylim(-10, 50)
+    plt.xlabel(f'Matrix (sorted by speedup on {order_by})')
     plt.ylabel('Speedup')
     plt.title(title)
     plt.legend(loc='upper right')
@@ -329,14 +340,16 @@ def plot_club_performance_by_param(dfs, method, param = "mask", title='Performan
     #---------------
 
     plot_data = pd.concat([plot_data, best_data], ignore_index=True)
+    plot_data['speedup_percent'] = plot_data['speedup'] * 100 - 100
 
-    sns.violinplot(x=param, y='speedup', data=plot_data, inner='quartile', color=color_dict["clubs"])
+    sns.violinplot(x=param, y='speedup_percent', data=plot_data, inner='quartile', color=color_dict["clubs"])
 # Plot the data with asymmetric error bars
     #plt.errorbar(param_values, speedups, yerr=[lower_errors, upper_errors], color=color_dict["clubs"], marker='o', linestyle='--', markersize=3, capsize=5)
-
-    plt.ylim(0.9,1.3)
+    
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda y, _: f'{y:.0f}%'))
+    plt.ylim(-10,50)
     plt.xlabel(param)
-    plt.ylabel('Geometric mean of the speedup')
+    plt.ylabel('Geometric mean of the speedup (%)')
     plt.title(title)
     plt.tight_layout()
     plt.savefig(save_name)

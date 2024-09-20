@@ -110,6 +110,7 @@ for exp_methods in comparisons:
     make_plot(values_dict=speedups, 
               title=f"Geometric mean of {routine} speedup on {n_matrices} matrices for {exp_methods}",
               ylabel="Speed-up against non-reordered matrix",
+              percent=True,
               save_path= f"{output_plot_dir}/{routine}_speedup_geomean_{exp_methods_string}")
 
     total_times = calculate_total_times(best_dfs, exp_methods)
