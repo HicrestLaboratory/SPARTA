@@ -105,13 +105,26 @@ for exp_methods in comparisons:
               save_path= f"{output_plot_dir}/{routine}_best_count_plot_{exp_methods_string}")
 
 
-    speedups = calculate_speedups(best_dfs, exp_methods)
+    speedups = calculate_speedups(best_dfs, exp_methods[1:])
     print("SPEEDUPS GEOMETRIC MEAN ON COMMON MATRICES: ", speedups)
-    make_plot(values_dict=speedups, 
-              title=f"Geometric mean of {routine} speedup on {n_matrices} matrices for {exp_methods}",
-              ylabel="Speed-up against non-reordered matrix",
-              percent=True,
-              save_path= f"{output_plot_dir}/{routine}_speedup_geomean_{exp_methods_string}")
+    make_speedup_barplot(best_dfs, 
+                        exp_methods[1:],
+                        title=f"Median, 25th and 75th percentile of {routine} speedup on {n_matrices} matrices for {exp_methods}",
+                        ylabel="Speed-up against non-reordered matrix",
+                        save_path= f"{output_plot_dir}/{routine}_speedup_median_{exp_methods_string}")
+
+    make_speedup_violin(best_dfs, 
+                        exp_methods[1:],
+                        title=f"Median, 25th and 75th percentile of {routine} speedup on {n_matrices} matrices for {exp_methods}",
+                        ylabel="Speed-up against non-reordered matrix",
+                        save_path= f"{output_plot_dir}/{routine}_speedup_violin_{exp_methods_string}")
+
+    
+    #make_plot(values_dict=speedups, 
+    #          title=f"Geometric mean of {routine} speedup on {n_matrices} matrices for {exp_methods}",
+    #          ylabel="Speed-up against non-reordered matrix",
+    #          percent=True,
+    #          save_path= f"{output_plot_dir}/{routine}_speedup_geomean_{exp_methods_string}")
 
     total_times = calculate_total_times(best_dfs, exp_methods)
     print("TOTAL TIMES ON COMMON MATRICES:", total_times)

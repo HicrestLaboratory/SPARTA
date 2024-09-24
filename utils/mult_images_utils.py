@@ -52,8 +52,8 @@ def calculate_speedups(best_dfs, methods):
         method_df = best_dfs[method].copy()
         method_df = set_allowed_matrices(method_df, common_matrices)
         merged = pd.merge(original_df[['matrix', 'time']], method_df[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
-        merged['ratio'] = merged['time_method'] / merged['time_original']
-        speedups[method] = 1./np.mean(merged['ratio'])        
+        merged['ratio'] = merged['time_original'] / merged['time_method']
+        speedups[method] = gmean(merged['ratio'].values)  
     return speedups
 
 
@@ -125,22 +125,118 @@ def make_plot(values_dict, title="Plot", ylabel="Value", percent = False, save_p
     plt.figure(figsize=(10, 6))
     
     # Add titles and labels
-    plt.title(title)
+    #plt.title(title)
     plt.xlabel("Reordering technique")
     plt.ylabel(ylabel)
     
     if percent:
         method_values = [m*100 - 100 for m in method_values]
-        plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda y, _: f'{y:.0f}%'))
+        plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda y, _: f'{y:.0f}%'))
     # Rotate the x-axis labels for better readability if necessary
 
     
     plt.bar(methods_sorted, method_values, color=[color_dict[method] for method in methods_sorted])
-    plt.xticks(rotation=45, ha="right")
+    #plt.xticks(rotation=45, ha="right")
     
     # Display the plot
     plt.tight_layout()
     plt.savefig(save_path)
+
+def make_speedup_barplot(best_dfs, methods, title="Plot", ylabel="Value", save_path = "test.png"):
+    """    
+    Parameters:
+    values_dict (dict): A dictionary containing results for each method.
+    """
+
+    common_matrices = find_common_matrices(best_dfs,methods)
+    speedups = {}
+    low_errors = []
+    up_errors = []
+    for method in methods:
+        original_df = best_dfs["original"].copy()
+        original_df = set_allowed_matrices(original_df,common_matrices)
+        method_df = best_dfs[method].copy()
+        method_df = set_allowed_matrices(method_df, common_matrices)
+        merged = pd.merge(original_df[['matrix', 'time']], method_df[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
+        merged['ratio'] = merged['time_original'] / merged['time_method']
+        #merged['ratio'] = merged['ratio']*100 - 100
+        percentiles = np.percentile(merged['ratio'].values, [25, 50, 75])
+        #speedups[method] = gmean(merged['ratio']) 
+        speedups[method] = percentiles[1] 
+        print(method, percentiles, speedups[method])
+        low_errors.append(speedups[method] - percentiles[0])
+        up_errors.append(percentiles[2] - speedups[method])
+       
+    # Plot the bar chart
+    plt.figure(figsize=(10, 6))
+
+    # Add titles and labels
+    #plt.title(title)
+    plt.xlabel("Reordering technique")
+    plt.ylabel(ylabel)
+    
+    plt.bar(methods, speedups.values(), yerr=[low_errors, up_errors], color=[color_dict[method] for method in methods])
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda y, _: f'{y*100 - 100:.0f}%'))
+    #plt.xticks(rotation=45, ha="right")
+    max_y = (max(up_errors) + max(speedups.values()))*1.01
+    plt.ylim(1,max_y)
+    # Display the plot
+    plt.tight_layout()
+    plt.savefig(save_path)
+
+def make_speedup_violin(best_dfs, methods, title="Plot", ylabel="Value", save_path = "test.png"):
+    """ 
+    Parameters:
+    best_dfs (dict): A dictionary containing results for each method.
+    methods (list): A list of methods to compare.
+    title (str): Title of the plot.
+    ylabel (str): Y-axis label.
+    save_path (str): Path to save the plot.
+    """
+    common_matrices = find_common_matrices(best_dfs, methods)
+    speedup_data = []
+    method_labels = []
+    
+    for method in methods:
+        # Preprocess the data
+        original_df = best_dfs["original"].copy()
+        original_df = set_allowed_matrices(original_df, common_matrices)
+        method_df = best_dfs[method].copy()
+        method_df = set_allowed_matrices(method_df, common_matrices)
+        merged = pd.merge(original_df[['matrix', 'time']], method_df[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
+        
+        # Calculate the speedup (original time / method time)
+        merged['ratio'] = merged['time_original'] / merged['time_method']
+        merged.loc[merged["ratio"] < 1] = 1
+
+        # Collect data for the violin plot
+        speedup_data.extend(merged['ratio'].values)
+        method_labels.extend([method] * len(merged))
+
+    # Create a DataFrame for seaborn
+    plot_df = pd.DataFrame({'Method': method_labels, 'Speedup': speedup_data})
+
+    # Plot the violin plot
+    plt.figure(figsize=(10, 6))
+    ax = sns.violinplot(x='Method', y='Speedup', data=plot_df, palette=[color_dict[method] for method in methods], )
+    plt.setp(ax.collections, alpha=.3)
+
+
+    # Add titles and labels
+    #plt.title(title)
+    plt.xlabel("Reordering Technique")
+    plt.ylabel(ylabel)
+
+    # Format the y-axis to show percentages (if needed)
+    plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y*100 - 100:.0f}%'))
+
+    # Adjust layout and save the plot
+    #plt.xticks(rotation=45, ha="right")
+    plt.ylim(0.8,1.5)
+
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
 
 def plot_speedup_distribution(best_dfs, methods, matrices = None, title = 'Distribution of Speedups Across Matrices', save_path= "test_dist.png"):
     """
@@ -171,12 +267,12 @@ def plot_speedup_distribution(best_dfs, methods, matrices = None, title = 'Distr
         speedups_percent = [s*100 - 100 for s in speedups]
         
         custom_bins = np.arange(0,200,5)
-        plt.hist(speedups_percent, bins=custom_bins, cumulative=True, color = color_dict[method], histtype='step', linewidth=2, label=f'{method}')
+        plt.hist(speedups_percent, bins=custom_bins, cumulative=False, color = color_dict[method], histtype='step', linewidth=2, label=f'{method}')
     
     plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda y, _: f'{y:.0f}%'))
     plt.xlabel('Speedup')
     plt.ylabel('Frequency')
-    plt.title(title)
+    #plt.title(title)
     plt.legend(loc='upper right')
     plt.tight_layout()
     plt.savefig(save_path)
@@ -222,7 +318,7 @@ def plot_speedup_vs_matrix_param(best_dfs, methods, matrices = None, param="dens
     plt.ylim(0.9, 1.5)
     plt.xlabel(param.capitalize())
     plt.ylabel('Speedup')
-    plt.title(title)
+    #plt.title(title)
     plt.legend(loc='upper right')
     plt.tight_layout()
     plt.savefig(save_path)
@@ -301,7 +397,7 @@ def plot_speedup_by_matrix(best_dfs, order_by, methods, matrices = None, title='
     plt.ylim(-10, 50)
     plt.xlabel(f'Matrix (sorted by speedup on {order_by})')
     plt.ylabel('Speedup')
-    plt.title(title)
+    #plt.title(title)
     plt.legend(loc='upper right')
     plt.tight_layout()
     plt.savefig(save_path)
@@ -350,7 +446,7 @@ def plot_club_performance_by_param(dfs, method, param = "mask", title='Performan
     plt.ylim(-10,50)
     plt.xlabel(param)
     plt.ylabel('Geometric mean of the speedup (%)')
-    plt.title(title)
+    #plt.title(title)
     plt.tight_layout()
     plt.savefig(save_name)
     plt.close()
