@@ -24,7 +24,7 @@ marker_dict = {
 
 #----------------------FUNCTIONS
 # _____________________________________________________
-def count_best_method(best_dfs, methods):
+def count_best_method(best_dfs, methods, parameter = "time"):
     all_results_df = pd.DataFrame()
     common_matrices= find_common_matrices(best_dfs, methods)
     for method in methods:
@@ -35,7 +35,7 @@ def count_best_method(best_dfs, methods):
 
 
     all_results_df = all_results_df.sort_values(by="method", ascending=False, key=lambda x: x == "original") #ensures ties are win by original
-    overall_best_results = find_best(all_results_df)
+    overall_best_results = find_best(all_results_df, best_parameter = parameter)
 
     best_method_counts = {}
     for method in methods:
@@ -43,18 +43,18 @@ def count_best_method(best_dfs, methods):
 
     return best_method_counts
 
-def calculate_speedups(best_dfs, methods):
+def calculate_improvement(best_dfs, methods, parameter = "time"):
     common_matrices = find_common_matrices(best_dfs,methods)
-    speedups = {}
+    improvements = {}
     for method in methods:
         original_df = best_dfs["original"].copy()
         original_df = set_allowed_matrices(original_df,common_matrices)
         method_df = best_dfs[method].copy()
         method_df = set_allowed_matrices(method_df, common_matrices)
-        merged = pd.merge(original_df[['matrix', 'time']], method_df[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
-        merged['ratio'] = merged['time_original'] / merged['time_method']
-        speedups[method] = gmean(merged['ratio'].values)  
-    return speedups
+        merged = pd.merge(original_df[['matrix', parameter]], method_df[['matrix', parameter]], on='matrix', suffixes=('_original', '_method'))
+        merged['ratio'] = merged[parameter + '_original'] / merged[parameter + '_method']
+        improvements[method] = gmean(merged['ratio'].values)  
+    return improvements
 
 
 def calculate_total_times(best_dfs, methods):
@@ -93,11 +93,11 @@ def read_and_concat(files):
     else:
         return pd.DataFrame()
 
-def find_best(df, params = []):
+def find_best(df, params = [], best_parameter = "time"):
     df = df.reset_index(drop=True)  # Ensure unique index
     params = ["matrix",] + params
     print(params)
-    return df.loc[df.groupby(params)["time"].idxmin()]
+    return df.loc[df.groupby(params)[best_parameter].idxmin()]
 
 def set_allowed_matrices(df, allowed_matrices):
     return df[(df["matrix"]).isin(allowed_matrices)]
@@ -142,14 +142,14 @@ def make_plot(values_dict, title="Plot", ylabel="Value", percent = False, save_p
     plt.tight_layout()
     plt.savefig(save_path)
 
-def make_speedup_barplot(best_dfs, methods, title="Plot", ylabel="Value", save_path = "test.png"):
+def make_improvements_barplot(best_dfs, methods, parameter = "time", title="Plot", ylabel="Value", save_path = "test.png"):
     """    
     Parameters:
     values_dict (dict): A dictionary containing results for each method.
     """
 
     common_matrices = find_common_matrices(best_dfs,methods)
-    speedups = {}
+    improvements = {}
     low_errors = []
     up_errors = []
     for method in methods:
@@ -157,15 +157,15 @@ def make_speedup_barplot(best_dfs, methods, title="Plot", ylabel="Value", save_p
         original_df = set_allowed_matrices(original_df,common_matrices)
         method_df = best_dfs[method].copy()
         method_df = set_allowed_matrices(method_df, common_matrices)
-        merged = pd.merge(original_df[['matrix', 'time']], method_df[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
-        merged['ratio'] = merged['time_original'] / merged['time_method']
+        merged = pd.merge(original_df[['matrix', parameter]], method_df[['matrix', parameter]], on='matrix', suffixes=('_original', '_method'))
+        merged['ratio'] = merged[parameter + '_original'] / merged[parameter + '_method']
         #merged['ratio'] = merged['ratio']*100 - 100
         percentiles = np.percentile(merged['ratio'].values, [25, 50, 75])
         #speedups[method] = gmean(merged['ratio']) 
-        speedups[method] = percentiles[1] 
-        print(method, percentiles, speedups[method])
-        low_errors.append(speedups[method] - percentiles[0])
-        up_errors.append(percentiles[2] - speedups[method])
+        improvements[method] = percentiles[1] 
+        print(method, percentiles, improvements[method])
+        low_errors.append(improvements[method] - percentiles[0])
+        up_errors.append(percentiles[2] - improvements[method])
        
     # Plot the bar chart
     plt.figure(figsize=(10, 6))
@@ -175,16 +175,18 @@ def make_speedup_barplot(best_dfs, methods, title="Plot", ylabel="Value", save_p
     plt.xlabel("Reordering technique")
     plt.ylabel(ylabel)
     
-    plt.bar(methods, speedups.values(), yerr=[low_errors, up_errors], color=[color_dict[method] for method in methods])
+    plt.bar(methods, improvements.values(), yerr=[low_errors, up_errors], color=[color_dict[method] for method in methods])
     plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda y, _: f'{y*100 - 100:.0f}%'))
     #plt.xticks(rotation=45, ha="right")
-    max_y = (max(up_errors) + max(speedups.values()))*1.01
-    plt.ylim(1,max_y)
+    max_y = (max(up_errors) + max(improvements.values()))*1.01
+    min_y = min(1, (min(improvements.values()) - min(low_errors))*0.9)
+
+    plt.ylim(min_y,max_y)
     # Display the plot
     plt.tight_layout()
     plt.savefig(save_path)
 
-def make_speedup_violin(best_dfs, methods, title="Plot", ylabel="Value", save_path = "test.png"):
+def make_improvements_violin(best_dfs, methods, parameter = "time", title="Plot", ylabel="Value", save_path = "test.png"):
     """ 
     Parameters:
     best_dfs (dict): A dictionary containing results for each method.
@@ -203,10 +205,10 @@ def make_speedup_violin(best_dfs, methods, title="Plot", ylabel="Value", save_pa
         original_df = set_allowed_matrices(original_df, common_matrices)
         method_df = best_dfs[method].copy()
         method_df = set_allowed_matrices(method_df, common_matrices)
-        merged = pd.merge(original_df[['matrix', 'time']], method_df[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
+        merged = pd.merge(original_df[['matrix', parameter]], method_df[['matrix', parameter]], on='matrix', suffixes=('_original', '_method'))
         
         # Calculate the speedup (original time / method time)
-        merged['ratio'] = merged['time_original'] / merged['time_method']
+        merged['ratio'] = merged[parameter + '_original'] / merged[parameter + '_method']
         merged.loc[merged["ratio"] < 1] = 1
 
         # Collect data for the violin plot
@@ -238,7 +240,7 @@ def make_speedup_violin(best_dfs, methods, title="Plot", ylabel="Value", save_pa
     plt.savefig(save_path)
     plt.close()
 
-def plot_speedup_distribution(best_dfs, methods, matrices = None, title = 'Distribution of Speedups Across Matrices', save_path= "test_dist.png"):
+def plot_improvements_distribution(best_dfs, methods, parameter = "time", matrices = None, title = 'Distribution of Speedups Across Matrices', save_path= "test_dist.png"):
     """
     Plots the distribution (histogram) of speedups across matrices for each method.
 
@@ -259,11 +261,11 @@ def plot_speedup_distribution(best_dfs, methods, matrices = None, title = 'Distr
         original_df = set_allowed_matrices(original_df, common_matrices)
         method_df = best_dfs[method].copy()
         method_df = set_allowed_matrices(method_df, common_matrices)
-        merged = pd.merge(original_df[['matrix', 'time']], method_df[['matrix', 'time']], on='matrix', suffixes=('_original', '_method'))
-        merged['ratio'] = merged['time_method'] / merged['time_original']
+        merged = pd.merge(original_df[['matrix', parameter]], method_df[['matrix', parameter]], on='matrix', suffixes=('_original', '_method'))
+        merged['ratio'] = merged[parameter + '_method'] / merged[parameter + '_original']
 
         speedups = 1 / merged['ratio']
-        speedups = [max(s, 1) for s in speedups]
+        #speedups = [max(s, 1) for s in speedups]
         speedups_percent = [s*100 - 100 for s in speedups]
         
         custom_bins = np.arange(0,200,5)
@@ -325,7 +327,7 @@ def plot_speedup_vs_matrix_param(best_dfs, methods, matrices = None, param="dens
     plt.close()
 
 
-def plot_speedup_by_matrix(best_dfs, order_by, methods, matrices = None, title='Speedup for each matrix (sorted)', save_path="test_speedup_by_matrix.png"):
+def plot_improvement_by_matrix(best_dfs, order_by, methods, parameter = "time", matrices = None, title = "", show = "improvement_percent", ylim = [-10,50], ylabel = "Speedup", save_path="test_speedup_by_matrix.png"):
     """
     Plots the speedup for each matrix, sorted by speedups, for each method.
 
@@ -347,24 +349,23 @@ def plot_speedup_by_matrix(best_dfs, order_by, methods, matrices = None, title='
     original_df = best_dfs["original"].copy()
     original_df = set_allowed_matrices(original_df, common_matrices)
     
-    merged_ordered_by = pd.merge(original_df[['matrix', 'time']], 
-                            ordered_df[['matrix', 'time']], 
+    merged_ordered_by = pd.merge(original_df[['matrix', parameter]], 
+                            ordered_df[['matrix', parameter]], 
                             on=['matrix'], 
                             suffixes=('_original', '_method'))
     
-    # Calculate the speedup ratio for 'clubs'
-    merged_ordered_by['ratio'] = merged_ordered_by['time_method'] / merged_ordered_by['time_original']
-    merged_ordered_by['speedup'] = 1 / merged_ordered_by['ratio']
+    # Calculate the speedup ratio for 'oder_by'
+    merged_ordered_by['improvement'] = merged_ordered_by[parameter + '_original'] / merged_ordered_by[parameter + '_method']
     
     # Ensure speedups are capped at 1
     #merged_ordered_by.loc[merged_ordered_by['speedup'] < 1, 'speedup'] = 1
     
-    # Sort the DataFrame by speedup for 'clubs'
-    merged_clubs_sorted = merged_ordered_by.sort_values(by='speedup')
+    # Sort the DataFrame by improvement for 'oder_by'
+    merged_clubs_sorted = merged_ordered_by.sort_values(by='improvement')
     ordered_matrices = merged_clubs_sorted['matrix'].values  # Store the ordered list of matrices
     
     plt.figure(figsize=(10, 6))
-    # Now, plot the speedups for all methods using the same ordering
+    # Now, plot the improvement for all methods using the same ordering
     for method in methods:
         if method == "original": 
             continue
@@ -372,38 +373,38 @@ def plot_speedup_by_matrix(best_dfs, order_by, methods, matrices = None, title='
         method_df = best_dfs[method].copy()
         method_df = set_allowed_matrices(method_df, common_matrices)
         
-        merged = pd.merge(original_df[['matrix', 'time']], 
-                          method_df[['matrix', 'time']], 
+        merged = pd.merge(original_df[['matrix', parameter]], 
+                          method_df[['matrix', parameter]], 
                           on=['matrix'], 
                           suffixes=('_original', '_method'))
         
         # Calculate the speedup ratio
-        merged['ratio'] = merged['time_method'] / merged['time_original']
-        merged['speedup'] = 1 / merged['ratio']
-        merged['speedup_percent'] = merged['speedup'] * 100 - 100
+        merged['improvement'] = merged[parameter + '_original'] / merged[parameter + '_method']
+        merged['improvement_percent'] = merged['improvement'] * 100 - 100
+        merged['reduction_percent'] = 1/merged["improvement"] * 100
 
         # Ensure speedups are capped at 1
         #merged.loc[merged['speedup'] < 1, 'speedup'] = 1
         
-        # Reorder the DataFrame to match the 'clubs' order
+        # Reorder the DataFrame to match the 'order_by' order
         merged['matrix'] = pd.Categorical(merged['matrix'], categories=ordered_matrices, ordered=True)
         merged_sorted = merged.sort_values(by='matrix')
         
         # Plot the sorted speedup values
-        plt.plot(range(len(merged_sorted)), merged_sorted['speedup_percent'], color=color_dict[method], marker='o', linestyle='', markersize=3, label=f'{method}')
+        plt.plot(range(len(merged_sorted)), merged_sorted[show], color=color_dict[method], marker='o', linestyle='', markersize=3, label=f'{method}')
     
     plt.axhline(0, color=color_dict["original"])
     plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda y, _: f'{y:.0f}%'))
-    plt.ylim(-10, 50)
-    plt.xlabel(f'Matrix (sorted by speedup on {order_by})')
-    plt.ylabel('Speedup')
+    plt.ylim(ylim[0],ylim[1])
+    plt.xlabel(f'Matrix (sorted by improvement on {order_by})')
+    plt.ylabel(ylabel)
     #plt.title(title)
     plt.legend(loc='upper right')
     plt.tight_layout()
     plt.savefig(save_path)
     plt.close()
 
-def plot_club_performance_by_param(dfs, method, param = "mask", title='Performance Variation under Mask', save_name=""):
+def plot_club_performance_by_param(dfs, method, performance_param = "time", param = "mask", title='Performance Variation under Mask', save_name=""):
     """
     Plots the performance variation for a specific method under different mask values,
     with one curve for each tau value, keeping centroid fixed.
@@ -412,18 +413,18 @@ def plot_club_performance_by_param(dfs, method, param = "mask", title='Performan
     
     method_df = dfs[method].copy()
     original_df = dfs["original"]
-    method_df = find_best(method_df, [param,])
+    method_df = find_best(method_df, [param,], best_parameter= performance_param)
     
     plt.figure(figsize=(10, 6))
 
-    merged = pd.merge(original_df[['matrix', 'time']], 
-                        method_df[['matrix', param,'time']], 
+    merged = pd.merge(original_df[['matrix', performance_param]], 
+                        method_df[['matrix', param,performance_param]], 
                         on=['matrix'], 
                         suffixes=('_original', '_method'))
     
     merged = merged.sort_values(by=param)
 
-    merged['speedup'] = np.maximum(1, merged['time_original'] / merged['time_method'])
+    merged['speedup'] = np.maximum(1, merged[performance_param + '_original'] / merged[performance_param + '_method'])
 
     # Ensure speedups are capped at 1
 

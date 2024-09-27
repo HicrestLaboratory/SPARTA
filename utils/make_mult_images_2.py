@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import gmean
 import argparse
-from mult_images_utils import *
+from images_utils import *
 
 #----------------------ARGUMENTS
 #______________________________________________________
@@ -52,7 +52,7 @@ for method in ["metis-edge-cut", "metis-volume"]:
 
 
 #clean data
-degree_cutoff = 3
+degree_cutoff = 2
 nnz_cutoff = 0
 for method in methods: 
     #remove unorderable matrices
@@ -60,10 +60,16 @@ for method in methods:
     dfs[method] = dfs[method].loc[dfs[method]["nnz"] >= nnz_cutoff]
 
 
+all_matrices = set()
+for method in methods:
+    all_matrices = all_matrices.union(set(dfs[method]["matrix"].unique()))
+print(f"TOTAL MATRIX COUNT: {len(all_matrices)}")
+
+
 #find matrices for which original exist
 matrices_with_original = dfs["original"]['matrix'].unique()
 for method in methods:
-    dfs[method] = dfs[method][(dfs[method]["matrix"]).isin(matrices_with_original)]
+    #dfs[method] = dfs[method][(dfs[method]["matrix"]).isin(matrices_with_original)]
     allowed_matrices = len(dfs[method]["matrix"].unique())
     print(f"Method: {method}; Found data for {allowed_matrices} matrices")
 
@@ -75,9 +81,25 @@ for method in methods:
 print(f"Found {len(common_matrices)} common matrices")
 
 #find rectangular and square matrices
-rectangular_matrices = set(dfs["original"][dfs["original"]['rows'] != dfs["original"]['cols']]["matrix"].unique())
-square_matrices = set(dfs["original"][dfs["original"]['rows'] == dfs["original"]['cols']]["matrix"].unique())
 
+rectangular_matrices = set()
+square_matrices = set()
+for method in methods: 
+    rectangular_matrices |= set(dfs[method][dfs[method]['rows'] != dfs[method]['cols']]["matrix"].unique())
+    square_matrices |= set(dfs[method][dfs[method]['rows'] == dfs[method]['cols']]["matrix"].unique())
+print(f"RECTANGULAR: {len(rectangular_matrices)}, SQUARE: {len(square_matrices)}")
+
+
+failed_matrices = {}
+for method in methods:
+    valid_matrices = set(all_matrices)
+    working_matrices = set(dfs[method]["matrix"].unique()) 
+    if "metis" in method:
+        valid_matrices -= rectangular_matrices
+        working_matrices -= rectangular_matrices
+    failed_matrices[method] = valid_matrices - working_matrices
+    print(f"METHOD: {method}, INVALID: {len(all_matrices - valid_matrices)}, FAILED: {len(failed_matrices[method])}, SUCCESS = {len(working_matrices)}")    
+    
 
 #find matrices that exist only for a method
 method_matrices = {method : set(dfs[method]["matrix"].unique()) - common_matrices for method in methods}
@@ -85,9 +107,14 @@ best_dfs = {}
 for method in methods:
     best_dfs[method] = find_best(dfs[method])
 
-
-
 comparisons = [methods, ["original", "clubs", "metis-edge-cut"], ["original", "clubs"], ["original", "metis-edge-cut", "metis-volume"]]
+
+
+single_methods = [[m] for m in methods]
+for exp_methods in single_methods:
+    n_matrices = len(find_common_matrices(best_dfs, exp_methods))
+    print(f"Found {n_matrices} common matrices")
+
 
 for exp_methods in comparisons:
     exp_methods_string = "_".join(exp_methods)
@@ -105,15 +132,15 @@ for exp_methods in comparisons:
               save_path= f"{output_plot_dir}/{routine}_best_count_plot_{exp_methods_string}")
 
 
-    speedups = calculate_speedups(best_dfs, exp_methods[1:])
+    speedups = calculate_improvement(best_dfs, exp_methods[1:])
     print("SPEEDUPS GEOMETRIC MEAN ON COMMON MATRICES: ", speedups)
-    make_speedup_barplot(best_dfs, 
+    make_improvements_barplot(best_dfs, 
                         exp_methods[1:],
                         title=f"Median, 25th and 75th percentile of {routine} speedup on {n_matrices} matrices for {exp_methods}",
                         ylabel="Speed-up against non-reordered matrix",
                         save_path= f"{output_plot_dir}/{routine}_speedup_median_{exp_methods_string}")
 
-    make_speedup_violin(best_dfs, 
+    make_improvements_violin(best_dfs, 
                         exp_methods[1:],
                         title=f"Median, 25th and 75th percentile of {routine} speedup on {n_matrices} matrices for {exp_methods}",
                         ylabel="Speed-up against non-reordered matrix",
@@ -135,7 +162,7 @@ for exp_methods in comparisons:
 
     print("TOTAL TIME USING BEST: ", calculate_total_best_time(best_dfs, exp_methods))
 
-    plot_speedup_distribution(best_dfs, 
+    plot_improvements_distribution(best_dfs, 
                               exp_methods, 
                               title=f"Cumulative distribution of speedups for {routine} on {n_matrices} matrices \n ({exp_methods})",
 
@@ -159,7 +186,7 @@ for exp_methods in comparisons:
                               )
     
     order_by= "clubs"
-    plot_speedup_by_matrix( best_dfs, 
+    plot_improvement_by_matrix( best_dfs, 
                             order_by,
                             exp_methods, 
                             title=f"Speedup by matrix for {routine} on {n_matrices} matrices \n ({exp_methods})",
@@ -167,7 +194,7 @@ for exp_methods in comparisons:
                               )
     
     order_by= "metis-edge-cut"
-    plot_speedup_by_matrix( best_dfs, 
+    plot_improvement_by_matrix( best_dfs, 
                             order_by,
                             exp_methods, 
                             title=f"Speedup by matrix for {routine} on {n_matrices} matrices \n ({exp_methods})",
@@ -181,7 +208,7 @@ exp_methods =  ["original", "clubs"]
 matrices = rectangular_matrices
 order_by= "clubs"
 
-plot_speedup_by_matrix( best_dfs, 
+plot_improvement_by_matrix( best_dfs, 
                         order_by,
                         exp_methods,
                         matrices=matrices,
@@ -190,7 +217,7 @@ plot_speedup_by_matrix( best_dfs,
                             )
 
 matrices = square_matrices
-plot_speedup_by_matrix( best_dfs, 
+plot_improvement_by_matrix( best_dfs, 
                         order_by,
                         exp_methods,
                         matrices=matrices,
