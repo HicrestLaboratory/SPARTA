@@ -15,7 +15,7 @@ parser.add_argument("--bsize", nargs="?", type=str, default="64", help="size of 
 args = parser.parse_args()
 
 root_dir=args.root_dir
-bsize=args.bsize
+bsize=int(args.bsize)
 
 if not os.path.isdir(root_dir):
     print(f"ERROR: Experiment directory {root_dir} does not exists.")
@@ -32,9 +32,11 @@ csv_multiplication_dir = root_dir + "mult_csv"
 output_plot_dir = root_dir + "reorder_plots/"
 os.makedirs(output_plot_dir, exist_ok=True)
 
-dfs_reordering = {method: pd.DataFrame() for method in methods}
 
-#Fill all dataframes
+#----------------------------------------------------------
+#import reorder data into dfs
+#----------------------------------------------------------
+dfs_reordering = {method: pd.DataFrame() for method in methods}
 for method in methods:
     reordering_file = f"{csv_reordering_dir}/{method}_scramble0_bsize{bsize}.txt"
     dfs_reordering[method] = pd.read_csv(reordering_file, delim_whitespace=True, header=0)
@@ -43,133 +45,156 @@ for method in methods:
         dfs_reordering[method].rename(columns={'metis_part': 'parts'}, inplace=True)
         dfs_reordering[method].rename(columns={'metis_obj': 'objective'}, inplace=True)
         dfs_reordering[method] = dfs_reordering[method][dfs_reordering[method]['rows'] == dfs_reordering[method]['cols']] 
+    dfs_reordering[method]['matrix'] = dfs_reordering[method]['matrix'].str.replace('_', '-', regex=False) #convention for matrix names
 
 
-dfs_multiplication = {}
+#----------------------------------------------------------
+#import mult data into dfs
+#----------------------------------------------------------
+dfs = {}
 for routine in routines:
-    dfs_multiplication[routine] = {method: pd.DataFrame() for method in methods}
+    dfs[routine] = {method: pd.DataFrame() for method in methods}
     for method in methods:
         file_dir = f"{csv_multiplication_dir}/{routine}/{method}/"
         multiplication_file = file_dir + os.listdir(file_dir)[0]
-        dfs_multiplication[routine][method] = pd.read_csv(multiplication_file, delim_whitespace=True, header=0)
-        if "metis" in method:
-            dfs_multiplication[routine][method] = dfs_multiplication[routine][method][dfs_multiplication[routine][method]['rows'] == dfs_multiplication[routine][method]['cols']] 
+        dfs[routine][method] = pd.read_csv(multiplication_file, delim_whitespace=True, header=0)
+        df = dfs[routine][method]
 
         if routine == "spmmbsr":
-            dfs_multiplication[routine][method].rename(columns={"nnz": "nnz_blocks"}, inplace = True)
-            dfs_multiplication[routine][method].rename(columns={"rows": "rows_blocks"}, inplace = True)
-            dfs_multiplication[routine][method].rename(columns={"cols": "cols_blocks"}, inplace = True)
+            df.rename(columns={"nnz": "nnz_blocks"}, inplace = True)
+            df.rename(columns={"rows": "rows_blocks"}, inplace = True)
+            df.rename(columns={"cols": "cols_blocks"}, inplace = True)
+            df["rows"] = df["rows_blocks"]
+            df["cols"] = df["cols_blocks"]
+            df["nnz"] = -1
+
+        if "metis" in method:
+            df = df[df['rows'] == df['cols']] 
+
+        df['matrix'] = df['matrix'].str.replace('_', '-', regex=False) #convention for matrix names
 
 
-reorder_matrices = {method: pd.DataFrame() for method in methods}   
-mult_matrices = {method: pd.DataFrame() for method in methods}
+        dfs[routine][method] = df
 
-for method in methods: 
-    print(f"---METHOD: {method}")
-    reorder_matrices[method] = set(dfs_reordering[method]["matrix"].unique())
-    print(f"-----reorder mats: {len(reorder_matrices[method])}")
-    for routine in routines:
-        mult_matrices[method] = set(dfs_multiplication[routine][method]["matrix"].unique())
-        print(f"-----mult mats {routine}: {len(mult_matrices[method])}")
+#::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+for routine in routines:
+    for method in methods:
+        mats_mult = set(dfs[routine][method]["matrix"].unique())
+        mats_reord = set(dfs_reordering[method]["matrix"].unique())
+        mats_common = mats_mult & mats_reord
+        only_mult = mats_mult - mats_common
+        only_reord = mats_reord - mats_common
+
+        #dfs[routine][method] = dfs[routine][method][~dfs[routine][method]['matrix'].isin(only_mult)]
+
+
+        mats_mult = set(dfs[routine][method]["matrix"].unique())
+        mats_reord = set(dfs_reordering[method]["matrix"].unique())
+        mats_common = mats_mult & mats_reord
+        only_mult = mats_mult - mats_common
+        only_reord = mats_reord - mats_common
+
+        print(f"{routine}, {method} : mult {len(mats_mult)}, reord {len(mats_reord)}, common {len(mats_common)}")
+        print(sorted(list(only_mult))[:10])
+        print(sorted(list(only_reord))[:10])
 exit()
 
 
+#Matrix df
+all_matrices = pd.DataFrame()
+for method in methods:
+        df = dfs["spmmcsr"][method]
+        all_matrices = pd.concat([all_matrices, df[['matrix', 'rows', 'cols','nnz']]])
+        all_matrices = all_matrices.drop_duplicates()  # Ensure uniqueness
 
-#add the speedups to the reordering df
+all_matrices["square"] = all_matrices["rows"] == all_matrices["cols"]
+print(all_matrices)
+exit()
+#::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+#add the speedups to the df
+#----------------------------------------------------------
 for routine in routines:
-    df_routine = dfs_multiplication[routine]
     for method in methods:
-        common_cols = set(dfs_reordering[method].columns) & set(df_routine[method].columns)
+        df = dfs[routine][method]
+        cols_to_merge = ["routine","matrix","time"]
+        if routine == "spmmbsr": cols_to_merge.append("nnz_blocks")
 
-        df_routine[method] = df_routine[method].merge(
-            df_routine["original"][["matrix",'time']],
-            on="matrix",
-            how="left",
-            suffixes=('', f'_original_{routine}')
+        df = df.merge(
+            dfs[routine]["original"][cols_to_merge],
+            on=["routine","matrix"],
+            how="outer",
+            suffixes=('', f'_original')
         )
 
-        df_routine[method][f'speedup_{routine}'] = df_routine[method][f'time_original_{routine}'] / df_routine[method]['time']
+        df['speedup'] = df['time_original'] / df['time']
+        df["original_failed"] = df["time_original"].isna()
+        df["method_failed"] = (df["original_failed"] == False) & (df["speedup"].isna())
 
-        dfs_reordering[method] = dfs_reordering[method].merge(
-            df_routine[method][list(common_cols) + [f"speedup_{routine}", f"time_original_{routine}"]],
-            on=list(common_cols),
-            how="left"
-        )
+        if routine == "spmmbsr": df["block_improvement"] = df["nnz_blocks_original"] / df["nnz_blocks"]
 
-#columns have been added to df_reordering[method]: time_original_{routine} and speedup_{routine}
+        dfs[routine][method] = df
 
 
-#metis only accepts square matrices
-for method in ["metis-edge-cut", "metis-volume"]:
-    dfs_reordering[method] = dfs_reordering[method][dfs_reordering[method]['rows'] == dfs_reordering[method]['cols']] 
 
-#fix the tau for clubs 
-#dfs["clubs"] = dfs["clubs"][dfs["clubs"]["tau"] == 1]
+#add missing matrices
+for routine in routines: 
+    for method in methods:
+        df = dfs[routine][method]
+        df_csr = dfs["spmmcsr"]["original"]
+        
+        df = df.merge(df_csr[["matrix",]],
+                            on = ["matrix"],
+                            how = "outer",)
+        df["original_failed"] = df["time_original"].isna()
+        df["method_failed"] = df["time"].isna()        
+        dfs[routine][method] = df
 
-#clean data
-degree_cutoff = 2
-nnz_cutoff = 0
-for method in methods: 
-    #remove unorderable matrices
-    dfs_reordering[method] = dfs_reordering[method].loc[dfs_reordering[method]["nnz"] >= degree_cutoff*dfs_reordering[method]["rows"]]
-    dfs_reordering[method] = dfs_reordering[method].loc[dfs_reordering[method]["nnz"] >= nnz_cutoff]
 
 
-all_matrices = set()
+#add the row, cols, and nnz information to the bsr data
 for method in methods:
-    all_matrices = all_matrices.union(set(dfs_reordering[method]["matrix"].unique()))
-print(f"TOTAL MATRIX COUNT: {len(all_matrices)}")
+    cols_to_merge = ["matrix","rows","cols","nnz"]
+    df_bsr = dfs["spmmbsr"][method]
+
+    df_csr = dfs["spmmcsr"]["original"]
+    df_bsr = df_bsr.merge(df_csr[cols_to_merge],
+                        on = ["matrix"],
+                        how = "left",
+                        suffixes=('', f'_csr'))
+    df_bsr[["rows","cols","nnz"]] = df_bsr[["rows_csr","cols_csr","nnz_csr"]]
+    df_bsr.drop(columns = ["rows_csr","cols_csr","nnz_csr"], inplace = True)
+    dfs["spmmbsr"][method] = df_bsr
+
+#identify square matrices
+for routine in routines:
+    for method in methods:
+        df = dfs[routine][method]
+        dfs[routine][method]["square"] = dfs[routine][method]["rows"] == dfs[routine][method]["cols"]
 
 
-#find matrices for which original exist
-matrices_with_original = dfs_reordering["original"]['matrix'].unique()
-for method in methods:
-    #dfs[method] = dfs[method][(dfs[method]["matrix"]).isin(matrices_with_original)]
-    allowed_matrices = len(dfs_reordering[method]["matrix"].unique())
-    print(f"Method: {method}; Found data for {allowed_matrices} matrices")
-
-#find matrices common among ALL methods
-common_matrices=set(matrices_with_original)
-for method in methods:
-    if method != "original":
-        common_matrices &= set(dfs_reordering[method]['matrix'].unique())
-print(f"Found {len(common_matrices)} common matrices")
-
-#find rectangular and square matrices
-
-rectangular_matrices = set()
-square_matrices = set()
-for method in methods: 
-    rectangular_matrices |= set(dfs_reordering[method][dfs_reordering[method]['rows'] != dfs_reordering[method]['cols']]["matrix"].unique())
-    square_matrices |= set(dfs_reordering[method][dfs_reordering[method]['rows'] == dfs_reordering[method]['cols']]["matrix"].unique())
-print(f"RECTANGULAR: {len(rectangular_matrices)}, SQUARE: {len(square_matrices)}")
 
 
-failed_matrices = {}
-for method in methods:
-    valid_matrices = set(all_matrices)
-    working_matrices = set(dfs_reordering[method]["matrix"].unique()) 
-    if "metis" in method:
-        valid_matrices -= rectangular_matrices
-        working_matrices -= rectangular_matrices
-    failed_matrices[method] = valid_matrices - working_matrices
-    print(f"METHOD: {method}, INVALID: {len(all_matrices - valid_matrices)}, FAILED: {len(failed_matrices[method])}, SUCCESS = {len(working_matrices)}")    
-    
-
-#find matrices that exist only for a method
-method_matrices = {method : set(dfs_reordering[method]["matrix"].unique()) - common_matrices for method in methods}
-best_dfs = {}
-for method in methods:
-    best_dfs[method] = find_best(dfs_reordering[method], best_parameter= "VBR_nzblocks_count")
-
-comparisons = [methods, ["original", "clubs", "metis-edge-cut"], ["original", "clubs"], ["original", "metis-edge-cut", "metis-volume"]]
+for routine in routines:
+    for method in methods:
+        df = dfs[routine][method]
+        print(f"*****************************{routine}, {method}")
+        square_mats = len(df[df["square"]]["matrix"].unique())
+        rectangular_mats = len(df[df["square"] == False]["matrix"].unique())
+        print("MATRICES: ", len(df["matrix"].unique()), " square: ", square_mats, " rect: ", rectangular_mats)
+        print("METHOD FAILURES:", len(df[df["method_failed"]]["matrix"].unique()))
+        print("ORIGINAL FAILURES:", len(df[df["original_failed"]]["matrix"].unique()))
+        #print(dfs[routine][method])
 
 
-single_methods = [[m] for m in methods]
-for exp_methods in single_methods:
-    n_matrices = len(find_common_matrices(best_dfs, exp_methods))
-    print(f"Found {n_matrices} common matrices")
+
+#columns have been added to dfs[routine][method]: time_original and speedup
+#::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+exit()
+
+
 
 
 for exp_methods in comparisons:
