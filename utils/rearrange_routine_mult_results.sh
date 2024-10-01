@@ -7,7 +7,7 @@
 # Default values
 root_dir="../../../Downloads/outputs_2024-07-26/SbatchMan/outputs/marzola"
 routine="spmmcsr"
-collected_data_folder="results/results_2024/mult_data"
+collected_data_folder="results/results_$(date +'%d_%m_%Y')/mult_data"
 clean_folders="0"
 
 # Function to display usage
