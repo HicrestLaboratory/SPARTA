@@ -42,7 +42,7 @@ for matrix_folder in $(find "$matrix_dir" -mindepth 1 -maxdepth 1 -type d); do
             continue
         fi 
 
-        grouping_file="${matrix_part_dir}/${matrix_name}-cutpart_k${patoh_part}_default_s1_partvec.txt"
+        grouping_file="${matrix_part_dir}/${matrix_name}_cutpart_k${patoh_part}_default_s1_partvec.txt"
 
         # Check if file exists
         if [ ! -f "$grouping_file" ]; then
