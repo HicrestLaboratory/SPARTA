@@ -70,7 +70,6 @@ for routine in routines:
             df = df.loc[df['rows'] == df['cols']].copy() 
 
         df.drop(columns = ["rows","cols","nnz"], inplace=True)
-
         df['matrix'] = df['matrix'].str.replace('_', '-', regex=False) #convention for matrix names
 
         dfs_mult[routine][method] = df

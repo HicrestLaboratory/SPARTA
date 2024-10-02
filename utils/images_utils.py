@@ -13,7 +13,8 @@ color_dict = {
     "clubs": "orange",
     "metis-edge-cut" : "red",
     "metis-volume" : "purple",
-    "patoh" : "pink"
+    "patoh" : "pink",
+    "saad" : "grey"
 }
 
 marker_dict = {

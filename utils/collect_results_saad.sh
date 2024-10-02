@@ -7,8 +7,9 @@ echo "ARGS: " "$@"
 SCRIPT_DIR=$(dirname "$0")
 source "$SCRIPT_DIR/parse_args.sh" "$@"
 
+scramble=0
 mkdir -p "$output_dir"
-output_file="${output_dir}/saad_scramble${scramble}_bsize${block_size}.txt"
+output_file="${output_dir}/saad_bsize${block_size}.txt"
 echo ${output_file}
 
 > ${output_file}

@@ -5,7 +5,7 @@ default_matrix_dir="../Clubs_tmp/matrices/toy"
 default_result_dir="../../../Downloads/Club_result/Club_result/toy"
 default_output_dir="results/results_2024/"
 default_block_size=64
-valid_choices=("clubs" "metis" "all" "saad" "original" "patoh")
+valid_choices=( "all" "clubs" "metis" "saad" "original" "patoh" )
 
 # Function to display usage information
 usage() {

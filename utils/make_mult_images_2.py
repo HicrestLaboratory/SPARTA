@@ -27,7 +27,7 @@ if not os.path.isdir(root_dir):
 #______________________________________________________
 
 
-methods=["original", "clubs", "metis-edge-cut", "metis-volume", "patoh"]
+methods=["original", "clubs", "metis-edge-cut", "metis-volume", "patoh", "saad"]
 
 #subdirectories
 csv_dir = root_dir + "mult_csv/" + routine
@@ -108,7 +108,7 @@ best_dfs = {}
 for method in methods:
     best_dfs[method] = find_best(dfs[method])
 
-comparisons = [methods, ["original", "clubs", "metis-edge-cut", "patoh"], ["original", "clubs"], ["original", "metis-edge-cut", "metis-volume"]]
+comparisons = [methods, ["original", "clubs", "metis-edge-cut", "patoh", "saad"], ["original", "clubs"], ["original", "metis-edge-cut", "metis-volume"]]
 
 
 single_methods = [[m] for m in methods]
@@ -205,7 +205,7 @@ for exp_methods in comparisons:
 #ONLY CLUBS
 #_____________________________________________________________________________
 
-exp_methods =  ["original", "clubs","patoh"]
+exp_methods =  ["original", "clubs","patoh", "saad"]
 matrices = rectangular_matrices
 order_by= "clubs"
 
