@@ -109,7 +109,7 @@ if [[ "$script_choice" == "all" || "$script_choice" == "denseamp" ]]; then
 fi
 
 
-if [[ "$script_choice" == "all" || "$script_choice" == "denseamp" ]]; then
+if [[ "$script_choice" == "all" || "$script_choice" == "patoh" ]]; then
     echo "                        ***************************************"
     echo "*************************************** PATOH *****************"
     echo "                        ***************************************"
