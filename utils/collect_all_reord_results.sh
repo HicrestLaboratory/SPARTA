@@ -5,11 +5,12 @@ default_matrix_dir="../Clubs_tmp/matrices/toy"
 default_result_dir="../../../Downloads/Club_result/Club_result/toy"
 default_output_dir="results/results_2024/"
 default_block_size=64
+valid_choices=("clubs" "metis" "all" "saad" "original" "patoh")
 
 # Function to display usage information
 usage() {
     echo "Usage: $0 [-s script] [-m matrix_dir] [-r result_dir] [-o output_dir] [-b block_size]"
-    echo "  -s script       Specify the script to run: clubs, metis, saad, all"
+    echo "  -s script       Specify the script to run: ${valid_choices[*]}"
     echo "  -f matrix_dir   Specify the matrix directory (default: $default_matrix_dir)"
     echo "  -r result_dir   Specify the result directory (default: $default_result_dir)"
     echo "  -o output_dir   Specify the output directory (default: $default_output_dir)"
@@ -51,9 +52,9 @@ while getopts ":s:f:r:o:b:h" opt; do
     esac
 done
 
-# Validate script_choice
-if [[ "$script_choice" != "clubs" && "$script_choice" != "metis" && "$script_choice" != "all" && "$script_choice" != "saad" && "$script_choice" != "original" ]]; then
-    echo "Invalid script choice: $script_choice. Allowed: original, clubs, metis, saad, all"
+# Check if script_choice is valid
+if [[ ! " ${valid_choices[@]} " =~ " ${script_choice} " ]]; then
+    echo "Invalid script choice: '$script_choice'. Allowed choices are: ${valid_choices[*]}"
     usage
 fi
 
@@ -70,56 +71,54 @@ scrambles=(0 1)
 args=(-f "$matrix_dir" -r "$result_dir" -o "$output_dir" -b "$block_size")
 
 # Run the scripts as executable commands
-for scramble in "${scrambles[@]}"; do
-    
-    echo "                        ***************************************"
-    echo "************************************ ORIGINAL *****************"
-    echo "                        ***************************************"
+scramble="0"
+
+echo "                        ***************************************"
+echo "************************************ ORIGINAL *****************"
+echo "                        ***************************************"
 
 
-    if [[ "$script_choice" == "all" || "$script_choice" == "original" ]]; then
-        "./utils/collect_results_original.sh" "${args[@]}" -s "$scramble"
-    fi
+if [[ "$script_choice" == "all" || "$script_choice" == "original" ]]; then
+    "./utils/collect_results_original.sh" "${args[@]}" -s "$scramble"
+fi
 
-    echo "                        ***************************************"
-    echo "*************************************** CLUBS *****************"
-    echo "                        ***************************************"
+echo "                        ***************************************"
+echo "*************************************** CLUBS *****************"
+echo "                        ***************************************"
 
-    if [[ "$script_choice" == "all" || "$script_choice" == "clubs" ]]; then
-        "./utils/collect_results_clubs.sh" "${args[@]}" -s "$scramble"
+if [[ "$script_choice" == "all" || "$script_choice" == "clubs" ]]; then
+    "./utils/collect_results_clubs.sh" "${args[@]}" -s "$scramble"
 
-    fi
+fi
 
-    echo "                        ***************************************"
-    echo "*************************************** METIS *****************"
-    echo "                        ***************************************"
-    
-    if [[ "$script_choice" == "all" || "$script_choice" == "metis" ]]; then
-        "./utils/collect_results_metis.sh" "${args[@]}" -s "$scramble"
-    fi
+echo "                        ***************************************"
+echo "*************************************** METIS *****************"
+echo "                        ***************************************"
 
-    echo "                        ***************************************"
-    echo "*************************************** DENSEAMP *****************"
-    echo "                        ***************************************"
-    
-    if [[ "$script_choice" == "all" || "$script_choice" == "denseamp" ]]; then
-        "./utils/collect_results_denseamp.sh" "${args[@]}" -s "$scramble"
-    fi
+if [[ "$script_choice" == "all" || "$script_choice" == "metis" ]]; then
+    "./utils/collect_results_metis.sh" "${args[@]}" -s "$scramble"
+fi
 
-    echo "                        ***************************************"
-    echo "*************************************** PATOH *****************"
-    echo "                        ***************************************"
-    
-    if [[ "$script_choice" == "all" || "$script_choice" == "denseamp" ]]; then
-        "./utils/collect_results_patoh.sh" "${args[@]}" -s "$scramble"
-    fi
+echo "                        ***************************************"
+echo "*************************************** DENSEAMP *****************"
+echo "                        ***************************************"
 
-    echo "                        ***************************************"
-    echo "*************************************** SAAD *****************"
-    echo "                        ***************************************"
-    
-    if [[ "$script_choice" == "all" || "$script_choice" == "saad" ]]; then
-        "./utils/collect_results_saad.sh" "${args[@]}" -s "$scramble"
-    fi
+if [[ "$script_choice" == "all" || "$script_choice" == "denseamp" ]]; then
+    "./utils/collect_results_denseamp.sh" "${args[@]}" -s "$scramble"
+fi
 
-done
+echo "                        ***************************************"
+echo "*************************************** PATOH *****************"
+echo "                        ***************************************"
+
+if [[ "$script_choice" == "all" || "$script_choice" == "denseamp" ]]; then
+    "./utils/collect_results_patoh.sh" "${args[@]}" -s "$scramble"
+fi
+
+echo "                        ***************************************"
+echo "*************************************** SAAD *****************"
+echo "                        ***************************************"
+
+if [[ "$script_choice" == "all" || "$script_choice" == "saad" ]]; then
+    "./utils/collect_results_saad.sh" "${args[@]}" -s "$scramble"
+fi
