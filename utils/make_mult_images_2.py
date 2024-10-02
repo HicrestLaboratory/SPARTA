@@ -10,7 +10,7 @@ from images_utils import *
 #______________________________________________________
 parser = argparse.ArgumentParser(description="Analysis of multiplication times after reordering")
 parser.add_argument("--routine", nargs="?", type=str, default="spmmcsr", help="the multiplication routine to report on, e.g. spmmcsr")
-parser.add_argument("--root_dir", nargs="?", type=str, default="results/results_10-08-2024/", help="the directory where the csv of the experiments are stored")
+parser.add_argument("--root_dir", nargs="?", type=str, default="results/results_02_10_2024/", help="the directory where the csv of the experiments are stored")
 
 args = parser.parse_args()
 
@@ -27,7 +27,7 @@ if not os.path.isdir(root_dir):
 #______________________________________________________
 
 
-methods=["original", "clubs", "metis-edge-cut", "metis-volume"]
+methods=["original", "clubs", "metis-edge-cut", "metis-volume", "patoh"]
 
 #subdirectories
 csv_dir = root_dir + "mult_csv/" + routine
@@ -107,7 +107,7 @@ best_dfs = {}
 for method in methods:
     best_dfs[method] = find_best(dfs[method])
 
-comparisons = [methods, ["original", "clubs", "metis-edge-cut"], ["original", "clubs"], ["original", "metis-edge-cut", "metis-volume"]]
+comparisons = [methods, ["original", "clubs", "metis-edge-cut", "patoh"], ["original", "clubs"], ["original", "metis-edge-cut", "metis-volume"]]
 
 
 single_methods = [[m] for m in methods]

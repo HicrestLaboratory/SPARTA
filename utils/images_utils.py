@@ -12,14 +12,17 @@ color_dict = {
     "original": "blue",
     "clubs": "orange",
     "metis-edge-cut" : "red",
-    "metis-volume" : "purple"
+    "metis-volume" : "purple",
+    "patoh" : "pink"
 }
 
 marker_dict = {
     "original": "o",
     "clubs": "x",
     "metis-edge-cut" : ".",
-    "metis-volume" : "."
+    "metis-volume" : ".",
+    "patoh" : ".."
+
 }
 
 #----------------------FUNCTIONS

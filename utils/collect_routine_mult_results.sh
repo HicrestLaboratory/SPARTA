@@ -89,7 +89,7 @@ get_header() {
       echo "routine matrix algo objective parts rows cols nnz time"
       ;;
     patoh)
-      echo "routine matrix algo objective parts rows cols nnz time"
+      echo "routine matrix algo parts rows cols nnz time"
       ;;
     saad)
       echo "routine matrix algo tau rows cols nnz time"
@@ -207,7 +207,7 @@ extract_variables_patoh() {
   local parts
   IFS='-' read -ra VARS <<< "$collection"
 
-  parts=${VARS[3]#"k"}
+  parts=${VARS[2]#"k"}
 
   echo "$matrix patoh $parts"
 }
