@@ -62,6 +62,7 @@ for method in methods:
 
 all_matrices = set()
 for method in methods:
+    print(f"****FOUND {len(dfs[method]['matrix'].unique())} matrices in {method}")
     all_matrices = all_matrices.union(set(dfs[method]["matrix"].unique()))
 print(f"TOTAL MATRIX COUNT: {len(all_matrices)}")
 
@@ -204,7 +205,7 @@ for exp_methods in comparisons:
 #ONLY CLUBS
 #_____________________________________________________________________________
 
-exp_methods =  ["original", "clubs"]
+exp_methods =  ["original", "clubs","patoh"]
 matrices = rectangular_matrices
 order_by= "clubs"
 
