@@ -5,6 +5,8 @@ parts=( 1 2 4 8 16 32 64 128 )
 
 SCRIPT_DIR=$(dirname "$0")
 source "$SCRIPT_DIR/parse_args.sh" "$@"
+scramble="0"
+
 
 mkdir -p "$output_dir"
 output_file="${output_dir}/patoh_scramble${scramble}_bsize${block_size}.txt"
