@@ -61,13 +61,11 @@ fi
 mkdir -p "$output_dir"
 
 # Array of scrambles
-scrambles=(0 1)
 
 echo "Matrix directory: $matrix_dir"
 echo "Result directory: $result_dir"
 echo "Output directory: $output_dir"
 
-scrambles=(0 1)
 args=(-f "$matrix_dir" -r "$result_dir" -o "$output_dir" -b "$block_size")
 
 # Run the scripts as executable commands
