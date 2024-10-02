@@ -5,7 +5,7 @@
 #************************************************************************************************************************************************
 
 # Default values
-root_dir="../../../Downloads/outputs_2024-07-26/SbatchMan/outputs/marzola"
+root_dir="../../../Downloads/outputs_30_09/outputs/marzola"
 routine="spmmcsr"
 collected_data_folder="results/results_$(date +'%d_%m_%Y')/mult_data"
 clean_folders="0"
@@ -67,7 +67,7 @@ out_routine_dir=$collected_data_folder/$routine
 echo $out_routine_dir
 mkdir -p "$out_routine_dir"
 
-algos=( "metis-edge-cut" "metis-volume" "clubs" "denseAMP" "saad" "original")
+algos=( "metis-edge-cut" "metis-volume" "clubs" "denseAMP" "saad" "original" "patoh")
 for algo in "${algos[@]}"; do
   if [ "$clean_folders" -eq 1 ]; then
     rm -rf "$out_routine_dir/$algo"
@@ -107,6 +107,8 @@ find_file_type() {
     fi
   elif [[ $file_name == *"Saad"* ]]; then
     file_type="saad"
+  elif [[ $file_name == *"PaToH"* ]]; then
+    file_type="patoh"
   elif [[ $file_name == *"DenseAMP"* ]]; then
     file_type="denseAMP"
   else

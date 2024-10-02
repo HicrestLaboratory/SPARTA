@@ -88,6 +88,9 @@ get_header() {
     metis-volume)
       echo "routine matrix algo objective parts rows cols nnz time"
       ;;
+    patoh)
+      echo "routine matrix algo objective parts rows cols nnz time"
+      ;;
     saad)
       echo "routine matrix algo tau rows cols nnz time"
       ;;
@@ -195,6 +198,20 @@ extract_variables_metis() {
   echo "$matrix metis $obj $parts"
 }
 
+extract_variables_patoh() {
+  local filename=$1
+  IFS='_' read -ra PARTS <<< "$filename"
+  local matrix=${PARTS[1]%-mtx}
+  local collection=${PARTS[2]#"PaToH-$matrix"}
+  local obj
+  local parts
+  IFS='-' read -ra VARS <<< "$collection"
+
+  parts=${VARS[3]#"k"}
+
+  echo "$matrix patoh $parts"
+}
+
 # Function to extract variables from original output
 extract_variables_original() {
   local filename=$1
@@ -235,6 +252,9 @@ process_file()
     denseAMP)
       variables=$(extract_variables_denseAMP "$file_name")
       ;;
+    patoh)
+      variables=$(extract_variables_patoh "$file_name")
+      ;;
     original)
       variables=$(extract_variables_original "$file_name")
       ;;
@@ -258,7 +278,7 @@ process_file()
 
 #creates out files for processed methods
 if [[ "$method" == "ALL" ]]; then
-  algos=( "clubs" "metis-edge-cut" "metis-volume" "saad" "original" "denseAMP")
+  algos=( "clubs" "metis-edge-cut" "metis-volume" "saad" "original" "denseAMP" "patoh")
 elif [[ "$method" == "metis" ]]; then
   algos=( "metis-edge-cut" "metis-volume")
 else
