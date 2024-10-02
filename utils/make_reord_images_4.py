@@ -182,6 +182,9 @@ print("RECTANGULAR MATRICES: ", len(rectangular_matrices_set))
 print("A rectangular matrix: ", rectangular_matrices_set.pop())
 for routine in routines:
     print("COMMON MATRICES: ", routine, len(common_matrices_set[routine]))
+    for method in methods:
+        unique_mats = dfs_reordering[method][~dfs_reordering[method][f"method_{routine}_failed"]]["matrix"].unique()
+        print(f"***{method},{routine}: {len(unique_mats)} success")
 
 #----------------------------------------------------------
 # IMAGES
