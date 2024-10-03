@@ -96,12 +96,17 @@ def read_and_concat(files):
     else:
         return pd.DataFrame()
 
-def find_best(df, params = [], best_parameter = "time"):
+def find_best(df, params = [], best_parameter = "time", min = True):
     df = df.reset_index(drop=True)  # Ensure unique index
     params = ["matrix",] + params
-    df[best_parameter] = df[best_parameter].fillna(float('inf'))
 
-    return df.loc[df.groupby(params)[best_parameter].idxmin()]
+    if min:
+        df[best_parameter] = df[best_parameter].fillna(float('inf'))
+        return df.loc[df.groupby(params)[best_parameter].idxmin()]
+    else:
+        df[best_parameter] = df[best_parameter].fillna(float('-inf'))
+        return df.loc[df.groupby(params)[best_parameter].idxmax()]
+
 
 def set_allowed_matrices(df, allowed_matrices):
     return df[(df["matrix"]).isin(allowed_matrices)]
@@ -113,6 +118,34 @@ def find_common_matrices(dfs, methods):
         if method != "original":
             common_matrices &= set(dfs[method]['matrix'].unique())
     return common_matrices
+
+
+def reordering_time_comparison(df,df_reordering_times):
+   common_columns = list(set(df.columns) & set(df_reordering_times.columns))
+   merged_df = df_reordering_times.merge(
+                df[common_columns + ["time_spmmcsr","time_spmmbsr","time_spmmcsr_original","time_spmmbsr_original"]],
+                on=list(common_columns),
+                how="inner",
+            ) 
+   
+   # Initialize bins for number_recover
+   bins = [0, 10**3, 10**5, 10**6,10**7,float('inf')]
+   bin_labels = ['0-10^3', '10^3-10^5', '10^5-10^6','10^6-10^7', ">10^7"]
+
+   for routine in ["spmmcsr","spmmbsr"]:
+       print("ROUTINE:",routine)
+       merged_df[f"reorder_ratio_{routine}"] = merged_df["reordering_time"]/merged_df[f"time_{routine}_original"]
+       merged_df[f"number_recover_{routine}"] = merged_df["reordering_time"]/(merged_df[f"time_{routine}_original"] - merged_df[f"time_{routine}"])
+       good_df = merged_df.loc[merged_df[f"time_{routine}_original"] > merged_df[f"time_{routine}"]].copy()
+       good_df.loc[:,f"number_recover_bin_{routine}"] = pd.cut(good_df[f"number_recover_{routine}"], bins=bins, labels=bin_labels, include_lowest=True)
+
+       # Count the number of occurrences in each bin and calculate the percentage
+       counts = good_df[f"number_recover_bin_{routine}"].value_counts(normalize=True) * 100
+       counts = counts.reindex(bin_labels, fill_value=0)  # Ensure all bins are represented even if they are empty
+
+       # Display the result
+       print(f"Percentage of matrices for {routine} in each bin:")
+       print(counts)
 
 
 def best_barplot(dfs_reordering, square_matrices, rectangular_matrices, methods, parameter = "time_spmmcsr", ylabel = "", save_path = ""):
@@ -146,28 +179,35 @@ def best_barplot(dfs_reordering, square_matrices, rectangular_matrices, methods,
     plt.savefig(save_path)
 
 
-def make_improvements_barplot(best_dfs, methods, parameter = "time", title="Plot", ylabel="Value", save_path = "test.png"):
+def make_improvements_barplot(dfs_reordering, methods, matrices, set_negative_1 = False, set_missing_1 = False, min_best = False, parameter = "None", ylabel="Value", save_path = "test.png", verbose = False):
     """    
     Parameters:
     values_dict (dict): A dictionary containing results for each method.
     """
-
-    common_matrices = find_common_matrices(best_dfs,methods)
+    if "original" in methods:
+        methods = list(set(methods) - set(["original",]))
+        
     improvements = {}
     low_errors = []
     up_errors = []
     for method in methods:
-        original_df = best_dfs["original"].copy()
-        original_df = set_allowed_matrices(original_df,common_matrices)
-        method_df = best_dfs[method].copy()
-        method_df = set_allowed_matrices(method_df, common_matrices)
-        merged = pd.merge(original_df[['matrix', parameter]], method_df[['matrix', parameter]], on='matrix', suffixes=('_original', '_method'))
-        merged['ratio'] = merged[parameter + '_original'] / merged[parameter + '_method']
-        #merged['ratio'] = merged['ratio']*100 - 100
-        percentiles = np.percentile(merged['ratio'].values, [25, 50, 75])
-        #speedups[method] = gmean(merged['ratio']) 
+        df = dfs_reordering[method].copy()
+        df = set_allowed_matrices(df, matrices)
+        df = find_best(df, best_parameter=parameter, min=min_best)
+
+        if not set_missing_1:
+            if df[parameter].isna().any():
+                print(f"ERROR: MISSING VALUES for {parameter}")
+
+        if set_missing_1:
+            df.loc[df[parameter].isna()] = 1
+
+        if set_negative_1:
+            df.loc[df[parameter] < 1] = 1
+
+        percentiles = np.percentile(df[parameter].values, [25, 50, 75])
         improvements[method] = percentiles[1] 
-        print(method, percentiles, improvements[method])
+        if verbose: print(method, percentiles, improvements[method])
         low_errors.append(improvements[method] - percentiles[0])
         up_errors.append(percentiles[2] - improvements[method])
        

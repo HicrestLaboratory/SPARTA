@@ -136,7 +136,7 @@ echo "Found files to process: $total_files + gp: $gp_files + patoh $patoh_files"
 counter=0
 
 # Process non-METIS files
-if [[ " ${algos[@]} " =~ " metis " ]]; then
+if [[ " ${algos[@]} " =~ " clubs " ]]; then
   echo "Processing non-METIS files from $routine_dir"
   find "$routine_dir" -name '*.out' | grep "${routine}_" | while read -r file_path; do
     process_file "$file_path"
@@ -146,7 +146,7 @@ if [[ " ${algos[@]} " =~ " metis " ]]; then
 fi
 
 # Process METIS files
-if [[ " ${algos[@]} " =~ " metis " ]]; then
+if [[ " ${algos[@]} " =~ "metis-edge-cut" ]]; then
   echo "Processing METIS files from $routine_gp_dir"
   find "$routine_gp_dir" -name '*.out' | grep "${routine}" | while read -r file_path; do
     process_file "$file_path"

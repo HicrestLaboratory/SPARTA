@@ -75,22 +75,22 @@ get_header() {
   local algo=$1
   case $algo in
     clubs)
-      echo "routine matrix algo mask centroid tau time"
+      echo "matrix algo mask centroid tau time"
       ;;
     metis-edge-cut)
-      echo "routine matrix algo objective parts time"
+      echo "matrix algo objective parts time"
       ;;
     metis-volume)
-      echo "routine matrix algo objective parts time"
+      echo "matrix algo objective parts time"
       ;;
     patoh)
-      echo "routine matrix algo parts time"
+      echo "matrix algo parts time"
       ;;
     saad)
-      echo "routine matrix algo tau time"
+      echo "matrix algo tau time"
       ;;
     denseAMP)
-      echo "routine matrix algo tau time"
+      echo "matrix algo tau time"
       ;;
     *)
       exit 1

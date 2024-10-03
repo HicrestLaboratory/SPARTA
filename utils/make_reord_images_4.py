@@ -9,7 +9,7 @@ from images_utils_2 import *
 #----------------------ARGUMENTS
 #______________________________________________________
 parser = argparse.ArgumentParser(description="Analysis of multiplication times after reordering")
-parser.add_argument("--root_dir", nargs="?", type=str, default="results/results_10-08-2024/", help="the directory where the csv of the experiments are stored")
+parser.add_argument("--root_dir", nargs="?", type=str, default="results/results_02_10_2024/", help="the directory where the csv of the experiments are stored")
 parser.add_argument("--bsize", nargs="?", type=str, default="64", help="size of the dense matrix")
 
 args = parser.parse_args()
@@ -24,7 +24,9 @@ if not os.path.isdir(root_dir):
 
 
 methods=["original", "clubs", "metis-edge-cut", "metis-volume"]
-routines = ["spmmcsr", "spmmbsr"]
+routines = ["spmmcsr", "spmmbsr","spmvcsr", "spmvbsr"]
+#routines = ["spmmcsr", "spmmbsr"]
+
 
 #subdirectories
 csv_reordering_dir = root_dir + "reorder_csv"
@@ -53,6 +55,14 @@ for method in methods:
     dfs_reordering[method].drop(columns=columns_to_drop, inplace=True)
     dfs_reordering[method].rename(columns={"VBR_nzblocks_count" : "nnz_blocks"}, inplace=True)
 
+#----------------------------------------------------------
+#import reorder time data into dfs
+#----------------------------------------------------------
+for method in methods:
+    reordering_file = f"{csv_reordering_dir}/clubs/reordering_time_results_clubs.csv"
+    df_club_reordering_time = pd.read_csv(reordering_file, delim_whitespace=True, header=0)
+    df_club_reordering_time['matrix'] = dfs_reordering[method]['matrix'].str.replace('_', '-', regex=False) #convention for matrix names
+    df_club_reordering_time.rename(columns={"time" : "reordering_time"}, inplace=True)
 
 #----------------------------------------------------------
 #import mult data into dfs
@@ -189,10 +199,12 @@ for routine in routines:
 # IMAGES
 #----------------------------------------------------------
 
+reordering_time_comparison(dfs_reordering["clubs"],df_club_reordering_time)
+
 best_barplot(dfs_reordering, square_matrices_set, rectangular_matrices_set, methods, 
                  parameter = "nnz_blocks", 
                  ylabel = "# of times reordering results in fewest nonzero blocks",
-                 save_path=f"{output_plot_dir}/best_barplot_{routine}_nnz_blocks_{methods}")
+                 save_path=f"{output_plot_dir}/best_barplot_nnz_blocks_{methods}")
 
 for routine in routines:
     counts = count_best_method(dfs_reordering, square_matrices_set, methods, parameter= f"time_{routine}" )
@@ -202,6 +214,45 @@ for routine in routines:
                  ylabel = "# of times reordering results in fastest multiplication",
                  save_path=f"{output_plot_dir}/best_barplot_{routine}_time_{methods}")
     
+for routine in routines:
+
+    matrix_set = common_matrices_set[routine]
+    make_improvements_barplot(dfs_reordering=dfs_reordering, 
+                            methods=methods,
+                            matrices=matrix_set,
+                            parameter=f"speedup_{routine}",
+                            save_path=f"{output_plot_dir}/speedup_median_barplot_{routine}_time_{methods}_common_matrices"
+                            )
+    
+
+    matrix_set = square_matrices_set
+    make_improvements_barplot(dfs_reordering=dfs_reordering, 
+                            methods=methods,
+                            matrices=matrix_set,
+                            set_missing_1=True,
+                            set_negative_1=True,
+                            parameter=f"speedup_{routine}",
+                            save_path=f"{output_plot_dir}/speedup_median_barplot_{routine}_time_{methods}_square_matrices"
+                            )
+
+    matrix_set = all_matrices_set
+    make_improvements_barplot(dfs_reordering=dfs_reordering, 
+                            methods=methods,
+                            matrices=matrix_set,
+                            set_missing_1=True,
+                            set_negative_1=True,
+                            parameter=f"speedup_{routine}",
+                            save_path=f"{output_plot_dir}/speedup_median_barplot_{routine}_time_{methods}_all_matrices"
+                            )
+
+exit()
+
+make_improvements_barplot(dfs_reordering, 
+                    methods,
+                    parameter="VBR_nzblocks_count",
+                    ylabel="Speed-up against non-reordered matrix",
+                    save_path= f"{output_plot_dir}/blocks_speedup_median_{exp_methods_string}")
+
 
 exit()
 
@@ -214,22 +265,8 @@ for exp_methods in comparisons:
     n_matrices = len(find_common_matrices(best_dfs, exp_methods))
     print(f"Found {n_matrices} common matrices")
 
-    counts = count_best_method(best_dfs, exp_methods, parameter = "VBR_nzblocks_count")
-    print("BEST COUNT ON COMMON MATRICES: ", counts)
-    make_barplot(values_dict=counts, 
-              title=f"Best method (lowest number of nonzero blocks) for on {n_matrices} matrices for {exp_methods}",
-              ylabel="# of times X is the best method",
-              save_path= f"{output_plot_dir}/blocks_best_count_plot_{exp_methods_string}")
-
-
     speedups = calculate_improvement(best_dfs, exp_methods[1:], parameter="VBR_nzblocks_count")
     print("SPEEDUPS GEOMETRIC MEAN ON COMMON MATRICES: ", speedups)
-    make_improvements_barplot(best_dfs, 
-                        exp_methods[1:],
-                        parameter="VBR_nzblocks_count",
-                        title=f"Median, 25th and 75th percentile of block number reduction on {n_matrices} matrices for {exp_methods}",
-                        ylabel="Speed-up against non-reordered matrix",
-                        save_path= f"{output_plot_dir}/blocks_speedup_median_{exp_methods_string}")
 
     make_improvements_violin(best_dfs, 
                         exp_methods[1:],
