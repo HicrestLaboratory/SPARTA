@@ -1,0 +1,534 @@
+# ----- Init file 2024-10-03 09:56:54 -----
+# =====================================================
+Date: 2024-10-03 Time: 09:56:54
+Running ./utils/collect_all_reord_results.sh -f /data/clubs/Club_dataset/datasetA -r /data/clubs/Club_result/datasetA -o results_2024-10-03 -s patoh...
+# -----------------------------------------------------
+Matrix directory: /data/clubs/Club_dataset/datasetA
+Result directory: /data/clubs/Club_result/datasetA
+Output directory: results_2024-10-03
+                        ***************************************
+*************************************** PATOH *****************
+                        ***************************************
+************************************************
+ Processing matrix: qa8fm
+************************************************
+Result folder not found for qa8fm, 1 parts
+************************************************
+ Processing matrix: SiO
+************************************************
+Result folder not found for SiO, 1 parts
+************************************************
+ Processing matrix: karted
+************************************************
+Result folder not found for karted, 1 parts
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/karted/karted.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/karted/karted.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/karted/karted.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/karted/karted.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/karted/karted.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/karted/karted.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/karted/karted.mtx with block size 64
+************************************************
+ Processing matrix: para-10
+************************************************
+Result folder not found for para-10, 1 parts
+************************************************
+ Processing matrix: nc2010
+************************************************
+Result folder not found for nc2010, 1 parts
+************************************************
+ Processing matrix: t3dh
+************************************************
+Result folder not found for t3dh, 1 parts
+************************************************
+ Processing matrix: cop20k_A
+************************************************
+Result folder not found for cop20k_A, 1 parts
+************************************************
+ Processing matrix: bcsstk39
+************************************************
+Result folder not found for bcsstk39, 1 parts
+************************************************
+ Processing matrix: barrier2-10
+************************************************
+Result folder not found for barrier2-10, 1 parts
+************************************************
+ Processing matrix: wiki-talk-temporal
+************************************************
+Result folder not found for wiki-talk-temporal, 1 parts
+************************************************
+ Processing matrix: ts-palko
+************************************************
+Result folder not found for ts-palko, 1 parts
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ts-palko/ts-palko.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ts-palko/ts-palko.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ts-palko/ts-palko.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ts-palko/ts-palko.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ts-palko/ts-palko.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ts-palko/ts-palko.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ts-palko/ts-palko.mtx with block size 64
+************************************************
+ Processing matrix: Dubcova2
+************************************************
+Result folder not found for Dubcova2, 1 parts
+************************************************
+ Processing matrix: cnr-2000
+************************************************
+Result folder not found for cnr-2000, 1 parts
+************************************************
+ Processing matrix: para-7
+************************************************
+Result folder not found for para-7, 1 parts
+************************************************
+ Processing matrix: stomach
+************************************************
+Result folder not found for stomach, 1 parts
+************************************************
+ Processing matrix: viscorocks
+************************************************
+Result folder not found for viscorocks, 1 parts
+************************************************
+ Processing matrix: av41092
+************************************************
+Result folder not found for av41092, 1 parts
+************************************************
+ Processing matrix: mario002
+************************************************
+Result folder not found for mario002, 1 parts
+************************************************
+ Processing matrix: ship_001
+************************************************
+Result folder not found for ship_001, 1 parts
+************************************************
+ Processing matrix: cont11_l
+************************************************
+Result folder not found for cont11_l, 1 parts
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/cont11_l/cont11_l.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/cont11_l/cont11_l.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/cont11_l/cont11_l.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/cont11_l/cont11_l.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/cont11_l/cont11_l.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/cont11_l/cont11_l.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/cont11_l/cont11_l.mtx with block size 64
+************************************************
+ Processing matrix: matrix_9
+************************************************
+Result folder not found for matrix_9, 1 parts
+************************************************
+ Processing matrix: delaunay_n19
+************************************************
+Result folder not found for delaunay_n19, 1 parts
+************************************************
+ Processing matrix: GL7d15
+************************************************
+Result folder not found for GL7d15, 1 parts
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/GL7d15/GL7d15.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/GL7d15/GL7d15.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/GL7d15/GL7d15.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/GL7d15/GL7d15.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/GL7d15/GL7d15.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/GL7d15/GL7d15.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/GL7d15/GL7d15.mtx with block size 64
+************************************************
+ Processing matrix: nemsemm1
+************************************************
+Result folder not found for nemsemm1, 1 parts
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/nemsemm1/nemsemm1.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/nemsemm1/nemsemm1.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/nemsemm1/nemsemm1.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/nemsemm1/nemsemm1.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/nemsemm1/nemsemm1.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/nemsemm1/nemsemm1.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/nemsemm1/nemsemm1.mtx with block size 64
+************************************************
+ Processing matrix: gas_sensor
+************************************************
+Result folder not found for gas_sensor, 1 parts
+************************************************
+ Processing matrix: s3dkt3m2
+************************************************
+Result folder not found for s3dkt3m2, 1 parts
+************************************************
+ Processing matrix: Hamrle3
+************************************************
+Result folder not found for Hamrle3, 1 parts
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+************************************************
+ Processing matrix: m14b
+************************************************
+Result folder not found for m14b, 1 parts
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+************************************************
+ Processing matrix: radiation
+************************************************
+Result folder not found for radiation, 1 parts
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+************************************************
+ Processing matrix: Ga19As19H42
+************************************************
+Result folder not found for Ga19As19H42, 1 parts
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+************************************************
+ Processing matrix: sls
+************************************************
+Result folder not found for sls, 1 parts
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/sls/sls.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/sls/sls.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/sls/sls.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/sls/sls.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/sls/sls.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/sls/sls.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/sls/sls.mtx with block size 64
+************************************************
+ Processing matrix: ch7-9-b4
+************************************************
+Result folder not found for ch7-9-b4, 1 parts
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ch7-9-b4/ch7-9-b4.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ch7-9-b4/ch7-9-b4.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ch7-9-b4/ch7-9-b4.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ch7-9-b4/ch7-9-b4.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ch7-9-b4/ch7-9-b4.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ch7-9-b4/ch7-9-b4.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ch7-9-b4/ch7-9-b4.mtx with block size 64
+************************************************
+ Processing matrix: lp_nug30
+************************************************
+Result folder not found for lp_nug30, 1 parts
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/lp_nug30/lp_nug30.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/lp_nug30/lp_nug30.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/lp_nug30/lp_nug30.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/lp_nug30/lp_nug30.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/lp_nug30/lp_nug30.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/lp_nug30/lp_nug30.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/lp_nug30/lp_nug30.mtx with block size 64
+************************************************
+ Processing matrix: roadNet-TX
+************************************************
+Result folder not found for roadNet-TX, 1 parts
+************************************************
+ Processing matrix: nemeth24
+************************************************
+Result folder not found for nemeth24, 1 parts
+************************************************
+ Processing matrix: delaunay_n18
+************************************************
+Result folder not found for delaunay_n18, 1 parts
+************************************************
+ Processing matrix: kron_g500-logn16
+************************************************
+Result folder not found for kron_g500-logn16, 1 parts
+************************************************
+ Processing matrix: shipsec8
+************************************************
+Result folder not found for shipsec8, 1 parts
+************************************************
+ Processing matrix: ch8-8-b4
+************************************************
+Result folder not found for ch8-8-b4, 1 parts
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ch8-8-b4/ch8-8-b4.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ch8-8-b4/ch8-8-b4.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ch8-8-b4/ch8-8-b4.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ch8-8-b4/ch8-8-b4.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ch8-8-b4/ch8-8-b4.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ch8-8-b4/ch8-8-b4.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/ch8-8-b4/ch8-8-b4.mtx with block size 64
+************************************************
+ Processing matrix: std1_Jac3
+************************************************
+Result folder not found for std1_Jac3, 1 parts
+************************************************
+ Processing matrix: tmt_unsym
+************************************************
+Result folder not found for tmt_unsym, 1 parts
+************************************************
+ Processing matrix: stat96v2
+************************************************
+Result folder not found for stat96v2, 1 parts
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/stat96v2/stat96v2.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/stat96v2/stat96v2.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/stat96v2/stat96v2.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/stat96v2/stat96v2.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/stat96v2/stat96v2.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/stat96v2/stat96v2.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/stat96v2/stat96v2.mtx with block size 64
+************************************************
+ Processing matrix: Goodwin_054
+************************************************
+Result folder not found for Goodwin_054, 1 parts
+************************************************
+ Processing matrix: rim
+************************************************
+Result folder not found for rim, 1 parts
+************************************************
+ Processing matrix: barrier2-12
+************************************************
+Result folder not found for barrier2-12, 1 parts
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+************************************************
+ Processing matrix: amazon-2008
+************************************************
+Result folder not found for amazon-2008, 1 parts
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+************************************************
+ Processing matrix: GaAsH6
+************************************************
+Result folder not found for GaAsH6, 1 parts
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+************************************************
+ Processing matrix: ny2010
+************************************************
+Result folder not found for ny2010, 1 parts
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+************************************************
+ Processing matrix: pkustk10
+************************************************
+Result folder not found for pkustk10, 1 parts
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+************************************************
+ Processing matrix: mac_econ_fwd500
+************************************************
+Result folder not found for mac_econ_fwd500, 1 parts
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+./utils/collect_results_patoh.sh: line 61: results_2024-10-03/patoh_scramble0_bsize64.txt: No such file or directory
+************************************************
+ Processing matrix: relat8
+************************************************
+Result folder not found for relat8, 1 parts
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/relat8/relat8.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/relat8/relat8.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/relat8/relat8.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/relat8/relat8.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/relat8/relat8.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/relat8/relat8.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/relat8/relat8.mtx with block size 64
+************************************************
+ Processing matrix: n4c6-b9
+************************************************
+Result folder not found for n4c6-b9, 1 parts
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/n4c6-b9/n4c6-b9.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/n4c6-b9/n4c6-b9.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/n4c6-b9/n4c6-b9.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/n4c6-b9/n4c6-b9.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/n4c6-b9/n4c6-b9.mtx with block size 64
+terminate called after throwing an instance of 'std::invalid_argument'
+  what():  CSR.permute_cols argument bust have same lenght as cols
+Matrix_Analysis command failed for /data/clubs/Club_dataset/datasetA/n4c6-b9/n4c6-b9.mtx with block size 64

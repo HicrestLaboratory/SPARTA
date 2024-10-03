@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # PaToH partition sizes
-#parts=( 1 2 4 8 16 32 64 128 )
-parts=( 2 4 8 16 32 64 128 )
+parts=( 1 2 4 8 16 32 64 128 )
 
 SCRIPT_DIR=$(dirname "$0")
 source "$SCRIPT_DIR/parse_args.sh" "$@"
@@ -38,7 +37,6 @@ for matrix_folder in $(find "$matrix_dir" -mindepth 1 -maxdepth 1 -type d); do
 
         # Correct directory for each partition
         matrix_part_dir="$matrix_result_dir/${patoh_part}"
-	echo "matrix_part_dir: ${matrix_part_dir}"
 
         # Check if directory exists
         if [ ! -d "$matrix_part_dir" ]; then
