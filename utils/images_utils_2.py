@@ -7,13 +7,15 @@ import argparse
 import seaborn as sns
 from matplotlib.ticker import FuncFormatter
 from matplotlib.patches import Patch
+from matplotlib.ticker import MaxNLocator
 
 #____________PLOTTING PARAMS________________
 color_dict = {
     "original": "#4c72b0",  # A calm, modern blue
     "clubs": "#f28e2b",     # A vibrant orange
     "metis-edge-cut": "#e15759",  # A sophisticated red
-    "metis-volume": "#76b7b2"     # A muted teal for balance
+    "metis-volume": "#76b7b2",     # A muted teal for balance
+    "patoh": "#59a14f",    # A fresh, vibrant green
 }
 
 
@@ -21,11 +23,34 @@ marker_dict = {
     "original": "o",
     "clubs": "x",
     "metis-edge-cut" : ".",
-    "metis-volume" : "."
+    "metis-volume" : ".",
+    "patoh" : "-",
 }
+
+labels_dict = {
+    "original": "Original",
+    "clubs": "CLUB",
+    "metis-edge-cut" : "GP-edge",
+    "metis-volume" : "GP-volume",
+    "patoh" : "HGP",
+}
+
+routine_labels = {
+    "spmmcsr": "SpMM-CSR",
+    "spmmbsr": "SpMM-BSR",
+    "spmvcsr": "SpMV-CSR",
+    "spmvbsr": "SpMV-BSR"
+
+}
+
 def count_matrices(df):
     return len(df["matrix"].unique())
 
+def percent_improvement_formatter(y, pos):
+        return f'{y*100 - 100:.0f}%'
+
+def percent_formatter(y, pos):
+        return f'{y*100:.0f}%'
 #----------------------FUNCTIONS
 # _____________________________________________________
 def count_best_method(dfs_reordering, matrices, methods, parameter = "time_spmmcsr"):
@@ -121,21 +146,23 @@ def find_common_matrices(dfs, methods):
 
 
 def reordering_time_comparison(df,df_reordering_times):
+
    common_columns = list(set(df.columns) & set(df_reordering_times.columns))
    merged_df = df_reordering_times.merge(
                 df[common_columns + ["time_spmmcsr","time_spmmbsr","time_spmmcsr_original","time_spmmbsr_original"]],
                 on=list(common_columns),
                 how="inner",
             ) 
-   
+      
    # Initialize bins for number_recover
-   bins = [0, 10**3, 10**5, 10**6,10**7,float('inf')]
+   bins = [0, 10**3, 10**5, 10**6,10**7,10**20]
    bin_labels = ['0-10^3', '10^3-10^5', '10^5-10^6','10^6-10^7', ">10^7"]
 
    for routine in ["spmmcsr","spmmbsr"]:
        print("ROUTINE:",routine)
        merged_df[f"reorder_ratio_{routine}"] = merged_df["reordering_time"]/merged_df[f"time_{routine}_original"]
        merged_df[f"number_recover_{routine}"] = merged_df["reordering_time"]/(merged_df[f"time_{routine}_original"] - merged_df[f"time_{routine}"])
+       merged_df = find_best(merged_df,best_parameter="reordering_time")
        good_df = merged_df.loc[merged_df[f"time_{routine}_original"] > merged_df[f"time_{routine}"]].copy()
        good_df.loc[:,f"number_recover_bin_{routine}"] = pd.cut(good_df[f"number_recover_{routine}"], bins=bins, labels=bin_labels, include_lowest=True)
 
@@ -155,14 +182,15 @@ def best_barplot(dfs_reordering, square_matrices, rectangular_matrices, methods,
     square_number = sum(square_counts.values())
     rect_number = sum(rect_counts.values())
 
+    methods_names = [labels_dict[method] for method in methods]
     plt.figure(figsize=(10, 6))
-    bars_square = plt.bar(methods, list(square_counts.values()), 
+    bars_square = plt.bar(methods_names, list(square_counts.values()), 
                           label='Square Matrices',
                           edgecolor = "black", 
                           color=[color_dict[method] for method in methods])
 
     # Plot rectangular matrices on top of square matrices (second layer)
-    bars_rect = plt.bar(methods, list(rect_counts.values()), 
+    bars_rect = plt.bar(methods_names, list(rect_counts.values()), 
                         label='Rectangular Matrices', 
                         bottom=list(square_counts.values()), 
                         hatch='//', 
@@ -177,27 +205,29 @@ def best_barplot(dfs_reordering, square_matrices, rectangular_matrices, methods,
     # Add custom legend
     plt.legend(handles=legend_elements)
     plt.savefig(save_path)
+    plt.close()
 
 
-def make_improvements_barplot(dfs_reordering, methods, matrices, set_negative_1 = False, set_missing_1 = False, min_best = False, parameter = "None", ylabel="Value", save_path = "test.png", verbose = False):
-    """    
-    Parameters:
-    values_dict (dict): A dictionary containing results for each method.
+def make_improvements_barplot_and_distribution(dfs_reordering, methods, matrices, set_negative_1=False, set_missing_1=False, min_best=False, parameter="None", ylabel="Speedup", save_path="test.png", verbose=False):
+    """
+    Creates a barplot with error bars and a sideways histogram overlayed on the right.
     """
     if "original" in methods:
-        methods = list(set(methods) - set(["original",]))
-        
+        methods.remove("original")
+
     improvements = {}
     low_errors = []
     up_errors = []
+    hist_data = {}  # To store data for histogram
+    
+    all_values = []  # Collect all data to determine common bins
     for method in methods:
         df = dfs_reordering[method].copy()
         df = set_allowed_matrices(df, matrices)
         df = find_best(df, best_parameter=parameter, min=min_best)
 
-        if not set_missing_1:
-            if df[parameter].isna().any():
-                print(f"ERROR: MISSING VALUES for {parameter}")
+        if not set_missing_1 and df[parameter].isna().any():
+            print(f"ERROR: MISSING VALUES for {parameter}")
 
         if set_missing_1:
             df.loc[df[parameter].isna()] = 1
@@ -205,125 +235,193 @@ def make_improvements_barplot(dfs_reordering, methods, matrices, set_negative_1 
         if set_negative_1:
             df.loc[df[parameter] < 1] = 1
 
+        # Collect data for histogram
+        hist_data[method] = df[parameter].values
+        all_values.extend(df[parameter].values)  # Add data to determine common bins
+
+        # Calculate percentiles for the bar plot
         percentiles = np.percentile(df[parameter].values, [25, 50, 75])
         improvements[method] = percentiles[1] 
-        if verbose: print(method, percentiles, improvements[method])
+        if verbose: 
+            print(method, percentiles, improvements[method])
         low_errors.append(improvements[method] - percentiles[0])
         up_errors.append(percentiles[2] - improvements[method])
-       
+
+    # Calculate appropriate y-limits
+    max_y = (max(up_errors) + max(improvements.values())) * 1.01
+    min_y = min(1, (min(improvements.values()) - min(low_errors)) * 0.9)
+    
+    # Determine common bin edges for all histograms
+    #common_bins = [np.histogram_bin_edges(all_values, bins=200)]
+    common_bins = np.linspace(min_y,max_y,20)
+
+    # Create figure and gridspec to manage layout
+    fig = plt.figure(figsize=(10, 6))
+    gs = fig.add_gridspec(1, 2, width_ratios=[1, 1], wspace=0.05)
+
     # Plot the bar chart
-    plt.figure(figsize=(10, 6))
+    ax_point = fig.add_subplot(gs[0])
+    for i, method in enumerate(methods):
+        method_name = labels_dict[method]
+        ax_point.errorbar(method_name, improvements[method], yerr=[[low_errors[i]], [up_errors[i]]],
+                          color=color_dict[method], ecolor=color_dict[method], 
+                          elinewidth=2, capsize=5, marker='o', markersize=10,label=method)
 
-    # Add titles and labels
-    #plt.title(title)
-    plt.xlabel("Reordering technique")
-    plt.ylabel(ylabel)
+
+    ax_point.set_xlabel("Reordering technique")
+    ax_point.set_ylabel(ylabel)  # Set ylabel to "Speedup"
+    ax_point.set_ylim(min_y, max_y)
+ 
+    # Format y-axis as percentage
+    def speedup_formatter(y, pos):
+        return f'{y*100 - 100:.0f}%'
     
-    plt.bar(methods, improvements.values(), yerr=[low_errors, up_errors], color=[color_dict[method] for method in methods])
-    plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda y, _: f'{y*100 - 100:.0f}%'))
-    #plt.xticks(rotation=45, ha="right")
-    max_y = (max(up_errors) + max(improvements.values()))*1.01
-    min_y = min(1, (min(improvements.values()) - min(low_errors))*0.9)
-
-    plt.ylim(min_y,max_y)
-    # Display the plot
-    plt.tight_layout()
-    plt.savefig(save_path)
-
-def make_improvements_violin(best_dfs, methods, parameter = "time", title="Plot", ylabel="Value", save_path = "test.png"):
-    """ 
-    Parameters:
-    best_dfs (dict): A dictionary containing results for each method.
-    methods (list): A list of methods to compare.
-    title (str): Title of the plot.
-    ylabel (str): Y-axis label.
-    save_path (str): Path to save the plot.
-    """
-    common_matrices = find_common_matrices(best_dfs, methods)
-    speedup_data = []
-    method_labels = []
+    ax_point.yaxis.set_major_formatter(FuncFormatter(speedup_formatter))
     
-    for method in methods:
-        # Preprocess the data
-        original_df = best_dfs["original"].copy()
-        original_df = set_allowed_matrices(original_df, common_matrices)
-        method_df = best_dfs[method].copy()
-        method_df = set_allowed_matrices(method_df, common_matrices)
-        merged = pd.merge(original_df[['matrix', parameter]], method_df[['matrix', parameter]], on='matrix', suffixes=('_original', '_method'))
-        
-        # Calculate the speedup (original time / method time)
-        merged['ratio'] = merged[parameter + '_original'] / merged[parameter + '_method']
-        merged.loc[merged["ratio"] < 1] = 1
+    # Ensure that the y-ticks are visible for the bar plot
+    ax_point.tick_params(axis='y', which='both', labelleft=True)
 
-        # Collect data for the violin plot
-        speedup_data.extend(merged['ratio'].values)
-        method_labels.extend([method] * len(merged))
+    # Plot the sideways histogram without sharey
+    ax_hist = fig.add_subplot(gs[1])
 
-    # Create a DataFrame for seaborn
-    plot_df = pd.DataFrame({'Method': method_labels, 'Speedup': speedup_data})
+    offsets = np.linspace(-0.05, 0.05, len(methods)) * (common_bins[1] - common_bins[0])
 
-    # Plot the violin plot
-    plt.figure(figsize=(10, 6))
-    ax = sns.violinplot(x='Method', y='Speedup', data=plot_df, palette=[color_dict[method] for method in methods], )
-    plt.setp(ax.collections, alpha=.3)
+    for i, method in enumerate(methods):
+        # Slightly shift each histogram by a small offset to avoid overlap
+        ax_hist.hist(hist_data[method], bins=common_bins + offsets[i], orientation='horizontal', 
+                     alpha=0.6, color=color_dict[method], histtype='step', label=method, linewidth=2)
 
+    ax_hist.set_xlabel("Frequency")
+    ax_hist.set_yticklabels([])  # Hide the y-ticks on the histogram
+    ax_hist.set_xlim(0, None)  # Auto-adjust x-limits for the histogram
 
-    # Add titles and labels
-    #plt.title(title)
-    plt.xlabel("Reordering Technique")
-    plt.ylabel(ylabel)
-
-    # Format the y-axis to show percentages (if needed)
-    plt.gca().yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y*100 - 100:.0f}%'))
+    # Sync the y-limits of the histogram with the bar chart
+    ax_hist.set_ylim(ax_point.get_ylim())
 
     # Adjust layout and save the plot
-    #plt.xticks(rotation=45, ha="right")
-    plt.ylim(0.8,1.5)
-
-    plt.tight_layout()
     plt.savefig(save_path)
     plt.close()
 
-def plot_improvements_distribution(best_dfs, methods, parameter = "time", matrices = None, title = 'Distribution of Speedups Across Matrices', save_path= "test_dist.png"):
+def make_improvements_barplot_and_distribution_2(dfs_reordering, methods, matrices, allow_missing=False, min_best=False, parameter="None", ylabel="Speedup", save_path="test.png", verbose=False):
     """
-    Plots the distribution (histogram) of speedups across matrices for each method.
-
-    Parameters:
-    - best_dfs: Dictionary of DataFrames for each method containing matrix times.
-    - methods: List of methods to compare.
-    - num_bins: Number of bins to use for the histogram (default is 10).
+    Creates a barplot with error bars and a sideways histogram overlayed on the right.
     """
-    common_matrices = find_common_matrices(best_dfs, methods)
-    if matrices != None: 
-        common_matrices &= matrices
+    if "original" in methods:
+        methods.remove("original")
 
-    plt.figure(figsize=(10, 6))
+    print("MAKING IMP PLOT")
+    improvements = {}
+    low_errors = []
+    up_errors = []
+    hist_data = {}  # To store data for histogram
     
+    all_values = []  # Collect all data to determine common bins
     for method in methods:
-        if method == "original": continue
-        original_df = best_dfs["original"].copy()
-        original_df = set_allowed_matrices(original_df, common_matrices)
-        method_df = best_dfs[method].copy()
-        method_df = set_allowed_matrices(method_df, common_matrices)
-        merged = pd.merge(original_df[['matrix', parameter]], method_df[['matrix', parameter]], on='matrix', suffixes=('_original', '_method'))
-        merged['ratio'] = merged[parameter + '_method'] / merged[parameter + '_original']
+        df = dfs_reordering[method].copy()
+        df = set_allowed_matrices(df, matrices)
+        df = find_best(df, best_parameter=parameter, min=min_best)
 
-        speedups = 1 / merged['ratio']
-        #speedups = [max(s, 1) for s in speedups]
-        speedups_percent = [s*100 - 100 for s in speedups]
-        
-        custom_bins = np.arange(0,200,5)
-        plt.hist(speedups_percent, bins=custom_bins, cumulative=False, color = color_dict[method], histtype='step', linewidth=2, label=f'{method}')
+        if not allow_missing and df[parameter].isna().any():
+            print(f"ERROR: MISSING VALUES for {parameter}")
+
+        if allow_missing:
+            df.loc[df[parameter].isna(), parameter] = float("-inf")
+
+        df.loc[df[parameter] == float("-inf") , parameter] = 0
+        df.loc[df[parameter] == float("inf") , parameter] = 10
+
+        # Collect data for histogram
+        hist_data[method] = df[parameter].values
+        all_values.extend(df[parameter].values)  # Add data to determine common bins
+
+        # Calculate percentiles for the bar plot
+        percentiles = np.percentile(df[parameter].values, [25, 50, 75])
+        print(method, percentiles)
+        improvements[method] = percentiles[1] 
+        if verbose: 
+            print(method, percentiles, improvements[method])
+        low_errors.append(improvements[method] - percentiles[0])
+        up_errors.append(percentiles[2] - improvements[method])
+
+    # Calculate appropriate y-limits
+    max_y = (max(up_errors) + max(improvements.values())) * 1.01
+    min_y = min(1, (min(improvements.values()) - min(low_errors)) * 0.9)
     
-    plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda y, _: f'{y:.0f}%'))
-    plt.xlabel('Speedup')
-    plt.ylabel('Frequency')
-    #plt.title(title)
-    plt.legend(loc='upper right')
-    plt.tight_layout()
-    plt.savefig(save_path)
+    # Determine common bin edges for all histograms
+    #common_bins = [np.histogram_bin_edges(all_values, bins=200)]
+    common_bins = np.linspace(min_y,max_y,20)
+
+    # Create figure and gridspec to manage layout
+    fig = plt.figure(figsize=(10, 6))
+    figures = len(methods) + 1
+    gs = fig.add_gridspec(1, figures, width_ratios=[2,] + [1]*len(methods), wspace=0.05)
+
+
+    # Plot the bar chart
+    ax_point = fig.add_subplot(gs[0])
+    for i, method in enumerate(methods):
+        method_name = labels_dict[method]
+        ax_point.errorbar(method_name, improvements[method], yerr=[[low_errors[i]], [up_errors[i]]],
+                          color=color_dict[method], ecolor=color_dict[method], 
+                          elinewidth=2, capsize=5, marker='o', markersize=10,label=labels_dict[method])
+
+    #ax_point.legend(loc='best', frameon=False)
+    ax_point.set_ylabel(ylabel)  # Set ylabel to "Speedup"
+    ax_point.set_ylim(min_y, max_y)
+    ax_point.grid(True, linestyle='--', alpha=0.3)
+    ax_point.tick_params(axis='both', which='major', length=5, direction='in')
+    
+    ax_point.yaxis.set_major_formatter(FuncFormatter(percent_improvement_formatter))
+    
+    # Ensure that the y-ticks are visible for the bar plot
+    ax_point.tick_params(axis='y', which='both', labelleft=True)
+    
+    # Plot the sideways histogram without sharey
+
+    def hist_formatter(y, pos):
+        return f'{y*100/len(matrices):.0f}%'
+
+    hist_axes = [None for i in range(len(methods))]
+    for i, method in enumerate(methods):
+        hist_axes[i] = fig.add_subplot(gs[1 + i])
+        hist_axes[i].hist(hist_data[method], bins=common_bins, orientation='horizontal', 
+                     alpha=0.9, color=color_dict[method], histtype='step', label=method, linewidth=2)
+        #hist_axes[i].set_xlabel("Frequency")        
+        hist_axes[i].set_xlim(0, 65)  # Auto-adjust x-limits for the histogram
+
+        # Sync the y-limits of the histogram with the bar chart
+        hist_axes[i].set_ylim(ax_point.get_ylim())
+        #hist_axes[i].xaxis.set_major_formatter(FuncFormatter(hist_formatter))
+        hist_axes[i].set_yticklabels([])  # Hide the y-ticks on the histogram
+        hist_axes[i].xaxis.set_major_locator(MaxNLocator(nbins=4))
+        hist_axes[i].grid(True, linestyle='--', alpha=0.3)
+
+
+
+    #make the x-label for the histograms
+    left = hist_axes[0].get_position().x0
+    right = hist_axes[-1].get_position().x1
+    bottom = hist_axes[0].get_position().y0*1.08  # Assuming all histograms are aligned vertically
+    x_center = (left + right) / 2
+    y_position = bottom - 0.05  # Adjust as needed to position the label below the histograms
+    fig.text(x_center, y_position, "Frequency", ha='center', va='top')
+
+
+    #global legend
+    handles, labels = ax_point.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.05),
+           ncol=len(methods), frameon=False)
+    plt.subplots_adjust(top=1)  # Adjust the top margin as needed
+
+
+
+    # Adjust layout and save the plot
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
 
 def plot_speedup_vs_matrix_param(best_dfs, methods, matrices = None, param="density", title='Speedup vs matrix density', save_path="test_hist.png"):
+
+
 
     common_matrices = find_common_matrices(best_dfs, methods)
     if matrices != None: 
@@ -367,11 +465,11 @@ def plot_speedup_vs_matrix_param(best_dfs, methods, matrices = None, param="dens
     #plt.title(title)
     plt.legend(loc='upper right')
     plt.tight_layout()
-    plt.savefig(save_path)
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
 
 
-def plot_improvement_by_matrix(best_dfs, order_by, methods, parameter = "time", matrices = None, title = "", show = "improvement_percent", ylim = [-10,50], ylabel = "Speedup", save_path="test_speedup_by_matrix.png"):
+def plot_improvement_by_matrix_old(dfs_reordering, order_by, methods, parameter = "None", matrices = None, min_best = False, title = "", yFormatter = percent_formatter,ylim = [0,5], xlabel = "Default x Label", ylabel = "Default Y Label", save_path="test_speedup_by_matrix.png"):
     """
     Plots the speedup for each matrix, sorted by speedups, for each method.
 
@@ -379,74 +477,315 @@ def plot_improvement_by_matrix(best_dfs, order_by, methods, parameter = "time", 
     - best_dfs: Dictionary of DataFrames for each method containing matrix times.
     - methods: List of methods to compare.
     """
-    common_matrices = find_common_matrices(best_dfs, methods)
-    if matrices != None: 
-        common_matrices &= matrices
-    
+
+    new_df = {}
+
+    for method in methods:
+        matrices &= set(dfs_reordering[method]["matrix"].unique())
+
+    for method in methods:
+        new_df[method] = dfs_reordering[method].copy()
+        new_df[method] = set_allowed_matrices(new_df[method], matrices)
+        new_df[method] = find_best(new_df[method], best_parameter=parameter, min=min_best)
+
     # First, calculate the speedup for the 'clubs' method and store the ordering
     if not order_by in methods: 
         print("WARNING: plot_speedup_by_matrix: ORDER_BY must appear also in METHODS")
+        exit(1)
         return
-    ordered_df = best_dfs[order_by].copy()
-    ordered_df = set_allowed_matrices(ordered_df, common_matrices)
-    
-    original_df = best_dfs["original"].copy()
-    original_df = set_allowed_matrices(original_df, common_matrices)
-    
-    merged_ordered_by = pd.merge(original_df[['matrix', parameter]], 
-                            ordered_df[['matrix', parameter]], 
-                            on=['matrix'], 
-                            suffixes=('_original', '_method'))
-    
-    # Calculate the speedup ratio for 'oder_by'
-    merged_ordered_by['improvement'] = merged_ordered_by[parameter + '_original'] / merged_ordered_by[parameter + '_method']
-    
-    # Ensure speedups are capped at 1
-    #merged_ordered_by.loc[merged_ordered_by['speedup'] < 1, 'speedup'] = 1
-    
-    # Sort the DataFrame by improvement for 'oder_by'
-    merged_clubs_sorted = merged_ordered_by.sort_values(by='improvement')
-    ordered_matrices = merged_clubs_sorted['matrix'].values  # Store the ordered list of matrices
-    
-    plt.figure(figsize=(10, 6))
-    # Now, plot the improvement for all methods using the same ordering
-    for method in methods:
-        if method == "original": 
-            continue
-        
-        method_df = best_dfs[method].copy()
-        method_df = set_allowed_matrices(method_df, common_matrices)
-        
-        merged = pd.merge(original_df[['matrix', parameter]], 
-                          method_df[['matrix', parameter]], 
-                          on=['matrix'], 
-                          suffixes=('_original', '_method'))
-        
-        # Calculate the speedup ratio
-        merged['improvement'] = merged[parameter + '_original'] / merged[parameter + '_method']
-        merged['improvement_percent'] = merged['improvement'] * 100 - 100
-        merged['reduction_percent'] = 1/merged["improvement"] * 100
 
-        # Ensure speedups are capped at 1
-        #merged.loc[merged['speedup'] < 1, 'speedup'] = 1
-        
-        # Reorder the DataFrame to match the 'order_by' order
-        merged['matrix'] = pd.Categorical(merged['matrix'], categories=ordered_matrices, ordered=True)
-        merged_sorted = merged.sort_values(by='matrix')
-        
-        # Plot the sorted speedup values
-        plt.plot(range(len(merged_sorted)), merged_sorted[show], color=color_dict[method], marker='o', linestyle='', markersize=3, label=f'{method}')
+    plt.figure(figsize=(10, 6))
+
+    new_df[order_by] = new_df[order_by].sort_values(by=parameter, ascending = not min_best)
+    ordered_matrices = new_df[order_by]['matrix'].values
+    plt.plot(range(len(ordered_matrices)), new_df[order_by][parameter], 
+                  color=color_dict[order_by], 
+                  marker='o', 
+                  linestyle='', 
+                  markersize=3, 
+                  label=f'{labels_dict[method]}')
+    
+    for method in methods:
+        if method == order_by: continue
+        new_df[method]['matrix'] = pd.Categorical(new_df[method]['matrix'], categories=ordered_matrices, ordered=True)
+        plt.plot(range(len(ordered_matrices)), new_df[method][parameter], 
+                 color=color_dict[method], 
+                 marker='o', 
+                 linestyle='', 
+                 markersize=3, 
+                 label=f'{labels_dict[method]}')
+
+
+    #plt.yscale("log")
+
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(yFormatter))
+
     
     plt.axhline(0, color=color_dict["original"])
-    plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda y, _: f'{y:.0f}%'))
     plt.ylim(ylim[0],ylim[1])
-    plt.xlabel(f'Matrix (sorted by improvement on {order_by})')
+    plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     #plt.title(title)
-    plt.legend(loc='upper right')
+
+
+    #top legend
+    handles, labels = plt.gca().get_legend_handles_labels()
+    plt.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.05),
+           ncol=len(methods) + 1, frameon=False)
+    plt.subplots_adjust(top=1)  # Adjust the top margin as needed
+
+    plt.gca().grid(True, linestyle='--', alpha=0.3)
     plt.tight_layout()
-    plt.savefig(save_path)
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
+
+def plot_improvement_by_parameter(df, plot_parameter, methods, improvement_parameter="None", matrices=None, min_best=False, title="", yFormatter=lambda y, pos: y, ylim=[0, 5], xlabel="Default x Label", ylabel="Default Y Label", save_path="test_parameter_study.png"):
+    """
+    Plots the speedup for each matrix, sorted by speedups, for each method.
+
+    Parameters:
+    - dfs_reordering: Dictionary of DataFrames for each method containing matrix times.
+    - order_by: Method used to order matrices.
+    - methods: List of methods to compare.
+    - parameter: Parameter to plot.
+    - matrices: Set of matrices to include.
+    - min_best: Boolean indicating if lower values are better.
+    - yFormatter: Function to format y-axis labels.
+    - ylim: List containing y-axis limits [min, max].
+    - xlabel: Label for the x-axis.
+    - ylabel: Label for the y-axis.
+    - save_path: Path to save the plot image.
+    """
+
+    df = set_allowed_matrices(df,matrices).copy()
+    dfs_parameter = {}
+    for parameter_value in df[plot_parameter].unique():
+        dfs_parameter[parameter_value] = df.loc[df[plot_parameter]==parameter_value]
+        dfs_parameter[parameter_value] = find_best(dfs_parameter[parameter_value], best_parameter=improvement_parameter, min=min_best)
+
+
+    for method in methods:
+        new_df[method] = dfs_reordering[method].copy()
+        new_df[method] = set_allowed_matrices(new_df[method], matrices)
+        new_df[method] = find_best(new_df[method], best_parameter=parameter, min=min_best)
+
+    if order_by not in methods:
+        print("WARNING: plot_speedup_by_matrix: ORDER_BY must appear also in METHODS")
+        exit(1)
+        return
+
+    plt.figure(figsize=(10, 6))
+
+    # Sorting and ordering matrices
+    new_df[order_by] = new_df[order_by].sort_values(by=parameter, ascending=not min_best)
+    ordered_matrices = new_df[order_by]['matrix'].values
+    x_values = np.arange(len(ordered_matrices))
+
+    # Setting up delta for y-axis limits
+    delta = 0.05 * (ylim[1] - ylim[0])
+    plt.ylim(ylim[0] - delta, ylim[1] + delta)
+
+    # Custom y-axis formatter to handle infinite values
+    def custom_yFormatter(y, pos):
+        if y < ylim[0]:
+            return ""
+        elif y < ylim[0]*1.1:
+            return 'Failed'
+        elif y > ylim[1]:
+            return ""
+        else:
+            return yFormatter(y, pos)
+
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(custom_yFormatter))
+
+    # Function to plot data for a method
+    def plot_method_data(method, label_method=True):
+        y_values = new_df[method][parameter].copy()
+        neg_inf_mask = np.isneginf(y_values)
+        pos_inf_mask = np.isposinf(y_values)
+        finite_mask = np.isfinite(y_values)
+
+        y_values_adjusted = y_values.copy()
+        y_values_adjusted[neg_inf_mask] = ylim[0]
+        y_values_adjusted[pos_inf_mask] = ylim[1]
+
+        # Plot finite values
+        plt.plot(x_values[finite_mask], y_values_adjusted[finite_mask],
+                 color=color_dict[method],
+                 marker='o',
+                 linestyle='',
+                 markersize=3,
+                 label=f'{labels_dict[method]}' if label_method else "_nolegend_")
+
+        # Plot -inf values
+        plt.plot(x_values[neg_inf_mask], y_values_adjusted[neg_inf_mask],
+                 color=color_dict[method],
+                 marker='x',
+                 linestyle='',
+                 markersize=5,
+                 label='_nolegend_')
+
+        # Plot +inf values
+        if False:
+            plt.plot(x_values[pos_inf_mask], y_values_adjusted[pos_inf_mask],
+                    color=color_dict[method],
+                    marker='^',
+                    linestyle='',
+                    markersize=5,
+                    label='_nolegend_')
+
+    # Plot data for each method
+    plot_method_data(order_by)
+    for method in methods:
+        if method == order_by:
+            continue
+        new_df[method]['matrix'] = pd.Categorical(new_df[method]['matrix'], categories=ordered_matrices, ordered=True)
+        plot_method_data(method)
+
+    plt.axhline(0, color=color_dict.get("original", 'black'))
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+
+    # Adjust y-axis ticks to include ylim[0] and ylim[1]
+    ax = plt.gca()
+    yticks = ax.get_yticks()
+    if not any(yticks <= ylim[0]):
+        yticks = np.append(yticks, ylim[0])
+    if not any(yticks >= ylim[1]):
+        yticks = np.append(yticks, ylim[1])
+    yticks.sort()
+    ax.set_yticks(yticks)
+
+    # Top legend
+    handles, labels = plt.gca().get_legend_handles_labels()
+    plt.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.05),
+               ncol=len(methods) + 1, frameon=False)
+    plt.subplots_adjust(top=1)  # Adjust the top margin as needed
+
+    plt.gca().grid(True, linestyle='--', alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+def make_improvements_barplot_and_distribution_2(dfs_reordering, methods, matrices, allow_missing=False, min_best=False, parameter="None", ylabel="Speedup", save_path="test.png", verbose=False):
+    """
+    Creates a barplot with error bars and a sideways histogram overlayed on the right.
+    """
+    if "original" in methods:
+        methods.remove("original")
+
+    print("MAKING IMP PLOT")
+    improvements = {}
+    low_errors = []
+    up_errors = []
+    hist_data = {}  # To store data for histogram
+    
+    all_values = []  # Collect all data to determine common bins
+    for method in methods:
+        df = dfs_reordering[method].copy()
+        df = set_allowed_matrices(df, matrices)
+        df = find_best(df, best_parameter=parameter, min=min_best)
+
+        if not allow_missing and df[parameter].isna().any():
+            print(f"ERROR: MISSING VALUES for {parameter}")
+
+        if allow_missing:
+            df.loc[df[parameter].isna(), parameter] = float("-inf")
+
+        df.loc[df[parameter] == float("-inf") , parameter] = 0
+        df.loc[df[parameter] == float("inf") , parameter] = 10
+
+        # Collect data for histogram
+        hist_data[method] = df[parameter].values
+        all_values.extend(df[parameter].values)  # Add data to determine common bins
+
+        # Calculate percentiles for the bar plot
+        percentiles = np.percentile(df[parameter].values, [25, 50, 75])
+        print(method, percentiles)
+        improvements[method] = percentiles[1] 
+        if verbose: 
+            print(method, percentiles, improvements[method])
+        low_errors.append(improvements[method] - percentiles[0])
+        up_errors.append(percentiles[2] - improvements[method])
+
+    # Calculate appropriate y-limits
+    max_y = (max(up_errors) + max(improvements.values())) * 1.01
+    min_y = min(1, (min(improvements.values()) - min(low_errors)) * 0.9)
+    
+    # Determine common bin edges for all histograms
+    #common_bins = [np.histogram_bin_edges(all_values, bins=200)]
+    common_bins = np.linspace(min_y,max_y,20)
+
+    # Create figure and gridspec to manage layout
+    fig = plt.figure(figsize=(10, 6))
+    figures = len(methods) + 1
+    gs = fig.add_gridspec(1, figures, width_ratios=[2,] + [1]*len(methods), wspace=0.05)
+
+
+    # Plot the bar chart
+    ax_point = fig.add_subplot(gs[0])
+    for i, method in enumerate(methods):
+        method_name = labels_dict[method]
+        ax_point.errorbar(method_name, improvements[method], yerr=[[low_errors[i]], [up_errors[i]]],
+                          color=color_dict[method], ecolor=color_dict[method], 
+                          elinewidth=2, capsize=5, marker='o', markersize=10,label=labels_dict[method])
+
+    #ax_point.legend(loc='best', frameon=False)
+    ax_point.set_ylabel(ylabel)  # Set ylabel to "Speedup"
+    ax_point.set_ylim(min_y, max_y)
+    ax_point.grid(True, linestyle='--', alpha=0.3)
+    ax_point.tick_params(axis='both', which='major', length=5, direction='in')
+    
+    ax_point.yaxis.set_major_formatter(FuncFormatter(percent_improvement_formatter))
+    
+    # Ensure that the y-ticks are visible for the bar plot
+    ax_point.tick_params(axis='y', which='both', labelleft=True)
+    
+    # Plot the sideways histogram without sharey
+
+    def hist_formatter(y, pos):
+        return f'{y*100/len(matrices):.0f}%'
+
+    hist_axes = [None for i in range(len(methods))]
+    for i, method in enumerate(methods):
+        hist_axes[i] = fig.add_subplot(gs[1 + i])
+        hist_axes[i].hist(hist_data[method], bins=common_bins, orientation='horizontal', 
+                     alpha=0.9, color=color_dict[method], histtype='step', label=method, linewidth=2)
+        #hist_axes[i].set_xlabel("Frequency")        
+        hist_axes[i].set_xlim(0, 65)  # Auto-adjust x-limits for the histogram
+
+        # Sync the y-limits of the histogram with the bar chart
+        hist_axes[i].set_ylim(ax_point.get_ylim())
+        #hist_axes[i].xaxis.set_major_formatter(FuncFormatter(hist_formatter))
+        hist_axes[i].set_yticklabels([])  # Hide the y-ticks on the histogram
+        hist_axes[i].xaxis.set_major_locator(MaxNLocator(nbins=4))
+        hist_axes[i].grid(True, linestyle='--', alpha=0.3)
+
+
+
+    #make the x-label for the histograms
+    left = hist_axes[0].get_position().x0
+    right = hist_axes[-1].get_position().x1
+    bottom = hist_axes[0].get_position().y0*1.08  # Assuming all histograms are aligned vertically
+    x_center = (left + right) / 2
+    y_position = bottom - 0.05  # Adjust as needed to position the label below the histograms
+    fig.text(x_center, y_position, "Frequency", ha='center', va='top')
+
+
+    #global legend
+    handles, labels = ax_point.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.05),
+           ncol=len(methods), frameon=False)
+    plt.subplots_adjust(top=1)  # Adjust the top margin as needed
+
+
+
+    # Adjust layout and save the plot
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+
+
 
 def plot_club_performance_by_param(dfs, method, performance_param = "time", param = "mask", title='Performance Variation under Mask', save_name=""):
     """

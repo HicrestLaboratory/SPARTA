@@ -23,7 +23,9 @@ if not os.path.isdir(root_dir):
 #______________________________________________________
 
 
-methods=["original", "clubs", "metis-edge-cut", "metis-volume"]
+methods=["original", "clubs", "metis-edge-cut", "metis-volume","patoh"]
+#methods=["original", "clubs", "metis-edge-cut","patoh"]
+
 routines = ["spmmcsr", "spmmbsr","spmvcsr", "spmvbsr"]
 #routines = ["spmmcsr", "spmmbsr"]
 
@@ -33,6 +35,8 @@ csv_reordering_dir = root_dir + "reorder_csv"
 csv_multiplication_dir = root_dir + "mult_csv"
 output_plot_dir = root_dir + "reorder_plots/"
 os.makedirs(output_plot_dir, exist_ok=True)
+for routine in routines:
+    os.makedirs(f"{output_plot_dir}/{routine}", exist_ok=True)
 
 
 #----------------------------------------------------------
@@ -47,8 +51,11 @@ for method in methods:
         dfs_reordering[method].rename(columns={'metis_part': 'parts'}, inplace=True)
         dfs_reordering[method].rename(columns={'metis_obj': 'objective'}, inplace=True)
         dfs_reordering[method] = dfs_reordering[method][dfs_reordering[method]['rows'] == dfs_reordering[method]['cols']] 
+    
+    if "patoh" in method:
+        dfs_reordering[method].rename(columns={'patoh_part': 'parts'}, inplace=True)
+
     dfs_reordering[method]['matrix'] = dfs_reordering[method]['matrix'].str.replace('_', '-', regex=False) #convention for matrix names
-    dfs_reordering[method].rename(columns={'metis_part': 'parts'}, inplace=True)
     
     #clean blocking data
     columns_to_drop = ["VBR_nzcount","VBR_average_height","VBR_longest_row"]
@@ -63,6 +70,8 @@ for method in methods:
     df_club_reordering_time = pd.read_csv(reordering_file, delim_whitespace=True, header=0)
     df_club_reordering_time['matrix'] = dfs_reordering[method]['matrix'].str.replace('_', '-', regex=False) #convention for matrix names
     df_club_reordering_time.rename(columns={"time" : "reordering_time"}, inplace=True)
+
+
 
 #----------------------------------------------------------
 #import mult data into dfs
@@ -86,6 +95,7 @@ for routine in routines:
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
+
 #clean excess data (matrices not in suitesparse)
 for routine in routines:
     for method in methods:
@@ -107,9 +117,13 @@ for routine in routines:
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
+
 #add mult times to reordering
 for method in methods:
     df_R = dfs_reordering[method]
+
+    print(dfs_reordering["patoh"].shape)
+
 
     #add original nz_blocks
     df_R_original = dfs_reordering["original"]
@@ -119,7 +133,7 @@ for method in methods:
                 how="left",
                 suffixes=('', f'_original')
             )
-
+    
     for routine in routines:
 
         #add original time
@@ -140,7 +154,7 @@ for method in methods:
                     how="left",
                 )
         df_R.rename(columns={f'time': f'time_{routine}'}, inplace=True)
-        
+
     dfs_reordering[method] = df_R
 
 
@@ -150,13 +164,21 @@ for method in methods:
 
     #calculate nz_blocks ratio
     df_R["blocks_ratio"] = df_R["nnz_blocks"]/df_R["nnz_blocks_original"]
+    df_R["inverse_blocks_ratio"] = df_R["nnz_blocks_original"]/df_R["nnz_blocks"]
+
     for routine in routines:
         df_R[f"speedup_{routine}"] = df_R[f"time_{routine}_original"]/df_R[f"time_{routine}"]
         df_R[f"original_{routine}_failed"] = df_R[f"time_{routine}_original"].isna()
         df_R[f"method_{routine}_failed"] = (df_R[f"time_{routine}"].isna())
 
+        df_R.loc[df_R[f"original_{routine}_failed"] & ~df_R[f"method_{routine}_failed"], f"speedup_{routine}"] = float("inf")
+        df_R.loc[~df_R[f"original_{routine}_failed"] & df_R[f"method_{routine}_failed"], f"speedup_{routine}"] = float("-inf")
+
         mult_successes = df_R[~df_R[f"time_{routine}"].isna()]["matrix"].unique()
         print(f"METHOD: {method}, ROUTINE: {routine}, SUCCESS MULT:{len(mult_successes)}")
+
+print("ROWS IN PATOH:", method, dfs_reordering["patoh"].shape)
+
 
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #Remove matrices that fail METIS reordering.
@@ -185,26 +207,41 @@ for routine in routines:
         matrices_in_df = set(df["matrix"])
         common_matrices_set[routine] &= matrices_in_df
 
+print("ROWS IN PATOH:", method, dfs_reordering["patoh"].shape)
+
+
 print("ALL MATRICES: ", len(all_matrices_set))
 print("SQUARE MATRICES: ", len(square_matrices_set))
 print("RECTANGULAR MATRICES: ", len(rectangular_matrices_set))
+
+print("RECTANGULAR MATRICES:", rectangular_matrices_set)
 print("A rectangular matrix: ", rectangular_matrices_set.pop())
 for routine in routines:
     print("COMMON MATRICES: ", routine, len(common_matrices_set[routine]))
     for method in methods:
+        filtered_df = dfs_reordering[method][~dfs_reordering[method][f"method_{routine}_failed"]]
+        unique_mats = filtered_df["matrix"].unique()
         unique_mats = dfs_reordering[method][~dfs_reordering[method][f"method_{routine}_failed"]]["matrix"].unique()
-        print(f"***{method},{routine}: {len(unique_mats)} success")
+        unique_rect = len(set(unique_mats) & rectangular_matrices_set)
+        unique_square = len(set(unique_mats) & square_matrices_set)
+        print(f"***{method},{routine}: {len(unique_mats)} successes, of which RECT: {unique_rect} SQUARE: {unique_square}")
+        #if "metis" in method:
+            #print(f"MISSING METIS MATRICES FOR {routine}: {square_matrices_set - set(unique_mats)}")
 
 #----------------------------------------------------------
 # IMAGES
 #----------------------------------------------------------
+
+
+
+print("??????")
 
 reordering_time_comparison(dfs_reordering["clubs"],df_club_reordering_time)
 
 best_barplot(dfs_reordering, square_matrices_set, rectangular_matrices_set, methods, 
                  parameter = "nnz_blocks", 
                  ylabel = "# of times reordering results in fewest nonzero blocks",
-                 save_path=f"{output_plot_dir}/best_barplot_nnz_blocks_{methods}")
+                 save_path=f"{output_plot_dir}/best_barplot_nnz_blocks")
 
 for routine in routines:
     counts = count_best_method(dfs_reordering, square_matrices_set, methods, parameter= f"time_{routine}" )
@@ -212,38 +249,73 @@ for routine in routines:
     best_barplot(dfs_reordering, square_matrices_set, rectangular_matrices_set, methods, 
                  parameter = f"time_{routine}", 
                  ylabel = "# of times reordering results in fastest multiplication",
-                 save_path=f"{output_plot_dir}/best_barplot_{routine}_time_{methods}")
+                 save_path=f"{output_plot_dir}/{routine}/{routine}_best_barplot_time")
     
 for routine in routines:
 
     matrix_set = common_matrices_set[routine]
-    make_improvements_barplot(dfs_reordering=dfs_reordering, 
+    make_improvements_barplot_and_distribution_2(dfs_reordering=dfs_reordering, 
                             methods=methods,
                             matrices=matrix_set,
+                            ylabel=f"{routine} Speedup (Median)",
                             parameter=f"speedup_{routine}",
-                            save_path=f"{output_plot_dir}/speedup_median_barplot_{routine}_time_{methods}_common_matrices"
+                            save_path=f"{output_plot_dir}/{routine}/{routine}_speedup_median_dist_time_common_matrices"
                             )
     
 
     matrix_set = square_matrices_set
-    make_improvements_barplot(dfs_reordering=dfs_reordering, 
+    make_improvements_barplot_and_distribution_2(dfs_reordering=dfs_reordering, 
                             methods=methods,
                             matrices=matrix_set,
-                            set_missing_1=True,
-                            set_negative_1=True,
+                            allow_missing=True,
+                            ylabel=f"{routine} Speedup (Median)",
                             parameter=f"speedup_{routine}",
-                            save_path=f"{output_plot_dir}/speedup_median_barplot_{routine}_time_{methods}_square_matrices"
+                            save_path=f"{output_plot_dir}/{routine}/{routine}_speedup_median_dist_time_square_matrices"
                             )
 
-    matrix_set = all_matrices_set
-    make_improvements_barplot(dfs_reordering=dfs_reordering, 
-                            methods=methods,
-                            matrices=matrix_set,
-                            set_missing_1=True,
-                            set_negative_1=True,
-                            parameter=f"speedup_{routine}",
-                            save_path=f"{output_plot_dir}/speedup_median_barplot_{routine}_time_{methods}_all_matrices"
-                            )
+
+
+for method in methods:
+    compare_with="clubs"
+    parameter = "blocks_ratio"
+    ylabel="Relative size (# of nonzero blocks) after reordering"
+    xlabel=f"Matrix ID (sorted by {labels_dict[method]} speedup)"
+    ylim=[0,4]
+    yFormatter = percent_formatter
+    plot_improvement_by_matrix(dfs_reordering,
+                               methods= [compare_with,method],
+                               order_by=method,
+                               parameter=parameter,
+                               ylabel=ylabel,
+                               xlabel=xlabel,
+                               ylim=ylim,
+                               yFormatter = yFormatter,
+                               min_best=True,
+                               matrices = square_matrices_set,
+                               save_path=f"{output_plot_dir}/matrix_id_curve_{compare_with}by{method}_nnz_blocks")
+
+    for routine in routines:
+        compare_with="clubs"
+        parameter = f"speedup_{routine}"
+        ylabel="Speedup after reordering"
+        xlabel=f"Matrix ID (sorted by {labels_dict[method]} speedup)"
+
+        ylim=[0.75,2]
+        if routine == "spmmbsr": ylim=[0.25,2]
+
+        yFormatter = percent_improvement_formatter
+        plot_improvement_by_matrix(dfs_reordering,
+                                methods= [compare_with,method],
+                                order_by=method,
+                                parameter=parameter,
+                                ylabel=ylabel,
+                                xlabel=xlabel,
+                                ylim=ylim,
+                                yFormatter = yFormatter,
+                                min_best=False,
+                                matrices = square_matrices_set,
+                                save_path=f"{output_plot_dir}/{routine}/{routine}_speedup_matrix_id_curve_{compare_with}by{method}")
+
 
 exit()
 
