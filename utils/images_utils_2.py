@@ -302,6 +302,83 @@ def make_improvements_barplot_and_distribution(dfs_reordering, methods, matrices
     plt.savefig(save_path)
     plt.close()
 
+def make_improvements_barplot(dfs_reordering, methods, matrices, allow_missing=False, min_best=False, parameter="None", ylabel="Speedup", save_path="test.png", verbose=False):
+    """
+    Creates a barplot with error bars and a sideways histogram overlayed on the right.
+    """
+    if "original" in methods:
+        methods.remove("original")
+
+    print("MAKING IMP PLOT")
+    improvements = {}
+    low_errors = []
+    up_errors = []
+    hist_data = {}  # To store data for histogram
+    
+    all_values = []  # Collect all data to determine common bins
+    for method in methods:
+        df = dfs_reordering[method].copy()
+        df = set_allowed_matrices(df, matrices)
+        df = find_best(df, best_parameter=parameter, min=min_best)
+
+        if not allow_missing and df[parameter].isna().any():
+            print(f"ERROR: MISSING VALUES for {parameter}")
+
+        if allow_missing:
+            df.loc[df[parameter].isna(), parameter] = float("-inf")
+
+        df.loc[df[parameter] == float("-inf") , parameter] = 0
+        df.loc[df[parameter] == float("inf") , parameter] = 10
+
+        # Collect data for histogram
+        hist_data[method] = df[parameter].values
+        all_values.extend(df[parameter].values)  # Add data to determine common bins
+
+        # Calculate percentiles for the bar plot
+        percentiles = np.percentile(df[parameter].values, [25, 50, 75])
+        print(method, percentiles)
+        improvements[method] = percentiles[1] 
+        if verbose: 
+            print(method, percentiles, improvements[method])
+        low_errors.append(improvements[method] - percentiles[0])
+        up_errors.append(percentiles[2] - improvements[method])
+
+    # Calculate appropriate y-limits
+    max_y = (max(up_errors) + max(improvements.values())) * 1.01
+    min_y = min(1, (min(improvements.values()) - min(low_errors)) * 0.9)
+    
+    fig = plt.figure(figsize=(10, 6))
+    
+    # Plot the bar chart
+    for i, method in enumerate(methods):
+        method_name = labels_dict[method]
+        plt.errorbar(method_name, improvements[method], yerr=[[low_errors[i]], [up_errors[i]]],
+                          color=color_dict[method], ecolor=color_dict[method], 
+                          elinewidth=2, capsize=5, marker='o', markersize=10,label=labels_dict[method])
+
+    #ax_point.legend(loc='best', frameon=False)
+    plt.gca().set_ylabel(ylabel)  # Set ylabel to "Speedup"
+    plt.gca().set_ylim(min_y, max_y)
+    plt.gca().grid(True, linestyle='--', alpha=0.3)
+    plt.gca().tick_params(axis='both', which='major', length=5, direction='in')
+    
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(percent_improvement_formatter))
+    
+    # Ensure that the y-ticks are visible for the bar plot
+    plt.gca().tick_params(axis='y', which='both', labelleft=True)
+    
+    #global legend
+    handles, labels = plt.gca().get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.05),
+           ncol=len(methods), frameon=False)
+    plt.subplots_adjust(top=1)  # Adjust the top margin as needed
+
+
+    # Adjust layout and save the plot
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+
 def make_improvements_barplot_and_distribution_2(dfs_reordering, methods, matrices, allow_missing=False, min_best=False, parameter="None", ylabel="Speedup", save_path="test.png", verbose=False):
     """
     Creates a barplot with error bars and a sideways histogram overlayed on the right.
@@ -539,7 +616,7 @@ def plot_improvement_by_matrix_old(dfs_reordering, order_by, methods, parameter 
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
 
-def plot_improvement_by_parameter(df, plot_parameter, methods, improvement_parameter="None", matrices=None, min_best=False, title="", yFormatter=lambda y, pos: y, ylim=[0, 5], xlabel="Default x Label", ylabel="Default Y Label", save_path="test_parameter_study.png"):
+def plot_improvement_by_matrix(dfs_reordering, order_by, methods, parameter="None", matrices=None, min_best=False, title="", yFormatter=lambda y, pos: y, ylim=[0, 5], xlabel="Default x Label", ylabel="Default Y Label", save_path="test_speedup_by_matrix.png"):
     """
     Plots the speedup for each matrix, sorted by speedups, for each method.
 
@@ -557,12 +634,10 @@ def plot_improvement_by_parameter(df, plot_parameter, methods, improvement_param
     - save_path: Path to save the plot image.
     """
 
-    df = set_allowed_matrices(df,matrices).copy()
-    dfs_parameter = {}
-    for parameter_value in df[plot_parameter].unique():
-        dfs_parameter[parameter_value] = df.loc[df[plot_parameter]==parameter_value]
-        dfs_parameter[parameter_value] = find_best(dfs_parameter[parameter_value], best_parameter=improvement_parameter, min=min_best)
+    new_df = {}
 
+    for method in methods:
+        matrices &= set(dfs_reordering[method]["matrix"].unique())
 
     for method in methods:
         new_df[method] = dfs_reordering[method].copy()
@@ -667,46 +742,53 @@ def plot_improvement_by_parameter(df, plot_parameter, methods, improvement_param
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
 
-def make_improvements_barplot_and_distribution_2(dfs_reordering, methods, matrices, allow_missing=False, min_best=False, parameter="None", ylabel="Speedup", save_path="test.png", verbose=False):
-    """
-    Creates a barplot with error bars and a sideways histogram overlayed on the right.
-    """
-    if "original" in methods:
-        methods.remove("original")
 
-    print("MAKING IMP PLOT")
+def plot_improvement_by_parameter(dfs_reorderings, plot_parameter, method = "clubs", improvement_parameter="None", allow_missing = True, matrices=None, min_best=False, title="", ylim=[0, 5], xlabel="Default x Label", ylabel="Default Y Label", save_path="test_parameter_study.png"):
+
+    df = dfs_reorderings[method].copy()
+    df = set_allowed_matrices(df,matrices)
+    
+    #separate df depending on parameter value
+    plot_params_values = df[plot_parameter].unique()
+    dfs_parameter = {}
+    for plot_parameter_value in plot_params_values:
+        dfs_parameter[plot_parameter_value] = df.loc[df[plot_parameter]==plot_parameter_value]
+        dfs_parameter[plot_parameter_value] = find_best(dfs_parameter[plot_parameter_value], best_parameter=improvement_parameter, min=min_best)
+        
+    #calculate common matrices
+    common_matrices = matrices
+    for plot_parameter_value in plot_params_values:
+        df = dfs_parameter[plot_parameter_value]
+        common_matrices &= set(df[~df[improvement_parameter].isna()]["matrix"].unique())
+
+    for plot_parameter_value in plot_params_values:
+        dfs_parameter[plot_parameter_value] = set_allowed_matrices(dfs_parameter[plot_parameter_value],common_matrices)
+
+
     improvements = {}
     low_errors = []
     up_errors = []
-    hist_data = {}  # To store data for histogram
-    
+    hist_data = {}  # To store data for histogram  
     all_values = []  # Collect all data to determine common bins
-    for method in methods:
-        df = dfs_reordering[method].copy()
-        df = set_allowed_matrices(df, matrices)
-        df = find_best(df, best_parameter=parameter, min=min_best)
+    for plot_parameter_value in plot_params_values:
+        df = dfs_parameter[plot_parameter_value]
+        if not allow_missing and df[improvement_parameter].isna().any():
+            print(f"ERROR: MISSING VALUES for {improvement_parameter}")
 
-        if not allow_missing and df[parameter].isna().any():
-            print(f"ERROR: MISSING VALUES for {parameter}")
-
-        if allow_missing:
-            df.loc[df[parameter].isna(), parameter] = float("-inf")
-
-        df.loc[df[parameter] == float("-inf") , parameter] = 0
-        df.loc[df[parameter] == float("inf") , parameter] = 10
+        df.loc[df[improvement_parameter] == float("-inf") , improvement_parameter] = 0
+        df.loc[df[improvement_parameter] == float("inf") , improvement_parameter] = 10
 
         # Collect data for histogram
-        hist_data[method] = df[parameter].values
-        all_values.extend(df[parameter].values)  # Add data to determine common bins
+        hist_data[plot_parameter_value] = df[improvement_parameter].values
+        all_values.extend(df[improvement_parameter].values)  # Add data to determine common bins
 
         # Calculate percentiles for the bar plot
-        percentiles = np.percentile(df[parameter].values, [25, 50, 75])
-        print(method, percentiles)
-        improvements[method] = percentiles[1] 
-        if verbose: 
-            print(method, percentiles, improvements[method])
-        low_errors.append(improvements[method] - percentiles[0])
-        up_errors.append(percentiles[2] - improvements[method])
+        percentiles = np.percentile(df[improvement_parameter].values, [25, 50, 75])
+        improvements[plot_parameter_value] = percentiles[1] 
+        low_errors.append(improvements[plot_parameter_value] - percentiles[0])
+        up_errors.append(percentiles[2] - improvements[plot_parameter_value])
+        print(plot_parameter,plot_parameter_value, percentiles, improvements[plot_parameter_value])
+
 
     # Calculate appropriate y-limits
     max_y = (max(up_errors) + max(improvements.values())) * 1.01
@@ -718,17 +800,102 @@ def make_improvements_barplot_and_distribution_2(dfs_reordering, methods, matric
 
     # Create figure and gridspec to manage layout
     fig = plt.figure(figsize=(10, 6))
-    figures = len(methods) + 1
-    gs = fig.add_gridspec(1, figures, width_ratios=[2,] + [1]*len(methods), wspace=0.05)
+
+    # Plot the bar chart
+    ax_point = fig.add_subplot(111)
+    for i, plot_parameter_value in enumerate(plot_params_values):
+        ax_point.errorbar(f"{plot_parameter_value}", improvements[plot_parameter_value], yerr=[[low_errors[i]], [up_errors[i]]], 
+                          elinewidth=2, capsize=5, marker='o', markersize=10,label=plot_parameter_value)
+
+    #ax_point.legend(loc='best', frameon=False)
+    ax_point.set_ylabel(ylabel)  # Set ylabel to "Speedup"
+    ax_point.set_ylim(min_y, max_y)
+    ax_point.grid(True, linestyle='--', alpha=0.3)
+    ax_point.tick_params(axis='both', which='major', length=5, direction='in')
+    
+    ax_point.yaxis.set_major_formatter(FuncFormatter(percent_improvement_formatter))
+    
+    # Ensure that the y-ticks are visible for the bar plot
+    ax_point.tick_params(axis='y', which='both', labelleft=True)
+    
+    #global legend
+    handles, labels = ax_point.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.05),
+           ncol=len(plot_params_values), frameon=False)
+    plt.subplots_adjust(top=1)  # Adjust the top margin as needed
+
+    # Adjust layout and save the plot
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+def plot_improvement_by_parameter_and_distribution(dfs_reorderings, plot_parameter, method = "clubs", improvement_parameter="None", allow_missing = True, matrices=None, min_best=False, title="", ylim=[0, 5], xlabel="Default x Label", ylabel="Default Y Label", save_path="test_parameter_study.png"):
+
+    df = dfs_reorderings[method].copy()
+    df = set_allowed_matrices(df,matrices)
+    
+    #separate df depending on parameter value
+    plot_params_values = df[plot_parameter].unique()
+    dfs_parameter = {}
+    for plot_parameter_value in plot_params_values:
+        dfs_parameter[plot_parameter_value] = df.loc[df[plot_parameter]==plot_parameter_value]
+        dfs_parameter[plot_parameter_value] = find_best(dfs_parameter[plot_parameter_value], best_parameter=improvement_parameter, min=min_best)
+        
+
+
+    #calculate common matrices
+    common_matrices = matrices
+    for plot_parameter_value in plot_params_values:
+        df = dfs_parameter[plot_parameter_value]
+        common_matrices &= set(df[~df[improvement_parameter].isna()]["matrix"].unique())
+
+    for plot_parameter_value in plot_params_values:
+        dfs_parameter[plot_parameter_value] = set_allowed_matrices(dfs_parameter[plot_parameter_value],common_matrices)
+
+
+    improvements = {}
+    low_errors = []
+    up_errors = []
+    hist_data = {}  # To store data for histogram  
+    all_values = []  # Collect all data to determine common bins
+    for plot_parameter_value in plot_params_values:
+        df = dfs_parameter[plot_parameter_value]
+        if not allow_missing and df[improvement_parameter].isna().any():
+            print(f"ERROR: MISSING VALUES for {improvement_parameter}")
+
+        df.loc[df[improvement_parameter] == float("-inf") , improvement_parameter] = 0
+        df.loc[df[improvement_parameter] == float("inf") , improvement_parameter] = 10
+
+        # Collect data for histogram
+        hist_data[plot_parameter_value] = df[improvement_parameter].values
+        all_values.extend(df[improvement_parameter].values)  # Add data to determine common bins
+
+        # Calculate percentiles for the bar plot
+        percentiles = np.percentile(df[improvement_parameter].values, [25, 50, 75])
+        improvements[plot_parameter_value] = percentiles[1] 
+        low_errors.append(improvements[plot_parameter_value] - percentiles[0])
+        up_errors.append(percentiles[2] - improvements[plot_parameter_value])
+        print(plot_parameter,plot_parameter_value, percentiles, improvements[plot_parameter_value])
+
+
+    # Calculate appropriate y-limits
+    max_y = (max(up_errors) + max(improvements.values())) * 1.01
+    min_y = min(1, (min(improvements.values()) - min(low_errors)) * 0.9)
+    
+    # Determine common bin edges for all histograms
+    #common_bins = [np.histogram_bin_edges(all_values, bins=200)]
+    common_bins = np.linspace(min_y,max_y,20)
+
+    # Create figure and gridspec to manage layout
+    fig = plt.figure(figsize=(10, 6))
+    figures = len(plot_params_values) + 1
+    gs = fig.add_gridspec(1, figures, width_ratios=[2,] + [1]*len(plot_params_values), wspace=0.05)
 
 
     # Plot the bar chart
     ax_point = fig.add_subplot(gs[0])
-    for i, method in enumerate(methods):
-        method_name = labels_dict[method]
-        ax_point.errorbar(method_name, improvements[method], yerr=[[low_errors[i]], [up_errors[i]]],
-                          color=color_dict[method], ecolor=color_dict[method], 
-                          elinewidth=2, capsize=5, marker='o', markersize=10,label=labels_dict[method])
+    for i, plot_parameter_value in enumerate(plot_params_values):
+        ax_point.errorbar(f"{plot_parameter_value}", improvements[plot_parameter_value], yerr=[[low_errors[i]], [up_errors[i]]], 
+                          elinewidth=2, capsize=5, marker='o', markersize=10,label=plot_parameter_value)
 
     #ax_point.legend(loc='best', frameon=False)
     ax_point.set_ylabel(ylabel)  # Set ylabel to "Speedup"
@@ -746,11 +913,11 @@ def make_improvements_barplot_and_distribution_2(dfs_reordering, methods, matric
     def hist_formatter(y, pos):
         return f'{y*100/len(matrices):.0f}%'
 
-    hist_axes = [None for i in range(len(methods))]
-    for i, method in enumerate(methods):
+    hist_axes = [None for i in range(len(plot_params_values))]
+    for i, plot_parameter_value in enumerate(plot_params_values):
         hist_axes[i] = fig.add_subplot(gs[1 + i])
-        hist_axes[i].hist(hist_data[method], bins=common_bins, orientation='horizontal', 
-                     alpha=0.9, color=color_dict[method], histtype='step', label=method, linewidth=2)
+        hist_axes[i].hist(hist_data[plot_parameter_value], bins=common_bins, orientation='horizontal', 
+                     alpha=0.9, histtype='step', label=plot_parameter_value, linewidth=2)
         #hist_axes[i].set_xlabel("Frequency")        
         hist_axes[i].set_xlim(0, 65)  # Auto-adjust x-limits for the histogram
 
@@ -775,7 +942,7 @@ def make_improvements_barplot_and_distribution_2(dfs_reordering, methods, matric
     #global legend
     handles, labels = ax_point.get_legend_handles_labels()
     fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.05),
-           ncol=len(methods), frameon=False)
+           ncol=len(plot_params_values), frameon=False)
     plt.subplots_adjust(top=1)  # Adjust the top margin as needed
 
 
@@ -783,7 +950,6 @@ def make_improvements_barplot_and_distribution_2(dfs_reordering, methods, matric
     # Adjust layout and save the plot
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
-
 
 
 

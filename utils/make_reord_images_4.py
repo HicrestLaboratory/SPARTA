@@ -116,8 +116,6 @@ for routine in routines:
         print(f"{routine}, {method} : mult {len(mats_mult)}, reord {len(mats_reord)}, common {len(mats_common)}")
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-
-
 #add mult times to reordering
 for method in methods:
     df_R = dfs_reordering[method]
@@ -191,7 +189,6 @@ for method in methods:
     dfs_reordering[method] = dfs_reordering[method].loc[~dfs_reordering[method]['matrix'].isin(failed_matrices)]
     print(f"removed METIS-FAILED matrices from METHOD {method}, now at {len(dfs_reordering[method]['matrix'].unique())}")
 
-
 #----------------------------------------------------------#
 # MATRIX SETS
 #----------------------------------------------------------
@@ -208,8 +205,6 @@ for routine in routines:
         common_matrices_set[routine] &= matrices_in_df
 
 print("ROWS IN PATOH:", method, dfs_reordering["patoh"].shape)
-
-
 print("ALL MATRICES: ", len(all_matrices_set))
 print("SQUARE MATRICES: ", len(square_matrices_set))
 print("RECTANGULAR MATRICES: ", len(rectangular_matrices_set))
@@ -231,7 +226,6 @@ for routine in routines:
 #----------------------------------------------------------
 # IMAGES
 #----------------------------------------------------------
-
 
 
 print("??????")
@@ -279,7 +273,7 @@ for method in methods:
     compare_with="clubs"
     parameter = "blocks_ratio"
     ylabel="Relative size (# of nonzero blocks) after reordering"
-    xlabel=f"Matrix ID (sorted by {labels_dict[method]} speedup)"
+    xlabel=f"Matrix ID (Sorted by {labels_dict[method]} Relative Size)"
     ylim=[0,4]
     yFormatter = percent_formatter
     plot_improvement_by_matrix(dfs_reordering,
@@ -316,6 +310,26 @@ for method in methods:
                                 matrices = square_matrices_set,
                                 save_path=f"{output_plot_dir}/{routine}/{routine}_speedup_matrix_id_curve_{compare_with}by{method}")
 
+
+
+
+for routine in routines:
+    
+    method = "clubs"
+    improvement_parameter = f"speedup_{routine}"
+    for plot_parameter in ["mask","tau"]:
+        plot_improvement_by_parameter(dfs_reordering, 
+                                  plot_parameter, 
+                                  method=method, 
+                                  improvement_parameter=improvement_parameter, 
+                                  allow_missing = True, 
+                                  matrices=all_matrices_set, 
+                                  min_best=False, 
+                                  title="", 
+                                  ylim=[0, 5], 
+                                  xlabel="Default x Label", 
+                                  ylabel="Default Y Label", 
+                                  save_path=f"{output_plot_dir}/{routine}/{routine}_parameter_study_{method}_{plot_parameter}")
 
 exit()
 
