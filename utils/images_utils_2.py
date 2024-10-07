@@ -212,6 +212,8 @@ def make_improvements_barplot_and_distribution(dfs_reordering, methods, matrices
     """
     Creates a barplot with error bars and a sideways histogram overlayed on the right.
     """
+
+    methods = methods.copy()
     if "original" in methods:
         methods.remove("original")
 
@@ -306,6 +308,7 @@ def make_improvements_barplot(dfs_reordering, methods, matrices, allow_missing=F
     """
     Creates a barplot with error bars and a sideways histogram overlayed on the right.
     """
+    methods = methods.copy()
     if "original" in methods:
         methods.remove("original")
 
@@ -383,6 +386,7 @@ def make_improvements_barplot_and_distribution_2(dfs_reordering, methods, matric
     """
     Creates a barplot with error bars and a sideways histogram overlayed on the right.
     """
+    methods = methods.copy()
     if "original" in methods:
         methods.remove("original")
 
@@ -742,6 +746,25 @@ def plot_improvement_by_matrix(dfs_reordering, order_by, methods, parameter="Non
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
 
+
+def speedup_vs_nnz_ratio(dfs_reorderings, method, x_parameter, y_parameter, matrices, xlim = [0,2], ylim=[0, 2], xlabel="Default x Label", ylabel="Default Y Label", save_path="test_ratio_study.png"):
+    df = dfs_reorderings[method].copy()
+    df = set_allowed_matrices(df, matrices)
+    df = find_best(df, best_parameter=x_parameter, min=False)
+    df = df.sort_values(by=x_parameter)
+
+    fig = plt.figure(figsize=(10, 6))
+    plt.plot(df[x_parameter].values, df[y_parameter].values, linestyle=" ", marker = "o", color = color_dict[method])
+    plt.gca().grid(True, linestyle='--', alpha=0.3)
+    plt.yscale("log")
+    plt.xscale("log")
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)  
+
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+    return
 
 def plot_improvement_by_parameter(dfs_reorderings, plot_parameter, method = "clubs", improvement_parameter="None", allow_missing = True, matrices=None, min_best=False, title="", ylim=[0, 5], xlabel="Default x Label", ylabel="Default Y Label", save_path="test_parameter_study.png"):
 

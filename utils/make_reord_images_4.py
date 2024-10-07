@@ -310,7 +310,16 @@ for method in methods:
                                 matrices = square_matrices_set,
                                 save_path=f"{output_plot_dir}/{routine}/{routine}_speedup_matrix_id_curve_{compare_with}by{method}")
 
-
+        speedup_vs_nnz_ratio(dfs_reordering,
+                            method=method,  
+                            x_parameter="nnz_blocks",
+                            y_parameter=f"time_{routine}", 
+                            matrices = square_matrices_set, 
+                            xlim = [0,2], 
+                            ylim=[0, 2], 
+                            xlabel="Number of nonzero blocks (64 x 64)",
+                            ylabel=f"{routine_labels[routine]} Time (ms)", 
+                            save_path=f"{output_plot_dir}/{routine}/{routine}_time_vs_nnzblocks_{method}")
 
 
 for routine in routines:
