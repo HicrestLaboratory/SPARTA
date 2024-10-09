@@ -33,7 +33,7 @@ routines = ["spmmcsr", "spmmbsr","spmvcsr", "spmvbsr"]
 #subdirectories
 csv_reordering_dir = root_dir + "reorder_csv"
 csv_multiplication_dir = root_dir + "mult_csv"
-output_plot_dir = root_dir + "reorder_plots/"
+output_plot_dir = root_dir + "reorder_plots"
 os.makedirs(output_plot_dir, exist_ok=True)
 for routine in routines:
     os.makedirs(f"{output_plot_dir}/{routine}", exist_ok=True)
@@ -120,14 +120,13 @@ for routine in routines:
 for method in methods:
     df_R = dfs_reordering[method]
 
-    print(dfs_reordering["patoh"].shape)
-
+    print(df_R.columns, dfs_reordering["original"].columns)
 
     #add original nz_blocks
     df_R_original = dfs_reordering["original"]
     df_R = df_R.merge(
-                df_R_original[["matrix","nnz_blocks"]],
-                on=["matrix",],
+                df_R_original[["matrix","nnz_blocks","rows","cols"]],
+                on=["matrix","rows","cols"],
                 how="left",
                 suffixes=('', f'_original')
             )
@@ -138,7 +137,7 @@ for method in methods:
         df_M_original = dfs_mult[routine]["original"]
         df_R = df_R.merge(
                     df_M_original[["matrix","time"]],
-                    on=["matrix",],
+                    on=["matrix"],
                     how="left",
                 )
         df_R.rename(columns={f'time': f'time_{routine}_original'}, inplace=True)
@@ -156,6 +155,39 @@ for method in methods:
     dfs_reordering[method] = df_R
 
 
+
+
+
+
+#______________________________________________________________________________________
+# use patoh for failed CSR metis data
+# Identify rows in df_metis where 'time_spmmcsr' is NaN
+df_metis = dfs_reordering["metis-edge-cut"]
+#df_patch = dfs_reordering["metis-volume"]
+df_patch = dfs_reordering["patoh"]
+
+
+# Merge df_metis with df_patoh on 'matrix' and 'parts'
+df_merged = df_metis.merge(
+    df_patch[['matrix', 'parts', 'time_spmmcsr']],
+    on=['matrix', 'parts'],
+    how='left',
+    suffixes=('', '_patoh')
+)
+
+# Fill missing 'time_spmmcsr' in df_metis with values from df_patoh
+df_merged['time_spmmcsr'] = df_merged['time_spmmcsr'].fillna(df_merged['time_spmmcsr_patoh'])
+
+# Drop the extra 'time_spmmcsr_patoh' column
+df_merged.drop(columns=['time_spmmcsr_patoh'], inplace=True)
+
+# If needed, update df_metis with the merged data
+dfs_reordering["metis-edge-cut"] = df_merged
+#______________________________________________________________________________________
+
+
+
+
 #calculate improvements and speedups
 for method in methods:
     df_R = dfs_reordering[method]
@@ -163,11 +195,13 @@ for method in methods:
     #calculate nz_blocks ratio
     df_R["blocks_ratio"] = df_R["nnz_blocks"]/df_R["nnz_blocks_original"]
     df_R["inverse_blocks_ratio"] = df_R["nnz_blocks_original"]/df_R["nnz_blocks"]
+    df_R["density"] = df_R["nnz"]/(df_R["nnz_blocks"]*(64**2))
 
     for routine in routines:
         df_R[f"speedup_{routine}"] = df_R[f"time_{routine}_original"]/df_R[f"time_{routine}"]
         df_R[f"original_{routine}_failed"] = df_R[f"time_{routine}_original"].isna()
         df_R[f"method_{routine}_failed"] = (df_R[f"time_{routine}"].isna())
+        df_R[f"gigaflops_{routine}"] = 10**(-8)*df_R["nnz"]*bsize/df_R[f"time_{routine}"]
 
         df_R.loc[df_R[f"original_{routine}_failed"] & ~df_R[f"method_{routine}_failed"], f"speedup_{routine}"] = float("inf")
         df_R.loc[~df_R[f"original_{routine}_failed"] & df_R[f"method_{routine}_failed"], f"speedup_{routine}"] = float("-inf")
@@ -188,6 +222,8 @@ print("FAILURES IN METIS REORDERING:", len(failed_matrices))
 for method in methods:
     dfs_reordering[method] = dfs_reordering[method].loc[~dfs_reordering[method]['matrix'].isin(failed_matrices)]
     print(f"removed METIS-FAILED matrices from METHOD {method}, now at {len(dfs_reordering[method]['matrix'].unique())}")
+
+
 
 #----------------------------------------------------------#
 # MATRIX SETS
@@ -228,21 +264,61 @@ for routine in routines:
 #----------------------------------------------------------
 
 
-print("??????")
-
+plt.rcParams.update({'font.size': 14})  # General font size
+plt.xlabel('X Label', fontsize=16)     # X-axis label font size
+plt.ylabel('Y Label', fontsize=16)     # Y-axis label font size
+plt.title('Plot Title', fontsize=18, fontweight='bold')  # Title font size and bold
 reordering_time_comparison(dfs_reordering["clubs"],df_club_reordering_time)
 
 best_barplot(dfs_reordering, square_matrices_set, rectangular_matrices_set, methods, 
                  parameter = "nnz_blocks", 
-                 ylabel = "# of times reordering results in fewest nonzero blocks",
-                 save_path=f"{output_plot_dir}/best_barplot_nnz_blocks")
+                 ylabel = f"# of Matrices (Highest Block Density)",
+                 fumbles=True,
+                 fumbles_parameter = "inverse_blocks_ratio",
+                 save_path=f"{output_plot_dir}/best_barplot_nnz_blocks_{bsize}")
+
 
 for routine in routines:
-    counts = count_best_method(dfs_reordering, square_matrices_set, methods, parameter= f"time_{routine}" )
+    plot_parameter = "mask"
+    method = "clubs"
+    best_barplot_parameter(dfs_reordering,
+                            square_matrices_set, 
+                            rectangular_matrices_set, 
+                            method = method, 
+                            plot_parameter = plot_parameter, 
+                            improvement_parameter = f"time_{routine}",
+                            ratio_parameter=f"speedup_{routine}",
+                            ylabel = "", 
+                            xlabel= "Mask Size for CluB",
+                            save_path=f"{output_plot_dir}/{routine}/{routine}_{plot_parameter}_time_best_plot_{method}")
+
+
+plot_parameter = "mask"
+method = "clubs"
+#plot_params_values = [1,16,64]
+plot_params_values = [1,16,64,256]
+best_barplot_parameter(dfs_reordering,
+                        square_matrices_set, 
+                        rectangular_matrices_set, 
+                        plot_params_values = plot_params_values,
+                        method = method, 
+                        plot_parameter = plot_parameter, 
+                        improvement_parameter = f"nnz_blocks",
+                        ratio_parameter="inverse_blocks_ratio",
+                        ylabel = "", 
+                        xlabel= "Mask Size for CluB",
+                        save_path=f"{output_plot_dir}/{plot_parameter}_nnzb_best_plot_{method}_{bsize}")
+
+
+
+for routine in routines:
+    counts = count_best_method(dfs_reordering, square_matrices_set, parameter= f"time_{routine}" )
     print(f"BEST COUNT: {routine}", counts)
     best_barplot(dfs_reordering, square_matrices_set, rectangular_matrices_set, methods, 
                  parameter = f"time_{routine}", 
-                 ylabel = "# of times reordering results in fastest multiplication",
+                 ylabel = "# of Matrices (Highest SpMM Speedup)",
+                 fumbles = True,
+                 fumbles_parameter = f"speedup_{routine}",
                  save_path=f"{output_plot_dir}/{routine}/{routine}_best_barplot_time")
     
 for routine in routines:
@@ -262,7 +338,7 @@ for routine in routines:
                             methods=methods,
                             matrices=matrix_set,
                             allow_missing=True,
-                            ylabel=f"{routine} Speedup (Median)",
+                            ylabel=f"{routine_labels[routine]} Speedup (Median)",
                             parameter=f"speedup_{routine}",
                             save_path=f"{output_plot_dir}/{routine}/{routine}_speedup_median_dist_time_square_matrices"
                             )
@@ -272,7 +348,7 @@ for routine in routines:
 for method in methods:
     compare_with="clubs"
     parameter = "blocks_ratio"
-    ylabel="Relative size (# of nonzero blocks) after reordering"
+    ylabel="Relative BSR size"
     xlabel=f"Matrix ID (Sorted by {labels_dict[method]} Relative Size)"
     ylim=[0,4]
     yFormatter = percent_formatter
@@ -283,10 +359,12 @@ for method in methods:
                                ylabel=ylabel,
                                xlabel=xlabel,
                                ylim=ylim,
+                               y_scale = "log",
+                               original_line_y = 1,
                                yFormatter = yFormatter,
                                min_best=True,
                                matrices = square_matrices_set,
-                               save_path=f"{output_plot_dir}/matrix_id_curve_{compare_with}by{method}_nnz_blocks")
+                               save_path=f"{output_plot_dir}/matrix_id_curve_{compare_with}by{method}_nnz_blocks_{bsize}")
 
     for routine in routines:
         compare_with="clubs"
@@ -310,144 +388,28 @@ for method in methods:
                                 matrices = square_matrices_set,
                                 save_path=f"{output_plot_dir}/{routine}/{routine}_speedup_matrix_id_curve_{compare_with}by{method}")
 
+        if False:
+            speedup_vs_nnz_ratio(dfs_reordering,
+                                method=method,  
+                                x_parameter="nnz_blocks",
+                                y_parameter=f"time_{routine}", 
+                                matrices = square_matrices_set, 
+                                xlim = [0,2], 
+                                ylim=[0, 2], 
+                                xlabel="Number of Nonzero Blocks (64 x 64)",
+                                ylabel=f"{routine_labels[routine]} Time (ms)", 
+                                save_path=f"{output_plot_dir}/{routine}/{routine}_time_vs_nnzblocks_{method}_{bsize}")
+
         speedup_vs_nnz_ratio(dfs_reordering,
                             method=method,  
-                            x_parameter="nnz_blocks",
-                            y_parameter=f"time_{routine}", 
+                            x_parameter="density",
+                            y_parameter=f"gigaflops_{routine}", 
                             matrices = square_matrices_set, 
                             xlim = [0,2], 
-                            ylim=[0, 2], 
-                            xlabel="Number of nonzero blocks (64 x 64)",
-                            ylabel=f"{routine_labels[routine]} Time (ms)", 
-                            save_path=f"{output_plot_dir}/{routine}/{routine}_time_vs_nnzblocks_{method}")
-
-
-for routine in routines:
-    
-    method = "clubs"
-    improvement_parameter = f"speedup_{routine}"
-    for plot_parameter in ["mask","tau"]:
-        plot_improvement_by_parameter(dfs_reordering, 
-                                  plot_parameter, 
-                                  method=method, 
-                                  improvement_parameter=improvement_parameter, 
-                                  allow_missing = True, 
-                                  matrices=all_matrices_set, 
-                                  min_best=False, 
-                                  title="", 
-                                  ylim=[0, 5], 
-                                  xlabel="Default x Label", 
-                                  ylabel="Default Y Label", 
-                                  save_path=f"{output_plot_dir}/{routine}/{routine}_parameter_study_{method}_{plot_parameter}")
-
-exit()
-
-make_improvements_barplot(dfs_reordering, 
-                    methods,
-                    parameter="VBR_nzblocks_count",
-                    ylabel="Speed-up against non-reordered matrix",
-                    save_path= f"{output_plot_dir}/blocks_speedup_median_{exp_methods_string}")
-
-
-exit()
-
-
-for exp_methods in comparisons:
-    exp_methods_string = "_".join(exp_methods)
-    print("*****************")
-    print("Comparing: ", exp_methods)
-
-    n_matrices = len(find_common_matrices(best_dfs, exp_methods))
-    print(f"Found {n_matrices} common matrices")
-
-    speedups = calculate_improvement(best_dfs, exp_methods[1:], parameter="VBR_nzblocks_count")
-    print("SPEEDUPS GEOMETRIC MEAN ON COMMON MATRICES: ", speedups)
-
-    make_improvements_violin(best_dfs, 
-                        exp_methods[1:],
-                        parameter="VBR_nzblocks_count",
-                        title=f"Median, 25th and 75th percentile of block number reduction on {n_matrices} matrices for {exp_methods}",
-                        ylabel="Block number reduction against non-reordered matrix",
-                        save_path= f"{output_plot_dir}/block_speedup_violin_{exp_methods_string}")
-
-
-    plot_improvements_distribution(best_dfs, 
-                              exp_methods, 
-                              parameter="VBR_nzblocks_count",
-                              title=f"Cumulative distribution of block number reduction for on {n_matrices} matrices \n ({exp_methods})",
-
-                              save_path= f"{output_plot_dir}/block_cumulative_hist_{exp_methods_string}.png"
-                              )
-    
-    order_by= "clubs"
-    plot_improvement_by_matrix( best_dfs, 
-                            order_by,
-                            exp_methods,
-                            parameter="VBR_nzblocks_count", 
-                            show="reduction_percent",
-                            ylim=[0,400],
-                            ylabel="Storage cost (compared to original)",
-                            title=f"Storage cost by matrix for on {n_matrices} matrices \n ({exp_methods})",
-                            save_path= f"{output_plot_dir}/block_matrix_order_by_{order_by}_{exp_methods_string}.png"
-                              )
-    
-    order_by= "metis-edge-cut"
-    plot_improvement_by_matrix( best_dfs, 
-                            order_by,
-                            exp_methods, 
-                            parameter="VBR_nzblocks_count", 
-                            show="reduction_percent",
-                            ylim=[0,400],
-                            ylabel="Storage cost (compared to original)",
-                            title=f"Block number by matrix on {n_matrices} matrices \n ({exp_methods})",
-                            save_path= f"{output_plot_dir}/block_matrix_order_by_{order_by}_{exp_methods_string}.png"
-                              )
-    
-#ONLY CLUBS
-#_____________________________________________________________________________
-
-exp_methods =  ["original", "clubs"]
-matrices = rectangular_matrices
-order_by= "clubs"
-
-plot_improvement_by_matrix( best_dfs, 
-                        order_by,
-                        exp_methods,
-                        parameter="VBR_nzblocks_count", 
-                        matrices=matrices,
-                        title=f"Block reduction by matrix for block number reduction on {n_matrices} matrices \n ({exp_methods})",
-                        save_path= f"{output_plot_dir}/block_matrices_rect_order_by_{order_by}_{exp_methods_string}.png"
-                            )
-
-matrices = square_matrices
-plot_improvement_by_matrix( best_dfs, 
-                        order_by,
-                        exp_methods,
-                        parameter="VBR_nzblocks_count", 
-                        matrices=matrices,
-                        title=f"Block reduction by matrix for block number reduction on {n_matrices} matrices \n ({exp_methods})",
-                        save_path= f"{output_plot_dir}/block_matrices_square_order_by_{order_by}_{exp_methods_string}.png"
-                            )
-
-matrix_plot_dir = f"{output_plot_dir}/parameter_studies/"
-os.makedirs(matrix_plot_dir, exist_ok=True)
-method = "clubs"
-for param in ["mask","centroid","tau"]:
-    plot_club_performance_by_param(dfs_reordering, 
-                                method=method,
-                                param = param,
-                                performance_param="VBR_nzblocks_count",
-                                title=f'Performance variation under {param}', 
-                                save_name=f"{matrix_plot_dir}/block_{method}_performance_variation_by_{param}")
-
-#TRY: CALCULATE TOTAL INCLUDING RECTANGULAR FOR METIS
-
-
-
-
-
-
-
-
-
+                            ylim=[0, 2],
+                            xscale="linear",
+                            yscale="log", 
+                            xlabel="Density Within Nonzero Area",
+                            ylabel=f"{routine_labels[routine]} GFLOPs", 
+                            save_path=f"{output_plot_dir}/{routine}/{routine}_gflops_vs_density_{method}_{bsize}")
 
