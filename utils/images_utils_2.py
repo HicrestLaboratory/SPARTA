@@ -189,7 +189,7 @@ def reordering_time_comparison(df,df_reordering_times):
 
 
 def best_barplot(dfs_reordering, square_matrices, rectangular_matrices, methods, fumbles = True, fumbles_parameter = "speedup_spmmcsr", min_best = True, parameter = "time_spmmcsr", ylabel = "", save_path = ""):
-    fumbles_colors = ["gray"]
+    fumbles_colors = ["#D3D3D3"]
     square_counts = count_best_method(dfs_reordering, square_matrices, parameter)
     rect_counts = count_best_method(dfs_reordering, rectangular_matrices, parameter)
     #worse_counts = count_fumbles(df, )
@@ -270,11 +270,111 @@ def best_barplot(dfs_reordering, square_matrices, rectangular_matrices, methods,
     plt.close()
 
 
+def best_barplot_bsize(dfs_reordering, square_matrices, rectangular_matrices, methods, fumbles = True, block_sizes = [32,64], fumbles_parameter = "speedup_spmmcsr", min_best = True, parameter = "time_spmmcsr", ylabel = "", save_path = ""):
+        
+        # Initialize data structures to collect counts
+    square_counts = {b: {} for b in block_sizes}
+    rect_counts = {b: {} for b in block_sizes}
+    worse_counts = {b: {} for b in block_sizes}
+
+
+    fumbles_color = "#D3D3D3"
+    fumbles_color_palette = ["#D3D3D3", "#A9A9A9", "#808080", "#696969", "#505050"]
+
+    b_size_hatches = ["","X",".."]
+
+    # Loop over block sizes and collect counts
+    for i, b in enumerate(block_sizes):
+        # Update parameters for the current block size
+        fumbles_parameter_b = f"{fumbles_parameter}_{b}"
+        parameter_b = f"{parameter}_{b}"
+
+        # Collect counts for each method
+        square_counts[b] = count_best_method(dfs_reordering, square_matrices, parameter_b)
+        rect_counts[b] = count_best_method(dfs_reordering, rectangular_matrices, parameter_b)
+
+        # Collect fumbles counts
+        worse_counts[b] = {}
+        for method in methods:
+            temp_method_df = dfs_reordering[method].copy()
+            temp_method_df = set_allowed_matrices(temp_method_df, square_matrices)
+            temp_method_df = find_best(temp_method_df, best_parameter=parameter_b, min=min_best)
+            fumble_count = (temp_method_df[fumbles_parameter_b] < .98).sum()
+            worse_counts[b][method] = -fumble_count  # Negative for plotting below x-axis
+
+    # Prepare for plotting
+    methods_names = [labels_dict[method] for method in methods]
+    num_methods = len(methods)
+    num_block_sizes = len(block_sizes)
+    bar_width = 0.8 / num_block_sizes  # Total bar width per method is 0.8
+    index = np.arange(num_methods)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Plot bars for each block size
+    for i, b in enumerate(block_sizes):
+        # Calculate positions for each bar within a group
+        offset = (i - (num_block_sizes - 1) / 2) * bar_width
+        positions = index + offset
+
+        # Plot total counts (square + rectangular)
+        bars_square = ax.bar(positions, list(square_counts[b].values()), 
+                width=bar_width,
+                label=methods_names,
+                hatch=b_size_hatches[i],
+                color=[color_dict[m] for m in methods],
+                edgecolor='black')
+
+        # Plot fumbles counts if applicable
+        if fumbles:
+            ax.bar(positions, list(worse_counts[b].values()), width=bar_width,
+                color=fumbles_color,
+                hatch = b_size_hatches[i],
+                edgecolor='black')
+
+    # Set labels and title
+    ax.set_ylabel(ylabel)
+    ax.set_xticks(index)
+    ax.set_xticklabels(methods_names)
+
+    plt.ylabel(ylabel)
+
+    #global legend
+    handles, labels = plt.gca().get_legend_handles_labels()
+    plt.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.05),
+           ncol=len(methods), frameon=False)
+    plt.subplots_adjust(top=1)  # Adjust the top margin as needed
+
+    legend_elements = [Patch(facecolor='white', edgecolor='grey', label=f' Block Size {b}', hatch = b_size_hatches[i]) for i,b in enumerate(block_sizes)]
+    
+    legend_elements.append(Patch(facecolor=fumbles_color, edgecolor='grey', label=f'Fumbles'))
+
+    # Add custom legend
+    plt.legend(handles=legend_elements)
+    
+    
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5, color='gray', alpha=0.7)
+    plt.tick_params(axis='both', which='major', labelsize=12, length=6, width=2, direction='inout')
+    plt.tick_params(axis='both', which='minor', length=4, width=1, direction='inout')
+
+    plt.draw()  # Ensure the plot is fully drawn to get correct axis limits
+
+    current_ymin, current_ymax = ax.get_ylim()
+    ax.axhspan(ymin=current_ymin, ymax=0, facecolor='#FFCCCC', alpha=0.2)
+
+
+    plt.tight_layout()
+
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+
 def best_barplot_parameter(dfs_reordering,square_matrices, rectangular_matrices, method, plot_params_values = [], plot_parameter = "mask",improvement_parameter = "None", ratio_parameter = "None", xlabel = "", ylabel = "", save_path = "", min_best = True):
 
     df = dfs_reordering[method].copy()
     colors = ['#FFD699', '#FFB84D', '#FF8C00', '#CC7000']
     fumbles_colors = ["gray"]
+
     #separate df depending on parameter value
     if not plot_params_values: plot_params_values = df[plot_parameter].unique()
     plot_params_labels = [f"{p}" for p in plot_params_values]
@@ -337,6 +437,90 @@ def best_barplot_parameter(dfs_reordering,square_matrices, rectangular_matrices,
 
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
+
+
+def best_barplot_parameter_bsize(dfs_reordering, matrices, method, plot_params_values = [], block_sizes = [16,32], plot_parameter = "mask",improvement_parameter = "None", ratio_parameter = "None", xlabel = "", ylabel = "", save_path = "", min_best = True):
+
+    df = dfs_reordering[method].copy()
+    colors = ['#FFD699', '#FFB84D', '#FF8C00', '#CC7000']
+    fumbles_color = "#D3D3D3"
+    b_size_hatches = ["","X",".."]
+
+
+    bar_width = 0.8 / len(block_sizes)  # Total bar width per method is 0.8
+
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    for i,b in enumerate(block_sizes):
+        improvement_parameter_b = f"{improvement_parameter}_{b}"
+        ratio_parameter_b = f"{ratio_parameter}_{b}"
+
+        index = np.arange(len(plot_params_values))
+        offset = (i - (len(block_sizes) - 1) / 2) * bar_width
+        positions = index + offset
+
+        #separate df depending on parameter value
+        if not plot_params_values: plot_params_values = df[plot_parameter].unique()
+        plot_params_labels = [f"{p}" for p in plot_params_values]
+        dfs_parameter = {}
+        worse_counts = {}
+        for plot_parameter_value in plot_params_values:
+            dfs_parameter[plot_parameter_value] = df.loc[df[plot_parameter]==plot_parameter_value]
+            dfs_parameter[plot_parameter_value] = find_best(dfs_parameter[plot_parameter_value], best_parameter=improvement_parameter_b, min=min_best)
+            worse_counts[plot_parameter_value] = (dfs_parameter[plot_parameter_value][ratio_parameter_b] < .98).sum()
+
+        matrix_counts = list(count_best_method(dfs_parameter,matrices,improvement_parameter_b).values())
+
+        # Plot total counts (square + rectangular)
+        bars_square = ax.bar(positions, matrix_counts, 
+                width=bar_width,
+                label=plot_params_labels,
+                hatch=b_size_hatches[i],
+                color=colors,
+                edgecolor='black')
+
+        # Plot fumbles counts if applicable
+        ax.bar(positions, [-worse_counts[val] for val in plot_params_values], 
+            width=bar_width,
+            color=fumbles_color,
+            hatch = b_size_hatches[i],
+            edgecolor='black')
+
+
+
+    plt.ylabel(ylabel)
+    plt.xlabel(xlabel)
+    plt.xticks(index, plot_params_labels)
+
+    #global legend
+    handles, labels = plt.gca().get_legend_handles_labels()
+    plt.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.05),
+           ncol=len(plot_params_values), frameon=False)
+    plt.subplots_adjust(top=1)  # Adjust the top margin as needed
+
+    legend_elements = [Patch(facecolor='white', edgecolor='grey', label=f' Block Size {b}', hatch = b_size_hatches[i]) for i,b in enumerate(block_sizes)]
+    
+    legend_elements.append(Patch(facecolor=fumbles_color, edgecolor='grey', label=f'Fumbles'))
+
+    # Add custom legend
+    plt.legend(handles=legend_elements)
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5, color='gray', alpha=0.7)
+    plt.tick_params(axis='both', which='major', labelsize=12, length=6, width=2, direction='inout')
+    plt.tick_params(axis='both', which='minor', length=4, width=1, direction='inout')
+
+
+    plt.draw()  # Ensure the plot is fully drawn to get correct axis limits
+
+    current_ymin, current_ymax = ax.get_ylim()
+    ax.axhspan(ymin=current_ymin, ymax=0, facecolor='#FFCCCC', alpha=0.2)
+
+
+    plt.tight_layout()
+
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
 
 def make_improvements_barplot_and_distribution(dfs_reordering, methods, matrices, set_negative_1=False, set_missing_1=False, min_best=False, parameter="None", ylabel="Speedup", save_path="test.png", verbose=False):
     """
@@ -442,7 +626,6 @@ def make_improvements_barplot(dfs_reordering, methods, matrices, allow_missing=F
     if "original" in methods:
         methods.remove("original")
 
-    print("MAKING IMP PLOT")
     improvements = {}
     low_errors = []
     up_errors = []
@@ -469,7 +652,6 @@ def make_improvements_barplot(dfs_reordering, methods, matrices, allow_missing=F
 
         # Calculate percentiles for the bar plot
         percentiles = np.percentile(df[parameter].values, [25, 50, 75])
-        print(method, percentiles)
         improvements[method] = percentiles[1] 
         if verbose: 
             print(method, percentiles, improvements[method])
@@ -825,22 +1007,27 @@ def plot_improvement_by_matrix(dfs_reordering, order_by, methods, parameter="Non
         y_values_adjusted[pos_inf_mask] = ylim[1]
 
         # Plot finite values
-        plt.scatter(x_values[finite_mask], y_values_adjusted[finite_mask],
-                 color=color_dict[method],
-                 marker='o',
-                 alpha=0.7,
-                 linestyle='',
-                 edgecolor=edgecolor,
-                 linewidths=0.1,
-                 s=35,
-                 label=f'{labels_dict[method]}' if label_method else "_nolegend_")
+        x = x_values[finite_mask]
+        y = y_values_adjusted[finite_mask]
+        if False:
+            plt.scatter(x, y,
+                        color=color_dict[method],
+                        marker='o',
+                        alpha=0.7,
+                        linestyle='',
+                        edgecolor=edgecolor,
+                        linewidths=0.1,
+                        s=35,
+                        label=f'{labels_dict[method]}' if label_method else "_nolegend_")
 
         # Plot -inf values
-        plt.scatter(x_values[neg_inf_mask], y_values_adjusted[neg_inf_mask],
-                 color=color_dict[method],
-                 marker='x',
-                 s=35,
-                 label='_nolegend_')
+        
+        if False:
+            plt.scatter(x_values[neg_inf_mask], y_values_adjusted[neg_inf_mask],
+                    color=color_dict[method],
+                    marker='x',
+                    s=35,
+                    label='_nolegend_')
 
         # Plot +inf values
         if False:
@@ -849,6 +1036,8 @@ def plot_improvement_by_matrix(dfs_reordering, order_by, methods, parameter="Non
                     marker='^',
                     markersize=5,
                     label='_nolegend_')
+
+
 
     # Plot data for each method
     plot_method_data(order_by)
