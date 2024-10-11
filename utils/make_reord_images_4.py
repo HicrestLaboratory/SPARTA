@@ -220,7 +220,11 @@ for method in methods:
         df_R[f"speedup_{routine}"] = df_R[f"time_{routine}_original"]/df_R[f"time_{routine}"]
         df_R[f"original_{routine}_failed"] = df_R[f"time_{routine}_original"].isna()
         df_R[f"method_{routine}_failed"] = (df_R[f"time_{routine}"].isna())
-        df_R[f"gigaflops_{routine}"] = 10**(-8)*df_R["nnz"]*b/df_R[f"time_{routine}"]
+        
+        if "spmm" in routine:
+            df_R[f"gigaflops_{routine}"] = 10**(-8)*2*df_R["nnz"]*b/df_R[f"time_{routine}"]
+        else:
+            df_R[f"gigaflops_{routine}"] = 10**(-8)*2*df_R["nnz"]/df_R[f"time_{routine}"]
 
         df_R.loc[df_R[f"original_{routine}_failed"] & ~df_R[f"method_{routine}_failed"], f"speedup_{routine}"] = float("inf")
         df_R.loc[~df_R[f"original_{routine}_failed"] & df_R[f"method_{routine}_failed"], f"speedup_{routine}"] = float("-inf")
@@ -281,7 +285,22 @@ for routine in routines:
 #----------------------------------------------------------
 # IMAGES
 #----------------------------------------------------------
+gflopls_img = False
+matrix_id_routine_imgs = True
+matrix_id_blocks_img = True
+histograms_imgs = False
+mask_images_blocks = False
+mask_images_routine = False
+best_barplots = False
 
+
+#gflopls_img = True
+#matrix_id_routine_imgs = True
+#matrix_id_blocks_img = True
+#histograms_imgs = True
+#mask_images_blocks = True
+mask_images_routine = True
+#best_barplots = True
 
 plt.rcParams.update({'font.size': 14})  # General font size
 plt.xlabel('X Label', fontsize=16)     # X-axis label font size
@@ -289,134 +308,151 @@ plt.ylabel('Y Label', fontsize=16)     # Y-axis label font size
 plt.title('Plot Title', fontsize=18, fontweight='bold')  # Title font size and bold
 reordering_time_comparison(dfs_reordering["clubs"],df_club_reordering_time)
 
-best_barplot(dfs_reordering, square_matrices_set, rectangular_matrices_set, methods, 
-                 parameter = f"nnz_blocks_{bsize}", 
-                 ylabel = f"# of Matrices (Highest Block Density)",
-                 fumbles=True,
-                 fumbles_parameter = f"inverse_blocks_ratio_{bsize}",
-                 save_path=f"{output_plot_dir}/best_barplot_nnz_blocks_{bsize}")
 
-best_barplot_bsize(dfs_reordering, square_matrices_set, rectangular_matrices_set, methods, 
-                 block_sizes = [32,64],
-                 parameter = f"nnz_blocks", 
-                 ylabel = f"# of Matrices (Highest Block Density)",
-                 fumbles=True,
-                 fumbles_parameter = f"inverse_blocks_ratio",
-                 save_path=f"{output_plot_dir}/best_barplot_nnz_blocks_ALL_BSIZES.pdf")
+if best_barplots:
+
+    if False:
+        best_barplot(dfs_reordering, square_matrices_set, rectangular_matrices_set, methods, 
+                        parameter = f"nnz_blocks_{bsize}", 
+                        ylabel = f"# of Matrices (Best Density)",
+                        fumbles=True,
+                        fumbles_parameter = f"inverse_blocks_ratio_{bsize}",
+                        save_path=f"{output_plot_dir}/best_barplot_nnz_blocks_{bsize}")
+
+    best_barplot_bsize(dfs_reordering, square_matrices_set, rectangular_matrices_set, methods, 
+                    block_sizes = [16,32,64],
+                    parameter = f"nnz_blocks", 
+                    ylabel = f"# of Matrices (Best Density)",
+                    fumbles=True,
+                    fumbles_parameter = f"inverse_blocks_ratio",
+                    save_path=f"{output_plot_dir}/best_barplot_nnz_blocks_ALL_BSIZES.pdf")
 
 
-for routine in routines:
+
+if mask_images_routine:
+    for routine in routines:
+        plot_parameter = "mask"
+        method = "clubs"
+
+        best_barplot_parameter(dfs_reordering,
+                                square_matrices_set, 
+                                rectangular_matrices_set, 
+                                method = method, 
+                                plot_parameter = plot_parameter, 
+                                improvement_parameter = f"time_{routine}",
+                                ratio_parameter=f"speedup_{routine}",
+                                ylabel = f"# of Matrices (Best Speedup)", 
+                                xlabel= "Mask Size for CluB",
+                                save_path=f"{output_plot_dir}/{routine}/{routine}_{plot_parameter}_time_best_plot_{method}.pdf")
+
+        plot_improvement_by_parameter(dfs_reordering, 
+                                    plot_parameter = plot_parameter, 
+                                    method = "clubs", 
+                                    improvement_parameter=f"speedup_{routine}", 
+                                    allow_missing = True, 
+                                    matrices=all_matrices_set, 
+                                    min_best=False, 
+                                    title="", 
+                                    ylim=[0, 5], 
+                                    xlabel="Mask Size for CluB", 
+                                    ylabel=f"{routine_labels[routine]} Speedup", 
+                                    save_path=f"{output_plot_dir}/{routine}/{routine}_{plot_parameter}_median_plot_{method}.pdf")
+
+        plot_improvement_by_parameter_and_distribution(dfs_reordering, 
+                                    plot_parameter = plot_parameter, 
+                                    method = "clubs", 
+                                    improvement_parameter=f"speedup_{routine}", 
+                                    allow_missing = True, 
+                                    matrices=all_matrices_set, 
+                                    min_best=False, 
+                                    title="", 
+                                    ylim=[0, 5], 
+                                    xlabel="Mask Size for CluB", 
+                                    ylabel=f"{routine_labels[routine]} Speedup", 
+                                    save_path=f"{output_plot_dir}/{routine}/{routine}_{plot_parameter}_median_and_hist_plot_{method}.pdf")
+
+
+if mask_images_blocks:
     plot_parameter = "mask"
     method = "clubs"
-    best_barplot_parameter(dfs_reordering,
-                            square_matrices_set, 
-                            rectangular_matrices_set, 
+    #plot_params_values = [1,16,64]
+    plot_params_values = [1,16,64,256]
+    
+    if False:
+        best_barplot_parameter(dfs_reordering,
+                                square_matrices_set, 
+                                rectangular_matrices_set, 
+                                plot_params_values = plot_params_values,
+                                method = method, 
+                                plot_parameter = plot_parameter, 
+                                improvement_parameter = f"nnz_blocks_{bsize}",
+                                ratio_parameter=f"inverse_blocks_ratio_{bsize}",
+                                ylabel = "# of Matrices (Best Speedup)", 
+                                xlabel= "Mask Size for CluB",
+                                save_path=f"{output_plot_dir}/{plot_parameter}_nnzb_best_plot_{method}_{bsize}.pdf")
+
+    best_barplot_parameter_bsize(dfs_reordering,
+                            matrices = all_matrices_set,
+                            plot_params_values = plot_params_values,
                             method = method, 
                             plot_parameter = plot_parameter, 
-                            improvement_parameter = f"time_{routine}",
-                            ratio_parameter=f"speedup_{routine}",
+                            block_sizes = b_sizes,
+                            improvement_parameter = f"nnz_blocks",
+                            ratio_parameter=f"inverse_blocks_ratio",
                             ylabel = "", 
                             xlabel= "Mask Size for CluB",
-                            save_path=f"{output_plot_dir}/{routine}/{routine}_{plot_parameter}_time_best_plot_{method}.pdf")
-
-
-plot_parameter = "mask"
-method = "clubs"
-#plot_params_values = [1,16,64]
-plot_params_values = [1,16,64,256]
-best_barplot_parameter(dfs_reordering,
-                        square_matrices_set, 
-                        rectangular_matrices_set, 
-                        plot_params_values = plot_params_values,
-                        method = method, 
-                        plot_parameter = plot_parameter, 
-                        improvement_parameter = f"nnz_blocks_{bsize}",
-                        ratio_parameter=f"inverse_blocks_ratio_{bsize}",
-                        ylabel = "", 
-                        xlabel= "Mask Size for CluB",
-                        save_path=f"{output_plot_dir}/{plot_parameter}_nnzb_best_plot_{method}_{bsize}.pdf")
-
-best_barplot_parameter_bsize(dfs_reordering,
-                        matrices = all_matrices_set,
-                        plot_params_values = plot_params_values,
-                        method = method, 
-                        plot_parameter = plot_parameter, 
-                        block_sizes = b_sizes,
-                        improvement_parameter = f"nnz_blocks",
-                        ratio_parameter=f"inverse_blocks_ratio",
-                        ylabel = "", 
-                        xlabel= "Mask Size for CluB",
-                        save_path=f"{output_plot_dir}/{plot_parameter}_nnzb_best_plot_{method}_ALL_SIZES.pdf")
+                            save_path=f"{output_plot_dir}/{plot_parameter}_nnzb_best_plot_{method}_ALL_SIZES.pdf")
 
 
 
 
 for routine in routines:
+
     counts = count_best_method(dfs_reordering, square_matrices_set, parameter= f"time_{routine}" )
     print(f"BEST COUNT: {routine}", counts)
     best_barplot(dfs_reordering, square_matrices_set, rectangular_matrices_set, methods, 
                  parameter = f"time_{routine}", 
-                 ylabel = "# of Matrices (Highest SpMM Speedup)",
+                 ylabel = "# of Matrices (Best Speedup)",
                  fumbles = True,
                  fumbles_parameter = f"speedup_{routine}",
                  save_path=f"{output_plot_dir}/{routine}/{routine}_best_barplot_time.pdf")
-    
-for routine in routines:
-
-    matrix_set = common_matrices_set[routine]
-    make_improvements_barplot_and_distribution_2(dfs_reordering=dfs_reordering, 
-                            methods=methods,
-                            matrices=matrix_set,
-                            ylabel=f"{routine} Speedup (Median)",
-                            parameter=f"speedup_{routine}",
-                            save_path=f"{output_plot_dir}/{routine}/{routine}_speedup_median_dist_time_common_matrices.pdf"
-                            )
-    
-
-    matrix_set = square_matrices_set
-    make_improvements_barplot_and_distribution_2(dfs_reordering=dfs_reordering, 
-                            methods=methods,
-                            matrices=matrix_set,
-                            allow_missing=True,
-                            ylabel=f"{routine_labels[routine]} Speedup (Median)",
-                            parameter=f"speedup_{routine}",
-                            save_path=f"{output_plot_dir}/{routine}/{routine}_speedup_median_dist_time_square_matrices.pdf"
-                            )
 
 
 
-for method in methods:
-    compare_with="clubs"
-    parameter = f"blocks_ratio_{bsize}"
-    ylabel="Relative BSR size"
-    xlabel=f"Matrix ID (Sorted by {labels_dict[method]} Relative Size)"
-    ylim=[0,4]
-    yFormatter = percent_formatter
-
-    plot_improvement_by_matrix(dfs_reordering,
-                                methods= [compare_with,method],
-                                order_by=method,
-                                parameter=parameter,
-                                ylabel=ylabel,
-                                xlabel=xlabel,
-                                ylim=ylim,
-                                y_scale = "log",
-                                original_line_y = 1,
-                                yFormatter = yFormatter,
-                                min_best=True,
-                                matrices = square_matrices_set,
-                                save_path=f"{output_plot_dir}/matrix_id_curve_{compare_with}by{method}_nnz_blocks_{bsize}.pdf")
-
+if histograms_imgs:  
     for routine in routines:
+
+        matrix_set = common_matrices_set[routine]
+        make_improvements_barplot_and_distribution_2(dfs_reordering=dfs_reordering, 
+                                methods=methods,
+                                matrices=matrix_set,
+                                ylabel=f"{routine_labels[routine]} Speedup",
+                                parameter=f"speedup_{routine}",
+                                save_path=f"{output_plot_dir}/{routine}/{routine}_speedup_median_dist_time_common_matrices.pdf"
+                                )
+        
+
+        matrix_set = square_matrices_set
+        make_improvements_barplot_and_distribution_2(dfs_reordering=dfs_reordering, 
+                                methods=methods,
+                                matrices=matrix_set,
+                                allow_missing=True,
+                                ylabel=f"{routine_labels[routine]} Speedup",
+                                parameter=f"speedup_{routine}",
+                                save_path=f"{output_plot_dir}/{routine}/{routine}_speedup_median_dist_time_square_matrices.pdf"
+                                )
+
+
+
+
+if matrix_id_blocks_img:
+    for method in methods:
         compare_with="clubs"
-        parameter = f"speedup_{routine}"
-        ylabel="Speedup after reordering"
-        xlabel=f"Matrix ID (sorted by {labels_dict[method]} speedup)"
-
-        ylim=[0.75,2]
-        if routine == "spmmbsr": ylim=[0.25,2]
-
-        yFormatter = percent_improvement_formatter
+        parameter = f"blocks_ratio_{bsize}"
+        ylabel="Increase in Number of Nonzero Blocks"
+        xlabel=f"Matrix ID (Sorted by {labels_dict[method]} Increase)"
+        ylim=[0,4]
+        yFormatter = percent_formatter
 
         plot_improvement_by_matrix(dfs_reordering,
                                     methods= [compare_with,method],
@@ -425,34 +461,68 @@ for method in methods:
                                     ylabel=ylabel,
                                     xlabel=xlabel,
                                     ylim=ylim,
+                                    fumble_area = [1,100],
+                                    y_scale = "log",
+                                    original_line_y = 1,
                                     yFormatter = yFormatter,
-                                    min_best=False,
+                                    min_best=True,
                                     matrices = square_matrices_set,
-                                    save_path=f"{output_plot_dir}/{routine}/{routine}_speedup_matrix_id_curve_{compare_with}by{method}.pdf")
+                                    save_path=f"{output_plot_dir}/matrix_id_curve_{compare_with}by{method}_nnz_blocks_{bsize}.pdf")
 
+
+
+if matrix_id_routine_imgs:
+    for method in methods:
+        for routine in routines:
+            compare_with="clubs"
+            parameter = f"speedup_{routine}"
+            ylabel=f"{routine_labels[routine]} Speedup"
+            xlabel=f"Matrix ID (Sorted by {labels_dict[method]} Speedup)"
+
+            ylim=[0.75,2]
+            if routine == "spmmbsr": ylim=[0.25,2]
+
+            yFormatter = percent_improvement_formatter
+
+            plot_improvement_by_matrix(dfs_reordering,
+                                        methods= [compare_with,method],
+                                        order_by=method,
+                                        parameter=parameter,
+                                        ylabel=ylabel,
+                                        xlabel=xlabel,
+                                        ylim=ylim,
+                                        yFormatter = yFormatter,
+                                        min_best=False,
+                                        matrices = square_matrices_set,
+                                        save_path=f"{output_plot_dir}/{routine}/{routine}_speedup_matrix_id_curve_{compare_with}by{method}.pdf")
+
+            if False:
+                speedup_vs_nnz_ratio(dfs_reordering,
+                                    method=method,  
+                                    x_parameter=f"nnz_blocks_{bsize}",
+                                    y_parameter=f"time_{routine}", 
+                                    matrices = square_matrices_set, 
+                                    xlim = [0,2], 
+                                    ylim=[0, 2], 
+                                    xlabel="Number of Nonzero Blocks (64 x 64)",
+                                    ylabel=f"{routine_labels[routine]} Time (ms)", 
+                                    save_path=f"{output_plot_dir}/{routine}/{routine}_time_vs_nnzblocks_{method}_{bsize}.pdf")
+
+
+
+if gflopls_img:
+    for routine in routines:
+        method = "original"
         speedup_vs_nnz_ratio(dfs_reordering,
-                                method=method,  
-                                x_parameter=f"nnz_blocks_{bsize}",
-                                y_parameter=f"time_{routine}", 
-                                matrices = square_matrices_set, 
-                                xlim = [0,2], 
-                                ylim=[0, 2], 
-                                xlabel="Number of Nonzero Blocks (64 x 64)",
-                                ylabel=f"{routine_labels[routine]} Time (ms)", 
-                                save_path=f"{output_plot_dir}/{routine}/{routine}_time_vs_nnzblocks_{method}_{bsize}.pdf")
-
-for routine in routines:
-    method = "original"
-    speedup_vs_nnz_ratio(dfs_reordering,
-                        method=method,  
-                        x_parameter=f"density_{bsize}",
-                        y_parameter=f"gigaflops_{routine}", 
-                        matrices = all_matrices_set, 
-                        xlim = [0,2], 
-                        ylim=[0, 2],
-                        xscale="linear",
-                        yscale="log", 
-                        xlabel="Density Within Nonzero Area",
-                        ylabel=f"{routine_labels[routine]} GFLOPs", 
-                        save_path=f"{output_plot_dir}/{routine}/{routine}_gflops_vs_density_{method}_{bsize}.pdf")
+                            method=method,  
+                            x_parameter=f"density_{bsize}",
+                            y_parameter=f"gigaflops_{routine}", 
+                            matrices = all_matrices_set, 
+                            xlim = [0,2], 
+                            ylim=[0, 2],
+                            xscale="linear",
+                            yscale="log", 
+                            xlabel="Density Within Nonzero Blocks",
+                            ylabel=f"{routine_labels[routine]} GFLOPs", 
+                            save_path=f"{output_plot_dir}/{routine}/{routine}_gflops_vs_density_{method}_{bsize}.pdf")
 
