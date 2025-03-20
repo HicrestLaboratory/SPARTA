@@ -242,7 +242,7 @@ def best_barplot(dfs_reordering, square_matrices, rectangular_matrices, methods,
 
     # Add custom legend
     leg = fig.legend(handles=handles, loc='upper right',
-           ncol=1, frameon=True, fontsize = "x-small")
+           ncol=1, frameon=True, fontsize = "small")
 
     if not make_legend: leg.remove()
     
@@ -326,15 +326,14 @@ def best_barplot_bsize(dfs_reordering, square_matrices, rectangular_matrices, me
 
     # Set labels and title
     ax.set_ylabel(ylabel)
+
     ax.set_xticks(index)
     ax.set_xticklabels(methods_names)
-
-    plt.ylabel(ylabel)
 
     #global legend
     handles, labels = plt.gca().get_legend_handles_labels()
     plt.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.05),
-           ncol=len(methods), frameon=False)
+           ncol=len(methods), frameon=False, fontsize = "medium")
     plt.subplots_adjust(top=1)  # Adjust the top margin as needed
 
     legend_elements = [Patch(facecolor='white', edgecolor='grey', label=f' Block Size {b}', hatch = b_size_hatches[i]) for i,b in enumerate(block_sizes)]
@@ -411,7 +410,7 @@ def best_barplot_parameter(dfs_reordering,square_matrices, rectangular_matrices,
 
     # Add custom legend
     leg = fig.legend(handles=handles, loc='upper right',
-           ncol=1, frameon=True, fontsize = "x-small")
+           ncol=1, frameon=True, fontsize = "small")
 
     if not make_legend: leg.remove()
 
@@ -476,7 +475,6 @@ def best_barplot_parameter_bsize(dfs_reordering, matrices, method, plot_params_v
             edgecolor='black')
 
 
-
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
     plt.xticks(index, plot_params_labels)
@@ -484,7 +482,7 @@ def best_barplot_parameter_bsize(dfs_reordering, matrices, method, plot_params_v
     #global legend
     handles, labels = plt.gca().get_legend_handles_labels()
     plt.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.05),
-           ncol=len(plot_params_values), frameon=False)
+           ncol=len(plot_params_values), frameon=False, fontsize = "medium")
     plt.subplots_adjust(top=1)  # Adjust the top margin as needed
 
     legend_elements = [Patch(facecolor='white', edgecolor='grey', label=f' Block Size {b}', hatch = b_size_hatches[i]) for i,b in enumerate(block_sizes)]

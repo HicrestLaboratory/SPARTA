@@ -294,18 +294,19 @@ mask_images_routine = False
 best_barplots = False
 
 
-#gflopls_img = True
-#matrix_id_routine_imgs = True
-#matrix_id_blocks_img = True
-#histograms_imgs = True
-#mask_images_blocks = True
+gflopls_img = True
+matrix_id_routine_imgs = True
+matrix_id_blocks_img = True
+histograms_imgs = True
+mask_images_blocks = True
 mask_images_routine = True
-#best_barplots = True
+best_barplots = True
 
-plt.rcParams.update({'font.size': 14})  # General font size
-plt.xlabel('X Label', fontsize=16)     # X-axis label font size
-plt.ylabel('Y Label', fontsize=16)     # Y-axis label font size
-plt.title('Plot Title', fontsize=18, fontweight='bold')  # Title font size and bold
+plt.rcParams['axes.labelsize'] = 16  # X and Y label size
+plt.rcParams['xtick.labelsize'] = 12  # X tick label size
+plt.rcParams['ytick.labelsize'] = 12  # Y tick label size
+plt.rcParams['legend.fontsize'] = 'medium'  # You can use 'small', 'medium', 'large', or specific numeric values (e.g., 10)
+
 reordering_time_comparison(dfs_reordering["clubs"],df_club_reordering_time)
 
 
@@ -399,7 +400,7 @@ if mask_images_blocks:
                             block_sizes = b_sizes,
                             improvement_parameter = f"nnz_blocks",
                             ratio_parameter=f"inverse_blocks_ratio",
-                            ylabel = "", 
+                            ylabel = "# of Matrices (Best Density)", 
                             xlabel= "Mask Size for CluB",
                             save_path=f"{output_plot_dir}/{plot_parameter}_nnzb_best_plot_{method}_ALL_SIZES.pdf")
 
