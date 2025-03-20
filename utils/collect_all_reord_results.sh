@@ -5,7 +5,7 @@ default_matrix_dir="../Clubs_tmp/matrices/toy"
 default_result_dir="../../../Downloads/Club_result/Club_result/toy"
 default_output_dir="results/results_2024/"
 default_block_size=64
-valid_choices=( "all" "clubs" "metis" "saad" "original" "patoh" )
+valid_choices=( "all" "clubs" "metis" "saad" "original" "patoh" "rabbit")
 
 # Function to display usage information
 usage() {
@@ -120,4 +120,11 @@ if [[ "$script_choice" == "all" || "$script_choice" == "saad" ]]; then
     echo "*************************************** SAAD *****************"
     echo "                        ***************************************"
     "./utils/collect_results_saad.sh" "${args[@]}" -s "$scramble"
+fi
+
+if [[ "$script_choice" == "all" || "$script_choice" == "rabbit" ]]; then
+    echo "                        ***************************************"
+    echo "*************************************** RABBIT *****************"
+    echo "                        ***************************************"
+    "./utils/collect_results_rabbit.sh" "${args[@]}" -s "$scramble"
 fi
