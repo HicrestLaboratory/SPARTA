@@ -28,13 +28,14 @@ for matrix_folder in $(find "$matrix_dir" -mindepth 1 -maxdepth 1 -type d); do
         continue
     fi 
         
+    #Look for reordering file
     grouping_file="${matrix_result_dir}/${matrix_name}.g"
-    
     if [ ! -f "$grouping_file" ]; then
         echo "Result file not found for $grouping_file"
         continue
     fi 
 
+    #Process the reordering
     params=$( echo "$matrix_name" "$rows" "$cols" "$nnz" "$block_size" "$scramble" "rabbit")
     metis_outputs=$(./programs/general/Matrix_Analysis "$matrix_file" "$block_size" "$grouping_file" 1)
     if [ $? -eq 0 ]; then

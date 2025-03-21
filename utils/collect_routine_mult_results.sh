@@ -332,11 +332,14 @@ for algo in "${algos[@]}";do
     algo_dir=$root_dir/$routine/$algo
     total_files=$(find "$algo_dir" -name '*.out' | wc -l)
     echo "PROCESSING $total_files mult files from $algo_dir for $algo"
-    find "$algo_dir" -name '*.out' | grep "${routine}" | while read -r "file_path"; do
-      process_file $file_path $algo
-      counter=$(($counter + 1))
-      if (( counter % 10 == 0 )); then
-        show_progress $counter $total_files
+    find "$algo_dir" -name '*.out' | while read -r file_path; do
+      base_name=$(basename "$file_path")
+      if [[ "$base_name" == "${routine}"_* ]]; then
+        process_file "$file_path" "$algo"
+        counter=$((counter + 1))
+        if (( counter % 10 == 0 )); then
+          show_progress "$counter" "$total_files"
+        fi
       fi
     done
     echo "Processed $counter files"
