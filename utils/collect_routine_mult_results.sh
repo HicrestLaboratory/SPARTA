@@ -118,8 +118,42 @@ show_progress() {
     printf "\rProgress : [${fill// /#}${empty// /-}] $progress%%"
 }
 
-# Function to extract time from a file
 extract_time_and_variables() {
+  local file_path=$1
+  local filename
+  filename=$(basename "$file_path")
+  
+  if [[ "$filename" == *"smat"* ]]; then
+    # If "smat" is in the filename, use the SMAT-specific extraction
+    extract_profiling_time_and_variables_smat "$file_path"
+  else
+    extract_time_and_variables_cusparse "$file_path"
+}
+
+extract__time_and_variables_smat() {
+  local file_path=$1
+  
+  # Extract profiling time (the value following "profiling time:")
+  local profiling_line
+  profiling_line=$(grep "profiling time:" "$file_path" | head -1)
+  local time
+  time=$(echo "$profiling_line" | awk -F 'profiling time:' '{print $2}' | awk '{print $1}')
+  
+  # Extract matrix dimensions and nonzeros from a line like:
+  # [HGEMM ...] 101504 x 101504, nnz = 874378, ...
+  local dims_line
+  dims_line=$(grep -m 1 -E "[0-9]+ x [0-9]+, nnz =" "$file_path")
+  local m n nnz
+  m=$(echo "$dims_line" | awk '{print $7}')
+  n=$(echo "$dims_line" | awk '{print $9}' | sed 's/,//')
+  nnz=$(echo "$dims_line" | awk '{print $12}' | sed 's/,//')
+  
+  echo "$time" "$m" "$n" "$nnz"
+}
+
+
+# Function to extract time from a file
+extract_time_and_variables_cusparse() {
   local file_path=$1
 
   # Extract time
@@ -137,7 +171,9 @@ extract_time_and_variables() {
   fi
   echo "$time" "$m" "$n" "$nnz"
 }
-# Function to extract variables from clubs output
+
+
+# Function to extract variables from clubs output filename
 extract_variables_club() {
   local filename=$1
   IFS='_' read -ra PARTS <<< "$filename"
@@ -152,7 +188,7 @@ extract_variables_club() {
   echo "$matrix clubs $msk $cents $tau"
 }
 
-# Function to extract variables from saad output
+# Function to extract variables from saad output filename
 extract_variables_saad() {
   local filename=$1
   IFS='_' read -ra PARTS <<< "$filename"
@@ -212,7 +248,7 @@ extract_variables_patoh() {
   echo "$matrix patoh $parts"
 }
 
-# Function to extract variables from original output
+# Function to extract variables from original output filename
 extract_variables_original() {
   local filename=$1
   IFS='_' read -ra PARTS <<< "$filename"
