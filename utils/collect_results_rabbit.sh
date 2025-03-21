@@ -20,6 +20,7 @@ for matrix_folder in $(find "$matrix_dir" -mindepth 1 -maxdepth 1 -type d); do
     #read matrix shape from mtx file
     header_line=$(grep -v '^%' "$matrix_file" | head -n 1)
     read -r rows cols nnz <<< "$header_line"
+    echo "M= $rows, N=$cols, nnz=$nnz"; 
 
     matrix_result_dir="$result_dir/${matrix_name}/rabbit"
     
@@ -31,16 +32,17 @@ for matrix_folder in $(find "$matrix_dir" -mindepth 1 -maxdepth 1 -type d); do
     #Look for reordering file
     grouping_file="${matrix_result_dir}/${matrix_name}.g"
     if [ ! -f "$grouping_file" ]; then
-        echo "Result file not found for $grouping_file"
+        echo "Reordering file not found for $grouping_file"
         continue
     fi 
 
     #Process the reordering
     params=$( echo "$matrix_name" "$rows" "$cols" "$nnz" "$block_size" "$scramble" "rabbit")
-    metis_outputs=$(./programs/general/Matrix_Analysis "$matrix_file" "$block_size" "$grouping_file" 1)
+    outputs=$(./programs/general/Matrix_Analysis "$matrix_file" "$block_size" "$grouping_file" 1)
     if [ $? -eq 0 ]; then
         # Only print and log the output if the command succeeds
-        echo "$params $metis_outputs" >> "${output_file}"
+        echo "$params $outputs" >> "${output_file}"
+        echo "$params $outputs"
     else
         echo "Matrix_Analysis command failed for $matrix_file with block size $block_size"
     fi
