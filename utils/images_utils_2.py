@@ -16,6 +16,7 @@ color_dict = {
     "metis-edge-cut": "#9467bd",  # A rich purple, distinct and balanced
     "metis-volume": "#76b7b2",     # A muted teal for balance
     "patoh": "#59a14f",    # A fresh, vibrant green
+    "rabbit": "#76ae20"
 }
 
 
@@ -25,6 +26,7 @@ marker_dict = {
     "metis-edge-cut" : ".",
     "metis-volume" : ".",
     "patoh" : "-",
+    "rabbit": "-"
 }
 
 labels_dict = {
@@ -33,6 +35,7 @@ labels_dict = {
     "metis-edge-cut" : "GP-Edge",
     "metis-volume" : "GP-Volume",
     "patoh" : "HGP",
+    "rabbit": "RABBIT"
 }
 
 routine_labels = {
