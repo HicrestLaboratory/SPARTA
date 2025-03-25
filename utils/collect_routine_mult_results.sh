@@ -339,7 +339,7 @@ for algo in "${algos[@]}"; do
     
     # Process matching files
     find "$root_dir" -type f \( \
-         -path "$root_dir/$routine/$algo/finished/.out" -o \
+         -path "$root_dir/$routine/$algo/finished/*.out" -o \
          -path "$root_dir/*${routine}${algo}*/finished/*.out" \
        \) | while read -r file_path; do
       base_name=$(basename "$file_path")
