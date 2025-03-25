@@ -8,7 +8,7 @@
 root_dir="results/results_2024/mult_data"
 csv_dir="results/results_2024/mult_csv"
 routine="spmmcsr"
-method="ALL" # Options: saad, metis, denseAMP, original, clubs, ALL
+method="ALL" # Options: gp, original, patoh, rabbit, clubs, ALL
 
 # Function to display usage
 usage() {
@@ -82,7 +82,7 @@ get_header() {
     clubs)
       echo "routine matrix algo mask centroid tau rows cols nnz time"
       ;;
-    metis)
+    gp)
       echo "routine matrix algo objective parts rows cols nnz time"
       ;;
     patoh)
@@ -183,11 +183,11 @@ extract_variables_club() {
   echo "$matrix clubs $msk $cents $tau"
 }
 
-extract_variables_metis() {
+extract_variables_gp() {
   local filename=$1
   IFS='_' read -ra PARTS <<< "$filename"
   local matrix=${PARTS[1]%-mtx}
-  local collection=${PARTS[2]#"$matrix-metis"}
+  local collection=${PARTS[2]#"$matrix-gp"}
   local obj
   local parts
   IFS='-' read -ra VARS <<< "$collection"
@@ -200,7 +200,7 @@ extract_variables_metis() {
     parts=${VARS[3]#part}
   fi
 
-  echo "$matrix metis $obj $parts"
+  echo "$matrix gp $obj $parts"
 }
 
 extract_variables_patoh() {
@@ -253,8 +253,8 @@ process_file()
     clubs)
       variables=$(extract_variables_club "$file_name")
       ;;
-    metis)
-      variables=$(extract_variables_metis "$file_name")
+    gp)
+      variables=$(extract_variables_gp "$file_name")
       ;;
     patoh)
       variables=$(extract_variables_patoh "$file_name")
@@ -285,7 +285,7 @@ process_file()
 
 #creates out files for processed methods
 if [[ "$method" == "ALL" ]]; then
-  algos=( "clubs" "metis" "original" "patoh" "rabbit")
+  algos=( "clubs" "gp" "original" "patoh" "rabbit")
 fi
 
 for algo in "${algos[@]}"; do
