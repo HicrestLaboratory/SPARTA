@@ -16,7 +16,7 @@ args = parser.parse_args()
 
 root_dir=args.root_dir
 bsize=int(args.bsize)
-b_sizes=[64,]
+b_sizes=[bsize,]
 
 if not os.path.isdir(root_dir):
     print(f"ERROR: Experiment directory {root_dir} does not exists.")
