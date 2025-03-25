@@ -28,7 +28,7 @@ while getopts ":r:u:o:m:x" opt; do
             routine=$OPTARG
             ;;
         x )
-            clean_folders="1"
+            clean_folders="0"
             ;;
         o )
             collected_data_folder=$OPTARG

@@ -82,20 +82,14 @@ get_header() {
     clubs)
       echo "routine matrix algo mask centroid tau rows cols nnz time"
       ;;
-    metis-edge-cut)
-      echo "routine matrix algo objective parts rows cols nnz time"
-      ;;
-    metis-volume)
+    metis)
       echo "routine matrix algo objective parts rows cols nnz time"
       ;;
     patoh)
       echo "routine matrix algo parts rows cols nnz time"
       ;;
-    saad)
-      echo "routine matrix algo tau rows cols nnz time"
-      ;;
-    denseAMP)
-      echo "routine matrix algo tau rows cols nnz time"
+    rabbit)
+      echo "routine matrix algo rows cols nnz time"
       ;;
     original)
       echo "routine matrix algo rows cols nnz time"
@@ -189,32 +183,6 @@ extract_variables_club() {
   echo "$matrix clubs $msk $cents $tau"
 }
 
-# Function to extract variables from saad output filename
-extract_variables_saad() {
-  local filename=$1
-  IFS='_' read -ra PARTS <<< "$filename"
-  local matrix=${PARTS[1]%-mtx}
-  local collection=${PARTS[2]#"$matrix-"}
-  IFS='-' read -ra VARS <<< "$collection"
-
-  local tau=${VARS[1]#tau}
-
-  echo "$matrix saad $tau"
-}
-
-extract_variables_denseAMP() {
-  local filename=$1
-  IFS='_' read -ra PARTS <<< "$filename"
-  local matrix=$( echo ${PARTS[1]} | sed "s/-mtx"// )
-  local collection=${PARTS[2]}
-  collection=${collection#"$matrix-"}
-  IFS='-' read -ra VARS <<< "$collection"
-
-  local tau=$(echo ${VARS[1]} | sed "s/tau"// )
-
-  echo "$matrix denseAMP $tau"
-}
-
 extract_variables_metis() {
   local filename=$1
   IFS='_' read -ra PARTS <<< "$filename"
@@ -258,6 +226,14 @@ extract_variables_original() {
   echo "$matrix original"
 }
 
+extract_variables_rabbit() {
+  local filename=$1
+  IFS='_' read -ra PARTS <<< "$filename"
+  local matrix=$( echo ${PARTS[1]} | sed "s/-mtx"// )
+
+  echo "$matrix rabbit"
+}
+
 
 process_file()
 {
@@ -277,20 +253,14 @@ process_file()
     clubs)
       variables=$(extract_variables_club "$file_name")
       ;;
-    metis-edge-cut)
+    metis)
       variables=$(extract_variables_metis "$file_name")
-      ;;
-    metis-volume)
-      variables=$(extract_variables_metis "$file_name")
-      ;;
-    saad)
-      variables=$(extract_variables_saad "$file_name")
-      ;;
-    denseAMP)
-      variables=$(extract_variables_denseAMP "$file_name")
       ;;
     patoh)
       variables=$(extract_variables_patoh "$file_name")
+      ;;    
+    rabbit)
+      variables=$(extract_variables_rabbit "$file_name")
       ;;
     original)
       variables=$(extract_variables_original "$file_name")
@@ -315,11 +285,7 @@ process_file()
 
 #creates out files for processed methods
 if [[ "$method" == "ALL" ]]; then
-  algos=( "clubs" "metis-edge-cut" "metis-volume" "saad" "original" "denseAMP" "patoh")
-elif [[ "$method" == "metis" ]]; then
-  algos=( "metis-edge-cut" "metis-volume")
-else
-  algos=( "$method" )
+  algos=( "clubs" "metis" "original" "patoh")
 fi
 
 for algo in "${algos[@]}"; do

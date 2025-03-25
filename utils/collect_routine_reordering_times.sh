@@ -77,10 +77,7 @@ get_header() {
     clubs)
       echo "matrix algo mask centroid tau time"
       ;;
-    metis-edge-cut)
-      echo "matrix algo objective parts time"
-      ;;
-    metis-volume)
+    metis)
       echo "matrix algo objective parts time"
       ;;
     patoh)
@@ -223,17 +220,8 @@ process_file()
     clubs)
       variables=$(extract_variables_club "$file_name")
       ;;
-    metis-edge-cut)
+    metis)
       variables=$(extract_variables_metis "$file_name")
-      ;;
-    metis-volume)
-      variables=$(extract_variables_metis "$file_name")
-      ;;
-    saad)
-      variables=$(extract_variables_saad "$file_name")
-      ;;
-    denseAMP)
-      variables=$(extract_variables_denseAMP "$file_name")
       ;;
     patoh)
       variables=$(extract_variables_patoh "$file_name")
