@@ -128,6 +128,7 @@ extract_time_and_variables() {
     extract_profiling_time_and_variables_smat "$file_path"
   else
     extract_time_and_variables_cusparse "$file_path"
+  fi
 }
 
 extract__time_and_variables_smat() {
