@@ -330,29 +330,30 @@ done
 
 for algo in "${algos[@]}"; do
     counter=0
-    # Count matching files from either pattern
-    total_files=$(find "$root_dir" -type f \( \
-                   -path "$root_dir/$routine/$algo/*.out" -o \
-                   -path "$root_dir/*${routine}*${algo}*/*.out" \
-                 \) | wc -l)
+    # Store the matching files in an array
+    mapfile -t files < <(find "$root_dir" -type f \( \
+          -path "$root_dir/$routine/$algo/finished/*.out" -o \
+          -path "$root_dir/*${routine}${algo}*/finished/*.out" \
+      \))
+    
+    total_files="${#files[@]}"
     echo "PROCESSING $total_files mult files from directories for $algo"
     
-    # Process matching files
-    find "$root_dir" -type f \( \
-         -path "$root_dir/$routine/$algo/finished/*.out" -o \
-         -path "$root_dir/*${routine}${algo}*/finished/*.out" \
-       \) | while read -r file_path; do
-      base_name=$(basename "$file_path")
-      if [[ "$base_name" == *"${routine}"*_* ]]; then
-        process_file "$file_path" "$algo"
-        counter=$((counter + 1))
-        if (( counter % 10 == 0 )); then
-          show_progress "$counter" "$total_files"
+    for file_path in "${files[@]}"; do
+        base_name=$(basename "$file_path")
+        if [[ "$base_name" == *"${routine}"*_* ]]; then
+            process_file "$file_path" "$algo"
+            counter=$((counter + 1))
+            if (( counter % 10 == 0 )); then
+                show_progress "$counter" "$total_files"
+            fi
         fi
-      fi
     done
     echo "Processed $counter files"
 done
+
+echo "Results saved to $output_dir"
+
 
 echo "Results saved to $output_dir"
 
