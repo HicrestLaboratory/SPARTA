@@ -287,6 +287,8 @@ process_file()
 #creates out files for processed methods
 if [[ "$method" == "ALL" ]]; then
   algos=( "clubs" "gp" "original" "patoh" "rabbit")
+else
+  algos=("$method")
 fi
 
 for algo in "${algos[@]}"; do
@@ -324,11 +326,5 @@ for algo in "${algos[@]}"; do
     done
     echo "Processed $counter files"
 done
-
-echo "Results saved to $output_dir"
-
-
-echo "Results saved to $output_dir"
-
 
 echo "Results saved to $output_dir"
