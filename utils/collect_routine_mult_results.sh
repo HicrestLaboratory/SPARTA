@@ -304,7 +304,7 @@ for algo in "${algos[@]}"; do
 
     if [[ "$algo" == "original" ]];then 
       mapfile -t files < <(find "$root_dir" -type f \( \
-              -path "$root_dir/$routine/finished/*.out" 
+            -path "$root_dir/$routine/finished/*.out" -o
         \))
     else
       mapfile -t files < <(find "$root_dir" -type f \( \
