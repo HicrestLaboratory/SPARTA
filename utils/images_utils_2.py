@@ -995,6 +995,8 @@ def plot_improvement_by_matrix(dfs_reordering, order_by, methods, parameter="Non
         x = x_values[finite_mask]
         y = list(y_values_adjusted[finite_mask])
         
+        if (method == "rabbit"): print(f"RABBIT IMPROVEMENTS: {y}")
+
         plt.scatter(x, y,
                         color=color_dict[method],
                         marker='o',
@@ -1019,7 +1021,6 @@ def plot_improvement_by_matrix(dfs_reordering, order_by, methods, parameter="Non
                     marker='^',
                     markersize=5,
                     label='_nolegend_')
-
 
 
     # Plot data for each method
