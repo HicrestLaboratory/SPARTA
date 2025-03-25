@@ -328,12 +328,20 @@ for algo in "${algos[@]}"; do
   get_header "$algo" > "$(get_outfile "$algo")" # Print header for each algo
 done
 
-for algo in "${algos[@]}";do
+for algo in "${algos[@]}"; do
     counter=0
-    algo_dir=$root_dir/$routine/$algo
-    total_files=$(find "$algo_dir" -name '*.out' | wc -l)
-    echo "PROCESSING $total_files mult files from $algo_dir for $algo"
-    find "$algo_dir" -name '*.out' | while read -r file_path; do
+    # Count matching files from either pattern
+    total_files=$(find "$root_dir" -type f \( \
+                   -path "$root_dir/$routine/$algo/*.out" -o \
+                   -path "$root_dir/*${routine}*${algo}*/*.out" \
+                 \) | wc -l)
+    echo "PROCESSING $total_files mult files from directories for $algo"
+    
+    # Process matching files
+    find "$root_dir" -type f \( \
+         -path "$root_dir/$routine/$algo/*.out" -o \
+         -path "$root_dir/*${routine}*${algo}*/*.out" \
+       \) | while read -r file_path; do
       base_name=$(basename "$file_path")
       if [[ "$base_name" == "${routine}"_* ]]; then
         process_file "$file_path" "$algo"
@@ -345,5 +353,8 @@ for algo in "${algos[@]}";do
     done
     echo "Processed $counter files"
 done
+
+echo "Results saved to $output_dir"
+
 
 echo "Results saved to $output_dir"
