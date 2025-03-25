@@ -154,6 +154,7 @@ extract_time_and_variables_cusparse() {
   # Extract time
   local time=$(grep 'calculation finished in' "$file_path" | head -1 | awk '{print $(NF-1)}')
 
+  local m n nnz
   # Extract mb, nb, nnzb
   if [[ $routine == *"bsr"* ]]; then
     m=$(grep '^mb =' "$file_path" | awk '{print $3}')
@@ -221,7 +222,7 @@ extract_variables_patoh() {
 extract_variables_original() {
   local filename=$1
   IFS='_' read -ra PARTS <<< "$filename"
-  local matrix=$( echo ${PARTS[1]} | sed "s/-mtx"// )
+  local matrix=$( echo ${PARTS[1]} | sed "s/-mtx//" )
 
   echo "$matrix original"
 }
@@ -229,7 +230,7 @@ extract_variables_original() {
 extract_variables_rabbit() {
   local filename=$1
   IFS='_' read -ra PARTS <<< "$filename"
-  local matrix=$( echo ${PARTS[1]} | sed "s/-mtx"// )
+  local matrix=$( echo ${PARTS[1]} | sed "s/-mtx//" )
 
   echo "$matrix rabbit"
 }
