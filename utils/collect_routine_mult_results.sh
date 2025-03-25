@@ -333,7 +333,7 @@ for algo in "${algos[@]}"; do
     # Store the matching files in an array
     mapfile -t files < <(find "$root_dir" -type f \( \
           -path "$root_dir/$routine/$algo/finished/*.out" -o \
-          -path "$root_dir/r${routine}${algo}/finished/*.out" \
+          -path "$root_dir/r${routine}*${algo}/finished/*.out" \
       \))
     
     total_files="${#files[@]}"
