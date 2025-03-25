@@ -188,7 +188,7 @@ extract_variables_gp() {
   local filename=$1
   IFS='_' read -ra PARTS <<< "$filename"
   local matrix=${PARTS[1]%-mtx}
-  local collection=${PARTS[2]#"$matrix-gp"}
+  local collection=${PARTS[2]#"$matrix-metis"}
   local obj
   local parts
   IFS='-' read -ra VARS <<< "$collection"
@@ -201,7 +201,7 @@ extract_variables_gp() {
     parts=${VARS[3]#part}
   fi
 
-  echo "$matrix gp $obj $parts"
+  echo "$matrix metis $obj $parts"
 }
 
 extract_variables_patoh() {
@@ -302,8 +302,8 @@ for algo in "${algos[@]}"; do
 
     if [[ "$algo" == "original" ]];then 
       mapfile -t files < <(find "$root_dir" -type f \( \
-              -path "$root_dir/$routine/finished/*.out" -o \
-          \))
+              -path "$root_dir/$routine/finished/*.out" 
+        \))
     else
       mapfile -t files < <(find "$root_dir" -type f \( \
             -path "$root_dir/$routine/$algo/finished/*.out" -o \
