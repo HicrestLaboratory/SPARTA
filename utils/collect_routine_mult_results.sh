@@ -333,20 +333,18 @@ for algo in "${algos[@]}"; do
     # Store the matching files in an array
     mapfile -t files < <(find "$root_dir" -type f \( \
           -path "$root_dir/$routine/$algo/finished/*.out" -o \
-          -path "$root_dir/*${routine}${algo}*/finished/*.out" \
+          -path "$root_dir/*${routine}*${algo}*/finished/*.out" \
       \))
     
     total_files="${#files[@]}"
-    echo "PROCESSING $total_files mult files from directories for $algo"
+    echo "PROCESSING $total_files mult files from directories for $routine, $algo"
     
     for file_path in "${files[@]}"; do
         base_name=$(basename "$file_path")
-        if [[ "$base_name" == *"${routine}"*_* ]]; then
-            process_file "$file_path" "$algo"
-            counter=$((counter + 1))
-            if (( counter % 10 == 0 )); then
-                show_progress "$counter" "$total_files"
-            fi
+        process_file "$file_path" "$algo"
+        counter=$((counter + 1))
+        if (( counter % 10 == 0 )); then
+            show_progress "$counter" "$total_files"
         fi
     done
     echo "Processed $counter files"
