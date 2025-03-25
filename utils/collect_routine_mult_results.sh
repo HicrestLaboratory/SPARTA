@@ -131,7 +131,7 @@ extract_time_and_variables() {
   fi
 }
 
-extract__time_and_variables_smat() {
+extract_profiling_time_and_variables_smat() {
   local file_path=$1
   
   # Extract profiling time (the value following "profiling time:")
