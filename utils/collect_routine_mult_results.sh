@@ -285,7 +285,7 @@ process_file()
 
 #creates out files for processed methods
 if [[ "$method" == "ALL" ]]; then
-  algos=( "clubs" "metis" "original" "patoh")
+  algos=( "clubs" "metis" "original" "patoh" "rabbit")
 fi
 
 for algo in "${algos[@]}"; do
@@ -298,12 +298,18 @@ for algo in "${algos[@]}"; do
     counter=0
     echo "matching patterns: \n \t $root_dir/r${routine}*${algo}/finished/*.out \n \t $root_dir/$routine/$algo/finished/*.out"
     # Store the matching files in an array
-    mapfile -t files < <(find "$root_dir" -type f \( \
-          -path "$root_dir/$routine/$algo/finished/*.out" -o \
-          -path "$root_dir/r${routine}*${algo}/finished/*.out" \
-      \))
 
-    
+    if [[ "$algo" == "original" ]];then 
+      mapfile -t files < <(find "$root_dir" -type f \( \
+              -path "$root_dir/$routine/finished/*.out" -o \
+          \))
+    else
+      mapfile -t files < <(find "$root_dir" -type f \( \
+            -path "$root_dir/$routine/$algo/finished/*.out" -o \
+            -path "$root_dir/*${routine}*${algo}/finished/*.out" \
+        \))
+    fi
+
     total_files="${#files[@]}"
     echo "PROCESSING $total_files mult files from directories for $routine, $algo"
     
