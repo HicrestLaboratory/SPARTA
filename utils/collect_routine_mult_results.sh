@@ -343,7 +343,7 @@ for algo in "${algos[@]}"; do
          -path "$root_dir/*${routine}*${algo}*/*.out" \
        \) | while read -r file_path; do
       base_name=$(basename "$file_path")
-      if [[ "$base_name" == "${routine}"_* ]]; then
+      if [[ "$base_name" == *"${routine}"*_* ]]; then
         process_file "$file_path" "$algo"
         counter=$((counter + 1))
         if (( counter % 10 == 0 )); then
