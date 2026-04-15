@@ -34,7 +34,6 @@ each folder contains
 # RUNNING A TEST
 
 use `make` to create a test executable of the cuda test. The executable will be placed in programs/cuda. You can run it with different command line arguments to test different features.  
-use 'source ./scripts/synthetic.sh' from the main folder to run and save some experiments. 
 
 Options for the cuda_test:
 
