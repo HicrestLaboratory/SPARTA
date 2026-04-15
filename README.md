@@ -55,6 +55,7 @@ you can use your own matrices, provided they are stored as an edgelist with spac
 Find all the options below:
 
 OPTIONS: 
+
 -a: blocking algorithm selection:
 		0: iterative, 
 		1: iterative_structured, 
