@@ -14,9 +14,6 @@ A variant of the variable Block Compressed Sparse Rows (or Columns) is used to s
 
 SPARTA requires CUDA >=10.0 
 
-CUDA install
-* Donwload the cuda toolkit (SPARTA supports >= CUDA 10.0) and follow the instructions: https://developer.nvidia.com/cuda-downloads
-
 # STRUCTURE
 
 The files have the following structure
