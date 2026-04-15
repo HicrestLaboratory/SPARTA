@@ -1,4 +1,4 @@
-#SPARTA
+# SPARTA
 **SPAR**se acceleration on **T**ensor **A**rchitecture
 
 The project aims to investigate new data structures and compression algorithms for exploiting new architecture capabilities, specifically designed for deep learning, to accelerate **sparse and irregular** applications, such as graph analytics and arbitrary sparse DNN and GCN. SPARTA also looks at productivity and performance portability across different AI accelerators by providing an abstraction layer.  
