@@ -1,98 +1,100 @@
-Compile with 
+# SPARTA
+**SPAR**se acceleration on **T**ensor **A**rchitecture
 
-'''make serial''' to compile without cuda  
-or
-'''make all''' to compile also the cuda test
+The project aims to investigate new data structures and compression algorithms for exploiting new architecture capabilities, specifically designed for deep learning, to accelerate **sparse and irregular** applications, such as graph analytics and arbitrary sparse DNN and GCN. SPARTA also looks at productivity and performance portability across different AI accelerators by providing an abstraction layer.  
 
-run '''./programs/general/TEST_blocking_VBR''' to see an example of blocking; 
+The repository contains stable code for reordering and compressing sparse matrices into dense block data-structures.
+The reordering algorithm matches rows (or columns) with similar patterns and builds dense blocks. 
+The similarity of patterns is first determined with a hash function, and then refined with a tunable algorithm, which matches patterns with high cosine similarity.
 
-For example, run
-./programs/general/TEST_blocking_VBR -b 3 -t 0.6
-to produce a blocking of a test matrix, fixing the column size at 3 (-b 3) and the threshold distance tau at 0.6 (-t 0.6).
+The repository also contains code for sparse-dense matrix-matrix multiplication that exploits the dense block data-structure.
 
-run again with
-./programs/general/TEST_blocking_VBR -b 3 -t 0.6 -F 1 -B 3
-to force fixed-height blocks (-F 1) of height 3 (-B 3)
+Input sparse matrices are stored in Compressed Sparse Row (CSR) or Compressed sparse columns (CSC) format. 
+A variant of the variable Block Compressed Sparse Rows (or Columns) is used to store block-sparse matrices. 
 
-add the option -f PATH/TO/MATRIX.el to load a matrix. 
-some small matrices are available for testing in data/
-you can use your own matrices, provided they are stored as an edgelist with space-separated, ordered values.
+SPARTA requires CUDA >=10.0 
 
-Find all the options below:
+CUDA install
+* Donwload the cuda toolkit (SPARTA supports >= CUDA 10.0) and follow the instructions: https://developer.nvidia.com/cuda-downloads
+
+# PRELIMINARY RESULTS
+We have compared our routine with cusparse_spmm and cublas_gemm, the two main CUDA routines for sparse and dense matrix multiplication.
+
+**CUSPARSE COMPARISON**
+Preliminary results show that our routine is faster than cusparse_spmm when the density inside blocks is greater then around 2% (in this case, this corresponds to a total density of 0.2%)
+![](/images/performance_experiment/VBS_vs_spmm_A8192_B_8192_fixed_blockdensity_0.1.jpg)
 
 
-OPTIONS: 
--a: blocking algorithm selection:
-		0: iterative, 
-		1: iterative_structured, 
-		2: fixed_size 
-		3: iterative_clocked
-		4: iterative_queue 
-		5: iterative_max_size (BEST fixed block)
+**CUBLAS COMPARISON**
+Preliminary results show that our routine is faster than cublas_gemm when less than the 20% of blocks are nonzero. 
+(both cublas and our routine treat nonzero blocks as dense, so changing the density inside blocks does not affect this result)
+![](/images/performance_experiment_v2/VBS_vs_gemm_A4096_B_16384Block_size_128_varying_Block_density.jpg)
 
--b: column block size
 
--B: row block size (only for fixed-size blockings)
+**PERFORMANCE LANDSCAPE**
+The image below shows the fastest algorithm for each data point when both the density of nonzero blocks and the matrix density vary.
+For matrices in the green zone, SPARTA is the fastest choice. 
+![](/images/performance_experiment_v2/scatter_performance_plot.jpg)
 
--c: number of columns in the matrix B (only used when running AB multiplication)
+# STRUCTURE
 
--f: filename of an edgelist to be read from memory
+The files have the following structure
 
--F: force fixed size: 
-		0: false. The blocking algorithm may creat blocks of uneven height
-		1: true. Whatever is the result of the blocking algorithm, a fixed-size grid (see -b, -B) will be superimposed to the result.
+SPARTA
+* include
+* obj
+* programs 
+* src
+* test   
 
--g: use group sized when calculating similarity.
-		0: false
-		1: true
+each folder contains 
+* general: files needed by all versions
+* cuda: files needed by the cuda version
+* mkl: files needed by the mkl version
 
--o: filename where to save the results of blocking and multiplication
 
--p: usage of "pattern" when calculating similarities:
-		0: do not use pattern. similarities are calculated between a candidate row and the seed row.
-		1: use patterns. similarities are calculated between a candidate and the entire cluster
+# RUNNING A TEST
 
--P: treat the matrix as weighted or not
-		0: weights are ignored when reading a matrix from edgelist and during processing
-		1: weights are loaded, stored, and processed
+use `make` to create a test executable of the cuda test. The executable will be placed in programs/cuda. You can run it with different command line arguments to test different features.  
+use 'source ./scripts/synthetic.sh' from the main folder to run and save some experiments. 
 
--m: similarity measure:
-		0: Hamming
-		1: Jaccard (default)
+Options for the cuda_test:
 
--M: spmm multiplication algorithm. Blocking must be appropriate to the chosen algorithm.
-		0: no multiplication
-		1: cuBLAS GEMM (blocking is ignored) 
-		2: cuSparse CSR (blocking is ignored)
-		3: cuSparse BELLPACK (blocks should be fixed-size and square)
-		4: cuBLAS VBR (any blocking allowed);
+* -i: select input example
+* * 1: Random CSR
+* * 3: Matrix Market (MTX) file
+* * 4: Random Variable Block matrix
+      
+* -a: algorithm selection
+* * -1: all
+* * 1: cublas gemm
+* * 2: VBSmm
+* * 3: VBSmm with no zeros
+* * 4: VBSmm with asymmetric hash-angle reordering
+* * 5: cusparse spmm
 
--n: name of the experiment
+* -b: density of blocks (% of nonzero blocks) (only for i = 4)
 
--r: reorder the CSR matrix before processing/blocking/multiplying
-	0: do nothing (default)
-	1: reorder rows by nonzero count (descending)
-	2: scramble rows
+* -f: source file (only for i = 2, 3)
 
--R: matrix format (how each line in the edgelist looks like)
-	0: row col (default)
-	1: col row
+* -m: first matrix rows
 
--s: random seed
+* -n: second matrix columns
 
--S: number of cuda streams to be used in the VBR multiplication 
-		16 (default)
+* -k: first matrix columns
 
--t: the distance threshold for merging similar rows:
-	0.0: merge only identical rows
-	0.x: only merge when distance < 0.x
-	1.0: merge any nonzero row 
+* -p: size of VBS blocks
 
--v: verbose
-	0: print minimum
-	1: print infos, but not matrices
-	2: print matrices
+* -q: density of entries, in-block density (% of nonzero entries. if i = 4, % of nonzeros inside each nonzero block)
 
--w: how many warmup multiplication runs?
+* -r: number of experiment repetitions
 
--x: how many repetition to average for multiplication?
+* -s: scramble input matrix. 
+* * 0: no scramble. 
+* * 1: scramble rows
+
+* -S: random seed;
+
+* -v: verbose level; ( -1: repeatead experiment format) 
+
+* -w: warmup repetitions
