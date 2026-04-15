@@ -17,25 +17,6 @@ SPARTA requires CUDA >=10.0
 CUDA install
 * Donwload the cuda toolkit (SPARTA supports >= CUDA 10.0) and follow the instructions: https://developer.nvidia.com/cuda-downloads
 
-# PRELIMINARY RESULTS
-We have compared our routine with cusparse_spmm and cublas_gemm, the two main CUDA routines for sparse and dense matrix multiplication.
-
-**CUSPARSE COMPARISON**
-Preliminary results show that our routine is faster than cusparse_spmm when the density inside blocks is greater then around 2% (in this case, this corresponds to a total density of 0.2%)
-![](/images/performance_experiment/VBS_vs_spmm_A8192_B_8192_fixed_blockdensity_0.1.jpg)
-
-
-**CUBLAS COMPARISON**
-Preliminary results show that our routine is faster than cublas_gemm when less than the 20% of blocks are nonzero. 
-(both cublas and our routine treat nonzero blocks as dense, so changing the density inside blocks does not affect this result)
-![](/images/performance_experiment_v2/VBS_vs_gemm_A4096_B_16384Block_size_128_varying_Block_density.jpg)
-
-
-**PERFORMANCE LANDSCAPE**
-The image below shows the fastest algorithm for each data point when both the density of nonzero blocks and the matrix density vary.
-For matrices in the green zone, SPARTA is the fastest choice. 
-![](/images/performance_experiment_v2/scatter_performance_plot.jpg)
-
 # STRUCTURE
 
 The files have the following structure
