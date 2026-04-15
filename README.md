@@ -128,8 +128,6 @@ OPTIONS:
 	1: print infos, but not matrices
 	2: print matrices
 
--w: how many warmup multiplication runs?
+-w: warmup repetitions
 
--x: how many repetition to average for multiplication?
-
-* -w: warmup repetitions
+-x: multiplication repetitions
